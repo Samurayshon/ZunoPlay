@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>ZunoPlay</title>
 
 <style>
@@ -73,15 +74,16 @@ body {
     margin-bottom: 25px;
 }
 
-button {
+.button {
+    display: block;
     width: 100%;
     padding: 16px;
-    border: none;
-    border-radius: 14px;
     margin-top: 12px;
+    border-radius: 14px;
+    text-align: center;
+    text-decoration: none;
     font-size: 16px;
     font-weight: bold;
-    cursor: pointer;
 }
 
 .primary {
@@ -127,13 +129,13 @@ button {
             conhecer pessoas e jogar.
         </p>
 
-        <button class="primary">
+        <a href="cadastro.html" class="button primary">
             Criar minha conta
-        </button>
+        </a>
 
-        <button class="secondary">
+        <a href="login.html" class="button secondary">
             Já tenho uma conta
-        </button>
+        </a>
 
     </div>
 
