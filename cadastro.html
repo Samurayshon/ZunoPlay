@@ -1,330 +1,376 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Criar conta - ZunoPlay</title>
+    <title>Criar conta - ZunoPlay</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-body {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
-        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
-        #070811;
-    color: white;
-}
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+                radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+                #070811;
+            color: white;
+        }
 
-.container {
-    width: 100%;
-    max-width: 480px;
-    min-height: 100vh;
-    margin: auto;
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+        .container {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            margin: auto;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-.logo {
-    text-align: center;
-    font-size: 38px;
-    font-weight: 800;
-    margin-bottom: 30px;
-}
+        .logo {
+            text-align: center;
+            font-size: 38px;
+            font-weight: 800;
+            margin-bottom: 30px;
+        }
 
-.logo span {
-    color: #8b5cf6;
-}
+        .logo span {
+            color: #8b5cf6;
+        }
 
-.card {
-    background: rgba(20, 21, 35, 0.9);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    border-radius: 24px;
-    padding: 25px;
-}
+        .card {
+            background: rgba(20, 21, 35, 0.9);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 24px;
+            padding: 25px;
+        }
 
-h1 {
-    font-size: 25px;
-    margin-bottom: 8px;
-}
+        h1 {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
 
-.description {
-    color: #9293a3;
-    font-size: 14px;
-    margin-bottom: 25px;
-}
+        .description {
+            color: #9293a3;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-label {
-    display: block;
-    margin-top: 16px;
-    margin-bottom: 7px;
-    font-size: 13px;
-    color: #c9c9d4;
-}
+        label {
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 7px;
+            font-size: 13px;
+            color: #c9c9d4;
+        }
 
-input {
-    width: 100%;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid #303145;
-    background: #11121e;
-    color: white;
-    outline: none;
-    font-size: 15px;
-}
+        input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #303145;
+            background: #11121e;
+            color: white;
+            outline: none;
+            font-size: 15px;
+        }
 
-input:focus {
-    border-color: #8b5cf6;
-}
+        input:focus {
+            border-color: #8b5cf6;
+        }
 
-button {
-    width: 100%;
-    padding: 16px;
-    margin-top: 25px;
-    border: none;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-}
+        button {
+            width: 100%;
+            padding: 16px;
+            margin-top: 25px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-button:disabled {
-    opacity: 0.6;
-}
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
-.message {
-    display: none;
-    margin-top: 18px;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 13px;
-    text-align: center;
-}
+        .message {
+            display: none;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-align: center;
+        }
 
-.success {
-    display: block;
-    background: rgba(34, 197, 94, 0.12);
-    color: #86efac;
-}
+        .success {
+            display: block;
+            background: rgba(34, 197, 94, 0.12);
+            color: #86efac;
+        }
 
-.error {
-    display: block;
-    background: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
-}
+        .error {
+            display: block;
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+        }
 
-.back {
-    display: block;
-    text-align: center;
-    margin-top: 18px;
-    color: #999aaa;
-    text-decoration: none;
-    font-size: 14px;
-}
-</style>
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 18px;
+            color: #999aaa;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <div class="logo">
-        Zuno<span>Play</span>
+        <div class="logo">
+            Zuno<span>Play</span>
+        </div>
+
+        <div class="card">
+
+            <h1>Criar sua conta</h1>
+
+            <p class="description">
+                Entre para a comunidade ZunoPlay.
+            </p>
+
+            <form id="signupForm">
+
+                <label for="username">
+                    Nome de usuário
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    placeholder="Escolha seu nome"
+                    minlength="3"
+                    maxlength="20"
+                    required
+                >
+
+                <label for="email">
+                    E-mail
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="seu@email.com"
+                    required
+                >
+
+                <label for="password">
+                    Senha
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Crie uma senha"
+                    minlength="6"
+                    required
+                >
+
+                <button type="submit" id="signupButton">
+                    Criar conta
+                </button>
+
+            </form>
+
+            <div id="message" class="message"></div>
+
+            <a href="index.html" class="back">
+                ← Voltar
+            </a>
+
+        </div>
+
     </div>
 
-    <div class="card">
 
-        <h1>Criar sua conta</h1>
+    <script>
 
-        <p class="description">
-            Entre para a comunidade ZunoPlay.
-        </p>
+        /* =========================================
+           SUPABASE
+           ========================================= */
 
-        <form id="signupForm">
+        const SUPABASE_URL = "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
-            <label for="username">
-                Nome de usuário
-            </label>
-
-            <input
-                type="text"
-                id="username"
-                placeholder="Escolha seu nome"
-                minlength="3"
-                maxlength="20"
-                required
-            >
-
-            <label for="email">
-                E-mail
-            </label>
-
-            <input
-                type="email"
-                id="email"
-                placeholder="seu@email.com"
-                required
-            >
-
-            <label for="password">
-                Senha
-            </label>
-
-            <input
-                type="password"
-                id="password"
-                placeholder="Crie uma senha"
-                minlength="6"
-                required
-            >
-
-            <button type="submit" id="signupButton">
-                Criar conta
-            </button>
-
-        </form>
-
-        <div id="message" class="message"></div>
-
-        <a href="index.html" class="back">
-            ← Voltar
-        </a>
-
-    </div>
-
-</div>
-
-<script>
-
-/* ================================
-   SUPABASE
-   ================================ */
-
-const SUPABASE_URL = "https://rliymfbbhqoejgfvsbuu.supabase.co";
-
-const SUPABASE_KEY = "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+        const SUPABASE_KEY = "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
 
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+        const supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
 
 
-/* ================================
-   CADASTRO
-   ================================ */
+        /* =========================================
+           ELEMENTOS
+           ========================================= */
 
-const form = document.getElementById("signupForm");
-const button = document.getElementById("signupButton");
-const message = document.getElementById("message");
+        const form =
+            document.getElementById("signupForm");
 
+        const button =
+            document.getElementById("signupButton");
 
-form.addEventListener("submit", async function(event) {
-
-    event.preventDefault();
-
-    const username = document
-        .getElementById("username")
-        .value
-        .trim();
-
-    const email = document
-        .getElementById("email")
-        .value
-        .trim();
-
-    const password = document
-        .getElementById("password")
-        .value;
+        const message =
+            document.getElementById("message");
 
 
-    message.className = "message";
-    message.textContent = "";
+        /* =========================================
+           CADASTRO
+           ========================================= */
 
-    button.disabled = true;
-    button.textContent = "Criando conta...";
+        form.addEventListener("submit", async function(event) {
+
+            event.preventDefault();
 
 
-    try {
+            const username =
+                document
+                    .getElementById("username")
+                    .value
+                    .trim();
 
-        const { data, error } =
-            await supabaseClient.auth.signUp({
 
-                email: email,
+            const email =
+                document
+                    .getElementById("email")
+                    .value
+                    .trim();
 
-                password: password,
 
-                options: {
+            const password =
+                document
+                    .getElementById("password")
+                    .value;
 
-                    data: {
-                        username: username
-                    }
+
+            message.className = "message";
+
+            message.textContent = "";
+
+
+            button.disabled = true;
+
+            button.textContent =
+                "Criando conta...";
+
+
+            try {
+
+                const { data, error } =
+                    await supabaseClient.auth.signUp({
+
+                        email: email,
+
+                        password: password,
+
+                        options: {
+
+                            /*
+                             * IMPORTANTE:
+                             * Depois da confirmação do e-mail,
+                             * o usuário volta para o ZunoPlay.
+                             */
+
+                            emailRedirectTo:
+                                "https://samurayshon.github.io/ZunoPlay/",
+
+
+                            /*
+                             * Dados usados pelo trigger
+                             * para criar o perfil.
+                             */
+
+                            data: {
+                                username: username
+                            }
+
+                        }
+
+                    });
+
+
+                if (error) {
+                    throw error;
+                }
+
+
+                /* =================================
+                   SUCESSO
+                   ================================= */
+
+                message.className =
+                    "message success";
+
+
+                if (data.user && !data.session) {
+
+                    message.textContent =
+                        "Conta criada! 📧 Verifique seu e-mail para confirmar a conta.";
+
+                } else {
+
+                    message.textContent =
+                        "Conta criada com sucesso! 🎉";
 
                 }
 
-            });
+
+                form.reset();
 
 
-        if (error) {
-            throw error;
-        }
+            } catch (error) {
+
+                console.error(
+                    "Erro no cadastro:",
+                    error
+                );
 
 
-        message.className = "message success";
-
-        /*
-         * Se a confirmação de e-mail estiver ativada,
-         * o Supabase enviará um e-mail.
-         */
-
-        if (data.user && !data.session) {
-
-            message.textContent =
-                "Conta criada! 📧 Verifique seu e-mail para confirmar a conta.";
-
-        } else {
-
-            message.textContent =
-                "Conta criada com sucesso! 🎉";
-
-        }
+                message.className =
+                    "message error";
 
 
-        form.reset();
+                message.textContent =
+                    "Não foi possível criar a conta: " +
+                    error.message;
+
+            }
 
 
-    } catch (error) {
+            button.disabled = false;
 
-        console.error(error);
+            button.textContent =
+                "Criar conta";
 
-        message.className = "message error";
+        });
 
-        message.textContent =
-            "Não foi possível criar a conta: " +
-            error.message;
-
-    }
-
-
-    button.disabled = false;
-    button.textContent = "Criar conta";
-
-});
-
-</script>
+    </script>
 
 </body>
 </html>
