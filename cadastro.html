@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Criar conta - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -153,7 +154,9 @@ button:disabled {
 
         <form id="signupForm">
 
-            <label for="username">Nome de usuário</label>
+            <label for="username">
+                Nome de usuário
+            </label>
 
             <input
                 type="text"
@@ -164,7 +167,9 @@ button:disabled {
                 required
             >
 
-            <label for="email">E-mail</label>
+            <label for="email">
+                E-mail
+            </label>
 
             <input
                 type="email"
@@ -173,7 +178,9 @@ button:disabled {
                 required
             >
 
-            <label for="password">Senha</label>
+            <label for="password">
+                Senha
+            </label>
 
             <input
                 type="password"
@@ -201,18 +208,14 @@ button:disabled {
 
 <script>
 
-/* ==========================================
-   CONFIGURAÇÃO DO SUPABASE
-   ========================================== */
+/* ================================
+   SUPABASE
+   ================================ */
 
 const SUPABASE_URL = "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
 
-
-/* ==========================================
-   CONEXÃO
-   ========================================== */
 
 const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
@@ -220,13 +223,14 @@ const supabaseClient = window.supabase.createClient(
 );
 
 
-/* ==========================================
+/* ================================
    CADASTRO
-   ========================================== */
+   ================================ */
 
 const form = document.getElementById("signupForm");
 const button = document.getElementById("signupButton");
 const message = document.getElementById("message");
+
 
 form.addEventListener("submit", async function(event) {
 
@@ -256,14 +260,21 @@ form.addEventListener("submit", async function(event) {
 
     try {
 
-        /*
-         * Cria a conta no sistema de autenticação
-         */
-
         const { data, error } =
             await supabaseClient.auth.signUp({
+
                 email: email,
-                password: password
+
+                password: password,
+
+                options: {
+
+                    data: {
+                        username: username
+                    }
+
+                }
+
             });
 
 
@@ -272,34 +283,28 @@ form.addEventListener("submit", async function(event) {
         }
 
 
+        message.className = "message success";
+
         /*
-         * Cria o perfil do usuário
+         * Se a confirmação de e-mail estiver ativada,
+         * o Supabase enviará um e-mail.
          */
 
-        if (data.user) {
+        if (data.user && !data.session) {
 
-            const { error: profileError } =
-                await supabaseClient
-                    .from("profiles")
-                    .insert({
-                        id: data.user.id,
-                        username: username
-                    });
+            message.textContent =
+                "Conta criada! 📧 Verifique seu e-mail para confirmar a conta.";
 
+        } else {
 
-            if (profileError) {
-                throw profileError;
-            }
+            message.textContent =
+                "Conta criada com sucesso! 🎉";
+
         }
 
 
-        message.className = "message success";
-
-        message.textContent =
-            "Conta criada com sucesso! 🎉";
-
-
         form.reset();
+
 
     } catch (error) {
 
@@ -311,12 +316,11 @@ form.addEventListener("submit", async function(event) {
             "Não foi possível criar a conta: " +
             error.message;
 
-    } finally {
-
-        button.disabled = false;
-        button.textContent = "Criar conta";
-
     }
+
+
+    button.disabled = false;
+    button.textContent = "Criar conta";
 
 });
 
