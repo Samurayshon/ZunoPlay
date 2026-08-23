@@ -1,1 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Criar conta - ZunoPlay</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        #070811;
+    color: white;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.logo {
+    text-align: center;
+    font-size: 38px;
+    font-weight: 800;
+    margin-bottom: 30px;
+}
+
+.logo span {
+    color: #8b5cf6;
+}
+
+.card {
+    background: rgba(20, 21, 35, 0.9);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 24px;
+    padding: 25px;
+}
+
+h1 {
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.description {
+    color: #9293a3;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 7px;
+    font-size: 13px;
+    color: #c9c9d4;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #303145;
+    background: #11121e;
+    color: white;
+    outline: none;
+    font-size: 15px;
+}
+
+input:focus {
+    border-color: #8b5cf6;
+}
+
+button {
+    width: 100%;
+    padding: 16px;
+    margin-top: 25px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.back {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+    color: #999aaa;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.terms {
+    margin-top: 18px;
+    color: #666878;
+    font-size: 11px;
+    text-align: center;
+    line-height: 1.5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        Zuno<span>Play</span>
+    </div>
+
+    <div class="card">
+
+        <h1>Criar sua conta</h1>
+
+        <p class="description">
+            Entre para a comunidade ZunoPlay.
+        </p>
+
+        <form>
+
+            <label for="username">
+                Nome de usuário
+            </label>
+
+            <input
+                type="text"
+                id="username"
+                placeholder="Escolha seu nome"
+                required
+            >
+
+            <label for="email">
+                E-mail
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="seu@email.com"
+                required
+            >
+
+            <label for="password">
+                Senha
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Crie uma senha"
+                required
+            >
+
+            <button type="submit">
+                Criar conta
+            </button>
+
+        </form>
+
+        <a href="index.html" class="back">
+            ← Voltar
+        </a>
+
+        <div class="terms">
+            Ao criar uma conta, você concorda com os
+            termos de uso e política de privacidade.
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
