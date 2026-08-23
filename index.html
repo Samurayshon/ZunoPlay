@@ -38,6 +38,7 @@ body {
     align-items: center;
     justify-content: center;
     color: #9293a3;
+    text-align: center;
 }
 
 .welcome-screen {
@@ -71,7 +72,7 @@ body {
 }
 
 .card {
-    background: rgba(20, 21, 35, 0.85);
+    background: rgba(20, 21, 35, 0.9);
     border: 1px solid rgba(139, 92, 246, 0.2);
     border-radius: 24px;
     padding: 25px;
@@ -356,75 +357,103 @@ const logoutButton =
     document.getElementById("logoutButton");
 
 
+function showApp() {
+
+    loading.style.display = "none";
+    app.style.display = "block";
+
+}
+
+
+function showWelcome() {
+
+    showApp();
+
+    welcomeScreen.style.display = "flex";
+    homeScreen.style.display = "none";
+
+}
+
+
+function showHome(user) {
+
+    showApp();
+
+    welcomeScreen.style.display = "none";
+    homeScreen.style.display = "block";
+
+
+    let username =
+        user?.user_metadata?.username;
+
+
+    if (!username) {
+
+        username =
+            user?.email?.split("@")[0] ||
+            "ZunoPlayer";
+
+    }
+
+
+    usernameElement.textContent =
+        username;
+
+}
+
+
 async function checkUser() {
 
     try {
 
-        const {
-            data: {
-                session
-            },
-            error
-        } =
-            await supabaseClient.auth.getSession();
+        const result =
+            await Promise.race([
 
+                supabaseClient.auth.getUser(),
 
-        if (error) {
-            throw error;
-        }
+                new Promise(function(resolve) {
 
+                    setTimeout(function() {
 
-        loading.style.display = "none";
-        app.style.display = "block";
+                        resolve({
+                            data: {
+                                user: null
+                            },
+                            error: new Error(
+                                "Tempo limite"
+                            )
+                        });
 
+                    }, 5000);
 
-        if (!session) {
+                })
 
-            welcomeScreen.style.display = "flex";
-            homeScreen.style.display = "none";
-
-            return;
-        }
-
-
-        welcomeScreen.style.display = "none";
-        homeScreen.style.display = "block";
+            ]);
 
 
         const user =
-            session.user;
+            result?.data?.user;
 
 
-        let username =
-            user.user_metadata?.username;
+        if (user) {
 
+            showHome(user);
 
-        if (!username) {
+        } else {
 
-            username =
-                user.email?.split("@")[0] ||
-                "ZunoPlayer";
+            showWelcome();
 
         }
-
-
-        usernameElement.textContent =
-            username;
 
 
     } catch (error) {
 
         console.error(
-            "Erro ao verificar sessão:",
+            "Erro ao verificar usuário:",
             error
         );
 
-
-        loading.style.display = "none";
-        app.style.display = "block";
-
-        welcomeScreen.style.display = "flex";
-        homeScreen.style.display = "none";
+        showWelcome();
 
     }
 
@@ -436,27 +465,20 @@ logoutButton.addEventListener(
     async function() {
 
         logoutButton.disabled = true;
-        logoutButton.textContent = "Saindo...";
+        logoutButton.textContent =
+            "Saindo...";
 
 
-        const {
-            error
-        } =
+        try {
+
             await supabaseClient.auth.signOut();
 
-
-        if (error) {
+        } catch (error) {
 
             console.error(
                 "Erro ao sair:",
                 error
             );
-
-            logoutButton.disabled = false;
-            logoutButton.textContent =
-                "Sair da conta";
-
-            return;
 
         }
 
@@ -469,19 +491,46 @@ logoutButton.addEventListener(
 
 
 supabaseClient.auth.onAuthStateChange(
-    function(event) {
+    function(event, session) {
 
         if (
-            event === "SIGNED_IN" ||
+            event === "SIGNED_IN" &&
+            session?.user
+        ) {
+
+            showHome(session.user);
+
+        }
+
+
+        if (
             event === "SIGNED_OUT"
         ) {
 
-            checkUser();
+            showWelcome();
 
         }
 
     }
 );
+
+
+/*
+ * Garante que a página nunca fique
+ * presa indefinidamente em "Carregando".
+ */
+
+setTimeout(function() {
+
+    if (
+        loading.style.display !== "none"
+    ) {
+
+        showWelcome();
+
+    }
+
+}, 6000);
 
 
 checkUser();
