@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Meu Perfil - ZunoPlay</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        #070811;
+    color: white;
+}
+
+.app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 25px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-top: 20px;
+    margin-bottom: 25px;
+}
+
+.back {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid #303145;
+    background: #1b1c2b;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.logo span {
+    color: #8b5cf6;
+}
+
+.card {
+    background: rgba(20, 21, 35, 0.9);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 24px;
+    padding: 25px;
+}
+
+.avatar {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    font-weight: bold;
+}
+
+.profile-name {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.profile-email {
+    text-align: center;
+    color: #9293a3;
+    font-size: 13px;
+    margin-top: 6px;
+    margin-bottom: 28px;
+}
+
+.info {
+    background: #11121e;
+    border: 1px solid #292a3d;
+    border-radius: 14px;
+    padding: 15px;
+    margin-top: 12px;
+}
+
+.info-label {
+    color: #858697;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 14px;
+    word-break: break-word;
+}
+
+label {
+    display: block;
+    color: #c9c9d4;
+    font-size: 13px;
+    margin-top: 22px;
+    margin-bottom: 7px;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #303145;
+    background: #11121e;
+    color: white;
+    outline: none;
+    font-size: 15px;
+}
+
+input:focus {
+    border-color: #8b5cf6;
+}
+
+.button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 13px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.save {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+}
+
+.logout {
+    background: #171824;
+    border: 1px solid #303145;
+    color: #ff8f8f;
+}
+
+.message {
+    display: none;
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.success {
+    display: block;
+    background: rgba(34, 197, 94, 0.12);
+    color: #86efac;
+}
+
+.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+}
+
+.loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9293a3;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading" class="loading">
+    Carregando perfil...
+</div>
+
+<div id="app" class="app" style="display:none;">
+
+    <div class="header">
+
+        <button
+            class="back"
+            onclick="window.location.href='index.html'">
+            ←
+        </button>
+
+        <div class="logo">
+            Zuno<span>Play</span>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div id="avatar" class="avatar">
+            S
+        </div>
+
+        <div id="profileName" class="profile-name">
+            ZunoPlayer
+        </div>
+
+        <div id="profileEmail" class="profile-email">
+            carregando...
+        </div>
+
+
+        <div class="info">
+
+            <div class="info-label">
+                ID da conta
+            </div>
+
+            <div id="userId" class="info-value">
+                carregando...
+            </div>
+
+        </div>
+
+
+        <div class="info">
+
+            <div class="info-label">
+                Conta criada em
+            </div>
+
+            <div id="createdAt" class="info-value">
+                carregando...
+            </div>
+
+        </div>
+
+
+        <label for="newUsername">
+            Alterar nome de usuário
+        </label>
+
+        <input
+            type="text"
+            id="newUsername"
+            placeholder="Novo nome"
+            minlength="3"
+            maxlength="20"
+        >
+
+
+        <button
+            id="saveButton"
+            class="button save">
+            Salvar alteração
+        </button>
+
+
+        <div id="message" class="message"></div>
+
+
+        <button
+            id="logoutButton"
+            class="button logout">
+            Sair da conta
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   SUPABASE
+   ========================================= */
+
+const SUPABASE_URL =
+    "COLE_AQUI_A_MESMA_API_URL";
+
+const SUPABASE_KEY =
+    "COLE_AQUI_A_MESMA_PUBLISHABLE_KEY";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================================
+   ELEMENTOS
+   ========================================= */
+
+const loading =
+    document.getElementById("loading");
+
+const app =
+    document.getElementById("app");
+
+const avatar =
+    document.getElementById("avatar");
+
+const profileName =
+    document.getElementById("profileName");
+
+const profileEmail =
+    document.getElementById("profileEmail");
+
+const userId =
+    document.getElementById("userId");
+
+const createdAt =
+    document.getElementById("createdAt");
+
+const newUsername =
+    document.getElementById("newUsername");
+
+const saveButton =
+    document.getElementById("saveButton");
+
+const logoutButton =
+    document.getElementById("logoutButton");
+
+const message =
+    document.getElementById("message");
+
+
+/* =========================================
+   MOSTRAR MENSAGEM
+   ========================================= */
+
+function showMessage(text, type) {
+
+    message.className =
+        "message " + type;
+
+    message.textContent =
+        text;
+}
+
+
+/* =========================================
+   CARREGAR PERFIL
+   ========================================= */
+
+async function loadProfile() {
+
+    try {
+
+        const {
+            data: {
+                session
+            }
+        } =
+            await supabaseClient.auth.getSession();
+
+
+        if (!session) {
+
+            window.location.href =
+                "login.html";
+
+            return;
+        }
+
+
+        const user =
+            session.user;
+
+
+        let username =
+            user.user_metadata?.username;
+
+
+        if (!username) {
+
+            username =
+                user.email?.split("@")[0] ||
+                "ZunoPlayer";
+        }
+
+
+        profileName.textContent =
+            username;
+
+        newUsername.value =
+            username;
+
+
+        profileEmail.textContent =
+            user.email || "Sem e-mail";
+
+
+        userId.textContent =
+            user.id;
+
+
+        if (user.created_at) {
+
+            const date =
+                new Date(user.created_at);
+
+            createdAt.textContent =
+                date.toLocaleDateString(
+                    "pt-BR",
+                    {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric"
+                    }
+                );
+
+        }
+
+
+        avatar.textContent =
+            username
+                .charAt(0)
+                .toUpperCase();
+
+
+        loading.style.display =
+            "none";
+
+        app.style.display =
+            "block";
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao carregar perfil:",
+            error
+        );
+
+        window.location.href =
+            "login.html";
+    }
+}
+
+
+/* =========================================
+   ALTERAR NOME
+   ========================================= */
+
+saveButton.addEventListener(
+    "click",
+    async function() {
+
+        const username =
+            newUsername.value.trim();
+
+
+        if (username.length < 3) {
+
+            showMessage(
+                "O nome precisa ter pelo menos 3 caracteres.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        saveButton.disabled =
+            true;
+
+        saveButton.textContent =
+            "Salvando...";
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.auth.updateUser({
+
+                    data: {
+                        username: username
+                    }
+
+                });
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            profileName.textContent =
+                username;
+
+
+            avatar.textContent =
+                username
+                    .charAt(0)
+                    .toUpperCase();
+
+
+            showMessage(
+                "Nome atualizado com sucesso! ✅",
+                "success"
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao atualizar nome:",
+                error
+            );
+
+
+            showMessage(
+                "Não foi possível atualizar: " +
+                error.message,
+                "error"
+            );
+
+        }
+
+
+        saveButton.disabled =
+            false;
+
+        saveButton.textContent =
+            "Salvar alteração";
+
+    }
+);
+
+
+/* =========================================
+   SAIR
+   ========================================= */
+
+logoutButton.addEventListener(
+    "click",
+    async function() {
+
+        logoutButton.disabled =
+            true;
+
+        logoutButton.textContent =
+            "Saindo...";
+
+
+        const {
+            error
+        } =
+            await supabaseClient.auth.signOut();
+
+
+        if (error) {
+
+            showMessage(
+                "Erro ao sair da conta.",
+                "error"
+            );
+
+            logoutButton.disabled =
+                false;
+
+            logoutButton.textContent =
+                "Sair da conta";
+
+            return;
+        }
+
+
+        window.location.href =
+            "index.html";
+
+    }
+);
+
+
+/* =========================================
+   INICIAR
+   ========================================= */
+
+loadProfile();
+
+</script>
+
+</body>
+</html>
