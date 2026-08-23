@@ -1,92 +1,147 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZunoPlay</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZunoPlay</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
 
-        body {
-            background: #0b0b12;
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        #070811;
+    color: white;
+}
 
-        .app {
-            width: 100%;
-            max-width: 430px;
-            min-height: 100vh;
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+.app {
+    min-height: 100vh;
+    max-width: 480px;
+    margin: auto;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
 
-        .logo {
-            font-size: 42px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+.logo {
+    text-align: center;
+    margin-bottom: 15px;
+}
 
-        .logo span {
-            color: #7c3aed;
-        }
+.logo-main {
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: -2px;
+}
 
-        .subtitle {
-            color: #999;
-            margin-bottom: 40px;
-        }
+.logo-main span {
+    color: #8b5cf6;
+}
 
-        .button {
-            width: 100%;
-            padding: 16px;
-            margin-top: 12px;
-            border: none;
-            border-radius: 12px;
-            background: #7c3aed;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-        }
+.tagline {
+    text-align: center;
+    color: #a7a7b5;
+    font-size: 15px;
+    margin-bottom: 45px;
+}
 
-        .button.secondary {
-            background: #1b1b27;
-        }
-    </style>
+.card {
+    background: rgba(20, 21, 35, 0.85);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+}
+
+.card h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.card p {
+    color: #9293a3;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+button {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.primary {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+}
+
+.secondary {
+    background: #1b1c2b;
+    color: white;
+    border: 1px solid #303145;
+}
+
+.footer {
+    text-align: center;
+    color: #686978;
+    font-size: 12px;
+    margin-top: 25px;
+}
+</style>
 </head>
 
 <body>
 
-    <div class="app">
+<div class="app">
 
-        <div class="logo">
+    <div class="logo">
+        <div class="logo-main">
             Zuno<span>Play</span>
         </div>
+    </div>
 
-        <div class="subtitle">
-            Conecte. Converse. Jogue.
-        </div>
+    <div class="tagline">
+        Conecte. Converse. Jogue.
+    </div>
 
-        <button class="button">
-            Criar conta
+    <div class="card">
+
+        <h1>Bem-vindo ao ZunoPlay</h1>
+
+        <p>
+            Um novo espaço para conversar,
+            conhecer pessoas e jogar.
+        </p>
+
+        <button class="primary">
+            Criar minha conta
         </button>
 
-        <button class="button secondary">
-            Entrar
+        <button class="secondary">
+            Já tenho uma conta
         </button>
 
     </div>
+
+    <div class="footer">
+        ZunoPlay © 2026
+    </div>
+
+</div>
 
 </body>
 </html>
