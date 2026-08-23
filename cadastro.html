@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Criar conta - ZunoPlay</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 * {
@@ -98,6 +99,31 @@ button {
     font-weight: bold;
 }
 
+button:disabled {
+    opacity: 0.6;
+}
+
+.message {
+    display: none;
+    margin-top: 18px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.success {
+    display: block;
+    background: rgba(34, 197, 94, 0.12);
+    color: #86efac;
+}
+
+.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+}
+
 .back {
     display: block;
     text-align: center;
@@ -105,14 +131,6 @@ button {
     color: #999aaa;
     text-decoration: none;
     font-size: 14px;
-}
-
-.terms {
-    margin-top: 18px;
-    color: #666878;
-    font-size: 11px;
-    text-align: center;
-    line-height: 1.5;
 }
 </style>
 </head>
@@ -133,22 +151,20 @@ button {
             Entre para a comunidade ZunoPlay.
         </p>
 
-        <form>
+        <form id="signupForm">
 
-            <label for="username">
-                Nome de usuário
-            </label>
+            <label for="username">Nome de usuário</label>
 
             <input
                 type="text"
                 id="username"
                 placeholder="Escolha seu nome"
+                minlength="3"
+                maxlength="20"
                 required
             >
 
-            <label for="email">
-                E-mail
-            </label>
+            <label for="email">E-mail</label>
 
             <input
                 type="email"
@@ -157,35 +173,154 @@ button {
                 required
             >
 
-            <label for="password">
-                Senha
-            </label>
+            <label for="password">Senha</label>
 
             <input
                 type="password"
                 id="password"
                 placeholder="Crie uma senha"
+                minlength="6"
                 required
             >
 
-            <button type="submit">
+            <button type="submit" id="signupButton">
                 Criar conta
             </button>
 
         </form>
 
+        <div id="message" class="message"></div>
+
         <a href="index.html" class="back">
             ← Voltar
         </a>
 
-        <div class="terms">
-            Ao criar uma conta, você concorda com os
-            termos de uso e política de privacidade.
-        </div>
-
     </div>
 
 </div>
+
+<script>
+
+/* ==========================================
+   CONFIGURAÇÃO DO SUPABASE
+   ========================================== */
+
+const SUPABASE_URL = "https://rliymfbbhqoejgfvsbuu.supabase.co/rest/v1/";
+
+const SUPABASE_KEY = "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
+
+/* ==========================================
+   CONEXÃO
+   ========================================== */
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+/* ==========================================
+   CADASTRO
+   ========================================== */
+
+const form = document.getElementById("signupForm");
+const button = document.getElementById("signupButton");
+const message = document.getElementById("message");
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const username = document
+        .getElementById("username")
+        .value
+        .trim();
+
+    const email = document
+        .getElementById("email")
+        .value
+        .trim();
+
+    const password = document
+        .getElementById("password")
+        .value;
+
+
+    message.className = "message";
+    message.textContent = "";
+
+    button.disabled = true;
+    button.textContent = "Criando conta...";
+
+
+    try {
+
+        /*
+         * Cria a conta no sistema de autenticação
+         */
+
+        const { data, error } =
+            await supabaseClient.auth.signUp({
+                email: email,
+                password: password
+            });
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        /*
+         * Cria o perfil do usuário
+         */
+
+        if (data.user) {
+
+            const { error: profileError } =
+                await supabaseClient
+                    .from("profiles")
+                    .insert({
+                        id: data.user.id,
+                        username: username
+                    });
+
+
+            if (profileError) {
+                throw profileError;
+            }
+        }
+
+
+        message.className = "message success";
+
+        message.textContent =
+            "Conta criada com sucesso! 🎉";
+
+
+        form.reset();
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.className = "message error";
+
+        message.textContent =
+            "Não foi possível criar a conta: " +
+            error.message;
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Criar conta";
+
+    }
+
+});
+
+</script>
 
 </body>
 </html>
