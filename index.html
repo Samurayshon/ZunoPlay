@@ -247,6 +247,7 @@ body {
 
     </div>
 
+
     <div id="homeScreen" class="home-screen">
 
         <div class="header">
@@ -263,6 +264,7 @@ body {
 
         </div>
 
+
         <div class="greeting">
 
             <small>
@@ -274,6 +276,7 @@ body {
             </h1>
 
         </div>
+
 
         <div class="menu-grid">
 
@@ -303,9 +306,11 @@ body {
 
         </div>
 
+
         <button id="logoutButton" class="button logout">
             Sair da conta
         </button>
+
 
         <div class="footer">
             ZunoPlay © 2026
@@ -315,19 +320,22 @@ body {
 
 </div>
 
+
 <script>
 
 const SUPABASE_URL =
-    "COLE_AQUI_A_MESMA_API_URL";
+    "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
 const SUPABASE_KEY =
-    "COLE_AQUI_A_MESMA_PUBLISHABLE_KEY";
+    "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
 
 const supabaseClient =
     window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_KEY
     );
+
 
 const loading =
     document.getElementById("loading");
@@ -347,6 +355,7 @@ const usernameElement =
 const logoutButton =
     document.getElementById("logoutButton");
 
+
 async function checkUser() {
 
     try {
@@ -354,12 +363,20 @@ async function checkUser() {
         const {
             data: {
                 session
-            }
+            },
+            error
         } =
             await supabaseClient.auth.getSession();
 
+
+        if (error) {
+            throw error;
+        }
+
+
         loading.style.display = "none";
         app.style.display = "block";
+
 
         if (!session) {
 
@@ -369,23 +386,31 @@ async function checkUser() {
             return;
         }
 
+
         welcomeScreen.style.display = "none";
         homeScreen.style.display = "block";
 
-        const user = session.user;
+
+        const user =
+            session.user;
+
 
         let username =
             user.user_metadata?.username;
+
 
         if (!username) {
 
             username =
                 user.email?.split("@")[0] ||
                 "ZunoPlayer";
+
         }
+
 
         usernameElement.textContent =
             username;
+
 
     } catch (error) {
 
@@ -394,13 +419,17 @@ async function checkUser() {
             error
         );
 
+
         loading.style.display = "none";
         app.style.display = "block";
 
         welcomeScreen.style.display = "flex";
         homeScreen.style.display = "none";
+
     }
+
 }
+
 
 logoutButton.addEventListener(
     "click",
@@ -409,8 +438,12 @@ logoutButton.addEventListener(
         logoutButton.disabled = true;
         logoutButton.textContent = "Saindo...";
 
-        const { error } =
+
+        const {
+            error
+        } =
             await supabaseClient.auth.signOut();
+
 
         if (error) {
 
@@ -424,11 +457,16 @@ logoutButton.addEventListener(
                 "Sair da conta";
 
             return;
+
         }
 
-        window.location.href = "index.html";
+
+        window.location.href =
+            "index.html";
+
     }
 );
+
 
 supabaseClient.auth.onAuthStateChange(
     function(event) {
@@ -437,11 +475,14 @@ supabaseClient.auth.onAuthStateChange(
             event === "SIGNED_IN" ||
             event === "SIGNED_OUT"
         ) {
+
             checkUser();
+
         }
 
     }
 );
+
 
 checkUser();
 
