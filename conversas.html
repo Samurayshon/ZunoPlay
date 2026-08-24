@@ -21,6 +21,7 @@
 }
 
 body {
+
     min-height: 100vh;
 
     background:
@@ -29,16 +30,20 @@ body {
         #070811;
 
     color: white;
+
 }
 
 .app {
+
     width: 100%;
     max-width: 480px;
     min-height: 100vh;
     margin: auto;
+
 }
 
 .header {
+
     display: flex;
     align-items: center;
     gap: 12px;
@@ -51,10 +56,13 @@ body {
 
     position: sticky;
     top: 0;
+
     z-index: 5;
+
 }
 
 .back {
+
     width: 42px;
     height: 42px;
 
@@ -69,34 +77,47 @@ body {
     font-size: 20px;
 
     cursor: pointer;
+
 }
 
 .logo {
+
     font-size: 28px;
     font-weight: 800;
+
 }
 
 .logo span {
+
     color: #8b5cf6;
+
 }
 
 .page {
+
     padding: 20px;
+
 }
 
 .title {
+
     font-size: 25px;
     margin-bottom: 6px;
+
 }
 
 .subtitle {
+
     color: #9293a3;
     font-size: 13px;
     margin-bottom: 20px;
+
 }
 
 .status {
+
     padding: 12px;
+
     margin-bottom: 15px;
 
     border-radius: 12px;
@@ -108,16 +129,21 @@ body {
     color: #4ade80;
 
     font-size: 12px;
+
 }
 
 .conversation {
+
     display: flex;
+
     align-items: center;
+
     gap: 13px;
 
     width: 100%;
 
     padding: 14px;
+
     margin-bottom: 10px;
 
     border-radius: 16px;
@@ -131,13 +157,17 @@ body {
     cursor: pointer;
 
     text-align: left;
+
 }
 
 .conversation:hover {
+
     border-color: #8b5cf6;
+
 }
 
 .avatar {
+
     width: 48px;
     height: 48px;
 
@@ -145,12 +175,11 @@ body {
 
     border-radius: 50%;
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #6366f1
+    );
 
     display: flex;
 
@@ -159,20 +188,27 @@ body {
 
     font-weight: bold;
     font-size: 18px;
+
 }
 
 .info {
+
     min-width: 0;
     flex: 1;
+
 }
 
 .name {
+
     font-size: 15px;
     font-weight: bold;
+
     margin-bottom: 5px;
+
 }
 
 .last-message {
+
     color: #858697;
 
     font-size: 12px;
@@ -182,17 +218,21 @@ body {
     overflow: hidden;
 
     text-overflow: ellipsis;
+
 }
 
 .time {
+
     color: #737486;
 
     font-size: 10px;
 
     white-space: nowrap;
+
 }
 
 .empty {
+
     text-align: center;
 
     color: #737486;
@@ -200,17 +240,21 @@ body {
     padding: 60px 20px;
 
     font-size: 14px;
+
 }
 
 .chat {
+
     display: flex;
 
     flex-direction: column;
 
     min-height: 100vh;
+
 }
 
 .chat-messages {
+
     flex: 1;
 
     padding: 20px;
@@ -224,9 +268,11 @@ body {
     overflow-y: auto;
 
     min-height: calc(100vh - 145px);
+
 }
 
 .message {
+
     max-width: 78%;
 
     padding: 11px 14px;
@@ -238,9 +284,11 @@ body {
     line-height: 1.4;
 
     word-break: break-word;
+
 }
 
 .mine {
+
     align-self: flex-end;
 
     background:
@@ -251,9 +299,11 @@ body {
         );
 
     border-bottom-right-radius: 5px;
+
 }
 
 .theirs {
+
     align-self: flex-start;
 
     background: #1b1c2b;
@@ -261,9 +311,11 @@ body {
     border: 1px solid #303145;
 
     border-bottom-left-radius: 5px;
+
 }
 
 .message-time {
+
     display: block;
 
     font-size: 9px;
@@ -271,9 +323,11 @@ body {
     opacity: .6;
 
     margin-top: 4px;
+
 }
 
 .composer {
+
     display: flex;
 
     gap: 8px;
@@ -287,9 +341,11 @@ body {
     position: sticky;
 
     bottom: 0;
+
 }
 
 .composer input {
+
     flex: 1;
 
     min-width: 0;
@@ -305,9 +361,11 @@ body {
     color: white;
 
     outline: none;
+
 }
 
 .send {
+
     width: 50px;
 
     border: none;
@@ -326,6 +384,7 @@ body {
     font-size: 19px;
 
     cursor: pointer;
+
 }
 
 </style>
@@ -373,9 +432,6 @@ let currentUser =
 null;
 
 let friendId =
-null;
-
-let realtimeTestChannel =
 null;
 
 
@@ -427,6 +483,18 @@ function formatTime(dateString) {
             hour: "2-digit",
             minute: "2-digit"
         }
+    );
+
+}
+
+
+function formatDate(dateString) {
+
+    const date =
+    new Date(dateString);
+
+    return date.toLocaleDateString(
+        "pt-BR"
     );
 
 }
@@ -741,6 +809,12 @@ async function loadConversations() {
     }
 
 
+    /*
+     * Carrega cada usuário separadamente.
+     * Isso evita que um problema em profiles
+     * apague a tela inteira.
+     */
+
     for (
         const id of ids
     ) {
@@ -1015,7 +1089,7 @@ async function loadChat() {
 
 
 /* =========================================
-   CARREGAR MENSAGENS
+   CARREGAR MENSAGENS DO CHAT
 ========================================= */
 
 async function loadMessages() {
@@ -1339,6 +1413,11 @@ async function sendMessage(
     input.focus();
 
 
+    /*
+     * Mostra imediatamente a mensagem
+     * enviada pelo próprio usuário.
+     */
+
     if (data) {
 
         addMessage(
@@ -1385,95 +1464,67 @@ function scrollBottom() {
 
 
 /* =========================================
-   TESTE REALTIME
+   INICIAR
 ========================================= */
 
-function testarRealtime() {
+async function start() {
 
-    if (!currentUser) {
+    try {
 
-        console.log(
-            "Realtime: usuário não encontrado"
+        const logged =
+        await getUser();
+
+
+        if (!logged) {
+
+            return;
+
+        }
+
+
+        if (friendId) {
+
+            await loadChat();
+
+        } else {
+
+            await loadConversations();
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erro geral:",
+            error
         );
 
-        return;
+
+        app.innerHTML = `
+
+            <div class="empty">
+
+                ❌ Erro ao carregar o ZunoPlay.
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
 
     }
 
-
-    console.log(
-        "Iniciando teste Realtime para:",
-        currentUser.id
-    );
+}
 
 
-    if (realtimeTestChannel) {
+start();
 
-        supabaseClient
-        .removeChannel(
-            realtimeTestChannel
-        );
+</script>
 
-    }
+</body>
 
-
-    realtimeTestChannel =
-
-        supabaseClient
-
-        .channel(
-            "teste-realtime-" +
-            currentUser.id +
-            "-" +
-            Date.now()
-        )
-
-        .on(
-            "postgres_changes",
-            {
-                event: "INSERT",
-                schema: "public",
-                table: "messages"
-            },
-
-            function(payload) {
-
-                console.log(
-                    "🟢 REALTIME RECEBEU:",
-                    payload.new
-                );
-
-
-                alert(
-                    "🟢 REALTIME FUNCIONANDO!\n\n" +
-                    "Mensagem: " +
-                    payload.new.content
-                );
-
-            }
-        )
-
-        .subscribe(
-            function(status) {
-
-                console.log(
-                    "Status Realtime:",
-                    status
-                );
-
-
-                if (
-                    status ===
-                    "SUBSCRIBED"
-                ) {
-
-                    alert(
-                        "🟢 Realtime conectado!"
-                    );
-
-                }
-
-
-                if (
-                    status ===
-              
+</html>
