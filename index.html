@@ -139,7 +139,13 @@ body {
     font-weight: 800;
 }
 
-.profile-button {
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-button {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -148,6 +154,25 @@ body {
     color: white;
     font-size: 19px;
     cursor: pointer;
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 20px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #070811;
 }
 
 .greeting {
@@ -177,16 +202,6 @@ body {
     padding: 22px 16px;
     min-height: 135px;
     cursor: pointer;
-    transition: 0.2s;
-}
-
-.menu-card:hover {
-    border-color: #8b5cf6;
-    transform: translateY(-2px);
-}
-
-.menu-card:active {
-    transform: scale(0.98);
 }
 
 .menu-icon {
@@ -268,11 +283,31 @@ body {
                 Zuno<span>Play</span>
             </div>
 
-            <button
-                class="profile-button"
-                onclick="window.location.href='perfil.html'">
-                👤
-            </button>
+            <div class="header-actions">
+
+                <button
+                    class="header-button"
+                    onclick="window.location.href='notificacoes.html'"
+                    title="Notificações">
+
+                    🔔
+
+                    <span
+                        id="notificationBadge"
+                        class="notification-badge">
+                        0
+                    </span>
+
+                </button>
+
+                <button
+                    class="header-button"
+                    onclick="window.location.href='perfil.html'"
+                    title="Perfil">
+                    👤
+                </button>
+
+            </div>
 
         </div>
 
@@ -298,9 +333,7 @@ body {
 
                 <div class="menu-icon">💬</div>
 
-                <h2>
-                    Conversas
-                </h2>
+                <h2>Conversas</h2>
 
                 <p>
                     Converse com seus amigos.
@@ -315,9 +348,7 @@ body {
 
                 <div class="menu-icon">👥</div>
 
-                <h2>
-                    Amigos
-                </h2>
+                <h2>Amigos</h2>
 
                 <p>
                     Encontre e adicione pessoas.
@@ -326,15 +357,11 @@ body {
             </div>
 
 
-            <div
-                class="menu-card"
-                onclick="window.location.href='jogos.html'">
+            <div class="menu-card">
 
                 <div class="menu-icon">🎮</div>
 
-                <h2>
-                    Jogos
-                </h2>
+                <h2>Jogos</h2>
 
                 <p>
                     Jogue e divirta-se.
@@ -343,15 +370,11 @@ body {
             </div>
 
 
-            <div
-                class="menu-card"
-                onclick="window.location.href='comunidades.html'">
+            <div class="menu-card">
 
                 <div class="menu-icon">🌐</div>
 
-                <h2>
-                    Comunidades
-                </h2>
+                <h2>Comunidades</h2>
 
                 <p>
                     Conheça novas comunidades.
@@ -365,9 +388,7 @@ body {
         <button
             id="logoutButton"
             class="button logout">
-
             Sair da conta
-
         </button>
 
 
@@ -383,45 +404,52 @@ body {
 <script>
 
 const SUPABASE_URL =
-    "https://rliymfbbhqoejgfvsbuu.supabase.co";
+"https://rliymfbbhqoejgfvsbuu.supabase.co";
 
 const SUPABASE_KEY =
-    "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
-
+"sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
 
 const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
 
 const loading =
-    document.getElementById("loading");
+document.getElementById("loading");
 
 const app =
-    document.getElementById("app");
+document.getElementById("app");
 
 const welcomeScreen =
-    document.getElementById("welcomeScreen");
+document.getElementById("welcomeScreen");
 
 const homeScreen =
-    document.getElementById("homeScreen");
+document.getElementById("homeScreen");
 
 const usernameElement =
-    document.getElementById("username");
+document.getElementById("username");
 
 const logoutButton =
-    document.getElementById("logoutButton");
+document.getElementById("logoutButton");
 
+const notificationBadge =
+document.getElementById("notificationBadge");
+
+
+let currentUser = null;
+let notificationChannel = null;
+
+
+/* =========================================
+   INTERFACE
+========================================= */
 
 function showApp() {
 
-    loading.style.display =
-        "none";
-
-    app.style.display =
-        "block";
+    loading.style.display = "none";
+    app.style.display = "block";
 
 }
 
@@ -430,11 +458,8 @@ function showWelcome() {
 
     showApp();
 
-    welcomeScreen.style.display =
-        "flex";
-
-    homeScreen.style.display =
-        "none";
+    welcomeScreen.style.display = "flex";
+    homeScreen.style.display = "none";
 
 }
 
@@ -443,68 +468,177 @@ function showHome(user) {
 
     showApp();
 
-    welcomeScreen.style.display =
-        "none";
-
-    homeScreen.style.display =
-        "block";
+    welcomeScreen.style.display = "none";
+    homeScreen.style.display = "block";
 
 
     let username =
-        user?.user_metadata?.username;
+    user?.user_metadata?.username;
 
 
     if (!username) {
 
         username =
-            user?.email?.split("@")[0] ||
-            "ZunoPlayer";
+        user?.email?.split("@")[0] ||
+        "ZunoPlayer";
 
     }
 
 
     usernameElement.textContent =
-        username;
+    username;
+
+
+    loadNotificationCount(user.id);
 
 }
 
+
+/* =========================================
+   CONTADOR DE NOTIFICAÇÕES
+========================================= */
+
+async function loadNotificationCount(userId) {
+
+    const {
+        count,
+        error
+    } =
+    await supabaseClient
+    .from("notifications")
+    .select(
+        "id",
+        {
+            count: "exact",
+            head: true
+        }
+    )
+    .eq(
+        "user_id",
+        userId
+    )
+    .is(
+        "read_at",
+        null
+    );
+
+
+    if (error) {
+
+        console.error(
+            "Erro ao carregar notificações:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    if (count && count > 0) {
+
+        notificationBadge.textContent =
+        count > 99
+        ? "99+"
+        : count;
+
+        notificationBadge.style.display =
+        "flex";
+
+    } else {
+
+        notificationBadge.style.display =
+        "none";
+
+    }
+
+}
+
+
+/* =========================================
+   REALTIME DAS NOTIFICAÇÕES
+========================================= */
+
+function subscribeNotifications(userId) {
+
+    if (notificationChannel) {
+
+        supabaseClient.removeChannel(
+            notificationChannel
+        );
+
+    }
+
+
+    notificationChannel =
+    supabaseClient
+    .channel(
+        "home-notifications-" +
+        userId
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "*",
+            schema: "public",
+            table: "notifications",
+            filter:
+            "user_id=eq." +
+            userId
+        },
+        function() {
+
+            loadNotificationCount(
+                userId
+            );
+
+        }
+    )
+    .subscribe();
+
+}
+
+
+/* =========================================
+   VERIFICAR USUÁRIO
+========================================= */
 
 async function checkUser() {
 
     try {
 
-        const result =
-            await Promise.race([
+        const {
+            data,
+            error
+        } =
+        await supabaseClient.auth.getSession();
 
-                supabaseClient.auth.getUser(),
 
-                new Promise(function(resolve) {
+        if (error) {
 
-                    setTimeout(function() {
+            console.error(error);
 
-                        resolve({
-                            data: {
-                                user: null
-                            },
-                            error: new Error(
-                                "Tempo limite"
-                            )
-                        });
+            showWelcome();
 
-                    }, 5000);
+            return;
 
-                })
-
-            ]);
+        }
 
 
         const user =
-            result?.data?.user;
+        data?.session?.user;
 
 
         if (user) {
 
+            currentUser =
+            user;
+
             showHome(user);
+
+            subscribeNotifications(
+                user.id
+            );
 
         } else {
 
@@ -527,15 +661,28 @@ async function checkUser() {
 }
 
 
+/* =========================================
+   LOGOUT
+========================================= */
+
 logoutButton.addEventListener(
     "click",
     async function() {
 
-        logoutButton.disabled =
-            true;
+        logoutButton.disabled = true;
 
         logoutButton.textContent =
-            "Saindo...";
+        "Saindo...";
+
+
+        if (notificationChannel) {
+
+            await supabaseClient
+            .removeChannel(
+                notificationChannel
+            );
+
+        }
 
 
         try {
@@ -544,31 +691,39 @@ logoutButton.addEventListener(
 
         } catch (error) {
 
-            console.error(
-                "Erro ao sair:",
-                error
-            );
+            console.error(error);
 
         }
 
 
         window.location.href =
-            "index.html";
+        "index.html";
 
     }
 );
 
 
+/* =========================================
+   AUTH STATE
+========================================= */
+
 supabaseClient.auth.onAuthStateChange(
     function(event, session) {
 
         if (
-            event === "SIGNED_IN" &&
-            session?.user
+            session?.user &&
+            event !== "SIGNED_OUT"
         ) {
+
+            currentUser =
+            session.user;
 
             showHome(
                 session.user
+            );
+
+            subscribeNotifications(
+                session.user.id
             );
 
         }
@@ -578,6 +733,9 @@ supabaseClient.auth.onAuthStateChange(
             event === "SIGNED_OUT"
         ) {
 
+            currentUser =
+            null;
+
             showWelcome();
 
         }
@@ -586,10 +744,15 @@ supabaseClient.auth.onAuthStateChange(
 );
 
 
+/* =========================================
+   FALLBACK
+========================================= */
+
 setTimeout(function() {
 
     if (
-        loading.style.display !== "none"
+        loading.style.display !==
+        "none"
     ) {
 
         showWelcome();
@@ -598,6 +761,10 @@ setTimeout(function() {
 
 }, 6000);
 
+
+/* =========================================
+   INICIAR
+========================================= */
 
 checkUser();
 
