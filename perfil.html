@@ -33,14 +33,6 @@ body {
     padding: 25px;
 }
 
-.loading {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9293a3;
-}
-
 .header {
     display: flex;
     align-items: center;
@@ -192,16 +184,13 @@ input:focus {
     background: rgba(239, 68, 68, 0.12);
     color: #fca5a5;
 }
+
 </style>
 </head>
 
 <body>
 
-<div id="loading" class="loading">
-    Carregando perfil...
-</div>
-
-<div id="app" class="app" style="display:none;">
+<div id="app" class="app">
 
     <div class="header">
 
@@ -219,34 +208,40 @@ input:focus {
 
     <div class="card">
 
-        <div id="avatar" class="avatar">S</div>
+        <div id="avatar" class="avatar">
+            S
+        </div>
 
         <div id="profileName" class="profile-name">
-            ZunoPlayer
+            Carregando...
         </div>
 
         <div id="profileEmail" class="profile-email">
-            carregando...
+            Carregando...
         </div>
 
         <div class="info">
+
             <div class="info-label">
                 ID da conta
             </div>
 
             <div id="userId" class="info-value">
-                carregando...
+                Carregando...
             </div>
+
         </div>
 
         <div class="info">
+
             <div class="info-label">
                 Conta criada em
             </div>
 
             <div id="createdAt" class="info-value">
-                carregando...
+                Carregando...
             </div>
+
         </div>
 
         <label for="newUsername">
@@ -295,12 +290,6 @@ const supabaseClient =
     );
 
 
-const loading =
-    document.getElementById("loading");
-
-const app =
-    document.getElementById("app");
-
 const avatar =
     document.getElementById("avatar");
 
@@ -339,18 +328,69 @@ function showMessage(text, type) {
 }
 
 
-function updateVisualProfile(username) {
+function showProfile(user) {
+
+    if (!user) {
+
+        profileName.textContent =
+            "Não conectado";
+
+        profileEmail.textContent =
+            "";
+
+        newUsername.disabled =
+            true;
+
+        saveButton.disabled =
+            true;
+
+        return;
+    }
+
+
+    let username =
+        user.user_metadata?.username;
+
+
+    if (!username) {
+
+        username =
+            user.email?.split("@")[0] ||
+            "ZunoPlayer";
+    }
+
 
     profileName.textContent =
         username;
+
+    profileEmail.textContent =
+        user.email || "Sem e-mail";
+
+    userId.textContent =
+        user.id;
+
+
+    if (user.created_at) {
+
+        createdAt.textContent =
+            new Date(
+                user.created_at
+            ).toLocaleDateString(
+                "pt-BR"
+            );
+
+    }
+
+
+    newUsername.value =
+        username;
+
 
     avatar.textContent =
         username
             .charAt(0)
             .toUpperCase();
 
-    newUsername.value =
-        username;
 }
 
 
@@ -358,23 +398,38 @@ async function loadProfile() {
 
     try {
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.getUser();
+        /*
+         * getSession() é usado aqui porque o index.html
+         * já confirmou que a sessão do ZunoPlay funciona.
+         */
+
+        const result =
+            await Promise.race([
+
+                supabaseClient.auth.getSession(),
+
+                new Promise(function(resolve) {
+
+                    setTimeout(function() {
+
+                        resolve({
+                            data: {
+                                session: null
+                            }
+                        });
+
+                    }, 5000);
+
+                })
+
+            ]);
 
 
-        if (error) {
-            throw error;
-        }
+        const session =
+            result?.data?.session;
 
 
-        const user =
-            data.user;
-
-
-        if (!user) {
+        if (!session) {
 
             window.location.href =
                 "login.html";
@@ -383,51 +438,9 @@ async function loadProfile() {
         }
 
 
-        let username =
-            user.user_metadata?.username;
-
-
-        if (!username) {
-
-            username =
-                user.email?.split("@")[0] ||
-                "ZunoPlayer";
-        }
-
-
-        updateVisualProfile(username);
-
-
-        profileEmail.textContent =
-            user.email || "Sem e-mail";
-
-
-        userId.textContent =
-            user.id;
-
-
-        if (user.created_at) {
-
-            const date =
-                new Date(user.created_at);
-
-            createdAt.textContent =
-                date.toLocaleDateString(
-                    "pt-BR",
-                    {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric"
-                    }
-                );
-        }
-
-
-        loading.style.display =
-            "none";
-
-        app.style.display =
-            "block";
+        showProfile(
+            session.user
+        );
 
 
     } catch (error) {
@@ -437,10 +450,15 @@ async function loadProfile() {
             error
         );
 
-        loading.textContent =
-            "Não foi possível carregar o perfil.";
+
+        profileName.textContent =
+            "Erro ao carregar";
+
+        profileEmail.textContent =
+            "Tente atualizar a página.";
 
     }
+
 }
 
 
@@ -486,10 +504,7 @@ saveButton.addEventListener(
 
         try {
 
-            const {
-                data,
-                error
-            } =
+            const result =
                 await supabaseClient.auth.updateUser({
 
                     data: {
@@ -499,28 +514,17 @@ saveButton.addEventListener(
                 });
 
 
-            if (error) {
-                throw error;
+            if (result.error) {
+                throw result.error;
             }
 
 
             const updatedUser =
-                data.user;
+                result.data.user;
 
 
-            let savedUsername =
+            showProfile(
                 updatedUser
-                    ?.user_metadata
-                    ?.username;
-
-
-            if (!savedUsername) {
-                savedUsername = username;
-            }
-
-
-            updateVisualProfile(
-                savedUsername
             );
 
 
@@ -533,13 +537,13 @@ saveButton.addEventListener(
         } catch (error) {
 
             console.error(
-                "Erro ao atualizar nome:",
+                "Erro ao atualizar perfil:",
                 error
             );
 
 
             showMessage(
-                "Não foi possível atualizar: " +
+                "Erro ao salvar: " +
                 error.message,
                 "error"
             );
@@ -584,6 +588,39 @@ logoutButton.addEventListener(
 
         window.location.href =
             "index.html";
+
+    }
+);
+
+
+/*
+ * Atualiza o perfil automaticamente caso
+ * a sessão seja alterada.
+ */
+
+supabaseClient.auth.onAuthStateChange(
+    function(event, session) {
+
+        if (
+            event === "SIGNED_IN" &&
+            session?.user
+        ) {
+
+            showProfile(
+                session.user
+            );
+
+        }
+
+
+        if (
+            event === "SIGNED_OUT"
+        ) {
+
+            window.location.href =
+                "login.html";
+
+        }
 
     }
 );
