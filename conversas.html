@@ -7,533 +7,98 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Conversas - ZunoPlay</title>
+<title>Teste ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
-
 body {
-
+    margin: 0;
     min-height: 100vh;
-
-    background:
-        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
-        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
-        #070811;
-
+    background: #070811;
     color: white;
-
+    font-family: Arial, sans-serif;
+    padding: 20px;
 }
 
-.app {
-
-    width: 100%;
-
+.box {
     max-width: 480px;
-
-    min-height: 100vh;
-
-    margin: auto;
-
-}
-
-
-/* =========================================
-   HEADER
-========================================= */
-
-.header {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 20px;
-
-    border-bottom: 1px solid #292a3d;
-
-    background: rgba(10,11,20,.96);
-
-    position: sticky;
-
-    top: 0;
-
-    z-index: 10;
-
-}
-
-.back {
-
-    width: 42px;
-
-    height: 42px;
-
-    border-radius: 12px;
-
+    margin: 30px auto;
+    background: #141523;
     border: 1px solid #303145;
-
-    background: #1b1c2b;
-
-    color: white;
-
-    font-size: 20px;
-
-    cursor: pointer;
-
-}
-
-.logo {
-
-    font-size: 28px;
-
-    font-weight: 800;
-
-}
-
-.logo span {
-
-    color: #8b5cf6;
-
-}
-
-
-/* =========================================
-   PAGE
-========================================= */
-
-.page {
-
+    border-radius: 20px;
     padding: 20px;
-
 }
 
-.title {
-
-    font-size: 25px;
-
-    margin-bottom: 6px;
-
+h1 {
+    margin-top: 0;
 }
 
-.subtitle {
-
-    color: #9293a3;
-
-    font-size: 13px;
-
-    margin-bottom: 20px;
-
-}
-
-
-/* =========================================
-   DIAGNÓSTICO
-========================================= */
-
-.diagnostic {
-
-    background: rgba(20,21,35,.95);
-
-    border: 1px solid #292a3d;
-
-    border-radius: 16px;
-
-    padding: 15px;
-
-    margin-bottom: 18px;
-
-    font-size: 12px;
-
-}
-
-.diagnostic-title {
-
-    color: #8b5cf6;
-
-    font-weight: bold;
-
-    margin-bottom: 10px;
-
-    font-size: 14px;
-
-}
-
-.diagnostic-row {
-
-    margin-top: 6px;
-
-    color: #a7a7b5;
-
+.row {
+    margin: 12px 0;
+    padding: 12px;
+    background: #1b1c2b;
+    border-radius: 10px;
     word-break: break-all;
-
 }
 
-.diagnostic-row strong {
-
-    color: white;
-
-}
-
-.success {
-
+.ok {
     color: #4ade80;
-
 }
 
-.warning {
-
-    color: #facc15;
-
+.erro {
+    color: #ff7777;
 }
 
-.error {
-
-    color: #ff8f8f;
-
-}
-
-
-/* =========================================
-   CONVERSA
-========================================= */
-
-.conversation {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 13px;
-
+button {
     width: 100%;
-
-    padding: 14px;
-
-    margin-bottom: 10px;
-
-    border-radius: 16px;
-
-    border: 1px solid #292a3d;
-
-    background: rgba(20,21,35,.95);
-
-    color: white;
-
-    cursor: pointer;
-
-    text-align: left;
-
-}
-
-.conversation:hover {
-
-    border-color: #8b5cf6;
-
-}
-
-.avatar {
-
-    width: 50px;
-
-    height: 50px;
-
-    min-width: 50px;
-
-    border-radius: 50%;
-
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-weight: bold;
-
-    font-size: 18px;
-
-}
-
-.info {
-
-    min-width: 0;
-
-    flex: 1;
-
-}
-
-.name {
-
-    font-size: 15px;
-
-    font-weight: bold;
-
-    margin-bottom: 5px;
-
-}
-
-.last-message {
-
-    color: #858697;
-
-    font-size: 12px;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-}
-
-.time {
-
-    color: #737486;
-
-    font-size: 10px;
-
-    white-space: nowrap;
-
-    margin-bottom: 5px;
-
-}
-
-.badge {
-
-    min-width: 21px;
-
-    height: 21px;
-
-    padding: 0 6px;
-
-    border-radius: 11px;
-
+    padding: 15px;
+    margin-top: 10px;
+    border: 0;
+    border-radius: 12px;
     background: #8b5cf6;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 10px;
-
+    color: white;
     font-weight: bold;
-
-}
-
-
-/* =========================================
-   CHAT
-========================================= */
-
-.chat {
-
-    display: flex;
-
-    flex-direction: column;
-
-    min-height: 100vh;
-
-}
-
-.chat-header {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 15px 20px;
-
-    border-bottom: 1px solid #292a3d;
-
-    background: rgba(10,11,20,.97);
-
-    position: sticky;
-
-    top: 0;
-
-    z-index: 10;
-
-}
-
-.chat-messages {
-
-    flex: 1;
-
-    padding: 20px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 10px;
-
-    overflow-y: auto;
-
-    min-height: calc(100vh - 145px);
-
-}
-
-.message {
-
-    max-width: 78%;
-
-    padding: 11px 14px;
-
-    border-radius: 16px;
-
-    font-size: 14px;
-
-    line-height: 1.4;
-
-    word-break: break-word;
-
-}
-
-.mine {
-
-    align-self: flex-end;
-
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
-
-    border-bottom-right-radius: 5px;
-
-}
-
-.theirs {
-
-    align-self: flex-start;
-
-    background: #1b1c2b;
-
-    border: 1px solid #303145;
-
-    border-bottom-left-radius: 5px;
-
-}
-
-.message-time {
-
-    display: block;
-
-    font-size: 9px;
-
-    opacity: .6;
-
-    margin-top: 4px;
-
-}
-
-.composer {
-
-    display: flex;
-
-    gap: 8px;
-
-    padding: 12px 15px;
-
-    border-top: 1px solid #292a3d;
-
-    background: rgba(10,11,20,.98);
-
-    position: sticky;
-
-    bottom: 0;
-
-}
-
-.composer input {
-
-    flex: 1;
-
-    min-width: 0;
-
-    padding: 14px;
-
-    border-radius: 13px;
-
-    border: 1px solid #303145;
-
-    background: #11121e;
-
-    color: white;
-
-    outline: none;
-
-}
-
-.send {
-
-    width: 50px;
-
-    border: none;
-
-    border-radius: 13px;
-
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
-
-    color: white;
-
-    font-size: 19px;
-
-    cursor: pointer;
-
-}
-
-.empty {
-
-    text-align: center;
-
-    color: #737486;
-
-    padding: 40px 20px;
-
-    font-size: 14px;
-
+    font-size: 16px;
 }
 
 </style>
 
 </head>
 
-
 <body>
 
-<div
-    id="app"
-    class="app"
->
+<div class="box">
+
+<h1>🔎 Diagnóstico ZunoPlay</h1>
+
+<div id="status" class="row">
+    Iniciando...
+</div>
+
+<div id="user" class="row">
+    Verificando usuário...
+</div>
+
+<div id="messages" class="row">
+    Verificando mensagens...
+</div>
+
+<button onclick="window.location.href='index.html'">
+    Voltar para o ZunoPlay
+</button>
+
 </div>
 
 
 <script>
 
-
-/* =========================================
-   SUPABASE
-========================================= */
-
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
-
 const SUPABASE_KEY =
 "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
-
 
 const supabaseClient =
 window.supabase.createClient(
@@ -542,907 +107,173 @@ window.supabase.createClient(
 );
 
 
-/* =========================================
-   VARIÁVEIS
-========================================= */
+async function teste() {
 
-const app =
-document.getElementById("app");
+    const status =
+    document.getElementById("status");
 
-let currentUser = null;
+    const userBox =
+    document.getElementById("user");
 
-let friendId = null;
-
-let realtimeChannel = null;
-
-
-const params =
-new URLSearchParams(
-    window.location.search
-);
-
-friendId =
-params.get("user");
-
-
-/* =========================================
-   AUXILIARES
-========================================= */
-
-function escapeHTML(text) {
-
-    const div =
-    document.createElement("div");
-
-    div.textContent =
-    text || "";
-
-    return div.innerHTML;
-
-}
-
-
-function initial(name) {
-
-    if (!name) {
-
-        return "?";
-
-    }
-
-    return name
-        .charAt(0)
-        .toUpperCase();
-
-}
-
-
-function formatTime(dateString) {
-
-    if (!dateString) {
-
-        return "";
-
-    }
-
-    return new Date(
-        dateString
-    ).toLocaleTimeString(
-        "pt-BR",
-        {
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-
-}
-
-
-function goBack() {
-
-    if (friendId) {
-
-        window.location.href =
-            "conversas.html";
-
-    } else {
-
-        window.location.href =
-            "index.html";
-
-    }
-
-}
-
-
-/* =========================================
-   USUÁRIO
-========================================= */
-
-async function getUser() {
-
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-        .auth
-        .getSession();
-
-
-    if (
-        error ||
-        !data ||
-        !data.session ||
-        !data.session.user
-    ) {
-
-        window.location.href =
-            "login.html";
-
-        return false;
-
-    }
-
-
-    currentUser =
-        data.session.user;
-
-
-    return true;
-
-}
-
-
-/* =========================================
-   HEADER
-========================================= */
-
-function header() {
-
-    return `
-
-        <div class="header">
-
-            <button
-                class="back"
-                onclick="goBack()"
-            >
-                ←
-            </button>
-
-            <div class="logo">
-                Zuno<span>Play</span>
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================
-   LISTA DE CONVERSAS
-========================================= */
-
-async function loadConversations() {
-
-
-    app.innerHTML = `
-
-        ${header()}
-
-        <div class="page">
-
-            <h1 class="title">
-                💬 Conversas
-            </h1>
-
-            <p class="subtitle">
-                Suas conversas recentes.
-            </p>
-
-            <div
-                id="diagnostic"
-                class="diagnostic"
-            >
-
-                <div class="diagnostic-title">
-                    Diagnóstico
-                </div>
-
-                <div class="diagnostic-row">
-                    Usuário:
-                    <strong>
-                        ${escapeHTML(currentUser.id)}
-                    </strong>
-                </div>
-
-                <div class="diagnostic-row">
-                    Buscando mensagens...
-                </div>
-
-            </div>
-
-
-            <div id="conversationList">
-
-                <div class="empty">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    const diagnostic =
-    document.getElementById(
-        "diagnostic"
-    );
-
-
-    const list =
-    document.getElementById(
-        "conversationList"
-    );
-
-
-    /* =====================================
-       ENVIADAS
-    ===================================== */
-
-    const {
-        data:sent,
-        error:sentError
-    } =
-    await supabaseClient
-        .from("messages")
-        .select("*")
-        .eq(
-            "sender_id",
-            currentUser.id
-        );
-
-
-    if (sentError) {
-
-        diagnostic.innerHTML += `
-
-            <div class="diagnostic-row error">
-
-                Erro nas enviadas:
-                ${escapeHTML(
-                    sentError.message
-                )}
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    /* =====================================
-       RECEBIDAS
-    ===================================== */
-
-    const {
-        data:received,
-        error:receivedError
-    } =
-    await supabaseClient
-        .from("messages")
-        .select("*")
-        .eq(
-            "receiver_id",
-            currentUser.id
-        );
-
-
-    if (receivedError) {
-
-        diagnostic.innerHTML += `
-
-            <div class="diagnostic-row error">
-
-                Erro nas recebidas:
-                ${escapeHTML(
-                    receivedError.message
-                )}
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    const sentMessages =
-        sent || [];
-
-    const receivedMessages =
-        received || [];
-
-
-    /* =====================================
-       JUNTA TUDO
-    ===================================== */
-
-    const allMessages = [
-
-        ...sentMessages,
-
-        ...receivedMessages
-
-    ];
-
-
-    allMessages.sort(
-        function(a,b) {
-
-            return new Date(
-                b.created_at
-            ) - new Date(
-                a.created_at
-            );
-
-        }
-    );
-
-
-    diagnostic.innerHTML = `
-
-        <div class="diagnostic-title">
-            Diagnóstico das Conversas
-        </div>
-
-        <div class="diagnostic-row success">
-            ✅ Usuário autenticado
-        </div>
-
-        <div class="diagnostic-row">
-            ID:
-            <strong>
-                ${escapeHTML(currentUser.id)}
-            </strong>
-        </div>
-
-        <div class="diagnostic-row">
-            Mensagens enviadas:
-            <strong>
-                ${sentMessages.length}
-            </strong>
-        </div>
-
-        <div class="diagnostic-row">
-            Mensagens recebidas:
-            <strong>
-                ${receivedMessages.length}
-            </strong>
-        </div>
-
-        <div class="diagnostic-row">
-            Total:
-            <strong>
-                ${allMessages.length}
-            </strong>
-        </div>
-
-    `;
-
-
-    /* =====================================
-       NENHUMA MENSAGEM
-    ===================================== */
-
-    if (!allMessages.length) {
-
-        list.innerHTML = `
-
-            <div class="empty">
-
-                Nenhuma mensagem encontrada.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    /* =====================================
-       IDENTIFICAR OUTROS USUÁRIOS
-    ===================================== */
-
-    const conversations = {};
-
-
-    allMessages.forEach(
-        function(message) {
-
-
-            const otherId =
-
-                message.sender_id ===
-                currentUser.id
-
-                ?
-
-                message.receiver_id
-
-                :
-
-                message.sender_id;
-
-
-            if (!otherId) {
-
-                return;
-
-            }
-
-
-            if (
-                !conversations[otherId]
-            ) {
-
-                conversations[otherId] = {
-
-                    lastMessage:
-                        message,
-
-                    unread: 0,
-
-                    total: 0
-
-                };
-
-            }
-
-
-            conversations[otherId]
-                .total++;
-
-
-            if (
-
-                message.receiver_id ===
-                currentUser.id
-
-                &&
-
-                message.read_at === null
-
-            ) {
-
-                conversations[otherId]
-                    .unread++;
-
-            }
-
-        }
-    );
-
-
-    const ids =
-    Object.keys(
-        conversations
-    );
-
-
-    diagnostic.innerHTML += `
-
-        <div class="diagnostic-row success">
-
-            ✅ Conversas encontradas:
-            <strong>
-                ${ids.length}
-            </strong>
-
-        </div>
-
-    `;
-
-
-    /*
-     * MOSTRA OS IDs
-     */
-
-    ids.forEach(
-        function(id) {
-
-            diagnostic.innerHTML += `
-
-                <div class="diagnostic-row">
-
-                    Outro usuário:
-                    <strong>
-                        ${escapeHTML(id)}
-                    </strong>
-
-                </div>
-
-            `;
-
-        }
-    );
-
-
-    /* =====================================
-       BUSCAR USERNAMES
-    ===================================== */
-
-    let profiles = [];
+    const messagesBox =
+    document.getElementById("messages");
 
 
     try {
+
+        status.innerHTML =
+            "⏳ Supabase carregado. Verificando sessão...";
+
 
         const {
             data,
             error
         } =
         await supabaseClient
-            .from("profiles")
-            .select(
-                "id,username"
-            )
-            .in(
-                "id",
-                ids
-            );
+            .auth
+            .getSession();
 
 
-        if (!error && data) {
+        if (error) {
 
-            profiles =
-                data;
+            status.innerHTML =
+                "❌ Erro na sessão";
 
-        }
+            status.className =
+                "row erro";
 
-    } catch (error) {
+            userBox.innerHTML =
+                error.message;
 
-        console.error(
-            "Erro ao buscar profiles:",
-            error
-        );
-
-    }
-
-
-    const profileMap = {};
-
-
-    profiles.forEach(
-        function(profile) {
-
-            profileMap[
-                profile.id
-            ] = profile;
+            return;
 
         }
-    );
-
-
-    /* =====================================
-       RENDERIZAR
-    ===================================== */
-
-    list.innerHTML = "";
-
-
-    ids.forEach(
-        function(id) {
-
-
-            const conversation =
-            conversations[id];
-
-
-            const profile =
-            profileMap[id];
-
-
-            const username =
-
-                profile &&
-                profile.username
-
-                ?
-
-                profile.username
-
-                :
-
-                "Usuário";
-
-
-            const message =
-            conversation.lastMessage;
-
-
-            const button =
-            document.createElement(
-                "button"
-            );
-
-
-            button.className =
-                "conversation";
-
-
-            button.type =
-                "button";
-
-
-            button.onclick =
-            function() {
-
-                window.location.href =
-                    "conversas.html?user=" +
-                    encodeURIComponent(id);
-
-            };
-
-
-            let badge = "";
-
-
-            if (
-                conversation.unread > 0
-            ) {
-
-                badge = `
-
-                    <div class="badge">
-
-                        ${
-                            conversation.unread > 99
-                            ? "99+"
-                            : conversation.unread
-                        }
-
-                    </div>
-
-                `;
-
-            }
-
-
-            button.innerHTML = `
-
-                <div class="avatar">
-
-                    ${initial(username)}
-
-                </div>
-
-
-                <div class="info">
-
-                    <div class="name">
-
-                        ${escapeHTML(username)}
-
-                    </div>
-
-
-                    <div class="last-message">
-
-                        ${escapeHTML(
-                            message.content
-                        )}
-
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <div class="time">
-
-                        ${formatTime(
-                            message.created_at
-                        )}
-
-                    </div>
-
-                    ${badge}
-
-                </div>
-
-            `;
-
-
-            list.appendChild(
-                button
-            );
-
-        }
-    );
-
-
-    subscribeRealtime();
-
-}
-
-
-/* =========================================
-   CHAT
-========================================= */
-
-async function loadChat() {
-
-
-    let username =
-        "Usuário";
-
-
-    /*
-     * Tenta buscar username,
-     * mas o chat NÃO depende disso.
-     */
-
-    try {
-
-        const {
-            data
-        } =
-        await supabaseClient
-            .from("profiles")
-            .select(
-                "username"
-            )
-            .eq(
-                "id",
-                friendId
-            )
-            .maybeSingle();
 
 
         if (
-            data &&
-            data.username
+            !data ||
+            !data.session ||
+            !data.session.user
         ) {
 
-            username =
-                data.username;
+            status.innerHTML =
+                "⚠️ Página abriu, mas não existe sessão.";
+
+            status.className =
+                "row erro";
+
+            userBox.innerHTML =
+                "Nenhum usuário autenticado.";
+
+            messagesBox.innerHTML =
+                "Consulta não executada.";
+
+            return;
 
         }
 
+
+        const user =
+        data.session.user;
+
+
+        status.innerHTML =
+            "✅ Supabase funcionando e sessão ativa.";
+
+        status.className =
+            "row ok";
+
+
+        userBox.innerHTML =
+
+            "<strong>ID do usuário:</strong><br><br>" +
+
+            user.id;
+
+
+        const {
+            data: messages,
+            error: messageError
+        } =
+        await supabaseClient
+            .from("messages")
+            .select("*")
+            .or(
+                "sender_id.eq." +
+                user.id +
+                ",receiver_id.eq." +
+                user.id
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+        if (messageError) {
+
+            messagesBox.innerHTML =
+                "❌ Erro ao consultar messages:<br><br>" +
+                messageError.message;
+
+            messagesBox.className =
+                "row erro";
+
+            return;
+
+        }
+
+
+        messagesBox.innerHTML =
+
+            "✅ Consulta funcionando.<br><br>" +
+
+            "<strong>Total de mensagens:</strong> " +
+
+            messages.length;
+
+
+        messagesBox.className =
+            "row ok";
+
+
+        if (messages.length > 0) {
+
+            messagesBox.innerHTML +=
+                "<br><br>Primeira mensagem:<br>" +
+                (
+                    messages[0].content ||
+                    "(sem conteúdo)"
+                );
+
+        }
+
+
     } catch (error) {
 
-        console.error(error);
+        status.innerHTML =
+            "❌ JavaScript encontrou um erro.";
+
+        status.className =
+            "row erro";
+
+
+        userBox.innerHTML =
+            error.message ||
+            error;
+
 
     }
-
-
-    app.innerHTML = `
-
-        <div class="chat">
-
-
-            <div class="chat-header">
-
-                <button
-                    class="back"
-                    onclick="goBack()"
-                >
-                    ←
-                </button>
-
-
-                <div class="avatar">
-
-                    ${initial(username)}
-
-                </div>
-
-
-                <div class="info">
-
-                    <div class="name">
-
-                        ${escapeHTML(username)}
-
-                    </div>
-
-                    <div class="last-message">
-
-                        Conversa privada
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="messages"
-                class="chat-messages"
-            >
-
-                <div class="empty">
-
-                    Carregando mensagens...
-
-                </div>
-
-            </div>
-
-
-            <form
-                id="messageForm"
-                class="composer"
-            >
-
-                <input
-                    id="messageInput"
-                    type="text"
-                    maxlength="2000"
-                    placeholder="Digite uma mensagem..."
-                    autocomplete="off"
-                    required
-                >
-
-
-                <button
-                    id="sendButton"
-                    class="send"
-                    type="submit"
-                >
-
-                    ➤
-
-                </button>
-
-            </form>
-
-
-        </div>
-
-    `;
-
-
-    await loadChatMessages();
-
-
-    await markAsRead();
-
-
-    subscribeRealtime();
-
-
-    document
-        .getElementById(
-            "messageForm"
-        )
-        .addEventListener(
-            "submit",
-            sendMessage
-        );
 
 }
 
 
-/* =========================================
-   CARREGAR CHAT
-========================================= */
+teste();
 
-async function loadChatMessages() {
+</script>
 
+</body>
 
-    const container =
-    document.getElementById(
-        "messages"
-    );
-
-
-    /*
-     * ENVIADAS
-     */
-
-    const {
-        data:sent,
-        error:sentError
-    } =
-    await supabaseClient
-        .from("messages")
-        .select("*")
-        .eq(
-            "sender_id",
-            currentUser.id
-        )
-        .eq(
-    
+</html>
