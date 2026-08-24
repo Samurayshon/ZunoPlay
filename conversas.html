@@ -5,10 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Conversas - ZunoPlay</title>
 
@@ -39,11 +36,8 @@ body {
 .app {
 
     width: 100%;
-
     max-width: 480px;
-
     min-height: 100vh;
-
     margin: auto;
 
 }
@@ -51,9 +45,7 @@ body {
 .header {
 
     display: flex;
-
     align-items: center;
-
     gap: 12px;
 
     padding: 20px;
@@ -63,7 +55,6 @@ body {
     background: rgba(10,11,20,.95);
 
     position: sticky;
-
     top: 0;
 
     z-index: 5;
@@ -73,7 +64,6 @@ body {
 .back {
 
     width: 42px;
-
     height: 42px;
 
     border-radius: 12px;
@@ -93,7 +83,6 @@ body {
 .logo {
 
     font-size: 28px;
-
     font-weight: 800;
 
 }
@@ -113,7 +102,6 @@ body {
 .title {
 
     font-size: 25px;
-
     margin-bottom: 6px;
 
 }
@@ -121,9 +109,7 @@ body {
 .subtitle {
 
     color: #9293a3;
-
     font-size: 13px;
-
     margin-bottom: 20px;
 
 }
@@ -183,23 +169,24 @@ body {
 .avatar {
 
     width: 48px;
-
     height: 48px;
 
     min-width: 48px;
 
     border-radius: 50%;
 
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #6366f1
+    );
 
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
     font-weight: bold;
-
     font-size: 18px;
 
 }
@@ -207,7 +194,6 @@ body {
 .info {
 
     min-width: 0;
-
     flex: 1;
 
 }
@@ -215,7 +201,6 @@ body {
 .name {
 
     font-size: 15px;
-
     font-weight: bold;
 
     margin-bottom: 5px;
@@ -306,7 +291,12 @@ body {
 
     align-self: flex-end;
 
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
 
     border-bottom-right-radius: 5px;
 
@@ -382,7 +372,12 @@ body {
 
     border-radius: 13px;
 
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
 
     color: white;
 
@@ -396,7 +391,9 @@ body {
 
 </head>
 
+
 <body>
+
 
 <div
     id="app"
@@ -429,17 +426,12 @@ window.supabase.createClient(
 ========================================= */
 
 const app =
-document.getElementById(
-    "app"
-);
+document.getElementById("app");
 
 let currentUser =
 null;
 
 let friendId =
-null;
-
-let realtimeChannel =
 null;
 
 
@@ -453,10 +445,10 @@ params.get("user");
 
 
 /* =========================================
-   UTILIDADES
+   FUNÇÕES AUXILIARES
 ========================================= */
 
-function initial(name){
+function initial(name) {
 
     return (
         name || "?"
@@ -467,12 +459,10 @@ function initial(name){
 }
 
 
-function escapeHTML(text){
+function escapeHTML(text) {
 
     const div =
-    document.createElement(
-        "div"
-    );
+    document.createElement("div");
 
     div.textContent =
     text || "";
@@ -482,31 +472,39 @@ function escapeHTML(text){
 }
 
 
-function formatTime(
-    dateString
-){
+function formatTime(dateString) {
 
     const date =
-    new Date(
-        dateString
-    );
+    new Date(dateString);
 
     return date.toLocaleTimeString(
         "pt-BR",
         {
-            hour:"2-digit",
-            minute:"2-digit"
+            hour: "2-digit",
+            minute: "2-digit"
         }
     );
 
 }
 
 
+function formatDate(dateString) {
+
+    const date =
+    new Date(dateString);
+
+    return date.toLocaleDateString(
+        "pt-BR"
+    );
+
+}
+
+
 /* =========================================
-   USUÁRIO
+   USUÁRIO LOGADO
 ========================================= */
 
-async function getUser(){
+async function getUser() {
 
     const {
         data,
@@ -517,10 +515,11 @@ async function getUser(){
     .getSession();
 
 
-    if(
+    if (
         error ||
+        !data ||
         !data.session
-    ){
+    ) {
 
         window.location.href =
         "login.html";
@@ -543,17 +542,14 @@ async function getUser(){
    VOLTAR
 ========================================= */
 
-function goBack(){
+function goBack() {
 
-    stopRealtime();
-
-
-    if(friendId){
+    if (friendId) {
 
         window.location.href =
         "conversas.html";
 
-    }else{
+    } else {
 
         window.location.href =
         "index.html";
@@ -564,12 +560,12 @@ function goBack(){
 
 
 /* =========================================
-   LISTA DE CONVERSAS
+   CABEÇALHO
 ========================================= */
 
-async function loadConversations(){
+function header() {
 
-    app.innerHTML = `
+    return `
 
         <div class="header">
 
@@ -577,8 +573,11 @@ async function loadConversations(){
                 class="back"
                 onclick="goBack()"
             >
+
                 ←
+
             </button>
+
 
             <div class="logo">
 
@@ -588,6 +587,21 @@ async function loadConversations(){
 
         </div>
 
+    `;
+
+}
+
+
+/* =========================================
+   LISTA DE CONVERSAS
+========================================= */
+
+async function loadConversations() {
+
+    app.innerHTML =
+    header() +
+
+    `
 
         <div class="page">
 
@@ -633,7 +647,7 @@ async function loadConversations(){
 
 
     const {
-        data:messages,
+        data: messages,
         error
     } =
     await supabaseClient
@@ -648,20 +662,37 @@ async function loadConversations(){
     .order(
         "created_at",
         {
-            ascending:false
+            ascending: false
         }
     );
 
 
-    if(error){
+    if (error) {
 
-        console.error(error);
+        console.error(
+            "Erro messages:",
+            error
+        );
 
 
         document.getElementById(
             "status"
         ).textContent =
-        "❌ Erro ao carregar mensagens";
+        "❌ Erro ao consultar mensagens";
+
+
+        document.getElementById(
+            "conversationList"
+        ).innerHTML = `
+
+            <div class="empty">
+
+                Não foi possível carregar
+                as conversas.
+
+            </div>
+
+        `;
 
 
         return;
@@ -672,56 +703,62 @@ async function loadConversations(){
     document.getElementById(
         "status"
     ).textContent =
-    "✅ " +
-    (messages || []).length +
-    " mensagens encontradas";
+
+        "✅ " +
+        (messages || []).length +
+        " mensagens encontradas";
 
 
-    const conversations =
-    {};
+    const conversations = {};
 
 
     (messages || []).forEach(
-        function(message){
+        function(message) {
 
             const otherId =
-            message.sender_id ===
-            currentUser.id
 
-            ? message.receiver_id
+                message.sender_id ===
+                currentUser.id
 
-            : message.sender_id;
+                ? message.receiver_id
+
+                : message.sender_id;
 
 
-            if(!otherId){
+            if (!otherId) {
 
                 return;
 
             }
 
 
-            if(
+            if (
                 !conversations[otherId]
-            ){
+            ) {
 
                 conversations[otherId] = {
 
                     lastMessage:
                     message,
 
-                    unread:0
+                    unread: 0
 
                 };
 
             }
 
 
-            if(
+            if (
+
                 message.receiver_id ===
                 currentUser.id
+
                 &&
-                message.read_at === null
-            ){
+
+                message.read_at ===
+                null
+
+            ) {
 
                 conversations[
                     otherId
@@ -749,7 +786,7 @@ async function loadConversations(){
     "";
 
 
-    if(!ids.length){
+    if (!ids.length) {
 
         list.innerHTML = `
 
@@ -772,12 +809,26 @@ async function loadConversations(){
     }
 
 
-    for(
+    /*
+     * Carrega cada usuário separadamente.
+     * Isso evita que um problema em profiles
+     * apague a tela inteira.
+     */
+
+    for (
         const id of ids
-    ){
+    ) {
+
+        let username =
+        "Usuário " +
+        id.substring(
+            0,
+            8
+        );
+
 
         const {
-            data:profile
+            data: profile
         } =
         await supabaseClient
         .from("profiles")
@@ -791,19 +842,23 @@ async function loadConversations(){
         .maybeSingle();
 
 
-        const username =
-        profile?.username ||
-        "Usuário " +
-        id.substring(
-            0,
-            8
-        );
+        if (
+            profile &&
+            profile.username
+        ) {
+
+            username =
+            profile.username;
+
+        }
+
+
+        const conversation =
+        conversations[id];
 
 
         const message =
-        conversations[
-            id
-        ].lastMessage;
+        conversation.lastMessage;
 
 
         const item =
@@ -817,7 +872,7 @@ async function loadConversations(){
 
 
         item.onclick =
-        function(){
+        function() {
 
             window.location.href =
             "conversas.html?user=" +
@@ -882,14 +937,21 @@ async function loadConversations(){
 
 
 /* =========================================
-   CHAT
+   CARREGAR CHAT
 ========================================= */
 
-async function loadChat(){
+async function loadChat() {
+
+    let username =
+    "Usuário " +
+    friendId.substring(
+        0,
+        8
+    );
+
 
     const {
-        data:profile,
-        error
+        data: profile
     } =
     await supabaseClient
     .from("profiles")
@@ -903,30 +965,15 @@ async function loadChat(){
     .maybeSingle();
 
 
-    if(error){
+    if (
+        profile &&
+        profile.username
+    ) {
 
-        app.innerHTML = `
-
-            <div class="empty">
-
-                Erro ao carregar usuário.
-
-            </div>
-
-        `;
-
-        return;
+        username =
+        profile.username;
 
     }
-
-
-    const username =
-    profile?.username ||
-    "Usuário " +
-    friendId.substring(
-        0,
-        8
-    );
 
 
     app.innerHTML = `
@@ -1038,27 +1085,26 @@ async function loadChat(){
         sendMessage
     );
 
-
-    /*
-     * Inicia o Realtime somente depois
-     * que toda a interface já foi criada.
-     */
-
-    startRealtime();
-
 }
 
 
 /* =========================================
-   CARREGAR MENSAGENS
+   CARREGAR MENSAGENS DO CHAT
 ========================================= */
 
-async function loadMessages(){
+async function loadMessages() {
 
     const container =
     document.getElementById(
         "messages"
     );
+
+
+    if (!container) {
+
+        return;
+
+    }
 
 
     const {
@@ -1069,6 +1115,7 @@ async function loadMessages(){
     .from("messages")
     .select("*")
     .or(
+
         "and(sender_id.eq." +
         currentUser.id +
         ",receiver_id.eq." +
@@ -1078,18 +1125,22 @@ async function loadMessages(){
         ",receiver_id.eq." +
         currentUser.id +
         ")"
+
     )
     .order(
         "created_at",
         {
-            ascending:true
+            ascending: true
         }
     );
 
 
-    if(error){
+    if (error) {
 
-        console.error(error);
+        console.error(
+            "Erro mensagens do chat:",
+            error
+        );
 
 
         container.innerHTML = `
@@ -1097,6 +1148,12 @@ async function loadMessages(){
             <div class="empty">
 
                 ❌ Erro ao carregar mensagens.
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
 
             </div>
 
@@ -1112,10 +1169,10 @@ async function loadMessages(){
     "";
 
 
-    if(
+    if (
         !data ||
         !data.length
-    ){
+    ) {
 
         container.innerHTML = `
 
@@ -1138,7 +1195,13 @@ async function loadMessages(){
 
 
     data.forEach(
-        addMessage
+        function(message) {
+
+            addMessage(
+                message
+            );
+
+        }
     );
 
 
@@ -1153,7 +1216,7 @@ async function loadMessages(){
 
 function addMessage(
     message
-){
+) {
 
     const container =
     document.getElementById(
@@ -1161,40 +1224,9 @@ function addMessage(
     );
 
 
-    if(!container){
+    if (!container) {
 
         return;
-
-    }
-
-
-    /*
-     * Evita mensagem duplicada.
-     */
-
-    if(
-        document.querySelector(
-            '[data-message-id="' +
-            message.id +
-            '"]'
-        )
-    ){
-
-        return;
-
-    }
-
-
-    const empty =
-    container.querySelector(
-        ".empty"
-    );
-
-
-    if(empty){
-
-        container.innerHTML =
-        "";
 
     }
 
@@ -1205,20 +1237,20 @@ function addMessage(
     );
 
 
-    div.dataset.messageId =
-    message.id;
-
-
     div.className =
-    "message " +
-    (
-        message.sender_id ===
-        currentUser.id
 
-        ? "mine"
+        "message " +
 
-        : "theirs"
-    );
+        (
+
+            message.sender_id ===
+            currentUser.id
+
+            ? "mine"
+
+            : "theirs"
+
+        );
 
 
     div.innerHTML = `
@@ -1226,7 +1258,6 @@ function addMessage(
         ${escapeHTML(
             message.content
         )}
-
 
         <span class="message-time">
 
@@ -1250,7 +1281,17 @@ function addMessage(
    MARCAR COMO LIDA
 ========================================= */
 
-async function markMessagesAsRead(){
+async function markMessagesAsRead() {
+
+    if (
+        !currentUser ||
+        !friendId
+    ) {
+
+        return;
+
+    }
+
 
     const {
         error
@@ -1277,10 +1318,10 @@ async function markMessagesAsRead(){
     );
 
 
-    if(error){
+    if (error) {
 
         console.error(
-            "Erro ao marcar mensagens:",
+            "Erro read_at:",
             error
         );
 
@@ -1295,7 +1336,7 @@ async function markMessagesAsRead(){
 
 async function sendMessage(
     event
-){
+) {
 
     event.preventDefault();
 
@@ -1310,7 +1351,7 @@ async function sendMessage(
     input.value.trim();
 
 
-    if(!content){
+    if (!content) {
 
         return;
 
@@ -1347,9 +1388,10 @@ async function sendMessage(
     false;
 
 
-    if(error){
+    if (error) {
 
         console.error(
+            "Erro ao enviar:",
             error
         );
 
@@ -1372,10 +1414,11 @@ async function sendMessage(
 
 
     /*
-     * Aparece imediatamente para quem enviou.
+     * Mostra imediatamente a mensagem
+     * enviada pelo próprio usuário.
      */
 
-    if(data){
+    if (data) {
 
         addMessage(
             data
@@ -1389,125 +1432,99 @@ async function sendMessage(
 
 
 /* =========================================
-   REALTIME SEGURO
+   SCROLL
 ========================================= */
 
-function startRealtime(){
+function scrollBottom() {
 
-    /*
-     * Se algo der errado aqui,
-     * não interfere no chat.
-     */
+    const container =
+    document.getElementById(
+        "messages"
+    );
 
-    try{
 
-        if(
-            !currentUser ||
-            !friendId
-        ){
+    if (!container) {
+
+        return;
+
+    }
+
+
+    setTimeout(
+        function() {
+
+            container.scrollTop =
+            container.scrollHeight;
+
+        },
+        50
+    );
+
+}
+
+
+/* =========================================
+   INICIAR
+========================================= */
+
+async function start() {
+
+    try {
+
+        const logged =
+        await getUser();
+
+
+        if (!logged) {
 
             return;
 
         }
 
 
-        stopRealtime();
+        if (friendId) {
 
+            await loadChat();
 
-        realtimeChannel =
-        supabaseClient
-        .channel(
-            "zunoplay-chat-" +
-            currentUser.id +
-            "-" +
-            friendId
+        } else {
+
+            await loadConversations();
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erro geral:",
+            error
         );
 
 
-        realtimeChannel
-        .on(
-            "postgres_changes",
-            {
-                event:"INSERT",
-                schema:"public",
-                table:"messages"
-            },
-            function(
-                payload
-            ){
+        app.innerHTML = `
 
-                try{
+            <div class="empty">
 
-                    const message =
-                    payload.new;
+                ❌ Erro ao carregar o ZunoPlay.
 
+                <br><br>
 
-                    if(!message){
+                ${escapeHTML(
+                    error.message
+                )}
 
-                        return;
+            </div>
 
-                    }
+        `;
+
+    }
+
+}
 
 
-                    const pertence =
-                    (
-                        message.sender_id ===
-                        currentUser.id
-                        &&
-                        message.receiver_id ===
-                        friendId
-                    )
-                    ||
-                    (
-                        message.sender_id ===
-                        friendId
-                        &&
-                        message.receiver_id ===
-                        currentUser.id
-                    );
+start();
 
+</script>
 
-                    if(!pertence){
+</body>
 
-                        return;
-
-                    }
-
-
-                    addMessage(
-                        message
-                    );
-
-
-                    scrollBottom();
-
-
-                    /*
-                     * Mensagem recebida:
-                     * marca como lida.
-                     */
-
-                    if(
-                        message.sender_id ===
-                        friendId
-                        &&
-                        message.receiver_id ===
-                        currentUser.id
-                    ){
-
-                        supabaseClient
-                        .from("messages")
-                        .update({
-
-                            read_at:
-                            new Date()
-                            .toISOString()
-
-                        })
-                        .eq(
-                            "id",
-                            message.id
-                        )
-                        .is(
-                            "read_at",
-                  
+</html>
