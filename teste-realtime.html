@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Teste Realtime - ZunoPlay</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+    margin: 0;
+    padding: 30px;
+    background: #070811;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.box {
+    max-width: 500px;
+    margin: auto;
+}
+
+h1 {
+    color: #8b5cf6;
+}
+
+#status {
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 10px;
+    background: #141523;
+}
+
+#log {
+    padding: 15px;
+    border-radius: 10px;
+    background: #11121e;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>Teste Realtime</h1>
+
+<div id="status">
+⏳ Iniciando...
+</div>
+
+<div id="log">
+Aguardando evento INSERT...
+</div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://rliymfbbhqoejgfvsbuu.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+const status =
+document.getElementById("status");
+
+const log =
+document.getElementById("log");
+
+
+const channel =
+supabaseClient
+.channel("teste-realtime-messages")
+
+.on(
+    "postgres_changes",
+    {
+        event: "INSERT",
+        schema: "public",
+        table: "messages"
+    },
+    function(payload) {
+
+        console.log(
+            "REALTIME RECEBIDO:",
+            payload
+        );
+
+        status.textContent =
+        "🟢 REALTIME FUNCIONANDO!";
+
+        log.textContent =
+        JSON.stringify(
+            payload.new,
+            null,
+            2
+        );
+
+    }
+)
+
+.subscribe(function(subscriptionStatus) {
+
+    console.log(
+        "STATUS:",
+        subscriptionStatus
+    );
+
+    status.textContent =
+    "Status: " +
+    subscriptionStatus;
+
+});
+
+
+</script>
+
+</body>
+</html>
