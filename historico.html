@@ -1,391 +1,172 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Histórico - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
-body {
-
-    min-height: 100vh;
-
+body{
+    min-height:100vh;
     background:
-        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
-        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        radial-gradient(circle at 20% 20%,#25145c 0%,transparent 35%),
+        radial-gradient(circle at 80% 80%,#102d59 0%,transparent 35%),
         #070811;
-
-    color: white;
-
+    color:white;
 }
 
-.app {
-
-    width: 100%;
-    max-width: 480px;
-    min-height: 100vh;
-    margin: auto;
-    padding: 25px;
-
+.app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    margin:auto;
+    padding:25px;
 }
 
-.header {
-
-    display: flex;
-    align-items: center;
-    gap: 15px;
-
-    padding-top: 20px;
-    margin-bottom: 25px;
-
+.header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding-top:20px;
+    margin-bottom:25px;
 }
 
-.back {
-
-    width: 42px;
-    height: 42px;
-
-    border-radius: 12px;
-
-    border: 1px solid #303145;
-
-    background: #1b1c2b;
-
-    color: white;
-
-    font-size: 20px;
-
-    cursor: pointer;
-
+.back{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:1px solid #303145;
+    background:#1b1c2b;
+    color:white;
+    font-size:20px;
+    cursor:pointer;
 }
 
-.logo {
-
-    font-size: 28px;
-    font-weight: 800;
-
+.logo{
+    font-size:28px;
+    font-weight:800;
 }
 
-.logo span {
-
-    color: #8b5cf6;
-
+.logo span{
+    color:#8b5cf6;
 }
 
-.card {
-
-    background: rgba(20,21,35,.9);
-
-    border: 1px solid rgba(139,92,246,.2);
-
-    border-radius: 24px;
-
-    padding: 20px;
-
-    margin-bottom: 15px;
-
+.card{
+    background:rgba(20,21,35,.9);
+    border:1px solid rgba(139,92,246,.2);
+    border-radius:24px;
+    padding:20px;
 }
 
-.title {
-
-    font-size: 23px;
-
-    margin-bottom: 6px;
-
+.title{
+    font-size:23px;
+    margin-bottom:8px;
 }
 
-.subtitle {
-
-    color: #9293a3;
-
-    font-size: 13px;
-
-    margin-bottom: 20px;
-
+.subtitle{
+    color:#9293a3;
+    font-size:13px;
+    margin-bottom:20px;
 }
 
-.stats {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 10px;
-
-    margin-bottom: 20px;
-
+.status{
+    background:#11121e;
+    border:1px solid #303145;
+    border-radius:14px;
+    padding:15px;
+    font-size:12px;
+    line-height:1.7;
+    word-break:break-word;
 }
 
-.stat {
-
-    background: #11121e;
-
-    border: 1px solid #292a3d;
-
-    border-radius: 15px;
-
-    padding: 15px;
-
+.success{
+    color:#86efac;
 }
 
-.stat-label {
-
-    color: #858697;
-
-    font-size: 11px;
-
-    margin-bottom: 6px;
-
+.error{
+    color:#fca5a5;
 }
 
-.stat-value {
-
-    font-size: 21px;
-
-    font-weight: bold;
-
+.item{
+    background:#11121e;
+    border:1px solid #292a3d;
+    border-radius:15px;
+    padding:15px;
+    margin-top:12px;
 }
 
-.history-item {
-
-    background: #11121e;
-
-    border: 1px solid #292a3d;
-
-    border-radius: 16px;
-
-    padding: 15px;
-
-    margin-top: 10px;
-
+.item-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
 }
 
-.history-top {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
+.game{
+    font-weight:bold;
 }
 
-.game-name {
-
-    font-size: 15px;
-
-    font-weight: bold;
-
+.score{
+    color:#a78bfa;
+    font-weight:bold;
 }
 
-.score {
-
-    color: #a78bfa;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
+.info{
+    color:#9293a3;
+    font-size:12px;
+    margin-top:8px;
 }
-
-.history-info {
-
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 8px;
-
-    margin-top: 10px;
-
-}
-
-.info {
-
-    background: #1b1c2b;
-
-    border: 1px solid #303145;
-
-    border-radius: 8px;
-
-    padding: 6px 8px;
-
-    color: #9293a3;
-
-    font-size: 11px;
-
-}
-
-.date {
-
-    color: #737486;
-
-    font-size: 11px;
-
-    margin-top: 10px;
-
-}
-
-.empty {
-
-    text-align: center;
-
-    color: #737486;
-
-    font-size: 13px;
-
-    padding: 30px 10px;
-
-}
-
-.error {
-
-    color: #fca5a5;
-
-}
-
-.loading {
-
-    text-align: center;
-
-    color: #9293a3;
-
-    padding: 30px 10px;
-
-}
-
 </style>
-
 </head>
-
 
 <body>
 
-
 <div class="app">
-
 
     <div class="header">
 
         <button
             class="back"
-            onclick="window.location.href='index.html'"
-        >
-
+            onclick="window.location.href='index.html'">
             ←
-
         </button>
 
-
         <div class="logo">
-
             Zuno<span>Play</span>
-
         </div>
 
     </div>
 
-
     <div class="card">
 
         <h1 class="title">
-
             📊 Histórico de partidas
-
         </h1>
 
-
         <p class="subtitle">
-
-            Veja suas partidas e resultados no ZunoPlay.
-
+            Diagnóstico do histórico do ZunoPlay.
         </p>
 
-
-        <div class="stats">
-
-            <div class="stat">
-
-                <div class="stat-label">
-
-                    PARTIDAS
-
-                </div>
-
-                <div
-                    id="totalGames"
-                    class="stat-value"
-                >
-
-                    0
-
-                </div>
-
-            </div>
-
-
-            <div class="stat">
-
-                <div class="stat-label">
-
-                    MELHOR PONTUAÇÃO
-
-                </div>
-
-                <div
-                    id="bestScore"
-                    class="stat-value"
-                >
-
-                    0
-
-                </div>
-
-            </div>
-
+        <div id="status" class="status">
+            🔄 Verificando...
         </div>
 
-
-        <div id="history">
-
-            <div class="loading">
-
-                Carregando histórico...
-
-            </div>
-
-        </div>
+        <div id="history"></div>
 
     </div>
 
 </div>
 
-
 <script>
-
-
-/* =========================================
-   SUPABASE
-========================================= */
 
 const SUPABASE_URL =
     "https://rliymfbbhqoejgfvsbuu.supabase.co";
@@ -399,103 +180,65 @@ const supabaseClient =
         SUPABASE_KEY
     );
 
-
-/* =========================================
-   ELEMENTOS
-========================================= */
+const statusElement =
+    document.getElementById("status");
 
 const historyElement =
     document.getElementById("history");
 
-const totalGamesElement =
-    document.getElementById("totalGames");
 
-const bestScoreElement =
-    document.getElementById("bestScore");
+async function start(){
 
+    try{
 
-/* =========================================
-   DATA
-========================================= */
-
-function formatDate(dateString) {
-
-    const date =
-        new Date(dateString);
-
-    return date.toLocaleString(
-        "pt-BR",
-        {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-
-}
-
-
-/* =========================================
-   NOME DO JOGO
-========================================= */
-
-function gameName(game) {
-
-    if(game === "desafio_zuno") {
-
-        return "🎯 Desafio Zuno";
-
-    }
-
-    return "🎮 " + game;
-
-}
-
-
-/* =========================================
-   CARREGAR HISTÓRICO
-========================================= */
-
-async function loadHistory() {
-
-    try {
+        statusElement.innerHTML =
+            "🔄 Verificando sessão...";
 
         const sessionResult =
             await supabaseClient.auth.getSession();
 
+        console.log(
+            "SESSÃO:",
+            sessionResult
+        );
 
-        if(sessionResult.error) {
+        if(sessionResult.error){
 
             throw sessionResult.error;
 
         }
 
-
         const session =
             sessionResult.data.session;
-
 
         const user =
             session?.user;
 
+        if(!user){
 
-        if(!user) {
+            statusElement.className =
+                "status error";
 
-            window.location.href =
-                "login.html";
+            statusElement.innerHTML =
+                "❌ Nenhum usuário está logado nesta página.";
 
             return;
 
         }
+
+        statusElement.innerHTML =
+            "✅ Usuário encontrado.<br><br>" +
+            "<strong>ID:</strong><br>" +
+            user.id +
+            "<br><br>" +
+            "🔄 Buscando partidas...";
 
 
         const result =
             await supabaseClient
                 .from("game_scores")
                 .select(
-                    "id, game, score, questions, correct_answers, created_at"
+                    "id,user_id,game,score,questions,correct_answers,created_at"
                 )
                 .eq(
                     "user_id",
@@ -504,13 +247,18 @@ async function loadHistory() {
                 .order(
                     "created_at",
                     {
-                        ascending: false
+                        ascending:false
                     }
-                )
-                .limit(100);
+                );
 
 
-        if(result.error) {
+        console.log(
+            "RESULTADO:",
+            result
+        );
+
+
+        if(result.error){
 
             throw result.error;
 
@@ -521,48 +269,28 @@ async function loadHistory() {
             result.data || [];
 
 
-        totalGamesElement.textContent =
-            games.length;
+        if(games.length === 0){
 
+            statusElement.className =
+                "status error";
 
-        if(games.length > 0) {
-
-            const scores =
-                games.map(
-                    game => game.score || 0
-                );
-
-
-            bestScoreElement.textContent =
-                Math.max(...scores);
-
-        } else {
-
-            bestScoreElement.textContent =
-                "0";
-
-        }
-
-
-        if(games.length === 0) {
-
-            historyElement.innerHTML = `
-
-                <div class="empty">
-
-                    🎮 Você ainda não possui partidas registradas.
-
-                    <br><br>
-
-                    Jogue o Desafio Zuno para começar!
-
-                </div>
-
-            `;
+            statusElement.innerHTML =
+                "⚠️ Usuário logado, mas nenhuma partida foi retornada.<br><br>" +
+                "<strong>ID pesquisado:</strong><br>" +
+                user.id;
 
             return;
 
         }
+
+
+        statusElement.className =
+            "status success";
+
+        statusElement.innerHTML =
+            "✅ Histórico encontrado!<br><br>" +
+            "Partidas encontradas: " +
+            games.length;
 
 
         historyElement.innerHTML =
@@ -570,131 +298,88 @@ async function loadHistory() {
 
 
         games.forEach(
-            function(game) {
+            function(game){
 
-                const item =
+                const div =
                     document.createElement("div");
 
-
-                item.className =
-                    "history-item";
-
-
-                const questions =
-                    game.questions || 0;
+                div.className =
+                    "item";
 
 
-                const correct =
-                    game.correct_answers || 0;
+                div.innerHTML = `
 
+                    <div class="item-top">
 
-                item.innerHTML = `
-
-                    <div class="history-top">
-
-                        <div class="game-name">
-
-                            ${gameName(game.game)}
-
+                        <div class="game">
+                            🎯 ${game.game}
                         </div>
 
                         <div class="score">
-
                             ⭐ ${game.score}
-
                         </div>
 
                     </div>
 
-
-                    <div class="history-info">
-
-                        <div class="info">
-
-                            ❓ ${questions} perguntas
-
-                        </div>
-
-
-                        <div class="info">
-
-                            ✅ ${correct} acertos
-
-                        </div>
-
-
-                        <div class="info">
-
-                            📈 ${
-
-                                questions > 0
-
-                                ? Math.round(
-                                    (correct / questions) * 100
-                                )
-
-                                : 0
-
-                            }% de acerto
-
-                        </div>
-
+                    <div class="info">
+                        ❓ ${game.questions} perguntas
                     </div>
 
+                    <div class="info">
+                        ✅ ${game.correct_answers} acertos
+                    </div>
 
-                    <div class="date">
+                    <div class="info">
+                        🆔 ${game.id}
+                    </div>
 
-                        📅 ${formatDate(game.created_at)}
+                    <div class="info">
+                        👤 ${game.user_id}
+                    </div>
 
+                    <div class="info">
+                        📅 ${new Date(
+                            game.created_at
+                        ).toLocaleString("pt-BR")}
                     </div>
 
                 `;
 
 
                 historyElement.appendChild(
-                    item
+                    div
                 );
 
             }
         );
 
 
-    } catch(error) {
+    }catch(error){
 
         console.error(
-            "Erro ao carregar histórico:",
+            "ERRO:",
             error
         );
 
+        statusElement.className =
+            "status error";
 
-        historyElement.innerHTML = `
-
-            <div class="empty error">
-
-                ❌ Não foi possível carregar seu histórico.
-
-                <br><br>
-
-                ${error.message || "Erro desconhecido"}
-
-            </div>
-
-        `;
+        statusElement.innerHTML =
+            "❌ ERRO AO BUSCAR HISTÓRICO<br><br>" +
+            "<strong>Código:</strong> " +
+            (error.code || "sem código") +
+            "<br><br>" +
+            "<strong>Mensagem:</strong><br>" +
+            (error.message || error);
 
     }
 
 }
 
 
-/* =========================================
-   INICIAR
-========================================= */
-
-loadHistory();
+start();
 
 </script>
 
-
 </body>
-
 </html>
