@@ -169,8 +169,9 @@ body {
     cursor: pointer;
 }
 
-.action-button:disabled {
-    opacity: 0.5;
+.chat-button {
+    background: #24253a;
+    border: 1px solid #3b3c55;
 }
 
 .empty {
@@ -200,7 +201,6 @@ body {
     background: rgba(239,68,68,0.12);
     color: #fca5a5;
 }
-
 </style>
 </head>
 
@@ -232,7 +232,6 @@ body {
         <p class="subtitle">
             Encontre pessoas e conecte-se no ZunoPlay.
         </p>
-
 
         <div class="search-box">
 
@@ -299,7 +298,7 @@ body {
         <div id="friends">
 
             <div class="empty">
-                Você ainda não possui amigos.
+                Carregando amigos...
             </div>
 
         </div>
@@ -316,6 +315,7 @@ const SUPABASE_URL =
 
 const SUPABASE_KEY =
     "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
 
 const supabaseClient =
     window.supabase.createClient(
@@ -362,7 +362,7 @@ function showMessage(text, type) {
 
 
 /* =========================================
-   AVATAR
+   INICIAL
    ========================================= */
 
 function getInitial(username) {
@@ -378,7 +378,7 @@ function getInitial(username) {
 
 
 /* =========================================
-   VERIFICAR LOGIN
+   LOGIN
    ========================================= */
 
 async function checkLogin() {
@@ -435,12 +435,6 @@ async function searchUsers() {
 
 
     try {
-
-        /*
-         * IMPORTANTE:
-         * Esta busca depende de uma tabela "profiles"
-         * no Supabase contendo username e id.
-         */
 
         const {
             data,
@@ -528,7 +522,7 @@ async function searchUsers() {
 
 
         results.innerHTML =
-            '<div class="empty">A busca ainda não está configurada no banco de dados.</div>';
+            '<div class="empty">Não foi possível realizar a busca.</div>';
 
     }
 
@@ -582,7 +576,7 @@ async function sendFriendRequest(userId) {
 
 
         showMessage(
-            "Não foi possível enviar a solicitação. Verifique se o sistema de amigos foi configurado no Supabase.",
+            "Não foi possível enviar. Talvez a solicitação já exista.",
             "error"
         );
 
@@ -592,7 +586,7 @@ async function sendFriendRequest(userId) {
 
 
 /* =========================================
-   SOLICITAÇÕES RECEBIDAS
+   SOLICITAÇÕES
    ========================================= */
 
 async function loadRequests() {
@@ -609,7 +603,13 @@ async function loadRequests() {
         } =
             await supabaseClient
                 .from("friend_requests")
-                .select("*")
+                .select(`
+                    id,
+                    sender_id,
+                    profiles!friend_requests_sender_id_fkey (
+                        username
+                    )
+                `)
                 .eq(
                     "receiver_id",
                     currentUser.id
@@ -640,6 +640,11 @@ async function loadRequests() {
 
         data.forEach(function(request) {
 
+            const username =
+                request.profiles?.username ||
+                "Usuário";
+
+
             const div =
                 document.createElement("div");
 
@@ -650,17 +655,17 @@ async function loadRequests() {
             div.innerHTML = `
 
                 <div class="avatar">
-                    ?
+                    ${getInitial(username)}
                 </div>
 
                 <div class="user-info">
 
                     <div class="username">
-                        Nova solicitação
+                        ${username}
                     </div>
 
                     <div class="user-status">
-                        Usuário quer ser seu amigo
+                        Quer ser seu amigo
                     </div>
 
                 </div>
@@ -682,13 +687,13 @@ async function loadRequests() {
     } catch (error) {
 
         console.error(
-            "Erro ao carregar solicitações:",
+            "Erro nas solicitações:",
             error
         );
 
 
         requests.innerHTML =
-            '<div class="empty">As solicitações ainda precisam ser configuradas no Supabase.</div>';
+            '<div class="empty">Não foi possível carregar as solicitações.</div>';
 
     }
 
@@ -696,7 +701,7 @@ async function loadRequests() {
 
 
 /* =========================================
-   ACEITAR
+   ACEITAR AMIZADE
    ========================================= */
 
 async function acceptRequest(requestId) {
@@ -766,7 +771,7 @@ async function acceptRequest(requestId) {
 
 
         showMessage(
-            "Amizade aceita! 🎉",
+            "Amizade aceita com sucesso! 🎉",
             "success"
         );
 
@@ -778,13 +783,13 @@ async function acceptRequest(requestId) {
     } catch (error) {
 
         console.error(
-            "Erro ao aceitar:",
+            "Erro ao aceitar amizade:",
             error
         );
 
 
         showMessage(
-            "Não foi possível aceitar. O banco ainda precisa ser configurado.",
+            "Não foi possível aceitar a amizade.",
             "error"
         );
 
@@ -794,13 +799,13 @@ async function acceptRequest(requestId) {
 
 
 /* =========================================
-   AMIGOS
+   CARREGAR AMIGOS
    ========================================= */
 
 async function loadFriends() {
 
     friends.innerHTML =
-        '<div class="empty">Carregando...</div>';
+        '<div class="empty">Carregando amigos...</div>';
 
 
     try {
@@ -835,8 +840,83 @@ async function loadFriends() {
         }
 
 
-        friends.innerHTML =
-            '<div class="empty">Você já possui amizades no ZunoPlay. 👥</div>';
+        const friendIds =
+            data.map(function(friendship) {
+
+                if (
+                    friendship.user_id ===
+                    currentUser.id
+                ) {
+
+                    return friendship.friend_id;
+
+                }
+
+                return friendship.user_id;
+
+            });
+
+
+        const {
+            data: profiles,
+            error: profileError
+        } =
+            await supabaseClient
+                .from("profiles")
+                .select("id, username")
+                .in(
+                    "id",
+                    friendIds
+                );
+
+
+        if (profileError) {
+            throw profileError;
+        }
+
+
+        friends.innerHTML = "";
+
+
+        profiles.forEach(function(profile) {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "user-card";
+
+
+            div.innerHTML = `
+
+                <div class="avatar">
+                    ${getInitial(profile.username)}
+                </div>
+
+                <div class="user-info">
+
+                    <div class="username">
+                        ${profile.username}
+                    </div>
+
+                    <div class="user-status">
+                        Amigo no ZunoPlay
+                    </div>
+
+                </div>
+
+                <button
+                    class="action-button chat-button"
+                    onclick="openChat('${profile.id}')">
+                    💬 Conversar
+                </button>
+
+            `;
+
+
+            friends.appendChild(div);
+
+        });
 
 
     } catch (error) {
@@ -848,9 +928,22 @@ async function loadFriends() {
 
 
         friends.innerHTML =
-            '<div class="empty">A lista de amigos ainda precisa ser configurada.</div>';
+            '<div class="empty">Não foi possível carregar seus amigos.</div>';
 
     }
+
+}
+
+
+/* =========================================
+   CHAT
+   ========================================= */
+
+function openChat(userId) {
+
+    window.location.href =
+        "conversas.html?user=" +
+        encodeURIComponent(userId);
 
 }
 
