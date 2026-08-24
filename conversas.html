@@ -1520,7 +1520,55 @@ async function start() {
 
 }
 
+/* =========================================
+   TESTE REALTIME - SOMENTE CONEXÃO
+========================================= */
 
+setTimeout(function () {
+
+    try {
+
+        const realtimeChannel =
+            supabaseClient
+            .channel(
+                "messages-test-" +
+                currentUser.id
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "messages"
+                },
+                function (payload) {
+
+                    console.log(
+                        "REALTIME OK:",
+                        payload.new
+                    );
+
+                }
+            )
+            .subscribe(function (status) {
+
+                console.log(
+                    "REALTIME STATUS:",
+                    status
+                );
+
+            });
+
+    } catch (error) {
+
+        console.error(
+            "REALTIME ERRO:",
+            error
+        );
+
+    }
+
+}, 2000);
 start();
 
 </script>
