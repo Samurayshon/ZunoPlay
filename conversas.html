@@ -5,10 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Conversas - ZunoPlay</title>
 
@@ -28,16 +25,8 @@ body {
     min-height: 100vh;
 
     background:
-        radial-gradient(
-            circle at 20% 20%,
-            #25145c 0%,
-            transparent 35%
-        ),
-        radial-gradient(
-            circle at 80% 80%,
-            #102d59 0%,
-            transparent 35%
-        ),
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
         #070811;
 
     color: white;
@@ -148,6 +137,73 @@ body {
 
 
 /* =========================================
+   DIAGNÓSTICO
+========================================= */
+
+.diagnostic {
+
+    background: rgba(20,21,35,.95);
+
+    border: 1px solid #292a3d;
+
+    border-radius: 16px;
+
+    padding: 15px;
+
+    margin-bottom: 18px;
+
+    font-size: 12px;
+
+}
+
+.diagnostic-title {
+
+    color: #8b5cf6;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+
+    font-size: 14px;
+
+}
+
+.diagnostic-row {
+
+    margin-top: 6px;
+
+    color: #a7a7b5;
+
+    word-break: break-all;
+
+}
+
+.diagnostic-row strong {
+
+    color: white;
+
+}
+
+.success {
+
+    color: #4ade80;
+
+}
+
+.warning {
+
+    color: #facc15;
+
+}
+
+.error {
+
+    color: #ff8f8f;
+
+}
+
+
+/* =========================================
    CONVERSA
 ========================================= */
 
@@ -169,7 +225,7 @@ body {
 
     border: 1px solid #292a3d;
 
-    background: rgba(20,21,35,.92);
+    background: rgba(20,21,35,.95);
 
     color: white;
 
@@ -177,21 +233,11 @@ body {
 
     text-align: left;
 
-    transition:
-        transform .15s ease,
-        border-color .15s ease;
-
 }
 
 .conversation:hover {
 
     border-color: #8b5cf6;
-
-}
-
-.conversation:active {
-
-    transform: scale(.98);
 
 }
 
@@ -205,12 +251,7 @@ body {
 
     border-radius: 50%;
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
 
     display: flex;
 
@@ -290,35 +331,6 @@ body {
 
     font-weight: bold;
 
-    margin-left: auto;
-
-}
-
-
-/* =========================================
-   EMPTY / LOADING
-========================================= */
-
-.empty {
-
-    text-align: center;
-
-    color: #737486;
-
-    padding: 60px 20px;
-
-    font-size: 14px;
-
-}
-
-.loading {
-
-    text-align: center;
-
-    color: #9293a3;
-
-    padding: 50px 20px;
-
 }
 
 
@@ -396,12 +408,7 @@ body {
 
     align-self: flex-end;
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
 
     border-bottom-right-radius: 5px;
 
@@ -430,11 +437,6 @@ body {
     margin-top: 4px;
 
 }
-
-
-/* =========================================
-   COMPOSER
-========================================= */
 
 .composer {
 
@@ -474,12 +476,6 @@ body {
 
 }
 
-.composer input:focus {
-
-    border-color: #8b5cf6;
-
-}
-
 .send {
 
     width: 50px;
@@ -488,12 +484,7 @@ body {
 
     border-radius: 13px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
 
     color: white;
 
@@ -503,24 +494,15 @@ body {
 
 }
 
-.send:disabled {
-
-    opacity: .5;
-
-}
-
-
-/* =========================================
-   ERROR
-========================================= */
-
-.error {
+.empty {
 
     text-align: center;
 
-    color: #ff8f8f;
+    color: #737486;
 
-    padding: 50px 20px;
+    padding: 40px 20px;
+
+    font-size: 14px;
 
 }
 
@@ -530,7 +512,6 @@ body {
 
 
 <body>
-
 
 <div
     id="app"
@@ -568,14 +549,11 @@ window.supabase.createClient(
 const app =
 document.getElementById("app");
 
-
 let currentUser = null;
 
 let friendId = null;
 
-let chatChannel = null;
-
-let listChannel = null;
+let realtimeChannel = null;
 
 
 const params =
@@ -583,14 +561,26 @@ new URLSearchParams(
     window.location.search
 );
 
-
 friendId =
 params.get("user");
 
 
 /* =========================================
-   FUNÇÕES AUXILIARES
+   AUXILIARES
 ========================================= */
+
+function escapeHTML(text) {
+
+    const div =
+    document.createElement("div");
+
+    div.textContent =
+    text || "";
+
+    return div.innerHTML;
+
+}
+
 
 function initial(name) {
 
@@ -607,19 +597,6 @@ function initial(name) {
 }
 
 
-function escapeHTML(text) {
-
-    const div =
-    document.createElement("div");
-
-    div.textContent =
-    text || "";
-
-    return div.innerHTML;
-
-}
-
-
 function formatTime(dateString) {
 
     if (!dateString) {
@@ -628,35 +605,14 @@ function formatTime(dateString) {
 
     }
 
-    const date =
-    new Date(dateString);
-
-
-    return date.toLocaleTimeString(
+    return new Date(
+        dateString
+    ).toLocaleTimeString(
         "pt-BR",
         {
             hour: "2-digit",
             minute: "2-digit"
         }
-    );
-
-}
-
-
-function formatDate(dateString) {
-
-    if (!dateString) {
-
-        return "";
-
-    }
-
-    const date =
-    new Date(dateString);
-
-
-    return date.toLocaleDateString(
-        "pt-BR"
     );
 
 }
@@ -683,7 +639,7 @@ function goBack() {
    USUÁRIO
 ========================================= */
 
-async function getCurrentUser() {
+async function getUser() {
 
     const {
         data,
@@ -722,7 +678,7 @@ async function getCurrentUser() {
    HEADER
 ========================================= */
 
-function renderHeader() {
+function header() {
 
     return `
 
@@ -755,7 +711,7 @@ async function loadConversations() {
 
     app.innerHTML = `
 
-        ${renderHeader()}
+        ${header()}
 
         <div class="page">
 
@@ -767,10 +723,33 @@ async function loadConversations() {
                 Suas conversas recentes.
             </p>
 
+            <div
+                id="diagnostic"
+                class="diagnostic"
+            >
+
+                <div class="diagnostic-title">
+                    Diagnóstico
+                </div>
+
+                <div class="diagnostic-row">
+                    Usuário:
+                    <strong>
+                        ${escapeHTML(currentUser.id)}
+                    </strong>
+                </div>
+
+                <div class="diagnostic-row">
+                    Buscando mensagens...
+                </div>
+
+            </div>
+
+
             <div id="conversationList">
 
-                <div class="loading">
-                    Carregando conversas...
+                <div class="empty">
+                    Carregando...
                 </div>
 
             </div>
@@ -780,15 +759,21 @@ async function loadConversations() {
     `;
 
 
+    const diagnostic =
+    document.getElementById(
+        "diagnostic"
+    );
+
+
     const list =
     document.getElementById(
         "conversationList"
     );
 
 
-    /*
-     * BUSCA ENVIADAS
-     */
+    /* =====================================
+       ENVIADAS
+    ===================================== */
 
     const {
         data:sent,
@@ -796,36 +781,20 @@ async function loadConversations() {
     } =
     await supabaseClient
         .from("messages")
-        .select(
-            "id,sender_id,receiver_id,content,created_at,read_at"
-        )
+        .select("*")
         .eq(
             "sender_id",
             currentUser.id
-        )
-        .order(
-            "created_at",
-            {
-                ascending:false
-            }
         );
 
 
     if (sentError) {
 
-        console.error(
-            "Erro nas mensagens enviadas:",
-            sentError
-        );
+        diagnostic.innerHTML += `
 
-        list.innerHTML = `
+            <div class="diagnostic-row error">
 
-            <div class="error">
-
-                Erro ao carregar mensagens enviadas.
-
-                <br><br>
-
+                Erro nas enviadas:
                 ${escapeHTML(
                     sentError.message
                 )}
@@ -839,9 +808,9 @@ async function loadConversations() {
     }
 
 
-    /*
-     * BUSCA RECEBIDAS
-     */
+    /* =====================================
+       RECEBIDAS
+    ===================================== */
 
     const {
         data:received,
@@ -849,36 +818,20 @@ async function loadConversations() {
     } =
     await supabaseClient
         .from("messages")
-        .select(
-            "id,sender_id,receiver_id,content,created_at,read_at"
-        )
+        .select("*")
         .eq(
             "receiver_id",
             currentUser.id
-        )
-        .order(
-            "created_at",
-            {
-                ascending:false
-            }
         );
 
 
     if (receivedError) {
 
-        console.error(
-            "Erro nas mensagens recebidas:",
-            receivedError
-        );
+        diagnostic.innerHTML += `
 
-        list.innerHTML = `
+            <div class="diagnostic-row error">
 
-            <div class="error">
-
-                Erro ao carregar mensagens recebidas.
-
-                <br><br>
-
+                Erro nas recebidas:
                 ${escapeHTML(
                     receivedError.message
                 )}
@@ -892,40 +845,104 @@ async function loadConversations() {
     }
 
 
-    /*
-     * JUNTA TODAS AS MENSAGENS
-     */
+    const sentMessages =
+        sent || [];
+
+    const receivedMessages =
+        received || [];
+
+
+    /* =====================================
+       JUNTA TUDO
+    ===================================== */
 
     const allMessages = [
 
-        ...(sent || []),
+        ...sentMessages,
 
-        ...(received || [])
+        ...receivedMessages
 
     ];
 
 
-    /*
-     * ORDENA DA MAIS NOVA
-     * PARA A MAIS ANTIGA
-     */
-
     allMessages.sort(
         function(a,b) {
 
-            return (
-                new Date(b.created_at)
-                -
-                new Date(a.created_at)
+            return new Date(
+                b.created_at
+            ) - new Date(
+                a.created_at
             );
 
         }
     );
 
 
-    /*
-     * CRIA CONVERSAS POR USUÁRIO
-     */
+    diagnostic.innerHTML = `
+
+        <div class="diagnostic-title">
+            Diagnóstico das Conversas
+        </div>
+
+        <div class="diagnostic-row success">
+            ✅ Usuário autenticado
+        </div>
+
+        <div class="diagnostic-row">
+            ID:
+            <strong>
+                ${escapeHTML(currentUser.id)}
+            </strong>
+        </div>
+
+        <div class="diagnostic-row">
+            Mensagens enviadas:
+            <strong>
+                ${sentMessages.length}
+            </strong>
+        </div>
+
+        <div class="diagnostic-row">
+            Mensagens recebidas:
+            <strong>
+                ${receivedMessages.length}
+            </strong>
+        </div>
+
+        <div class="diagnostic-row">
+            Total:
+            <strong>
+                ${allMessages.length}
+            </strong>
+        </div>
+
+    `;
+
+
+    /* =====================================
+       NENHUMA MENSAGEM
+    ===================================== */
+
+    if (!allMessages.length) {
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                Nenhuma mensagem encontrada.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /* =====================================
+       IDENTIFICAR OUTROS USUÁRIOS
+    ===================================== */
 
     const conversations = {};
 
@@ -964,16 +981,18 @@ async function loadConversations() {
                     lastMessage:
                         message,
 
-                    unread: 0
+                    unread: 0,
+
+                    total: 0
 
                 };
 
             }
 
 
-            /*
-             * CONTADOR DE NÃO LIDAS
-             */
+            conversations[otherId]
+                .total++;
+
 
             if (
 
@@ -1001,86 +1020,89 @@ async function loadConversations() {
     );
 
 
-    if (!ids.length) {
+    diagnostic.innerHTML += `
 
-        list.innerHTML = `
+        <div class="diagnostic-row success">
 
-            <div class="empty">
+            ✅ Conversas encontradas:
+            <strong>
+                ${ids.length}
+            </strong>
 
-                Você ainda não possui conversas.
+        </div>
 
-                <br><br>
-
-                Vá em Amigos e comece uma conversa! 👋
-
-            </div>
-
-        `;
-
-        subscribeConversationList();
-
-        return;
-
-    }
+    `;
 
 
     /*
-     * BUSCA PERFIS
+     * MOSTRA OS IDs
      */
 
-    const {
-        data:profiles,
-        error:profileError
-    } =
-    await supabaseClient
-        .from("profiles")
-        .select(
-            "id,username"
-        )
-        .in(
-            "id",
-            ids
-        );
+    ids.forEach(
+        function(id) {
+
+            diagnostic.innerHTML += `
+
+                <div class="diagnostic-row">
+
+                    Outro usuário:
+                    <strong>
+                        ${escapeHTML(id)}
+                    </strong>
+
+                </div>
+
+            `;
+
+        }
+    );
 
 
-    if (profileError) {
+    /* =====================================
+       BUSCAR USERNAMES
+    ===================================== */
+
+    let profiles = [];
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "id,username"
+            )
+            .in(
+                "id",
+                ids
+            );
+
+
+        if (!error && data) {
+
+            profiles =
+                data;
+
+        }
+
+    } catch (error) {
 
         console.error(
-            "Erro ao buscar perfis:",
-            profileError
+            "Erro ao buscar profiles:",
+            error
         );
-
-        list.innerHTML = `
-
-            <div class="error">
-
-                As mensagens foram encontradas,
-                mas não foi possível carregar
-                os usuários.
-
-                <br><br>
-
-                ${escapeHTML(
-                    profileError.message
-                )}
-
-            </div>
-
-        `;
-
-        return;
 
     }
 
-
-    /*
-     * MAPA DE PERFIS
-     */
 
     const profileMap = {};
 
 
-    (profiles || []).forEach(
+    profiles.forEach(
         function(profile) {
 
             profileMap[
@@ -1091,9 +1113,9 @@ async function loadConversations() {
     );
 
 
-    /*
-     * RENDERIZA
-     */
+    /* =====================================
+       RENDERIZAR
+    ===================================== */
 
     list.innerHTML = "";
 
@@ -1110,12 +1132,8 @@ async function loadConversations() {
             profileMap[id];
 
 
-            /*
-             * Se não houver perfil,
-             * ainda mostramos a conversa.
-             */
-
             const username =
+
                 profile &&
                 profile.username
 
@@ -1132,21 +1150,21 @@ async function loadConversations() {
             conversation.lastMessage;
 
 
-            const item =
+            const button =
             document.createElement(
                 "button"
             );
 
 
-            item.className =
+            button.className =
                 "conversation";
 
 
-            item.type =
+            button.type =
                 "button";
 
 
-            item.onclick =
+            button.onclick =
             function() {
 
                 window.location.href =
@@ -1169,11 +1187,8 @@ async function loadConversations() {
 
                         ${
                             conversation.unread > 99
-
                             ? "99+"
-
                             : conversation.unread
-
                         }
 
                     </div>
@@ -1183,7 +1198,7 @@ async function loadConversations() {
             }
 
 
-            item.innerHTML = `
+            button.innerHTML = `
 
                 <div class="avatar">
 
@@ -1229,13 +1244,15 @@ async function loadConversations() {
             `;
 
 
-            list.appendChild(item);
+            list.appendChild(
+                button
+            );
 
         }
     );
 
 
-    subscribeConversationList();
+    subscribeRealtime();
 
 }
 
@@ -1247,66 +1264,47 @@ async function loadConversations() {
 async function loadChat() {
 
 
-    const {
-        data:profile,
-        error
-    } =
-    await supabaseClient
-        .from("profiles")
-        .select(
-            "id,username"
-        )
-        .eq(
-            "id",
-            friendId
-        )
-        .single();
+    let username =
+        "Usuário";
 
 
-    if (error) {
+    /*
+     * Tenta buscar username,
+     * mas o chat NÃO depende disso.
+     */
 
-        console.error(
-            "Erro ao buscar usuário:",
-            error
-        );
+    try {
 
-        app.innerHTML = `
+        const {
+            data
+        } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "username"
+            )
+            .eq(
+                "id",
+                friendId
+            )
+            .maybeSingle();
 
-            <div class="error">
 
-                Não foi possível encontrar
-                esse usuário.
+        if (
+            data &&
+            data.username
+        ) {
 
-                <br><br>
+            username =
+                data.username;
 
-                ${escapeHTML(
-                    error.message
-                )}
+        }
 
-                <br><br>
+    } catch (error) {
 
-                <button
-                    onclick="goBack()"
-                    style="
-                        width:auto;
-                        padding:12px 20px;
-                    "
-                >
-                    ← Voltar
-                </button>
-
-            </div>
-
-        `;
-
-        return;
+        console.error(error);
 
     }
-
-
-    const username =
-        profile.username ||
-        "Usuário";
 
 
     app.innerHTML = `
@@ -1315,7 +1313,6 @@ async function loadChat() {
 
 
             <div class="chat-header">
-
 
                 <button
                     class="back"
@@ -1340,7 +1337,6 @@ async function loadChat() {
 
                     </div>
 
-
                     <div class="last-message">
 
                         Conversa privada
@@ -1357,7 +1353,7 @@ async function loadChat() {
                 class="chat-messages"
             >
 
-                <div class="loading">
+                <div class="empty">
 
                     Carregando mensagens...
 
@@ -1374,8 +1370,8 @@ async function loadChat() {
                 <input
                     id="messageInput"
                     type="text"
-                    placeholder="Digite uma mensagem..."
                     maxlength="2000"
+                    placeholder="Digite uma mensagem..."
                     autocomplete="off"
                     required
                 >
@@ -1399,13 +1395,13 @@ async function loadChat() {
     `;
 
 
-    await loadMessages();
+    await loadChatMessages();
 
 
-    await markMessagesAsRead();
+    await markAsRead();
 
 
-    subscribeChat();
+    subscribeRealtime();
 
 
     document
@@ -1421,23 +1417,16 @@ async function loadChat() {
 
 
 /* =========================================
-   CARREGAR MENSAGENS DO CHAT
+   CARREGAR CHAT
 ========================================= */
 
-async function loadMessages() {
+async function loadChatMessages() {
 
 
     const container =
     document.getElementById(
         "messages"
     );
-
-
-    if (!container) {
-
-        return;
-
-    }
 
 
     /*
@@ -1456,37 +1445,4 @@ async function loadMessages() {
             currentUser.id
         )
         .eq(
-            "receiver_id",
-            friendId
-        );
-
-
-    /*
-     * RECEBIDAS
-     */
-
-    const {
-        data:received,
-        error:receivedError
-    } =
-    await supabaseClient
-        .from("messages")
-        .select("*")
-        .eq(
-            "sender_id",
-            friendId
-        )
-        .eq(
-            "receiver_id",
-            currentUser.id
-        );
-
-
-    if (
-        sentError ||
-        receivedError
-    ) {
-
-        console.error(
-            sentError ||
-            receive
+    
