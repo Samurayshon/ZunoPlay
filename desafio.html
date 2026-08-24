@@ -12,6 +12,8 @@
 
 <title>Desafio Zuno - ZunoPlay</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 * {
@@ -26,16 +28,8 @@ body {
     min-height: 100vh;
 
     background:
-        radial-gradient(
-            circle at 20% 20%,
-            #25145c 0%,
-            transparent 35%
-        ),
-        radial-gradient(
-            circle at 80% 80%,
-            #102d59 0%,
-            transparent 35%
-        ),
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
         #070811;
 
     color: white;
@@ -45,32 +39,19 @@ body {
 .app {
 
     width: 100%;
-
     max-width: 480px;
-
     min-height: 100vh;
-
     margin: auto;
-
     padding: 25px;
 
 }
 
-
-/* =========================================
-   CABEÇALHO
-========================================= */
-
 .header {
 
     display: flex;
-
     align-items: center;
-
     gap: 15px;
-
     padding-top: 20px;
-
     margin-bottom: 25px;
 
 }
@@ -78,21 +59,12 @@ body {
 .back {
 
     width: 42px;
-
     height: 42px;
-
     border-radius: 12px;
-
-    border:
-        1px solid #303145;
-
-    background:
-        #1b1c2b;
-
+    border: 1px solid #303145;
+    background: #1b1c2b;
     color: white;
-
     font-size: 20px;
-
     cursor: pointer;
 
 }
@@ -100,7 +72,6 @@ body {
 .logo {
 
     font-size: 28px;
-
     font-weight: 800;
 
 }
@@ -111,19 +82,11 @@ body {
 
 }
 
-
-/* =========================================
-   TOPO DO JOGO
-========================================= */
-
 .game-top {
 
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     margin-bottom: 20px;
 
 }
@@ -131,47 +94,28 @@ body {
 .question-counter {
 
     color: #9293a3;
-
     font-size: 13px;
 
 }
 
 .score {
 
-    background:
-        rgba(139,92,246,.15);
-
-    border:
-        1px solid
-        rgba(139,92,246,.3);
-
+    background: rgba(139,92,246,.15);
+    border: 1px solid rgba(139,92,246,.3);
     padding: 8px 12px;
-
     border-radius: 20px;
-
     font-size: 12px;
-
     font-weight: bold;
 
 }
 
-
-/* =========================================
-   TIMER
-========================================= */
-
 .timer-container {
 
     width: 100%;
-
     height: 7px;
-
     background: #1b1c2b;
-
     border-radius: 20px;
-
     overflow: hidden;
-
     margin-bottom: 25px;
 
 }
@@ -179,39 +123,18 @@ body {
 .timer-bar {
 
     width: 100%;
-
     height: 100%;
-
-    background:
-        linear-gradient(
-            90deg,
-            #8b5cf6,
-            #6366f1
-        );
-
-    transition:
-        width 1s linear;
+    background: linear-gradient(90deg,#8b5cf6,#6366f1);
+    transition: width 1s linear;
 
 }
 
-
-/* =========================================
-   PERGUNTA
-========================================= */
-
 .question-card {
 
-    background:
-        rgba(20,21,35,.9);
-
-    border:
-        1px solid
-        rgba(139,92,246,.2);
-
+    background: rgba(20,21,35,.9);
+    border: 1px solid rgba(139,92,246,.2);
     border-radius: 24px;
-
     padding: 22px;
-
     margin-bottom: 15px;
 
 }
@@ -219,11 +142,8 @@ body {
 .question-number {
 
     color: #8b5cf6;
-
     font-size: 12px;
-
     font-weight: bold;
-
     margin-bottom: 10px;
 
 }
@@ -231,22 +151,14 @@ body {
 .question {
 
     font-size: 21px;
-
     line-height: 1.4;
 
 }
 
-
-/* =========================================
-   RESPOSTAS
-========================================= */
-
 .answers {
 
     display: flex;
-
     flex-direction: column;
-
     gap: 10px;
 
 }
@@ -254,33 +166,21 @@ body {
 .answer {
 
     width: 100%;
-
     padding: 15px;
-
     border-radius: 14px;
-
-    border:
-        1px solid #303145;
-
-    background:
-        #11121e;
-
+    border: 1px solid #303145;
+    background: #11121e;
     color: white;
-
     text-align: left;
-
     font-size: 14px;
-
     cursor: pointer;
-
     transition: .2s;
 
 }
 
 .answer:hover {
 
-    border-color:
-        #8b5cf6;
+    border-color: #8b5cf6;
 
 }
 
@@ -292,103 +192,52 @@ body {
 
 .answer.correct {
 
-    background:
-        rgba(34,197,94,.15);
-
-    border-color:
-        #22c55e;
-
-    color:
-        #86efac;
+    background: rgba(34,197,94,.15);
+    border-color: #22c55e;
+    color: #86efac;
 
 }
 
 .answer.wrong {
 
-    background:
-        rgba(239,68,68,.15);
-
-    border-color:
-        #ef4444;
-
-    color:
-        #fca5a5;
+    background: rgba(239,68,68,.15);
+    border-color: #ef4444;
+    color: #fca5a5;
 
 }
-
-
-/* =========================================
-   FEEDBACK
-========================================= */
 
 .feedback {
 
     min-height: 22px;
-
     text-align: center;
-
     font-size: 13px;
-
     font-weight: bold;
-
     margin-top: 15px;
 
 }
-
-
-/* =========================================
-   BOTÃO PRÓXIMA
-========================================= */
 
 .next-button {
 
     display: none;
-
     width: 100%;
-
     border: none;
-
     border-radius: 14px;
-
     padding: 15px;
-
     margin-top: 15px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
-
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
     color: white;
-
     font-weight: bold;
-
     cursor: pointer;
 
 }
 
-
-/* =========================================
-   RESULTADO
-========================================= */
-
 .result {
 
     display: none;
-
-    background:
-        rgba(20,21,35,.95);
-
-    border:
-        1px solid
-        rgba(139,92,246,.3);
-
+    background: rgba(20,21,35,.95);
+    border: 1px solid rgba(139,92,246,.3);
     border-radius: 24px;
-
     padding: 30px 22px;
-
     text-align: center;
 
 }
@@ -396,7 +245,6 @@ body {
 .result-icon {
 
     font-size: 55px;
-
     margin-bottom: 15px;
 
 }
@@ -404,7 +252,6 @@ body {
 .result h1 {
 
     font-size: 26px;
-
     margin-bottom: 8px;
 
 }
@@ -412,9 +259,7 @@ body {
 .result p {
 
     color: #9293a3;
-
     font-size: 13px;
-
     margin-bottom: 20px;
 
 }
@@ -422,11 +267,8 @@ body {
 .final-score {
 
     font-size: 42px;
-
     font-weight: 800;
-
     color: #8b5cf6;
-
     margin-bottom: 5px;
 
 }
@@ -434,40 +276,35 @@ body {
 .final-label {
 
     color: #858697;
-
     font-size: 12px;
-
     margin-bottom: 25px;
+
+}
+
+.save-status {
+
+    min-height: 20px;
+    color: #9293a3;
+    font-size: 12px;
+    margin-bottom: 12px;
 
 }
 
 .result-button {
 
     width: 100%;
-
     border: none;
-
     border-radius: 14px;
-
     padding: 15px;
-
     margin-top: 10px;
-
     font-weight: bold;
-
     cursor: pointer;
 
 }
 
 .play-again {
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
-
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
     color: white;
 
 }
@@ -475,10 +312,7 @@ body {
 .back-games {
 
     background: #1b1c2b;
-
-    border:
-        1px solid #303145;
-
+    border: 1px solid #303145;
     color: white;
 
 }
@@ -494,10 +328,6 @@ body {
 <div class="app">
 
 
-    <!-- =================================
-         CABEÇALHO
-    ================================== -->
-
     <div class="header">
 
         <button
@@ -509,7 +339,6 @@ body {
 
         </button>
 
-
         <div class="logo">
 
             Zuno<span>Play</span>
@@ -518,10 +347,6 @@ body {
 
     </div>
 
-
-    <!-- =================================
-         JOGO
-    ================================== -->
 
     <div id="game">
 
@@ -609,10 +434,6 @@ body {
     </div>
 
 
-    <!-- =================================
-         RESULTADO
-    ================================== -->
-
     <div
         id="result"
         class="result"
@@ -656,6 +477,16 @@ body {
         </div>
 
 
+        <div
+            id="saveStatus"
+            class="save-status"
+        >
+
+            Salvando resultado...
+
+        </div>
+
+
         <button
             class="result-button play-again"
             onclick="restartGame()"
@@ -685,13 +516,29 @@ body {
 
 
 /* =========================================
+   SUPABASE
+========================================= */
+
+const SUPABASE_URL =
+    "https://rliymfbbhqoejgfvsbuu.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================================
    PERGUNTAS
 ========================================= */
 
 const questions = [
 
     {
-
         question:
             "Qual é o maior planeta do Sistema Solar?",
 
@@ -703,12 +550,9 @@ const questions = [
         ],
 
         correct: 2
-
     },
 
-
     {
-
         question:
             "Qual é a capital do Brasil?",
 
@@ -720,12 +564,9 @@ const questions = [
         ],
 
         correct: 1
-
     },
 
-
     {
-
         question:
             "Quantos lados possui um hexágono?",
 
@@ -737,12 +578,9 @@ const questions = [
         ],
 
         correct: 1
-
     },
 
-
     {
-
         question:
             "Qual animal é conhecido como o rei da selva?",
 
@@ -754,12 +592,9 @@ const questions = [
         ],
 
         correct: 1
-
     },
 
-
     {
-
         question:
             "Qual é o resultado de 9 × 9?",
 
@@ -771,12 +606,9 @@ const questions = [
         ],
 
         correct: 1
-
     },
 
-
     {
-
         question:
             "Qual oceano banha a costa leste do Brasil?",
 
@@ -788,12 +620,9 @@ const questions = [
         ],
 
         correct: 2
-
     },
 
-
     {
-
         question:
             "Qual é o idioma mais falado no Brasil?",
 
@@ -805,12 +634,9 @@ const questions = [
         ],
 
         correct: 1
-
     },
 
-
     {
-
         question:
             "Quantos minutos existem em uma hora?",
 
@@ -822,12 +648,9 @@ const questions = [
         ],
 
         correct: 2
-
     },
 
-
     {
-
         question:
             "Qual destes é um mamífero?",
 
@@ -839,12 +662,9 @@ const questions = [
         ],
 
         correct: 1
-
     },
 
-
     {
-
         question:
             "Qual é a estrela mais próxima da Terra?",
 
@@ -856,7 +676,6 @@ const questions = [
         ],
 
         correct: 2
-
     }
 
 ];
@@ -869,6 +688,8 @@ const questions = [
 let currentQuestion = 0;
 
 let score = 0;
+
+let correctAnswers = 0;
 
 let answered = false;
 
@@ -886,70 +707,64 @@ const questionElement =
         "question"
     );
 
-
 const answersElement =
     document.getElementById(
         "answers"
     );
-
 
 const questionCounter =
     document.getElementById(
         "questionCounter"
     );
 
-
 const questionNumber =
     document.getElementById(
         "questionNumber"
     );
-
 
 const scoreElement =
     document.getElementById(
         "score"
     );
 
-
 const feedback =
     document.getElementById(
         "feedback"
     );
-
 
 const nextButton =
     document.getElementById(
         "nextButton"
     );
 
-
 const timerBar =
     document.getElementById(
         "timerBar"
     );
-
 
 const game =
     document.getElementById(
         "game"
     );
 
-
 const result =
     document.getElementById(
         "result"
     );
-
 
 const finalScore =
     document.getElementById(
         "finalScore"
     );
 
-
 const resultMessage =
     document.getElementById(
         "resultMessage"
+    );
+
+const saveStatus =
+    document.getElementById(
+        "saveStatus"
     );
 
 
@@ -963,22 +778,18 @@ function loadQuestion() {
         timerInterval
     );
 
-
     answered = false;
 
     timer = 15;
 
-
     const q =
         questions[currentQuestion];
-
 
     questionCounter.textContent =
         "Pergunta " +
         (currentQuestion + 1) +
         " de " +
         questions.length;
-
 
     questionNumber.textContent =
         "PERGUNTA " +
@@ -989,28 +800,22 @@ function loadQuestion() {
             "0"
         );
 
-
     questionElement.textContent =
         q.question;
-
 
     scoreElement.textContent =
         "⭐ " +
         score +
         " pontos";
 
-
     feedback.textContent =
         "";
-
 
     nextButton.style.display =
         "none";
 
-
     answersElement.innerHTML =
         "";
-
 
     q.answers.forEach(
         function(answer, index) {
@@ -1020,14 +825,11 @@ function loadQuestion() {
                     "button"
                 );
 
-
             button.className =
                 "answer";
 
-
             button.textContent =
                 answer;
-
 
             button.onclick =
                 function() {
@@ -1039,14 +841,12 @@ function loadQuestion() {
 
                 };
 
-
             answersElement.appendChild(
                 button
             );
 
         }
     );
-
 
     updateTimer();
 
@@ -1068,7 +868,6 @@ function startTimer() {
                 timer--;
 
                 updateTimer();
-
 
                 if (timer <= 0) {
 
@@ -1092,7 +891,6 @@ function updateTimer() {
     const percentage =
         (timer / 15) * 100;
 
-
     timerBar.style.width =
         percentage + "%";
 
@@ -1111,26 +909,21 @@ function timeOut() {
 
     }
 
-
     answered = true;
-
 
     const q =
         questions[currentQuestion];
-
 
     const buttons =
         document.querySelectorAll(
             ".answer"
         );
 
-
     buttons.forEach(
         function(button, index) {
 
             button.disabled =
                 true;
-
 
             if (
                 index ===
@@ -1146,14 +939,11 @@ function timeOut() {
         }
     );
 
-
     feedback.textContent =
         "⏰ Tempo esgotado!";
 
-
     feedback.style.color =
         "#fca5a5";
-
 
     nextButton.style.display =
         "block";
@@ -1176,24 +966,19 @@ function checkAnswer(
 
     }
 
-
     answered = true;
-
 
     clearInterval(
         timerInterval
     );
 
-
     const q =
         questions[currentQuestion];
-
 
     const buttons =
         document.querySelectorAll(
             ".answer"
         );
-
 
     buttons.forEach(
         function(button) {
@@ -1204,41 +989,32 @@ function checkAnswer(
         }
     );
 
-
     if (
         selected ===
         q.correct
     ) {
-
-        /*
-           10 pontos base
-           + até 5 pontos pelo tempo
-        */
 
         const bonus =
             Math.floor(
                 timer / 3
             );
 
-
         const points =
             10 + bonus;
-
 
         score +=
             points;
 
+        correctAnswers++;
 
         clickedButton.classList.add(
             "correct"
         );
 
-
         feedback.textContent =
             "✅ Correto! +" +
             points +
             " pontos";
-
 
         feedback.style.color =
             "#86efac";
@@ -1249,29 +1025,24 @@ function checkAnswer(
             "wrong"
         );
 
-
         buttons[
             q.correct
         ].classList.add(
             "correct"
         );
 
-
         feedback.textContent =
             "❌ Resposta errada!";
-
 
         feedback.style.color =
             "#fca5a5";
 
     }
 
-
     scoreElement.textContent =
         "⭐ " +
         score +
         " pontos";
-
 
     nextButton.style.display =
         "block";
@@ -1287,7 +1058,6 @@ function nextQuestion() {
 
     currentQuestion++;
 
-
     if (
         currentQuestion >=
         questions.length
@@ -1299,8 +1069,100 @@ function nextQuestion() {
 
     }
 
-
     loadQuestion();
+
+}
+
+
+/* =========================================
+   SALVAR RESULTADO
+========================================= */
+
+async function saveGameScore() {
+
+    saveStatus.textContent =
+        "Salvando resultado...";
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+            .auth
+            .getSession();
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        const user =
+            data?.session?.user;
+
+
+        if (!user) {
+
+            saveStatus.textContent =
+                "⚠️ Faça login para salvar sua pontuação.";
+
+            return;
+
+        }
+
+
+        const {
+            error: insertError
+        } =
+        await supabaseClient
+            .from("game_scores")
+            .insert({
+
+                user_id:
+                    user.id,
+
+                game:
+                    "desafio_zuno",
+
+                score:
+                    score,
+
+                questions:
+                    questions.length,
+
+                correct_answers:
+                    correctAnswers
+
+            });
+
+
+        if (insertError) {
+
+            throw insertError;
+
+        }
+
+
+        saveStatus.textContent =
+            "✅ Pontuação salva com sucesso!";
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao salvar pontuação:",
+            error
+        );
+
+
+        saveStatus.textContent =
+            "⚠️ Não foi possível salvar a pontuação.";
+
+    }
 
 }
 
@@ -1315,21 +1177,17 @@ function finishGame() {
         timerInterval
     );
 
-
     game.style.display =
         "none";
 
-
     result.style.display =
         "block";
-
 
     finalScore.textContent =
         score;
 
 
     let message;
-
 
     if (score >= 120) {
 
@@ -1357,6 +1215,9 @@ function finishGame() {
     resultMessage.textContent =
         message;
 
+
+    saveGameScore();
+
 }
 
 
@@ -1370,12 +1231,13 @@ function restartGame() {
 
     score = 0;
 
+    correctAnswers = 0;
+
     result.style.display =
         "none";
 
     game.style.display =
         "block";
-
 
     loadQuestion();
 
