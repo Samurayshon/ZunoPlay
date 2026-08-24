@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Notificações - ZunoPlay</title>
+<title>Diagnóstico - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -49,6 +49,7 @@ body {
     background: #1b1c2b;
     color: white;
     font-size: 20px;
+    cursor: pointer;
 }
 
 .logo {
@@ -66,77 +67,38 @@ body {
 
 .title {
     font-size: 25px;
+    margin-bottom: 10px;
+}
+
+.box {
+    margin-top: 15px;
+    padding: 18px;
+    border-radius: 16px;
+    background: #141523;
+    border: 1px solid #292a3d;
+}
+
+.label {
+    color: #9293a3;
+    font-size: 12px;
     margin-bottom: 6px;
 }
 
-.subtitle {
-    color: #9293a3;
+.value {
+    color: #8b5cf6;
     font-size: 13px;
-    margin-bottom: 20px;
+    word-break: break-all;
+    margin-bottom: 18px;
 }
 
-.notification {
-    display: flex;
-    gap: 13px;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 17px;
-    border: 1px solid #292a3d;
-    background: rgba(20,21,35,.9);
-}
-
-.notification.unread {
-    border-color: #8b5cf6;
-    background: rgba(34,28,58,.95);
-}
-
-.icon {
-    width: 45px;
-    height: 45px;
-    min-width: 45px;
-    border-radius: 50%;
-    background: #1b1c2b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-}
-
-.info {
-    flex: 1;
-}
-
-.notification-title {
-    font-size: 14px;
+.success {
+    color: #65d391;
     font-weight: bold;
-    margin-bottom: 5px;
 }
 
-.notification-message {
-    color: #9697a7;
-    font-size: 12px;
-}
-
-.notification-time {
-    color: #666879;
-    font-size: 10px;
-    margin-top: 7px;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    min-width: 8px;
-    border-radius: 50%;
-    background: #8b5cf6;
-    margin-top: 6px;
-}
-
-.empty {
-    text-align: center;
-    color: #737486;
-    padding: 65px 20px;
-    font-size: 14px;
+.error {
+    color: #ff7777;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -144,9 +106,19 @@ body {
 <body>
 
 <div id="app" class="app">
-    <div class="empty">
-        Carregando notificações...
+
+    <div class="page">
+
+        <h1 class="title">
+            🔔 Diagnóstico ZunoPlay
+        </h1>
+
+        <div class="box">
+            Carregando...
+        </div>
+
     </div>
+
 </div>
 
 <script>
@@ -166,12 +138,6 @@ window.supabase.createClient(
 const app =
 document.getElementById("app");
 
-let currentUser = null;
-
-
-/* ===============================
-   INICIAR SESSÃO
-================================ */
 
 async function start() {
 
@@ -181,69 +147,35 @@ async function start() {
     } =
     await supabaseClient.auth.getSession();
 
-    if (
-        error ||
-        !data.session
-    ) {
-
-        window.location.href =
-        "login.html";
-
-        return;
-    }
-
-    currentUser =
-    data.session.user;
-
-    await loadNotifications();
-
-}
-
-
-/* ===============================
-   NOTIFICAÇÕES
-================================ */
-
-async function loadNotifications() {
-
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-    .from("notifications")
-    .select("*")
-    .eq(
-        "user_id",
-        currentUser.id
-    )
-    .order(
-        "created_at",
-        {
-            ascending: false
-        }
-    );
 
     if (error) {
 
-        console.error(
-            "ERRO NOTIFICAÇÕES:",
-            error
+        showError(
+            "Erro ao obter sessão: " +
+            error.message
         );
 
-        app.innerHTML = `
-            <div class="empty">
-                Erro ao carregar notificações.
-                <br><br>
-                ${error.message}
-            </div>
-        `;
-
         return;
+
     }
 
 
-    let html = `
+    if (!data.session) {
+
+        showError(
+            "Nenhuma sessão encontrada. Faça login novamente."
+        );
+
+        return;
+
+    }
+
+
+    const user =
+    data.session.user;
+
+
+    app.innerHTML = `
 
         <div class="header">
 
@@ -262,166 +194,122 @@ async function loadNotifications() {
         <div class="page">
 
             <h1 class="title">
-                🔔 Notificações
+                🔔 Diagnóstico
             </h1>
 
-            <p class="subtitle">
-                Suas atividades recentes.
-            </p>
+            <div class="box">
+
+                <div class="label">
+                    ID da sessão
+                </div>
+
+                <div class="value">
+                    ${user.id}
+                </div>
+
+                <div class="label">
+                    E-mail
+                </div>
+
+                <div class="value">
+                    ${user.email || "sem e-mail"}
+                </div>
+
+                <div id="resultado">
+                    Consultando notificações...
+                </div>
+
+            </div>
+
+        </div>
 
     `;
 
 
-    if (!data || data.length === 0) {
+    const {
+        data: notificacoes,
+        error: erroNotificacoes
+    } =
+    await supabaseClient
+    .from("notifications")
+    .select("*")
+    .eq(
+        "user_id",
+        user.id
+    );
 
-        html += `
 
-            <div class="empty">
-                Você não possui notificações ainda. 🔔
+    const resultado =
+    document.getElementById(
+        "resultado"
+    );
+
+
+    if (erroNotificacoes) {
+
+        resultado.innerHTML = `
+
+            <div class="error">
+                ERRO AO CONSULTAR NOTIFICAÇÕES
+            </div>
+
+            <br>
+
+            <div>
+                ${erroNotificacoes.message}
             </div>
 
         `;
 
-    } else {
+        console.error(
+            erroNotificacoes
+        );
 
-        data.forEach(function(notification) {
-
-            const unread =
-            notification.read_at === null;
-
-
-            html += `
-
-                <div
-                    class="notification
-                    ${unread ? "unread" : ""}"
-                    onclick="markRead('${notification.id}')">
-
-                    <div class="icon">
-                        ${getIcon(notification.type)}
-                    </div>
-
-                    <div class="info">
-
-                        <div class="notification-title">
-                            ${escapeHTML(notification.title)}
-                        </div>
-
-                        <div class="notification-message">
-                            ${escapeHTML(notification.message || "")}
-                        </div>
-
-                        <div class="notification-time">
-                            ${formatDate(notification.created_at)}
-                        </div>
-
-                    </div>
-
-                    ${
-                        unread
-                        ? '<div class="dot"></div>'
-                        : ''
-                    }
-
-                </div>
-
-            `;
-
-        });
+        return;
 
     }
 
 
-    html += `
+    resultado.innerHTML = `
+
+        <div class="success">
+            Notificações encontradas:
+            ${notificacoes.length}
         </div>
+
     `;
 
 
-    app.innerHTML =
-    html;
+    console.log(
+        "Usuário:",
+        user.id
+    );
 
-}
-
-
-function getIcon(type) {
-
-    if (type === "message")
-        return "💬";
-
-    if (type === "friend_request")
-        return "👥";
-
-    if (type === "friend_accepted")
-        return "🤝";
-
-    return "🔔";
-
-}
-
-
-function formatDate(date) {
-
-    return new Date(date)
-    .toLocaleString(
-        "pt-BR",
-        {
-            day: "2-digit",
-            month: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit"
-        }
+    console.log(
+        "Notificações:",
+        notificacoes
     );
 
 }
 
 
-function escapeHTML(text) {
+function showError(message) {
 
-    const div =
-    document.createElement("div");
+    app.innerHTML = `
 
-    div.textContent =
-    text;
+        <div class="page">
 
-    return div.innerHTML;
+            <div class="box">
 
-}
+                <div class="error">
+                    ${message}
+                </div>
 
+            </div>
 
-/* ===============================
-   MARCAR COMO LIDA
-================================ */
+        </div>
 
-async function markRead(id) {
-
-    const {
-        error
-    } =
-    await supabaseClient
-    .from("notifications")
-    .update({
-        read_at:
-        new Date().toISOString()
-    })
-    .eq(
-        "id",
-        id
-    )
-    .eq(
-        "user_id",
-        currentUser.id
-    );
-
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-    }
-
-
-    await loadNotifications();
+    `;
 
 }
 
