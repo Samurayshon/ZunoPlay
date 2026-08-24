@@ -174,13 +174,6 @@ body {
     text-align: left;
     font-size: 14px;
     cursor: pointer;
-    transition: .2s;
-
-}
-
-.answer:hover {
-
-    border-color: #8b5cf6;
 
 }
 
@@ -277,16 +270,20 @@ body {
 
     color: #858697;
     font-size: 12px;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 
 }
 
 .save-status {
 
-    min-height: 20px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #11121e;
+    border: 1px solid #303145;
     color: #9293a3;
     font-size: 12px;
-    margin-bottom: 12px;
+    line-height: 1.5;
+    margin-bottom: 15px;
 
 }
 
@@ -338,6 +335,7 @@ body {
             ←
 
         </button>
+
 
         <div class="logo">
 
@@ -482,7 +480,7 @@ body {
             class="save-status"
         >
 
-            Salvando resultado...
+            Verificando login...
 
         </div>
 
@@ -539,142 +537,62 @@ const supabaseClient =
 const questions = [
 
     {
-        question:
-            "Qual é o maior planeta do Sistema Solar?",
-
-        answers: [
-            "Terra",
-            "Marte",
-            "Júpiter",
-            "Saturno"
-        ],
-
+        question: "Qual é o maior planeta do Sistema Solar?",
+        answers: ["Terra","Marte","Júpiter","Saturno"],
         correct: 2
     },
 
     {
-        question:
-            "Qual é a capital do Brasil?",
-
-        answers: [
-            "São Paulo",
-            "Brasília",
-            "Rio de Janeiro",
-            "Salvador"
-        ],
-
+        question: "Qual é a capital do Brasil?",
+        answers: ["São Paulo","Brasília","Rio de Janeiro","Salvador"],
         correct: 1
     },
 
     {
-        question:
-            "Quantos lados possui um hexágono?",
-
-        answers: [
-            "5",
-            "6",
-            "7",
-            "8"
-        ],
-
+        question: "Quantos lados possui um hexágono?",
+        answers: ["5","6","7","8"],
         correct: 1
     },
 
     {
-        question:
-            "Qual animal é conhecido como o rei da selva?",
-
-        answers: [
-            "Tigre",
-            "Leão",
-            "Lobo",
-            "Onça"
-        ],
-
+        question: "Qual animal é conhecido como o rei da selva?",
+        answers: ["Tigre","Leão","Lobo","Onça"],
         correct: 1
     },
 
     {
-        question:
-            "Qual é o resultado de 9 × 9?",
-
-        answers: [
-            "72",
-            "81",
-            "90",
-            "99"
-        ],
-
+        question: "Qual é o resultado de 9 × 9?",
+        answers: ["72","81","90","99"],
         correct: 1
     },
 
     {
-        question:
-            "Qual oceano banha a costa leste do Brasil?",
-
-        answers: [
-            "Pacífico",
-            "Índico",
-            "Atlântico",
-            "Ártico"
-        ],
-
+        question: "Qual oceano banha a costa leste do Brasil?",
+        answers: ["Pacífico","Índico","Atlântico","Ártico"],
         correct: 2
     },
 
     {
-        question:
-            "Qual é o idioma mais falado no Brasil?",
-
-        answers: [
-            "Espanhol",
-            "Português",
-            "Inglês",
-            "Francês"
-        ],
-
+        question: "Qual é o idioma mais falado no Brasil?",
+        answers: ["Espanhol","Português","Inglês","Francês"],
         correct: 1
     },
 
     {
-        question:
-            "Quantos minutos existem em uma hora?",
-
-        answers: [
-            "30",
-            "45",
-            "60",
-            "90"
-        ],
-
+        question: "Quantos minutos existem em uma hora?",
+        answers: ["30","45","60","90"],
         correct: 2
     },
 
     {
-        question:
-            "Qual destes é um mamífero?",
-
-        answers: [
-            "Tubarão",
-            "Golfinho",
-            "Crocodilo",
-            "Águia"
-        ],
-
+        question: "Qual destes é um mamífero?",
+        answers: ["Tubarão","Golfinho","Crocodilo","Águia"],
         correct: 1
     },
 
     {
-        question:
-            "Qual é a estrela mais próxima da Terra?",
-
-        answers: [
-            "Lua",
-            "Sirius",
-            "Sol",
-            "Vênus"
-        ],
-
+        question: "Qual é a estrela mais próxima da Terra?",
+        answers: ["Lua","Sirius","Sol","Vênus"],
         correct: 2
     }
 
@@ -703,69 +621,43 @@ let timerInterval = null;
 ========================================= */
 
 const questionElement =
-    document.getElementById(
-        "question"
-    );
+    document.getElementById("question");
 
 const answersElement =
-    document.getElementById(
-        "answers"
-    );
+    document.getElementById("answers");
 
 const questionCounter =
-    document.getElementById(
-        "questionCounter"
-    );
+    document.getElementById("questionCounter");
 
 const questionNumber =
-    document.getElementById(
-        "questionNumber"
-    );
+    document.getElementById("questionNumber");
 
 const scoreElement =
-    document.getElementById(
-        "score"
-    );
+    document.getElementById("score");
 
 const feedback =
-    document.getElementById(
-        "feedback"
-    );
+    document.getElementById("feedback");
 
 const nextButton =
-    document.getElementById(
-        "nextButton"
-    );
+    document.getElementById("nextButton");
 
 const timerBar =
-    document.getElementById(
-        "timerBar"
-    );
+    document.getElementById("timerBar");
 
 const game =
-    document.getElementById(
-        "game"
-    );
+    document.getElementById("game");
 
 const result =
-    document.getElementById(
-        "result"
-    );
+    document.getElementById("result");
 
 const finalScore =
-    document.getElementById(
-        "finalScore"
-    );
+    document.getElementById("finalScore");
 
 const resultMessage =
-    document.getElementById(
-        "resultMessage"
-    );
+    document.getElementById("resultMessage");
 
 const saveStatus =
-    document.getElementById(
-        "saveStatus"
-    );
+    document.getElementById("saveStatus");
 
 
 /* =========================================
@@ -774,9 +666,7 @@ const saveStatus =
 
 function loadQuestion() {
 
-    clearInterval(
-        timerInterval
-    );
+    clearInterval(timerInterval);
 
     answered = false;
 
@@ -793,12 +683,7 @@ function loadQuestion() {
 
     questionNumber.textContent =
         "PERGUNTA " +
-        String(
-            currentQuestion + 1
-        ).padStart(
-            2,
-            "0"
-        );
+        String(currentQuestion + 1).padStart(2,"0");
 
     questionElement.textContent =
         q.question;
@@ -818,12 +703,10 @@ function loadQuestion() {
         "";
 
     q.answers.forEach(
-        function(answer, index) {
+        function(answer,index) {
 
             const button =
-                document.createElement(
-                    "button"
-                );
+                document.createElement("button");
 
             button.className =
                 "answer";
@@ -869,7 +752,7 @@ function startTimer() {
 
                 updateTimer();
 
-                if (timer <= 0) {
+                if(timer <= 0) {
 
                     clearInterval(
                         timerInterval
@@ -903,7 +786,7 @@ function updateTimer() {
 
 function timeOut() {
 
-    if (answered) {
+    if(answered) {
 
         return;
 
@@ -915,20 +798,15 @@ function timeOut() {
         questions[currentQuestion];
 
     const buttons =
-        document.querySelectorAll(
-            ".answer"
-        );
+        document.querySelectorAll(".answer");
 
     buttons.forEach(
-        function(button, index) {
+        function(button,index) {
 
             button.disabled =
                 true;
 
-            if (
-                index ===
-                q.correct
-            ) {
+            if(index === q.correct) {
 
                 button.classList.add(
                     "correct"
@@ -952,7 +830,7 @@ function timeOut() {
 
 
 /* =========================================
-   VERIFICAR RESPOSTA
+   RESPOSTA
 ========================================= */
 
 function checkAnswer(
@@ -960,7 +838,7 @@ function checkAnswer(
     clickedButton
 ) {
 
-    if (answered) {
+    if(answered) {
 
         return;
 
@@ -968,17 +846,13 @@ function checkAnswer(
 
     answered = true;
 
-    clearInterval(
-        timerInterval
-    );
+    clearInterval(timerInterval);
 
     const q =
         questions[currentQuestion];
 
     const buttons =
-        document.querySelectorAll(
-            ".answer"
-        );
+        document.querySelectorAll(".answer");
 
     buttons.forEach(
         function(button) {
@@ -989,21 +863,15 @@ function checkAnswer(
         }
     );
 
-    if (
-        selected ===
-        q.correct
-    ) {
+    if(selected === q.correct) {
 
         const bonus =
-            Math.floor(
-                timer / 3
-            );
+            Math.floor(timer / 3);
 
         const points =
             10 + bonus;
 
-        score +=
-            points;
+        score += points;
 
         correctAnswers++;
 
@@ -1025,9 +893,7 @@ function checkAnswer(
             "wrong"
         );
 
-        buttons[
-            q.correct
-        ].classList.add(
+        buttons[q.correct].classList.add(
             "correct"
         );
 
@@ -1051,14 +917,14 @@ function checkAnswer(
 
 
 /* =========================================
-   PRÓXIMA PERGUNTA
+   PRÓXIMA
 ========================================= */
 
 function nextQuestion() {
 
     currentQuestion++;
 
-    if (
+    if(
         currentQuestion >=
         questions.length
     ) {
@@ -1075,92 +941,128 @@ function nextQuestion() {
 
 
 /* =========================================
-   SALVAR RESULTADO
+   SALVAR PONTUAÇÃO
 ========================================= */
 
 async function saveGameScore() {
 
-    saveStatus.textContent =
-        "Salvando resultado...";
+    saveStatus.innerHTML =
+        "🔄 Verificando sessão...";
+
 
     try {
 
-        const {
-            data,
-            error
-        } =
-        await supabaseClient
-            .auth
-            .getSession();
+        const sessionResult =
+            await supabaseClient.auth.getSession();
 
 
-        if (error) {
+        console.log(
+            "RESULTADO DA SESSÃO:",
+            sessionResult
+        );
 
-            throw error;
+
+        if(sessionResult.error) {
+
+            throw sessionResult.error;
 
         }
 
 
+        const session =
+            sessionResult.data.session;
+
+
         const user =
-            data?.session?.user;
+            session?.user;
 
 
-        if (!user) {
+        console.log(
+            "USUÁRIO LOGADO:",
+            user
+        );
 
-            saveStatus.textContent =
-                "⚠️ Faça login para salvar sua pontuação.";
+
+        console.log(
+            "ID DO USUÁRIO:",
+            user?.id
+        );
+
+
+        if(!user) {
+
+            saveStatus.innerHTML =
+                "❌ Nenhum usuário logado.<br><br>" +
+                "Faça login novamente antes de jogar.";
 
             return;
 
         }
 
 
-        const {
-            error: insertError
-        } =
-        await supabaseClient
-            .from("game_scores")
-            .insert({
-
-                user_id:
-                    user.id,
-
-                game:
-                    "desafio_zuno",
-
-                score:
-                    score,
-
-                questions:
-                    questions.length,
-
-                correct_answers:
-                    correctAnswers
-
-            });
+        saveStatus.innerHTML =
+            "🔄 Salvando pontuação...";
 
 
-        if (insertError) {
+        const resultInsert =
+            await supabaseClient
+                .from("game_scores")
+                .insert({
 
-            throw insertError;
+                    user_id:
+                        user.id,
+
+                    game:
+                        "desafio_zuno",
+
+                    score:
+                        score,
+
+                    questions:
+                        questions.length,
+
+                    correct_answers:
+                        correctAnswers
+
+                })
+                .select();
+
+
+        console.log(
+            "RESULTADO DO INSERT:",
+            resultInsert
+        );
+
+
+        if(resultInsert.error) {
+
+            throw resultInsert.error;
 
         }
 
 
-        saveStatus.textContent =
-            "✅ Pontuação salva com sucesso!";
+        saveStatus.innerHTML =
+            "✅ Pontuação salva com sucesso!<br><br>" +
+            "⭐ " +
+            score +
+            " pontos";
 
 
-    } catch (error) {
+    } catch(error) {
 
         console.error(
-            "Erro ao salvar pontuação:",
+            "ERRO COMPLETO AO SALVAR:",
             error
         );
 
 
-        saveStatus.textContent =
-            "⚠️ Não foi possível salvar a pontuação.";
+        saveStatus.innerHTML =
+            "❌ Erro ao salvar pontuação.<br><br>" +
+            "Código: " +
+            (error.code || "desconhecido") +
+            "<br>" +
+            (error.message || error);
+
 
     }
 
@@ -1168,7 +1070,7 @@ async function saveGameScore() {
 
 
 /* =========================================
-   FINALIZAR
+   FINAL
 ========================================= */
 
 function finishGame() {
@@ -1189,17 +1091,18 @@ function finishGame() {
 
     let message;
 
-    if (score >= 120) {
+
+    if(score >= 120) {
 
         message =
             "🔥 Excelente! Você dominou o desafio.";
 
-    } else if (score >= 80) {
+    } else if(score >= 80) {
 
         message =
             "👏 Muito bom! Você foi muito bem.";
 
-    } else if (score >= 50) {
+    } else if(score >= 50) {
 
         message =
             "👍 Bom trabalho! Continue praticando.";
