@@ -132,13 +132,14 @@ body {
 .time {
     color: #737486;
     font-size: 10px;
+    white-space: nowrap;
 }
 
 .badge {
-    min-width: 20px;
-    height: 20px;
+    min-width: 21px;
+    height: 21px;
     padding: 0 6px;
-    border-radius: 10px;
+    border-radius: 11px;
     background: #8b5cf6;
     display: flex;
     align-items: center;
@@ -267,7 +268,13 @@ params.get("user");
 
 
 function initial(name) {
-    return (name || "?").charAt(0).toUpperCase();
+
+    return (
+        name || "?"
+    )
+    .charAt(0)
+    .toUpperCase();
+
 }
 
 
@@ -283,6 +290,20 @@ function formatTime(dateString) {
             minute: "2-digit"
         }
     );
+
+}
+
+
+function escapeHTML(text) {
+
+    const div =
+    document.createElement("div");
+
+    div.textContent =
+    text || "";
+
+    return div.innerHTML;
+
 }
 
 
@@ -303,32 +324,14 @@ async function getUser() {
         "login.html";
 
         return false;
+
     }
 
     currentUser =
     data.session.user;
 
     return true;
-}
 
-
-function showHeader(title) {
-
-    return `
-        <div class="header">
-
-            <button
-                class="back"
-                onclick="goBack()">
-                ←
-            </button>
-
-            <div class="logo">
-                Zuno<span>Play</span>
-            </div>
-
-        </div>
-    `;
 }
 
 
@@ -345,6 +348,30 @@ function goBack() {
         "index.html";
 
     }
+
+}
+
+
+function header() {
+
+    return `
+
+        <div class="header">
+
+            <button
+                class="back"
+                onclick="goBack()">
+                ←
+            </button>
+
+            <div class="logo">
+                Zuno<span>Play</span>
+            </div>
+
+        </div>
+
+    `;
+
 }
 
 
@@ -355,9 +382,10 @@ function goBack() {
 async function loadConversations() {
 
     app.innerHTML =
-    showHeader("Conversas") +
+    header() +
 
     `
+
     <div class="page">
 
         <h1 class="title">
@@ -369,16 +397,20 @@ async function loadConversations() {
         </p>
 
         <div id="conversationList">
+
             <div class="empty">
                 Carregando conversas...
             </div>
+
         </div>
 
     </div>
+
     `;
 
+
     const {
-        data,
+        data: messages,
         error
     } =
     await supabaseClient
@@ -397,6 +429,7 @@ async function loadConversations() {
         }
     );
 
+
     if (error) {
 
         console.error(error);
@@ -411,21 +444,41 @@ async function loadConversations() {
         `;
 
         return;
+
     }
 
 
     const conversations = {};
 
-    (data || []).forEach(function(message) {
+
+    (messages || []).forEach(function(message) {
 
         const otherId =
         message.sender_id === currentUser.id
         ? message.receiver_id
         : message.sender_id;
 
+
         if (!conversations[otherId]) {
 
-            conversations[otherId] = message;
+            conversations[otherId] = {
+
+                lastMessage:
+                message,
+
+                unread: 0
+
+            };
+
+        }
+
+
+        if (
+            message.receiver_id === currentUser.id &&
+            message.read_at === null
+        ) {
+
+            conversations[otherId].unread++;
 
         }
 
@@ -449,6 +502,7 @@ async function loadConversations() {
         `;
 
         return;
+
     }
 
 
@@ -470,6 +524,7 @@ async function loadConversations() {
         console.error(profileError);
 
         return;
+
     }
 
 
@@ -483,14 +538,21 @@ async function loadConversations() {
 
     profiles.forEach(function(profile) {
 
-        const message =
+        const conversation =
         conversations[profile.id];
+
+
+        const message =
+        conversation.lastMessage;
+
 
         const item =
         document.createElement("button");
 
+
         item.className =
         "conversation";
+
 
         item.onclick =
         function() {
@@ -504,6 +566,24 @@ async function loadConversations() {
         };
 
 
+        let badge = "";
+
+
+        if (
+            conversation.unread > 0
+        ) {
+
+            badge = `
+
+                <div class="badge">
+                    ${conversation.unread}
+                </div>
+
+            `;
+
+        }
+
+
         item.innerHTML = `
 
             <div class="avatar">
@@ -513,7 +593,7 @@ async function loadConversations() {
             <div class="info">
 
                 <div class="name">
-                    ${profile.username}
+                    ${escapeHTML(profile.username)}
                 </div>
 
                 <div class="last-message">
@@ -522,15 +602,68 @@ async function loadConversations() {
 
             </div>
 
-            <div class="time">
-                ${formatTime(message.created_at)}
+            <div>
+
+                <div class="time">
+                    ${formatTime(message.created_at)}
+                </div>
+
+                ${badge}
+
             </div>
 
         `;
 
+
         list.appendChild(item);
 
     });
+
+
+    subscribeConversationList();
+
+}
+
+
+/* =========================================
+   MARCAR COMO LIDA
+   ========================================= */
+
+async function markMessagesAsRead() {
+
+    const {
+        error
+    } =
+    await supabaseClient
+    .from("messages")
+    .update({
+
+        read_at:
+        new Date().toISOString()
+
+    })
+    .eq(
+        "receiver_id",
+        currentUser.id
+    )
+    .eq(
+        "sender_id",
+        friendId
+    )
+    .is(
+        "read_at",
+        null
+    );
+
+
+    if (error) {
+
+        console.error(
+            "Erro ao marcar mensagens como lidas:",
+            error
+        );
+
+    }
 
 }
 
@@ -543,7 +676,7 @@ async function loadChat() {
 
     const {
         data: profile,
-        error: profileError
+        error
     } =
     await supabaseClient
     .from("profiles")
@@ -555,7 +688,7 @@ async function loadChat() {
     .single();
 
 
-    if (profileError) {
+    if (error) {
 
         app.innerHTML =
         `
@@ -565,6 +698,7 @@ async function loadChat() {
         `;
 
         return;
+
     }
 
 
@@ -587,7 +721,7 @@ async function loadChat() {
                 <div class="info">
 
                     <div class="name">
-                        ${profile.username}
+                        ${escapeHTML(profile.username)}
                     </div>
 
                     <div class="last-message">
@@ -632,12 +766,22 @@ async function loadChat() {
             </form>
 
         </div>
+
     `;
 
 
     await loadMessages();
 
-    subscribeRealtime();
+
+    /*
+     * Marca como lidas somente depois
+     * que o chat foi aberto.
+     */
+
+    await markMessagesAsRead();
+
+
+    subscribeChat();
 
 
     document
@@ -652,7 +796,7 @@ async function loadChat() {
 
 async function loadMessages() {
 
-    const messages =
+    const container =
     document.getElementById(
         "messages"
     );
@@ -688,7 +832,7 @@ async function loadMessages() {
 
         console.error(error);
 
-        messages.innerHTML =
+        container.innerHTML =
         `
         <div class="empty">
             Não foi possível carregar as mensagens.
@@ -696,15 +840,16 @@ async function loadMessages() {
         `;
 
         return;
+
     }
 
 
-    messages.innerHTML = "";
+    container.innerHTML = "";
 
 
     if (!data || !data.length) {
 
-        messages.innerHTML =
+        container.innerHTML =
         `
         <div class="empty">
             Nenhuma mensagem ainda.<br>
@@ -713,6 +858,7 @@ async function loadMessages() {
         `;
 
         return;
+
     }
 
 
@@ -733,13 +879,17 @@ function addMessage(message) {
         "messages"
     );
 
-    if (!container) return;
+
+    if (!container) {
+        return;
+    }
 
 
     const empty =
     container.querySelector(
         ".empty"
     );
+
 
     if (empty) {
 
@@ -749,9 +899,7 @@ function addMessage(message) {
 
 
     const div =
-    document.createElement(
-        "div"
-    );
+    document.createElement("div");
 
 
     div.className =
@@ -789,11 +937,14 @@ async function sendMessage(event) {
         "messageInput"
     );
 
+
     const content =
     input.value.trim();
 
 
-    if (!content) return;
+    if (!content) {
+        return;
+    }
 
 
     input.disabled = true;
@@ -830,6 +981,7 @@ async function sendMessage(event) {
         );
 
         return;
+
     }
 
 
@@ -840,14 +992,92 @@ async function sendMessage(event) {
 }
 
 
-function subscribeRealtime() {
+/* =========================================
+   REALTIME DO CHAT
+   ========================================= */
+
+function subscribeChat() {
 
     supabaseClient
     .channel(
-        "messages-" +
+        "chat-" +
         currentUser.id +
         "-" +
         friendId
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "messages"
+        },
+        async function(payload) {
+
+            const message =
+            payload.new;
+
+
+            const related =
+            (
+                message.sender_id === currentUser.id &&
+                message.receiver_id === friendId
+            )
+            ||
+            (
+                message.sender_id === friendId &&
+                message.receiver_id === currentUser.id
+            );
+
+
+            if (!related) {
+                return;
+            }
+
+
+            addMessage(message);
+
+
+            if (
+                message.sender_id === friendId &&
+                message.receiver_id === currentUser.id
+            ) {
+
+                await supabaseClient
+                .from("messages")
+                .update({
+
+                    read_at:
+                    new Date().toISOString()
+
+                })
+                .eq(
+                    "id",
+                    message.id
+                );
+
+            }
+
+
+            scrollBottom();
+
+        }
+    )
+    .subscribe();
+
+}
+
+
+/* =========================================
+   REALTIME DA LISTA
+   ========================================= */
+
+function subscribeConversationList() {
+
+    supabaseClient
+    .channel(
+        "conversation-list-" +
+        currentUser.id
     )
     .on(
         "postgres_changes",
@@ -862,27 +1092,36 @@ function subscribeRealtime() {
             payload.new;
 
 
-            const related =
-            (
-                message.sender_id ===
-                currentUser.id &&
-                message.receiver_id ===
-                friendId
-            )
-            ||
-            (
-                message.sender_id ===
-                friendId &&
-                message.receiver_id ===
-                currentUser.id
-            );
+            if (
+                message.sender_id === currentUser.id ||
+                message.receiver_id === currentUser.id
+            ) {
+
+                loadConversations();
+
+            }
+
+        }
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "UPDATE",
+            schema: "public",
+            table: "messages"
+        },
+        function(payload) {
+
+            const message =
+            payload.new;
 
 
-            if (related) {
+            if (
+                message.sender_id === currentUser.id ||
+                message.receiver_id === currentUser.id
+            ) {
 
-                addMessage(message);
-
-                scrollBottom();
+                loadConversations();
 
             }
 
@@ -900,7 +1139,10 @@ function scrollBottom() {
         "messages"
     );
 
-    if (!messages) return;
+
+    if (!messages) {
+        return;
+    }
 
 
     setTimeout(
@@ -916,21 +1158,6 @@ function scrollBottom() {
 }
 
 
-function escapeHTML(text) {
-
-    const div =
-    document.createElement(
-        "div"
-    );
-
-    div.textContent =
-    text || "";
-
-    return div.innerHTML;
-
-}
-
-
 /* =========================================
    INICIAR
    ========================================= */
@@ -940,7 +1167,10 @@ async function start() {
     const logged =
     await getUser();
 
-    if (!logged) return;
+
+    if (!logged) {
+        return;
+    }
 
 
     if (friendId) {
