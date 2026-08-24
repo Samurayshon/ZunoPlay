@@ -21,7 +21,6 @@
 }
 
 body {
-
     min-height: 100vh;
 
     background:
@@ -30,20 +29,16 @@ body {
         #070811;
 
     color: white;
-
 }
 
 .app {
-
     width: 100%;
     max-width: 480px;
     min-height: 100vh;
     margin: auto;
-
 }
 
 .header {
-
     display: flex;
     align-items: center;
     gap: 12px;
@@ -58,11 +53,9 @@ body {
     top: 0;
 
     z-index: 5;
-
 }
 
 .back {
-
     width: 42px;
     height: 42px;
 
@@ -77,45 +70,33 @@ body {
     font-size: 20px;
 
     cursor: pointer;
-
 }
 
 .logo {
-
     font-size: 28px;
     font-weight: 800;
-
 }
 
 .logo span {
-
     color: #8b5cf6;
-
 }
 
 .page {
-
     padding: 20px;
-
 }
 
 .title {
-
     font-size: 25px;
     margin-bottom: 6px;
-
 }
 
 .subtitle {
-
     color: #9293a3;
     font-size: 13px;
     margin-bottom: 20px;
-
 }
 
 .status {
-
     padding: 12px;
 
     margin-bottom: 15px;
@@ -129,11 +110,9 @@ body {
     color: #4ade80;
 
     font-size: 12px;
-
 }
 
 .conversation {
-
     display: flex;
 
     align-items: center;
@@ -157,17 +136,13 @@ body {
     cursor: pointer;
 
     text-align: left;
-
 }
 
 .conversation:hover {
-
     border-color: #8b5cf6;
-
 }
 
 .avatar {
-
     width: 48px;
     height: 48px;
 
@@ -187,28 +162,24 @@ body {
     justify-content: center;
 
     font-weight: bold;
-    font-size: 18px;
 
+    font-size: 18px;
 }
 
 .info {
-
     min-width: 0;
     flex: 1;
-
 }
 
 .name {
-
     font-size: 15px;
+
     font-weight: bold;
 
     margin-bottom: 5px;
-
 }
 
 .last-message {
-
     color: #858697;
 
     font-size: 12px;
@@ -218,21 +189,17 @@ body {
     overflow: hidden;
 
     text-overflow: ellipsis;
-
 }
 
 .time {
-
     color: #737486;
 
     font-size: 10px;
 
     white-space: nowrap;
-
 }
 
 .empty {
-
     text-align: center;
 
     color: #737486;
@@ -240,21 +207,17 @@ body {
     padding: 60px 20px;
 
     font-size: 14px;
-
 }
 
 .chat {
-
     display: flex;
 
     flex-direction: column;
 
     min-height: 100vh;
-
 }
 
 .chat-messages {
-
     flex: 1;
 
     padding: 20px;
@@ -268,11 +231,9 @@ body {
     overflow-y: auto;
 
     min-height: calc(100vh - 145px);
-
 }
 
 .message {
-
     max-width: 78%;
 
     padding: 11px 14px;
@@ -284,11 +245,9 @@ body {
     line-height: 1.4;
 
     word-break: break-word;
-
 }
 
 .mine {
-
     align-self: flex-end;
 
     background:
@@ -299,11 +258,9 @@ body {
         );
 
     border-bottom-right-radius: 5px;
-
 }
 
 .theirs {
-
     align-self: flex-start;
 
     background: #1b1c2b;
@@ -311,11 +268,9 @@ body {
     border: 1px solid #303145;
 
     border-bottom-left-radius: 5px;
-
 }
 
 .message-time {
-
     display: block;
 
     font-size: 9px;
@@ -323,11 +278,9 @@ body {
     opacity: .6;
 
     margin-top: 4px;
-
 }
 
 .composer {
-
     display: flex;
 
     gap: 8px;
@@ -341,11 +294,9 @@ body {
     position: sticky;
 
     bottom: 0;
-
 }
 
 .composer input {
-
     flex: 1;
 
     min-width: 0;
@@ -361,11 +312,9 @@ body {
     color: white;
 
     outline: none;
-
 }
 
 .send {
-
     width: 50px;
 
     border: none;
@@ -384,25 +333,20 @@ body {
     font-size: 19px;
 
     cursor: pointer;
-
 }
 
 </style>
 
 </head>
 
-
 <body>
-
 
 <div
     id="app"
     class="app"
 ></div>
 
-
 <script>
-
 
 /* =========================================
    SUPABASE
@@ -434,6 +378,8 @@ null;
 let friendId =
 null;
 
+let realtimeChannel =
+null;
 
 const params =
 new URLSearchParams(
@@ -488,18 +434,6 @@ function formatTime(dateString) {
 }
 
 
-function formatDate(dateString) {
-
-    const date =
-    new Date(dateString);
-
-    return date.toLocaleDateString(
-        "pt-BR"
-    );
-
-}
-
-
 /* =========================================
    USUÁRIO LOGADO
 ========================================= */
@@ -514,7 +448,6 @@ async function getUser() {
     .auth
     .getSession();
 
-
     if (
         error ||
         !data ||
@@ -528,10 +461,8 @@ async function getUser() {
 
     }
 
-
     currentUser =
     data.session.user;
-
 
     return true;
 
@@ -578,7 +509,6 @@ function header() {
 
             </button>
 
-
             <div class="logo">
 
                 Zuno<span>Play</span>
@@ -611,13 +541,11 @@ async function loadConversations() {
 
             </h1>
 
-
             <p class="subtitle">
 
                 Suas conversas recentes.
 
             </p>
-
 
             <div
                 id="status"
@@ -627,7 +555,6 @@ async function loadConversations() {
                 ⏳ Carregando...
 
             </div>
-
 
             <div
                 id="conversationList"
@@ -674,12 +601,10 @@ async function loadConversations() {
             error
         );
 
-
         document.getElementById(
             "status"
         ).textContent =
         "❌ Erro ao consultar mensagens";
-
 
         document.getElementById(
             "conversationList"
@@ -693,7 +618,6 @@ async function loadConversations() {
             </div>
 
         `;
-
 
         return;
 
@@ -809,12 +733,6 @@ async function loadConversations() {
     }
 
 
-    /*
-     * Carrega cada usuário separadamente.
-     * Isso evita que um problema em profiles
-     * apague a tela inteira.
-     */
-
     for (
         const id of ids
     ) {
@@ -893,7 +811,6 @@ async function loadConversations() {
 
             </div>
 
-
             <div class="info">
 
                 <div class="name">
@@ -904,7 +821,6 @@ async function loadConversations() {
 
                 </div>
 
-
                 <div class="last-message">
 
                     ${escapeHTML(
@@ -914,7 +830,6 @@ async function loadConversations() {
                 </div>
 
             </div>
-
 
             <div class="time">
 
@@ -980,7 +895,6 @@ async function loadChat() {
 
         <div class="chat">
 
-
             <div class="header">
 
                 <button
@@ -992,7 +906,6 @@ async function loadChat() {
 
                 </button>
 
-
                 <div class="avatar">
 
                     ${escapeHTML(
@@ -1000,7 +913,6 @@ async function loadChat() {
                     )}
 
                 </div>
-
 
                 <div class="info">
 
@@ -1012,7 +924,6 @@ async function loadChat() {
 
                     </div>
 
-
                     <div class="last-message">
 
                         Conversa privada
@@ -1022,7 +933,6 @@ async function loadChat() {
                 </div>
 
             </div>
-
 
             <div
                 id="messages"
@@ -1036,7 +946,6 @@ async function loadChat() {
                 </div>
 
             </div>
-
 
             <form
                 id="messageForm"
@@ -1052,7 +961,6 @@ async function loadChat() {
                     required
                 >
 
-
                 <button
                     class="send"
                     type="submit"
@@ -1064,14 +972,12 @@ async function loadChat() {
 
             </form>
 
-
         </div>
 
     `;
 
 
     await loadMessages();
-
 
     await markMessagesAsRead();
 
@@ -1089,7 +995,7 @@ async function loadChat() {
 
 
 /* =========================================
-   CARREGAR MENSAGENS DO CHAT
+   CARREGAR MENSAGENS
 ========================================= */
 
 async function loadMessages() {
@@ -1159,7 +1065,6 @@ async function loadMessages() {
 
         `;
 
-
         return;
 
     }
@@ -1187,7 +1092,6 @@ async function loadMessages() {
             </div>
 
         `;
-
 
         return;
 
@@ -1231,10 +1135,34 @@ function addMessage(
     }
 
 
+    /*
+     * Evita duplicar mensagens
+     * caso o Realtime e o envio local
+     * entreguem a mesma mensagem.
+     */
+
+    if (
+        message.id &&
+        document.querySelector(
+            '[data-message-id="' +
+            message.id +
+            '"]'
+        )
+    ) {
+
+        return;
+
+    }
+
+
     const div =
     document.createElement(
         "div"
     );
+
+
+    div.dataset.messageId =
+    message.id || "";
 
 
     div.className =
@@ -1265,266 +1193,4 @@ function addMessage(
                 message.created_at
             )}
 
-        </span>
-
-    `;
-
-
-    container.appendChild(
-        div
-    );
-
-}
-
-
-/* =========================================
-   MARCAR COMO LIDA
-========================================= */
-
-async function markMessagesAsRead() {
-
-    if (
-        !currentUser ||
-        !friendId
-    ) {
-
-        return;
-
-    }
-
-
-    const {
-        error
-    } =
-    await supabaseClient
-    .from("messages")
-    .update({
-
-        read_at:
-        new Date().toISOString()
-
-    })
-    .eq(
-        "receiver_id",
-        currentUser.id
-    )
-    .eq(
-        "sender_id",
-        friendId
-    )
-    .is(
-        "read_at",
-        null
-    );
-
-
-    if (error) {
-
-        console.error(
-            "Erro read_at:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================
-   ENVIAR MENSAGEM
-========================================= */
-
-async function sendMessage(
-    event
-) {
-
-    event.preventDefault();
-
-
-    const input =
-    document.getElementById(
-        "messageInput"
-    );
-
-
-    const content =
-    input.value.trim();
-
-
-    if (!content) {
-
-        return;
-
-    }
-
-
-    input.disabled =
-    true;
-
-
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-    .from("messages")
-    .insert({
-
-        sender_id:
-        currentUser.id,
-
-        receiver_id:
-        friendId,
-
-        content:
-        content
-
-    })
-    .select("*")
-    .single();
-
-
-    input.disabled =
-    false;
-
-
-    if (error) {
-
-        console.error(
-            "Erro ao enviar:",
-            error
-        );
-
-
-        alert(
-            "Não foi possível enviar a mensagem."
-        );
-
-
-        return;
-
-    }
-
-
-    input.value =
-    "";
-
-
-    input.focus();
-
-
-    /*
-     * Mostra imediatamente a mensagem
-     * enviada pelo próprio usuário.
-     */
-
-    if (data) {
-
-        addMessage(
-            data
-        );
-
-        scrollBottom();
-
-    }
-
-}
-
-
-/* =========================================
-   SCROLL
-========================================= */
-
-function scrollBottom() {
-
-    const container =
-    document.getElementById(
-        "messages"
-    );
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    setTimeout(
-        function() {
-
-            container.scrollTop =
-            container.scrollHeight;
-
-        },
-        50
-    );
-
-}
-
-
-/* =========================================
-   INICIAR
-========================================= */
-
-async function start() {
-
-    try {
-
-        const logged =
-        await getUser();
-
-
-        if (!logged) {
-
-            return;
-
-        }
-
-
-        if (friendId) {
-
-            await loadChat();
-
-        } else {
-
-            await loadConversations();
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Erro geral:",
-            error
-        );
-
-
-        app.innerHTML = `
-
-            <div class="empty">
-
-                ❌ Erro ao carregar o ZunoPlay.
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message
-                )}
-
-            </div>
-
-        `;
-
-    }
-
-}
-
-
-start();
-
-</script>
-
-</body>
-
-</html>
+       
