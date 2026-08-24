@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Notificações - ZunoPlay</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        #070811;
+    color: white;
+}
+
+.app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    border-bottom: 1px solid #292a3d;
+    background: rgba(10,11,20,.95);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.back {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid #303145;
+    background: #1b1c2b;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.logo span {
+    color: #8b5cf6;
+}
+
+.page {
+    padding: 20px;
+}
+
+.title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.title {
+    font-size: 25px;
+}
+
+.mark-all {
+    border: none;
+    background: transparent;
+    color: #9b7cff;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.subtitle {
+    color: #9293a3;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.notification {
+    display: flex;
+    gap: 13px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 17px;
+    border: 1px solid #292a3d;
+    background: rgba(20,21,35,.9);
+    cursor: pointer;
+}
+
+.notification.unread {
+    border-color: rgba(139,92,246,.5);
+    background: rgba(34,28,58,.95);
+}
+
+.icon {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    border-radius: 50%;
+    background: #1b1c2b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.info {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.notification-message {
+    color: #9697a7;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.notification-time {
+    color: #666879;
+    font-size: 10px;
+    margin-top: 7px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    margin-top: 6px;
+}
+
+.empty {
+    text-align: center;
+    color: #737486;
+    padding: 65px 20px;
+    font-size: 14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="app" class="app"></div>
+
+<script>
+
+const SUPABASE_URL =
+"https://rliymfbbhqoejgfvsbuu.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+const app =
+document.getElementById("app");
+
+let currentUser = null;
+
+
+/* =========================================
+   USUÁRIO
+   ========================================= */
+
+async function getUser() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient.auth.getSession();
+
+    if (
+        error ||
+        !data.session
+    ) {
+
+        window.location.href =
+        "login.html";
+
+        return false;
+
+    }
+
+    currentUser =
+    data.session.user;
+
+    return true;
+
+}
+
+
+/* =========================================
+   FORMATAÇÃO
+   ========================================= */
+
+function formatTime(dateString) {
+
+    const date =
+    new Date(dateString);
+
+    return date.toLocaleString(
+        "pt-BR",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+function getIcon(type) {
+
+    if (type === "message") {
+        return "💬";
+    }
+
+    if (type === "friend_request") {
+        return "👥";
+    }
+
+    if (type === "friend_accepted") {
+        return "🤝";
+    }
+
+    return "🔔";
+
+}
+
+
+/* =========================================
+   INTERFACE
+   ========================================= */
+
+function renderHeader() {
+
+    return `
+
+        <div class="header">
+
+            <button
+                class="back"
+                onclick="goBack()">
+                ←
+            </button>
+
+            <div class="logo">
+                Zuno<span>Play</span>
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+function goBack() {
+
+    window.location.href =
+    "index.html";
+
+}
+
+
+/* =========================================
+   CARREGAR NOTIFICAÇÕES
+   ========================================= */
+
+async function loadNotifications() {
+
+    app.innerHTML =
+    renderHeader() +
+
+    `
+
+    <div class="page">
+
+        <div class="title-row">
+
+            <h1 class="title">
+                🔔 Notificações
+            </h1>
+
+            <button
+                class="mark-all"
+                id="markAll">
+                Marcar todas como lidas
+            </button>
+
+        </div>
+
+        <p class="subtitle">
+            Suas atividades recentes.
+        </p>
+
+        <div id="notificationList">
+
+            <div class="empty">
+                Carregando notificações...
+            </div>
+
+        </div>
+
+    </div>
+
+    `;
+
+
+    document
+    .getElementById("markAll")
+    .addEventListener(
+        "click",
+        markAllAsRead
+    );
+
+
+    await renderNotifications();
+
+    subscribeNotifications();
+
+}
+
+
+/* =========================================
+   RENDERIZAR
+   ========================================= */
+
+async function renderNotifications() {
+
+    const list =
+    document.getElementById(
+        "notificationList"
+    );
+
+
+    if (!list) {
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+    .from("notifications")
+    .select("*")
+    .eq(
+        "user_id",
+        currentUser.id
+    )
+    .order(
+        "created_at",
+        {
+            ascending: false
+        }
+    )
+    .limit(100);
+
+
+    if (error) {
+
+        console.error(error);
+
+        list.innerHTML =
+        `
+        <div class="empty">
+            Não foi possível carregar suas notificações.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    if (!data || data.length === 0) {
+
+        list.innerHTML =
+        `
+        <div class="empty">
+            Você não possui notificações ainda. 🔔
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    data.forEach(function(notification) {
+
+        const item =
+        document.createElement("div");
+
+
+        const unread =
+        !notification.read_at;
+
+
+        item.className =
+        "notification" +
+        (
+            unread
+            ? " unread"
+            : ""
+        );
+
+
+        item.innerHTML = `
+
+            <div class="icon">
+                ${getIcon(notification.type)}
+            </div>
+
+            <div class="info">
+
+                <div class="notification-title">
+                    ${escapeHTML(notification.title)}
+                </div>
+
+                <div class="notification-message">
+                    ${escapeHTML(notification.message || "")}
+                </div>
+
+                <div class="notification-time">
+                    ${formatTime(notification.created_at)}
+                </div>
+
+            </div>
+
+            ${
+                unread
+                ? `<div class="dot"></div>`
+                : ""
+            }
+
+        `;
+
+
+        item.addEventListener(
+            "click",
+            async function() {
+
+                if (unread) {
+
+                    await markAsRead(
+                        notification.id
+                    );
+
+                }
+
+
+                if (
+                    notification.type ===
+                    "message" &&
+                    notification.related_user_id
+                ) {
+
+                    window.location.href =
+                    "conversas.html?user=" +
+                    encodeURIComponent(
+                        notification.related_user_id
+                    );
+
+                }
+
+            }
+        );
+
+
+        list.appendChild(item);
+
+    });
+
+}
+
+
+/* =========================================
+   MARCAR UMA COMO LIDA
+   ========================================= */
+
+async function markAsRead(id) {
+
+    const {
+        error
+    } =
+    await supabaseClient
+    .from("notifications")
+    .update({
+
+        read_at:
+        new Date().toISOString()
+
+    })
+    .eq(
+        "id",
+        id
+    )
+    .eq(
+        "user_id",
+        currentUser.id
+    );
+
+
+    if (error) {
+
+        console.error(
+            "Erro ao marcar notificação:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    await renderNotifications();
+
+}
+
+
+/* =========================================
+   MARCAR TODAS
+   ========================================= */
+
+async function markAllAsRead() {
+
+    const {
+        error
+    } =
+    await supabaseClient
+    .from("notifications")
+    .update({
+
+        read_at:
+        new Date().toISOString()
+
+    })
+    .eq(
+        "user_id",
+        currentUser.id
+    )
+    .is(
+        "read_at",
+        null
+    );
+
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    await renderNotifications();
+
+}
+
+
+/* =========================================
+   REALTIME
+   ========================================= */
+
+function subscribeNotifications() {
+
+    supabaseClient
+    .channel(
+        "notifications-" +
+        currentUser.id
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter:
+            "user_id=eq." +
+            currentUser.id
+        },
+        function() {
+
+            renderNotifications();
+
+        }
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "UPDATE",
+            schema: "public",
+            table: "notifications",
+            filter:
+            "user_id=eq." +
+            currentUser.id
+        },
+        function() {
+
+            renderNotifications();
+
+        }
+    )
+    .subscribe();
+
+}
+
+
+/* =========================================
+   SEGURANÇA
+   ========================================= */
+
+function escapeHTML(text) {
+
+    const div =
+    document.createElement("div");
+
+    div.textContent =
+    text || "";
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================
+   INICIAR
+   ========================================= */
+
+async function start() {
+
+    const logged =
+    await getUser();
+
+    if (!logged) {
+        return;
+    }
+
+    await loadNotifications();
+
+}
+
+start();
+
+</script>
+
+</body>
+</html>
