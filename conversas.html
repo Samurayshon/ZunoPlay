@@ -1464,100 +1464,59 @@ function scrollBottom() {
 
 
 /* =========================================
-   INICIAR
+   REALTIME - TESTE DE CONEXÃO
 ========================================= */
 
-async function start() {
+function iniciarRealtimeTeste() {
 
-    try {
-
-        const logged =
-        await getUser();
-
-
-        if (!logged) {
-
-            return;
-
-        }
-
-
-        if (friendId) {
-
-            await loadChat();
-
-        } else {
-
-            await loadConversations();
-
-        }
-
-    } catch (error) {
+    if (!currentUser) {
 
         console.error(
-            "Erro geral:",
-            error
+            "REALTIME ERRO: usuário não está carregado."
         );
 
-
-        app.innerHTML = `
-
-            <div class="empty">
-
-                ❌ Erro ao carregar o ZunoPlay.
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message
-                )}
-
-            </div>
-
-        `;
+        return;
 
     }
 
-}
-
-/* =========================================
-   TESTE REALTIME - SOMENTE CONEXÃO
-========================================= */
-
-setTimeout(function () {
 
     try {
 
         const realtimeChannel =
-            supabaseClient
-            .channel(
-                "messages-test-" +
-                currentUser.id
-            )
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "messages"
-                },
-                function (payload) {
-
-                    console.log(
-                        "REALTIME OK:",
-                        payload.new
-                    );
-
-                }
-            )
-            .subscribe(function (status) {
+        supabaseClient
+        .channel(
+            "messages-test-" +
+            currentUser.id
+        )
+        .on(
+            "postgres_changes",
+            {
+                event: "INSERT",
+                schema: "public",
+                table: "messages"
+            },
+            function (payload) {
 
                 console.log(
-                    "REALTIME STATUS:",
-                    status
+                    "REALTIME OK:",
+                    payload.new
                 );
 
-            });
+            }
+        )
+        .subscribe(function (status) {
+
+            console.log(
+                "REALTIME STATUS:",
+                status
+            );
+
+        });
+
+
+        window.realtimeChannel =
+        realtimeChannel;
+
 
     } catch (error) {
 
@@ -1568,11 +1527,15 @@ setTimeout(function () {
 
     }
 
-}, 2000);
-start();
+}
 
-</script>
 
-</body>
+/* =========================================
+   INICIAR
+========================================= */
 
-</html>
+async function start() {
+
+    try {
+
+        cons
