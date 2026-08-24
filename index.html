@@ -225,7 +225,6 @@ body {
     border: 1px solid #303145;
     color: #ff8f8f;
 }
-
 </style>
 </head>
 
@@ -287,7 +286,7 @@ body {
 
                 <button
                     class="header-button"
-                    onclick="window.location.href='notificacoes.html'"
+                    onclick="openNotifications()"
                     title="Notificações">
 
                     🔔
@@ -440,6 +439,7 @@ document.getElementById("notificationBadge");
 
 let currentUser = null;
 let notificationChannel = null;
+let notificationTimer = null;
 
 
 /* =========================================
@@ -449,6 +449,7 @@ let notificationChannel = null;
 function showApp() {
 
     loading.style.display = "none";
+
     app.style.display = "block";
 
 }
@@ -458,8 +459,11 @@ function showWelcome() {
 
     showApp();
 
-    welcomeScreen.style.display = "flex";
-    homeScreen.style.display = "none";
+    welcomeScreen.style.display =
+        "flex";
+
+    homeScreen.style.display =
+        "none";
 
 }
 
@@ -468,66 +472,86 @@ function showHome(user) {
 
     showApp();
 
-    welcomeScreen.style.display = "none";
-    homeScreen.style.display = "block";
+    welcomeScreen.style.display =
+        "none";
+
+    homeScreen.style.display =
+        "block";
 
 
     let username =
-    user?.user_metadata?.username;
+        user?.user_metadata?.username;
 
 
     if (!username) {
 
         username =
-        user?.email?.split("@")[0] ||
-        "ZunoPlayer";
+            user?.email?.split("@")[0] ||
+            "ZunoPlayer";
 
     }
 
 
     usernameElement.textContent =
-    username;
+        username;
 
 
-    loadNotificationCount(user.id);
+    updateNotificationCount(
+        user.id
+    );
+
+
+    startNotificationRefresh(
+        user.id
+    );
 
 }
 
 
 /* =========================================
-   CONTADOR DE NOTIFICAÇÕES
+   CONTADOR
 ========================================= */
 
-async function loadNotificationCount(userId) {
+async function updateNotificationCount(userId) {
 
-    const {
-        count,
-        error
-    } =
-    await supabaseClient
-    .from("notifications")
-    .select(
-        "id",
-        {
-            count: "exact",
-            head: true
-        }
-    )
-    .eq(
-        "user_id",
-        userId
-    )
-    .is(
-        "read_at",
-        null
+    if (!userId) {
+
+        return;
+
+    }
+
+
+    const result =
+        await supabaseClient
+            .from("notifications")
+            .select(
+                "id",
+                {
+                    count: "exact",
+                    head: true
+                }
+            )
+            .eq(
+                "user_id",
+                userId
+            )
+            .is(
+                "read_at",
+                null
+            );
+
+
+    console.log(
+        "Contador de notificações:",
+        result
     );
 
 
-    if (error) {
+    if (result.error) {
 
         console.error(
-            "Erro ao carregar notificações:",
-            error
+            "Erro no contador:",
+            result.error
         );
 
         return;
@@ -535,20 +559,27 @@ async function loadNotificationCount(userId) {
     }
 
 
-    if (count && count > 0) {
+    const count =
+        result.count || 0;
+
+
+    if (count > 0) {
 
         notificationBadge.textContent =
-        count > 99
-        ? "99+"
-        : count;
+            count > 99
+            ? "99+"
+            : String(count);
 
         notificationBadge.style.display =
-        "flex";
+            "flex";
 
     } else {
 
+        notificationBadge.textContent =
+            "0";
+
         notificationBadge.style.display =
-        "none";
+            "none";
 
     }
 
@@ -556,47 +587,166 @@ async function loadNotificationCount(userId) {
 
 
 /* =========================================
-   REALTIME DAS NOTIFICAÇÕES
+   ATUALIZAÇÃO AUTOMÁTICA
+========================================= */
+
+function startNotificationRefresh(userId) {
+
+    if (notificationTimer) {
+
+        clearInterval(
+            notificationTimer
+        );
+
+    }
+
+
+    /*
+       Atualiza o contador a cada 2 segundos.
+       Isso garante que o contador fique
+       sincronizado mesmo se o Realtime
+       não estiver ativo.
+    */
+
+    notificationTimer =
+        setInterval(
+            function() {
+
+                if (
+                    document.visibilityState ===
+                    "visible"
+                ) {
+
+                    updateNotificationCount(
+                        userId
+                    );
+
+                }
+
+            },
+            2000
+        );
+
+}
+
+
+/* =========================================
+   REALTIME
 ========================================= */
 
 function subscribeNotifications(userId) {
 
     if (notificationChannel) {
 
-        supabaseClient.removeChannel(
-            notificationChannel
-        );
+        supabaseClient
+            .removeChannel(
+                notificationChannel
+            );
 
     }
 
 
     notificationChannel =
-    supabaseClient
-    .channel(
-        "home-notifications-" +
-        userId
-    )
-    .on(
-        "postgres_changes",
-        {
-            event: "*",
-            schema: "public",
-            table: "notifications",
-            filter:
-            "user_id=eq." +
-            userId
-        },
-        function() {
+        supabaseClient
+            .channel(
+                "home-notifications-" +
+                userId +
+                "-" +
+                Date.now()
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "notifications",
+                    filter:
+                        "user_id=eq." +
+                        userId
+                },
+                function() {
 
-            loadNotificationCount(
-                userId
+                    updateNotificationCount(
+                        userId
+                    );
+
+                }
+            )
+            .subscribe();
+
+}
+
+
+/* =========================================
+   ABRIR NOTIFICAÇÕES
+========================================= */
+
+function openNotifications() {
+
+    /*
+       Atualiza antes de abrir a página.
+    */
+
+    if (currentUser) {
+
+        updateNotificationCount(
+            currentUser.id
+        );
+
+    }
+
+
+    window.location.href =
+        "notificacoes.html";
+
+}
+
+
+/* =========================================
+   VOLTOU PARA A PÁGINA
+========================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    function() {
+
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
+
+            if (currentUser) {
+
+                updateNotificationCount(
+                    currentUser.id
+                );
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   FOCUS
+========================================= */
+
+window.addEventListener(
+    "focus",
+    function() {
+
+        if (currentUser) {
+
+            updateNotificationCount(
+                currentUser.id
             );
 
         }
-    )
-    .subscribe();
 
-}
+    }
+);
 
 
 /* =========================================
@@ -611,12 +761,14 @@ async function checkUser() {
             data,
             error
         } =
-        await supabaseClient.auth.getSession();
+            await supabaseClient.auth.getSession();
 
 
         if (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
 
             showWelcome();
 
@@ -626,15 +778,19 @@ async function checkUser() {
 
 
         const user =
-        data?.session?.user;
+            data?.session?.user;
 
 
         if (user) {
 
             currentUser =
-            user;
+                user;
 
-            showHome(user);
+
+            showHome(
+                user
+            );
+
 
             subscribeNotifications(
                 user.id
@@ -662,48 +818,6 @@ async function checkUser() {
 
 
 /* =========================================
-   LOGOUT
-========================================= */
-
-logoutButton.addEventListener(
-    "click",
-    async function() {
-
-        logoutButton.disabled = true;
-
-        logoutButton.textContent =
-        "Saindo...";
-
-
-        if (notificationChannel) {
-
-            await supabaseClient
-            .removeChannel(
-                notificationChannel
-            );
-
-        }
-
-
-        try {
-
-            await supabaseClient.auth.signOut();
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-
-
-        window.location.href =
-        "index.html";
-
-    }
-);
-
-
-/* =========================================
    AUTH STATE
 ========================================= */
 
@@ -716,11 +830,13 @@ supabaseClient.auth.onAuthStateChange(
         ) {
 
             currentUser =
-            session.user;
+                session.user;
+
 
             showHome(
                 session.user
             );
+
 
             subscribeNotifications(
                 session.user.id
@@ -730,11 +846,22 @@ supabaseClient.auth.onAuthStateChange(
 
 
         if (
-            event === "SIGNED_OUT"
+            event ===
+            "SIGNED_OUT"
         ) {
 
             currentUser =
-            null;
+                null;
+
+
+            if (notificationTimer) {
+
+                clearInterval(
+                    notificationTimer
+                );
+
+            }
+
 
             showWelcome();
 
@@ -745,21 +872,80 @@ supabaseClient.auth.onAuthStateChange(
 
 
 /* =========================================
+   LOGOUT
+========================================= */
+
+logoutButton.addEventListener(
+    "click",
+    async function() {
+
+        logoutButton.disabled =
+            true;
+
+        logoutButton.textContent =
+            "Saindo...";
+
+
+        if (notificationTimer) {
+
+            clearInterval(
+                notificationTimer
+            );
+
+        }
+
+
+        if (notificationChannel) {
+
+            await supabaseClient
+                .removeChannel(
+                    notificationChannel
+                );
+
+        }
+
+
+        try {
+
+            await supabaseClient
+                .auth
+                .signOut();
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+        }
+
+
+        window.location.href =
+            "index.html";
+
+    }
+);
+
+
+/* =========================================
    FALLBACK
 ========================================= */
 
-setTimeout(function() {
+setTimeout(
+    function() {
 
-    if (
-        loading.style.display !==
-        "none"
-    ) {
+        if (
+            loading.style.display !==
+            "none"
+        ) {
 
-        showWelcome();
+            showWelcome();
 
-    }
+        }
 
-}, 6000);
+    },
+    6000
+);
 
 
 /* =========================================
