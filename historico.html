@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Histórico - ZunoPlay</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        #070811;
+
+    color: white;
+
+}
+
+.app {
+
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 25px;
+
+}
+
+.header {
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    padding-top: 20px;
+    margin-bottom: 25px;
+
+}
+
+.back {
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+
+    border: 1px solid #303145;
+
+    background: #1b1c2b;
+
+    color: white;
+
+    font-size: 20px;
+
+    cursor: pointer;
+
+}
+
+.logo {
+
+    font-size: 28px;
+    font-weight: 800;
+
+}
+
+.logo span {
+
+    color: #8b5cf6;
+
+}
+
+.card {
+
+    background: rgba(20,21,35,.9);
+
+    border: 1px solid rgba(139,92,246,.2);
+
+    border-radius: 24px;
+
+    padding: 20px;
+
+    margin-bottom: 15px;
+
+}
+
+.title {
+
+    font-size: 23px;
+
+    margin-bottom: 6px;
+
+}
+
+.subtitle {
+
+    color: #9293a3;
+
+    font-size: 13px;
+
+    margin-bottom: 20px;
+
+}
+
+.stats {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+
+}
+
+.stat {
+
+    background: #11121e;
+
+    border: 1px solid #292a3d;
+
+    border-radius: 15px;
+
+    padding: 15px;
+
+}
+
+.stat-label {
+
+    color: #858697;
+
+    font-size: 11px;
+
+    margin-bottom: 6px;
+
+}
+
+.stat-value {
+
+    font-size: 21px;
+
+    font-weight: bold;
+
+}
+
+.history-item {
+
+    background: #11121e;
+
+    border: 1px solid #292a3d;
+
+    border-radius: 16px;
+
+    padding: 15px;
+
+    margin-top: 10px;
+
+}
+
+.history-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+}
+
+.game-name {
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+}
+
+.score {
+
+    color: #a78bfa;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+}
+
+.history-info {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 10px;
+
+}
+
+.info {
+
+    background: #1b1c2b;
+
+    border: 1px solid #303145;
+
+    border-radius: 8px;
+
+    padding: 6px 8px;
+
+    color: #9293a3;
+
+    font-size: 11px;
+
+}
+
+.date {
+
+    color: #737486;
+
+    font-size: 11px;
+
+    margin-top: 10px;
+
+}
+
+.empty {
+
+    text-align: center;
+
+    color: #737486;
+
+    font-size: 13px;
+
+    padding: 30px 10px;
+
+}
+
+.error {
+
+    color: #fca5a5;
+
+}
+
+.loading {
+
+    text-align: center;
+
+    color: #9293a3;
+
+    padding: 30px 10px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <div class="header">
+
+        <button
+            class="back"
+            onclick="window.location.href='index.html'"
+        >
+
+            ←
+
+        </button>
+
+
+        <div class="logo">
+
+            Zuno<span>Play</span>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h1 class="title">
+
+            📊 Histórico de partidas
+
+        </h1>
+
+
+        <p class="subtitle">
+
+            Veja suas partidas e resultados no ZunoPlay.
+
+        </p>
+
+
+        <div class="stats">
+
+            <div class="stat">
+
+                <div class="stat-label">
+
+                    PARTIDAS
+
+                </div>
+
+                <div
+                    id="totalGames"
+                    class="stat-value"
+                >
+
+                    0
+
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-label">
+
+                    MELHOR PONTUAÇÃO
+
+                </div>
+
+                <div
+                    id="bestScore"
+                    class="stat-value"
+                >
+
+                    0
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div id="history">
+
+            <div class="loading">
+
+                Carregando histórico...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+/* =========================================
+   SUPABASE
+========================================= */
+
+const SUPABASE_URL =
+    "https://rliymfbbhqoejgfvsbuu.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================================
+   ELEMENTOS
+========================================= */
+
+const historyElement =
+    document.getElementById("history");
+
+const totalGamesElement =
+    document.getElementById("totalGames");
+
+const bestScoreElement =
+    document.getElementById("bestScore");
+
+
+/* =========================================
+   DATA
+========================================= */
+
+function formatDate(dateString) {
+
+    const date =
+        new Date(dateString);
+
+    return date.toLocaleString(
+        "pt-BR",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+/* =========================================
+   NOME DO JOGO
+========================================= */
+
+function gameName(game) {
+
+    if(game === "desafio_zuno") {
+
+        return "🎯 Desafio Zuno";
+
+    }
+
+    return "🎮 " + game;
+
+}
+
+
+/* =========================================
+   CARREGAR HISTÓRICO
+========================================= */
+
+async function loadHistory() {
+
+    try {
+
+        const sessionResult =
+            await supabaseClient.auth.getSession();
+
+
+        if(sessionResult.error) {
+
+            throw sessionResult.error;
+
+        }
+
+
+        const session =
+            sessionResult.data.session;
+
+
+        const user =
+            session?.user;
+
+
+        if(!user) {
+
+            window.location.href =
+                "login.html";
+
+            return;
+
+        }
+
+
+        const result =
+            await supabaseClient
+                .from("game_scores")
+                .select(
+                    "id, game, score, questions, correct_answers, created_at"
+                )
+                .eq(
+                    "user_id",
+                    user.id
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                )
+                .limit(100);
+
+
+        if(result.error) {
+
+            throw result.error;
+
+        }
+
+
+        const games =
+            result.data || [];
+
+
+        totalGamesElement.textContent =
+            games.length;
+
+
+        if(games.length > 0) {
+
+            const scores =
+                games.map(
+                    game => game.score || 0
+                );
+
+
+            bestScoreElement.textContent =
+                Math.max(...scores);
+
+        } else {
+
+            bestScoreElement.textContent =
+                "0";
+
+        }
+
+
+        if(games.length === 0) {
+
+            historyElement.innerHTML = `
+
+                <div class="empty">
+
+                    🎮 Você ainda não possui partidas registradas.
+
+                    <br><br>
+
+                    Jogue o Desafio Zuno para começar!
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        historyElement.innerHTML =
+            "";
+
+
+        games.forEach(
+            function(game) {
+
+                const item =
+                    document.createElement("div");
+
+
+                item.className =
+                    "history-item";
+
+
+                const questions =
+                    game.questions || 0;
+
+
+                const correct =
+                    game.correct_answers || 0;
+
+
+                item.innerHTML = `
+
+                    <div class="history-top">
+
+                        <div class="game-name">
+
+                            ${gameName(game.game)}
+
+                        </div>
+
+                        <div class="score">
+
+                            ⭐ ${game.score}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="history-info">
+
+                        <div class="info">
+
+                            ❓ ${questions} perguntas
+
+                        </div>
+
+
+                        <div class="info">
+
+                            ✅ ${correct} acertos
+
+                        </div>
+
+
+                        <div class="info">
+
+                            📈 ${
+
+                                questions > 0
+
+                                ? Math.round(
+                                    (correct / questions) * 100
+                                )
+
+                                : 0
+
+                            }% de acerto
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="date">
+
+                        📅 ${formatDate(game.created_at)}
+
+                    </div>
+
+                `;
+
+
+                historyElement.appendChild(
+                    item
+                );
+
+            }
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Erro ao carregar histórico:",
+            error
+        );
+
+
+        historyElement.innerHTML = `
+
+            <div class="empty error">
+
+                ❌ Não foi possível carregar seu histórico.
+
+                <br><br>
+
+                ${error.message || "Erro desconhecido"}
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================
+   INICIAR
+========================================= */
+
+loadHistory();
+
+</script>
+
+
+</body>
+
+</html>
