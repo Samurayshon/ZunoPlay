@@ -5,152 +5,522 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-<title>Diagnóstico ZunoPlay</title>
+<title>Conversas - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:Arial,sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
-body{
+body {
 
-    min-height:100vh;
+    min-height: 100vh;
 
     background:
-    radial-gradient(
-        circle at 20% 20%,
-        #25145c,
-        transparent 35%
-    ),
-    radial-gradient(
-        circle at 80% 80%,
-        #102d59,
-        transparent 35%
-    ),
-    #070811;
+        radial-gradient(
+            circle at 20% 20%,
+            #25145c 0%,
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            #102d59 0%,
+            transparent 35%
+        ),
+        #070811;
 
-    color:white;
-
-}
-
-.app{
-
-    max-width:480px;
-    margin:auto;
-    padding:20px;
+    color: white;
 
 }
 
-.card{
+.app {
 
-    background:#141523;
+    width: 100%;
 
-    border:1px solid #303145;
+    max-width: 480px;
 
-    border-radius:18px;
+    min-height: 100vh;
 
-    padding:18px;
-
-    margin-bottom:14px;
+    margin: auto;
 
 }
 
-h1{
 
-    font-size:25px;
-    margin-bottom:20px;
+/* =========================================
+   HEADER
+========================================= */
 
-}
+.header {
 
-h2{
+    display: flex;
 
-    font-size:16px;
-    margin-bottom:10px;
+    align-items: center;
 
-}
+    gap: 12px;
 
-.info{
+    padding: 20px;
 
-    font-size:13px;
+    border-bottom: 1px solid #292a3d;
 
-    line-height:1.7;
+    background: rgba(10,11,20,.96);
 
-    color:#b7b7c5;
+    position: sticky;
 
-    word-break:break-all;
+    top: 0;
 
-}
-
-.ok{
-
-    color:#4ade80;
-    font-weight:bold;
+    z-index: 10;
 
 }
 
-.error{
+.back {
 
-    color:#ff7777;
-    font-weight:bold;
+    width: 42px;
 
-}
+    height: 42px;
 
-.warning{
+    border-radius: 12px;
 
-    color:#facc15;
-    font-weight:bold;
+    border: 1px solid #303145;
 
-}
+    background: #1b1c2b;
 
-.message{
+    color: white;
 
-    background:#1b1c2b;
+    font-size: 20px;
 
-    border:1px solid #303145;
-
-    border-radius:12px;
-
-    padding:12px;
-
-    margin-top:8px;
-
-    font-size:12px;
-
-    line-height:1.6;
+    cursor: pointer;
 
 }
 
-button{
+.logo {
 
-    width:100%;
+    font-size: 28px;
 
-    padding:15px;
+    font-weight: 800;
 
-    border:0;
+}
 
-    border-radius:14px;
+.logo span {
+
+    color: #8b5cf6;
+
+}
+
+
+/* =========================================
+   PAGE
+========================================= */
+
+.page {
+
+    padding: 20px;
+
+}
+
+.title {
+
+    font-size: 25px;
+
+    margin-bottom: 6px;
+
+}
+
+.subtitle {
+
+    color: #9293a3;
+
+    font-size: 13px;
+
+    margin-bottom: 20px;
+
+}
+
+
+/* =========================================
+   CONVERSA
+========================================= */
+
+.conversation {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    width: 100%;
+
+    padding: 14px;
+
+    margin-bottom: 10px;
+
+    border-radius: 16px;
+
+    border: 1px solid #292a3d;
+
+    background: rgba(20,21,35,.92);
+
+    color: white;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition:
+        transform .15s ease,
+        border-color .15s ease;
+
+}
+
+.conversation:hover {
+
+    border-color: #8b5cf6;
+
+}
+
+.conversation:active {
+
+    transform: scale(.98);
+
+}
+
+.avatar {
+
+    width: 50px;
+
+    height: 50px;
+
+    min-width: 50px;
+
+    border-radius: 50%;
 
     background:
-    linear-gradient(
-        135deg,
-        #8b5cf6,
-        #6366f1
-    );
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
 
-    color:white;
+    display: flex;
 
-    font-size:15px;
+    align-items: center;
 
-    font-weight:bold;
+    justify-content: center;
+
+    font-weight: bold;
+
+    font-size: 18px;
+
+}
+
+.info {
+
+    min-width: 0;
+
+    flex: 1;
+
+}
+
+.name {
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    margin-bottom: 5px;
+
+}
+
+.last-message {
+
+    color: #858697;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+.time {
+
+    color: #737486;
+
+    font-size: 10px;
+
+    white-space: nowrap;
+
+    margin-bottom: 5px;
+
+}
+
+.badge {
+
+    min-width: 21px;
+
+    height: 21px;
+
+    padding: 0 6px;
+
+    border-radius: 11px;
+
+    background: #8b5cf6;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    margin-left: auto;
+
+}
+
+
+/* =========================================
+   EMPTY / LOADING
+========================================= */
+
+.empty {
+
+    text-align: center;
+
+    color: #737486;
+
+    padding: 60px 20px;
+
+    font-size: 14px;
+
+}
+
+.loading {
+
+    text-align: center;
+
+    color: #9293a3;
+
+    padding: 50px 20px;
+
+}
+
+
+/* =========================================
+   CHAT
+========================================= */
+
+.chat {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-height: 100vh;
+
+}
+
+.chat-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 15px 20px;
+
+    border-bottom: 1px solid #292a3d;
+
+    background: rgba(10,11,20,.97);
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 10;
+
+}
+
+.chat-messages {
+
+    flex: 1;
+
+    padding: 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    overflow-y: auto;
+
+    min-height: calc(100vh - 145px);
+
+}
+
+.message {
+
+    max-width: 78%;
+
+    padding: 11px 14px;
+
+    border-radius: 16px;
+
+    font-size: 14px;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+
+}
+
+.mine {
+
+    align-self: flex-end;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    border-bottom-right-radius: 5px;
+
+}
+
+.theirs {
+
+    align-self: flex-start;
+
+    background: #1b1c2b;
+
+    border: 1px solid #303145;
+
+    border-bottom-left-radius: 5px;
+
+}
+
+.message-time {
+
+    display: block;
+
+    font-size: 9px;
+
+    opacity: .6;
+
+    margin-top: 4px;
+
+}
+
+
+/* =========================================
+   COMPOSER
+========================================= */
+
+.composer {
+
+    display: flex;
+
+    gap: 8px;
+
+    padding: 12px 15px;
+
+    border-top: 1px solid #292a3d;
+
+    background: rgba(10,11,20,.98);
+
+    position: sticky;
+
+    bottom: 0;
+
+}
+
+.composer input {
+
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 14px;
+
+    border-radius: 13px;
+
+    border: 1px solid #303145;
+
+    background: #11121e;
+
+    color: white;
+
+    outline: none;
+
+}
+
+.composer input:focus {
+
+    border-color: #8b5cf6;
+
+}
+
+.send {
+
+    width: 50px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    color: white;
+
+    font-size: 19px;
+
+    cursor: pointer;
+
+}
+
+.send:disabled {
+
+    opacity: .5;
+
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.error {
+
+    text-align: center;
+
+    color: #ff8f8f;
+
+    padding: 50px 20px;
 
 }
 
@@ -162,94 +532,19 @@ button{
 <body>
 
 
-<div class="app">
-
-<h1>
-🔎 Diagnóstico das Conversas
-</h1>
-
-
-<div class="card">
-
-<h2>
-Usuário autenticado
-</h2>
-
 <div
-id="user"
-class="info">
-
-Carregando...
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-Mensagens enviadas por você
-</h2>
-
-<div
-id="sent"
-class="info">
-
-Carregando...
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-Mensagens recebidas por você
-</h2>
-
-<div
-id="received"
-class="info">
-
-Carregando...
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-Resultado
-</h2>
-
-<div
-id="result"
-class="info">
-
-Carregando...
-
-</div>
-
-</div>
-
-
-<button
-onclick="window.location.href='index.html'">
-
-← Voltar
-
-</button>
-
-
+    id="app"
+    class="app"
+>
 </div>
 
 
 <script>
 
+
+/* =========================================
+   SUPABASE
+========================================= */
 
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
@@ -266,327 +561,932 @@ window.supabase.createClient(
 );
 
 
-async function diagnostico(){
+/* =========================================
+   VARIÁVEIS
+========================================= */
+
+const app =
+document.getElementById("app");
 
 
-const userElement =
-document.getElementById(
-    "user"
+let currentUser = null;
+
+let friendId = null;
+
+let chatChannel = null;
+
+let listChannel = null;
+
+
+const params =
+new URLSearchParams(
+    window.location.search
 );
 
-const sentElement =
-document.getElementById(
-    "sent"
-);
 
-const receivedElement =
-document.getElementById(
-    "received"
-);
-
-const resultElement =
-document.getElementById(
-    "result"
-);
+friendId =
+params.get("user");
 
 
-/* ================================
+/* =========================================
+   FUNÇÕES AUXILIARES
+========================================= */
+
+function initial(name) {
+
+    if (!name) {
+
+        return "?";
+
+    }
+
+    return name
+        .charAt(0)
+        .toUpperCase();
+
+}
+
+
+function escapeHTML(text) {
+
+    const div =
+    document.createElement("div");
+
+    div.textContent =
+    text || "";
+
+    return div.innerHTML;
+
+}
+
+
+function formatTime(dateString) {
+
+    if (!dateString) {
+
+        return "";
+
+    }
+
+    const date =
+    new Date(dateString);
+
+
+    return date.toLocaleTimeString(
+        "pt-BR",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+function formatDate(dateString) {
+
+    if (!dateString) {
+
+        return "";
+
+    }
+
+    const date =
+    new Date(dateString);
+
+
+    return date.toLocaleDateString(
+        "pt-BR"
+    );
+
+}
+
+
+function goBack() {
+
+    if (friendId) {
+
+        window.location.href =
+            "conversas.html";
+
+    } else {
+
+        window.location.href =
+            "index.html";
+
+    }
+
+}
+
+
+/* =========================================
    USUÁRIO
-================================ */
+========================================= */
 
-const {
-    data:sessionData,
-    error:sessionError
-} =
-await supabaseClient
-.auth
-.getSession();
+async function getCurrentUser() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .auth
+        .getSession();
 
 
-if(
-    sessionError ||
-    !sessionData.session
-){
+    if (
+        error ||
+        !data ||
+        !data.session ||
+        !data.session.user
+    ) {
 
-    userElement.innerHTML = `
+        window.location.href =
+            "login.html";
 
-        <span class="error">
-        Nenhum usuário logado
-        </span>
+        return false;
 
-    `;
+    }
 
-    return;
+
+    currentUser =
+        data.session.user;
+
+
+    return true;
 
 }
 
 
-const user =
-sessionData.session.user;
+/* =========================================
+   HEADER
+========================================= */
+
+function renderHeader() {
+
+    return `
+
+        <div class="header">
+
+            <button
+                class="back"
+                onclick="goBack()"
+            >
+                ←
+            </button>
+
+            <div class="logo">
+                Zuno<span>Play</span>
+            </div>
+
+        </div>
+
+    `;
+
+}
 
 
-userElement.innerHTML = `
+/* =========================================
+   LISTA DE CONVERSAS
+========================================= */
 
-    <span class="ok">
-    SESSÃO ATIVA
-    </span>
-
-    <br><br>
-
-    <strong>ID:</strong>
-
-    <br>
-
-    ${user.id}
-
-`;
+async function loadConversations() {
 
 
-/* ================================
-   ENVIADAS
-================================ */
+    app.innerHTML = `
 
-const {
-    data:sent,
-    error:sentError
-} =
-await supabaseClient
-.from("messages")
-.select(
-    "id,sender_id,receiver_id,content,created_at,read_at"
-)
-.eq(
-    "sender_id",
-    user.id
-)
-.order(
-    "created_at",
-    {
-        ascending:false
+        ${renderHeader()}
+
+        <div class="page">
+
+            <h1 class="title">
+                💬 Conversas
+            </h1>
+
+            <p class="subtitle">
+                Suas conversas recentes.
+            </p>
+
+            <div id="conversationList">
+
+                <div class="loading">
+                    Carregando conversas...
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    const list =
+    document.getElementById(
+        "conversationList"
+    );
+
+
+    /*
+     * BUSCA ENVIADAS
+     */
+
+    const {
+        data:sent,
+        error:sentError
+    } =
+    await supabaseClient
+        .from("messages")
+        .select(
+            "id,sender_id,receiver_id,content,created_at,read_at"
+        )
+        .eq(
+            "sender_id",
+            currentUser.id
+        )
+        .order(
+            "created_at",
+            {
+                ascending:false
+            }
+        );
+
+
+    if (sentError) {
+
+        console.error(
+            "Erro nas mensagens enviadas:",
+            sentError
+        );
+
+        list.innerHTML = `
+
+            <div class="error">
+
+                Erro ao carregar mensagens enviadas.
+
+                <br><br>
+
+                ${escapeHTML(
+                    sentError.message
+                )}
+
+            </div>
+
+        `;
+
+        return;
+
     }
-);
 
 
-if(sentError){
+    /*
+     * BUSCA RECEBIDAS
+     */
 
-    sentElement.innerHTML = `
-
-        <span class="error">
-        ERRO
-        </span>
-
-        <br>
-
-        ${sentError.message}
-
-    `;
-
-}else{
-
-    sentElement.innerHTML = `
-
-        <span class="ok">
-        ${sent?.length || 0}
-        mensagens enviadas
-        </span>
-
-    `;
+    const {
+        data:received,
+        error:receivedError
+    } =
+    await supabaseClient
+        .from("messages")
+        .select(
+            "id,sender_id,receiver_id,content,created_at,read_at"
+        )
+        .eq(
+            "receiver_id",
+            currentUser.id
+        )
+        .order(
+            "created_at",
+            {
+                ascending:false
+            }
+        );
 
 
-    (sent || [])
-    .slice(0,5)
-    .forEach(
-        function(message){
+    if (receivedError) {
 
-            sentElement.innerHTML += `
+        console.error(
+            "Erro nas mensagens recebidas:",
+            receivedError
+        );
 
-                <div class="message">
+        list.innerHTML = `
 
-                    ID:
-                    ${message.id}
+            <div class="error">
 
-                    <br>
+                Erro ao carregar mensagens recebidas.
 
-                    Destinatário:
-                    ${message.receiver_id}
+                <br><br>
 
-                    <br>
+                ${escapeHTML(
+                    receivedError.message
+                )}
 
-                    Mensagem:
-                    ${message.content}
+            </div>
 
-                    <br>
+        `;
 
-                    read_at:
-                    ${message.read_at || "NULL"}
+        return;
+
+    }
+
+
+    /*
+     * JUNTA TODAS AS MENSAGENS
+     */
+
+    const allMessages = [
+
+        ...(sent || []),
+
+        ...(received || [])
+
+    ];
+
+
+    /*
+     * ORDENA DA MAIS NOVA
+     * PARA A MAIS ANTIGA
+     */
+
+    allMessages.sort(
+        function(a,b) {
+
+            return (
+                new Date(b.created_at)
+                -
+                new Date(a.created_at)
+            );
+
+        }
+    );
+
+
+    /*
+     * CRIA CONVERSAS POR USUÁRIO
+     */
+
+    const conversations = {};
+
+
+    allMessages.forEach(
+        function(message) {
+
+
+            const otherId =
+
+                message.sender_id ===
+                currentUser.id
+
+                ?
+
+                message.receiver_id
+
+                :
+
+                message.sender_id;
+
+
+            if (!otherId) {
+
+                return;
+
+            }
+
+
+            if (
+                !conversations[otherId]
+            ) {
+
+                conversations[otherId] = {
+
+                    lastMessage:
+                        message,
+
+                    unread: 0
+
+                };
+
+            }
+
+
+            /*
+             * CONTADOR DE NÃO LIDAS
+             */
+
+            if (
+
+                message.receiver_id ===
+                currentUser.id
+
+                &&
+
+                message.read_at === null
+
+            ) {
+
+                conversations[otherId]
+                    .unread++;
+
+            }
+
+        }
+    );
+
+
+    const ids =
+    Object.keys(
+        conversations
+    );
+
+
+    if (!ids.length) {
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                Você ainda não possui conversas.
+
+                <br><br>
+
+                Vá em Amigos e comece uma conversa! 👋
+
+            </div>
+
+        `;
+
+        subscribeConversationList();
+
+        return;
+
+    }
+
+
+    /*
+     * BUSCA PERFIS
+     */
+
+    const {
+        data:profiles,
+        error:profileError
+    } =
+    await supabaseClient
+        .from("profiles")
+        .select(
+            "id,username"
+        )
+        .in(
+            "id",
+            ids
+        );
+
+
+    if (profileError) {
+
+        console.error(
+            "Erro ao buscar perfis:",
+            profileError
+        );
+
+        list.innerHTML = `
+
+            <div class="error">
+
+                As mensagens foram encontradas,
+                mas não foi possível carregar
+                os usuários.
+
+                <br><br>
+
+                ${escapeHTML(
+                    profileError.message
+                )}
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /*
+     * MAPA DE PERFIS
+     */
+
+    const profileMap = {};
+
+
+    (profiles || []).forEach(
+        function(profile) {
+
+            profileMap[
+                profile.id
+            ] = profile;
+
+        }
+    );
+
+
+    /*
+     * RENDERIZA
+     */
+
+    list.innerHTML = "";
+
+
+    ids.forEach(
+        function(id) {
+
+
+            const conversation =
+            conversations[id];
+
+
+            const profile =
+            profileMap[id];
+
+
+            /*
+             * Se não houver perfil,
+             * ainda mostramos a conversa.
+             */
+
+            const username =
+                profile &&
+                profile.username
+
+                ?
+
+                profile.username
+
+                :
+
+                "Usuário";
+
+
+            const message =
+            conversation.lastMessage;
+
+
+            const item =
+            document.createElement(
+                "button"
+            );
+
+
+            item.className =
+                "conversation";
+
+
+            item.type =
+                "button";
+
+
+            item.onclick =
+            function() {
+
+                window.location.href =
+                    "conversas.html?user=" +
+                    encodeURIComponent(id);
+
+            };
+
+
+            let badge = "";
+
+
+            if (
+                conversation.unread > 0
+            ) {
+
+                badge = `
+
+                    <div class="badge">
+
+                        ${
+                            conversation.unread > 99
+
+                            ? "99+"
+
+                            : conversation.unread
+
+                        }
+
+                    </div>
+
+                `;
+
+            }
+
+
+            item.innerHTML = `
+
+                <div class="avatar">
+
+                    ${initial(username)}
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="name">
+
+                        ${escapeHTML(username)}
+
+                    </div>
+
+
+                    <div class="last-message">
+
+                        ${escapeHTML(
+                            message.content
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="time">
+
+                        ${formatTime(
+                            message.created_at
+                        )}
+
+                    </div>
+
+                    ${badge}
 
                 </div>
 
             `;
 
+
+            list.appendChild(item);
+
         }
     );
+
+
+    subscribeConversationList();
 
 }
 
 
-/* ================================
-   RECEBIDAS
-================================ */
+/* =========================================
+   CHAT
+========================================= */
 
-const {
-    data:received,
-    error:receivedError
-} =
-await supabaseClient
-.from("messages")
-.select(
-    "id,sender_id,receiver_id,content,created_at,read_at"
-)
-.eq(
-    "receiver_id",
-    user.id
-)
-.order(
-    "created_at",
-    {
-        ascending:false
+async function loadChat() {
+
+
+    const {
+        data:profile,
+        error
+    } =
+    await supabaseClient
+        .from("profiles")
+        .select(
+            "id,username"
+        )
+        .eq(
+            "id",
+            friendId
+        )
+        .single();
+
+
+    if (error) {
+
+        console.error(
+            "Erro ao buscar usuário:",
+            error
+        );
+
+        app.innerHTML = `
+
+            <div class="error">
+
+                Não foi possível encontrar
+                esse usuário.
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+                <br><br>
+
+                <button
+                    onclick="goBack()"
+                    style="
+                        width:auto;
+                        padding:12px 20px;
+                    "
+                >
+                    ← Voltar
+                </button>
+
+            </div>
+
+        `;
+
+        return;
+
     }
-);
 
 
-if(receivedError){
-
-    receivedElement.innerHTML = `
-
-        <span class="error">
-        ERRO
-        </span>
-
-        <br>
-
-        ${receivedError.message}
-
-    `;
-
-}else{
-
-    receivedElement.innerHTML = `
-
-        <span class="ok">
-        ${received?.length || 0}
-        mensagens recebidas
-        </span>
-
-    `;
+    const username =
+        profile.username ||
+        "Usuário";
 
 
-    (received || [])
-    .slice(0,5)
-    .forEach(
-        function(message){
+    app.innerHTML = `
 
-            receivedElement.innerHTML += `
+        <div class="chat">
 
-                <div class="message">
 
-                    ID:
-                    ${message.id}
+            <div class="chat-header">
 
-                    <br>
 
-                    Remetente:
-                    ${message.sender_id}
+                <button
+                    class="back"
+                    onclick="goBack()"
+                >
+                    ←
+                </button>
 
-                    <br>
 
-                    Mensagem:
-                    ${message.content}
+                <div class="avatar">
 
-                    <br>
-
-                    read_at:
-                    ${message.read_at || "NULL"}
+                    ${initial(username)}
 
                 </div>
 
-            `;
 
-        }
+                <div class="info">
+
+                    <div class="name">
+
+                        ${escapeHTML(username)}
+
+                    </div>
+
+
+                    <div class="last-message">
+
+                        Conversa privada
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="messages"
+                class="chat-messages"
+            >
+
+                <div class="loading">
+
+                    Carregando mensagens...
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="messageForm"
+                class="composer"
+            >
+
+                <input
+                    id="messageInput"
+                    type="text"
+                    placeholder="Digite uma mensagem..."
+                    maxlength="2000"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <button
+                    id="sendButton"
+                    class="send"
+                    type="submit"
+                >
+
+                    ➤
+
+                </button>
+
+            </form>
+
+
+        </div>
+
+    `;
+
+
+    await loadMessages();
+
+
+    await markMessagesAsRead();
+
+
+    subscribeChat();
+
+
+    document
+        .getElementById(
+            "messageForm"
+        )
+        .addEventListener(
+            "submit",
+            sendMessage
+        );
+
+}
+
+
+/* =========================================
+   CARREGAR MENSAGENS DO CHAT
+========================================= */
+
+async function loadMessages() {
+
+
+    const container =
+    document.getElementById(
+        "messages"
     );
 
-}
 
+    if (!container) {
 
-/* ================================
-   RESULTADO
-================================ */
+        return;
 
-const sentCount =
-(sent || []).length;
-
-const receivedCount =
-(received || []).length;
-
-
-resultElement.innerHTML = `
-
-    <strong>
-    Usuário:
-    </strong>
-
-    <br>
-
-    ${user.id}
-
-    <br><br>
-
-    <strong>
-    Enviadas:
-    </strong>
-
-    ${sentCount}
-
-    <br>
-
-    <strong>
-    Recebidas:
-    </strong>
-
-    ${receivedCount}
-
-    <br><br>
-
-    ${
-        sentCount > 0 ||
-        receivedCount > 0
-
-        ?
-
-        `
-        <span class="ok">
-        ✅ O filtro por usuário está funcionando.
-        </span>
-        `
-
-        :
-
-        `
-        <span class="error">
-        ❌ O filtro por usuário não encontrou mensagens.
-        </span>
-        `
     }
 
-`;
 
-}
+    /*
+     * ENVIADAS
+     */
+
+    const {
+        data:sent,
+        error:sentError
+    } =
+    await supabaseClient
+        .from("messages")
+        .select("*")
+        .eq(
+            "sender_id",
+            currentUser.id
+        )
+        .eq(
+            "receiver_id",
+            friendId
+        );
 
 
-diagnostico();
+    /*
+     * RECEBIDAS
+     */
 
-</script>
+    const {
+        data:received,
+        error:receivedError
+    } =
+    await supabaseClient
+        .from("messages")
+        .select("*")
+        .eq(
+            "sender_id",
+            friendId
+        )
+        .eq(
+            "receiver_id",
+            currentUser.id
+        );
 
-</body>
 
-</html>
+    if (
+        sentError ||
+        receivedError
+    ) {
+
+        console.error(
+            sentError ||
+            receive
