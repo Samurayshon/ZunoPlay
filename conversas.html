@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
 <title>Conversas - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 * {
     margin: 0;
     padding: 0;
@@ -16,229 +24,411 @@
 }
 
 body {
+
     min-height: 100vh;
+
     background:
         radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
         radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
         #070811;
+
     color: white;
+
 }
 
 .app {
+
     width: 100%;
     max-width: 480px;
     min-height: 100vh;
     margin: auto;
+
 }
 
 .header {
+
     display: flex;
     align-items: center;
     gap: 12px;
+
     padding: 20px;
+
     border-bottom: 1px solid #292a3d;
+
     background: rgba(10,11,20,.95);
+
     position: sticky;
     top: 0;
+
     z-index: 5;
+
 }
 
 .back {
+
     width: 42px;
     height: 42px;
+
     border-radius: 12px;
+
     border: 1px solid #303145;
+
     background: #1b1c2b;
+
     color: white;
+
     font-size: 20px;
+
     cursor: pointer;
+
 }
 
 .logo {
+
     font-size: 28px;
     font-weight: 800;
+
 }
 
 .logo span {
+
     color: #8b5cf6;
+
 }
 
 .page {
+
     padding: 20px;
+
 }
 
 .title {
+
     font-size: 25px;
+
     margin-bottom: 6px;
+
 }
 
 .subtitle {
+
     color: #9293a3;
+
     font-size: 13px;
+
     margin-bottom: 20px;
+
 }
 
 .conversation {
+
     display: flex;
     align-items: center;
+
     gap: 13px;
+
     width: 100%;
+
     padding: 14px;
+
     margin-bottom: 10px;
+
     border-radius: 16px;
+
     border: 1px solid #292a3d;
+
     background: rgba(20,21,35,.9);
+
     color: white;
+
     cursor: pointer;
+
     text-align: left;
+
 }
 
 .conversation:hover {
+
     border-color: #8b5cf6;
+
 }
 
 .avatar {
+
     width: 48px;
     height: 48px;
+
     min-width: 48px;
+
     border-radius: 50%;
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
     display: flex;
+
     align-items: center;
     justify-content: center;
+
     font-weight: bold;
+
     font-size: 18px;
+
 }
 
 .info {
+
     min-width: 0;
+
     flex: 1;
+
 }
 
 .name {
+
     font-size: 15px;
+
     font-weight: bold;
+
     margin-bottom: 5px;
+
 }
 
 .last-message {
+
     color: #858697;
+
     font-size: 12px;
+
     white-space: nowrap;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
+
 }
 
 .time {
+
     color: #737486;
+
     font-size: 10px;
+
     white-space: nowrap;
+
 }
 
 .badge {
+
     min-width: 21px;
+
     height: 21px;
+
     padding: 0 6px;
+
+    margin-top: 5px;
+
     border-radius: 11px;
+
     background: #8b5cf6;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     font-size: 10px;
+
     font-weight: bold;
+
 }
 
 .empty {
+
     text-align: center;
+
     color: #737486;
+
     padding: 60px 20px;
+
     font-size: 14px;
+
 }
 
 .chat {
+
     display: flex;
+
     flex-direction: column;
+
     min-height: 100vh;
+
 }
 
 .chat-messages {
+
     flex: 1;
+
     padding: 20px;
+
     display: flex;
+
     flex-direction: column;
+
     gap: 10px;
+
     overflow-y: auto;
+
     min-height: calc(100vh - 145px);
+
 }
 
 .message {
+
     max-width: 78%;
+
     padding: 11px 14px;
+
     border-radius: 16px;
+
     font-size: 14px;
+
     line-height: 1.4;
+
     word-break: break-word;
+
 }
 
 .mine {
+
     align-self: flex-end;
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
     border-bottom-right-radius: 5px;
+
 }
 
 .theirs {
+
     align-self: flex-start;
+
     background: #1b1c2b;
+
     border: 1px solid #303145;
+
     border-bottom-left-radius: 5px;
+
 }
 
 .message-time {
+
     display: block;
+
     font-size: 9px;
+
     opacity: .6;
+
     margin-top: 4px;
+
 }
 
 .composer {
+
     display: flex;
+
     gap: 8px;
+
     padding: 12px 15px;
+
     border-top: 1px solid #292a3d;
+
     background: rgba(10,11,20,.97);
+
     position: sticky;
+
     bottom: 0;
+
 }
 
 .composer input {
+
     flex: 1;
+
     min-width: 0;
+
     padding: 14px;
+
     border-radius: 13px;
+
     border: 1px solid #303145;
+
     background: #11121e;
+
     color: white;
+
     outline: none;
+
 }
 
 .send {
+
     width: 50px;
+
     border: none;
+
     border-radius: 13px;
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
     color: white;
+
     font-size: 19px;
+
     cursor: pointer;
+
+}
+
+.send:disabled {
+
+    opacity: .5;
+
 }
 
 </style>
+
 </head>
+
 
 <body>
 
-<div id="app" class="app"></div>
+<div
+    id="app"
+    class="app"
+></div>
+
 
 <script>
+
+
+/* =========================================
+   SUPABASE
+========================================= */
 
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
@@ -252,11 +442,28 @@ window.supabase.createClient(
     SUPABASE_KEY
 );
 
+
+/* =========================================
+   VARIÁVEIS
+========================================= */
+
 const app =
 document.getElementById("app");
 
 let currentUser = null;
+
 let friendId = null;
+
+let chatChannel = null;
+
+let conversationChannel = null;
+
+let loadingConversationList = false;
+
+
+/* =========================================
+   URL
+========================================= */
 
 const params =
 new URLSearchParams(
@@ -266,6 +473,10 @@ new URLSearchParams(
 friendId =
 params.get("user");
 
+
+/* =========================================
+   UTILIDADES
+========================================= */
 
 function initial(name) {
 
@@ -307,6 +518,10 @@ function escapeHTML(text) {
 }
 
 
+/* =========================================
+   USUÁRIO
+========================================= */
+
 async function getUser() {
 
     const {
@@ -314,6 +529,7 @@ async function getUser() {
         error
     } =
     await supabaseClient.auth.getSession();
+
 
     if (
         error ||
@@ -327,6 +543,7 @@ async function getUser() {
 
     }
 
+
     currentUser =
     data.session.user;
 
@@ -334,6 +551,10 @@ async function getUser() {
 
 }
 
+
+/* =========================================
+   VOLTAR
+========================================= */
 
 function goBack() {
 
@@ -352,6 +573,10 @@ function goBack() {
 }
 
 
+/* =========================================
+   HEADER
+========================================= */
+
 function header() {
 
     return `
@@ -360,12 +585,17 @@ function header() {
 
             <button
                 class="back"
-                onclick="goBack()">
+                onclick="goBack()"
+            >
+
                 ←
+
             </button>
 
             <div class="logo">
+
                 Zuno<span>Play</span>
+
             </div>
 
         </div>
@@ -377,9 +607,16 @@ function header() {
 
 /* =========================================
    LISTA DE CONVERSAS
-   ========================================= */
+========================================= */
 
 async function loadConversations() {
+
+    if (loadingConversationList) {
+        return;
+    }
+
+    loadingConversationList = true;
+
 
     app.innerHTML =
     header() +
@@ -430,17 +667,28 @@ async function loadConversations() {
     );
 
 
+    loadingConversationList = false;
+
+
     if (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao carregar conversas:",
+            error
+        );
+
 
         document.getElementById(
             "conversationList"
-        ).innerHTML =
-        `
-        <div class="empty">
-            Não foi possível carregar suas conversas.
-        </div>
+        ).innerHTML = `
+
+            <div class="empty">
+
+                Não foi possível carregar
+                suas conversas.
+
+            </div>
+
         `;
 
         return;
@@ -451,38 +699,42 @@ async function loadConversations() {
     const conversations = {};
 
 
-    (messages || []).forEach(function(message) {
+    (messages || []).forEach(
+        function(message) {
 
-        const otherId =
-        message.sender_id === currentUser.id
-        ? message.receiver_id
-        : message.sender_id;
+            const otherId =
+            message.sender_id === currentUser.id
+            ? message.receiver_id
+            : message.sender_id;
 
 
-        if (!conversations[otherId]) {
+            if (!conversations[otherId]) {
 
-            conversations[otherId] = {
+                conversations[otherId] = {
 
-                lastMessage:
-                message,
+                    lastMessage:
+                    message,
 
-                unread: 0
+                    unread: 0
 
-            };
+                };
+
+            }
+
+
+            if (
+                message.receiver_id ===
+                currentUser.id
+                &&
+                message.read_at === null
+            ) {
+
+                conversations[otherId].unread++;
+
+            }
 
         }
-
-
-        if (
-            message.receiver_id === currentUser.id &&
-            message.read_at === null
-        ) {
-
-            conversations[otherId].unread++;
-
-        }
-
-    });
+    );
 
 
     const ids =
@@ -493,13 +745,23 @@ async function loadConversations() {
 
         document.getElementById(
             "conversationList"
-        ).innerHTML =
-        `
-        <div class="empty">
-            Você ainda não possui conversas.<br><br>
-            Vá em Amigos e comece uma conversa! 👋
-        </div>
+        ).innerHTML = `
+
+            <div class="empty">
+
+                Você ainda não possui
+                conversas.
+
+                <br><br>
+
+                Vá em Amigos e comece
+                uma conversa! 👋
+
+            </div>
+
         `;
+
+        subscribeConversationList();
 
         return;
 
@@ -521,11 +783,27 @@ async function loadConversations() {
 
     if (profileError) {
 
-        console.error(profileError);
+        console.error(
+            "Erro ao carregar perfis:",
+            profileError
+        );
 
         return;
 
     }
+
+
+    const profileMap = {};
+
+
+    (profiles || []).forEach(
+        function(profile) {
+
+            profileMap[profile.id] =
+            profile;
+
+        }
+    );
 
 
     const list =
@@ -533,91 +811,134 @@ async function loadConversations() {
         "conversationList"
     );
 
+
     list.innerHTML = "";
 
 
-    profiles.forEach(function(profile) {
+    ids.forEach(
+        function(id) {
 
-        const conversation =
-        conversations[profile.id];
-
-
-        const message =
-        conversation.lastMessage;
+            const profile =
+            profileMap[id];
 
 
-        const item =
-        document.createElement("button");
+            if (!profile) {
+                return;
+            }
 
 
-        item.className =
-        "conversation";
+            const conversation =
+            conversations[id];
 
 
-        item.onclick =
-        function() {
-
-            window.location.href =
-            "conversas.html?user=" +
-            encodeURIComponent(
-                profile.id
-            );
-
-        };
+            const message =
+            conversation.lastMessage;
 
 
-        let badge = "";
+            const item =
+            document.createElement("button");
 
 
-        if (
-            conversation.unread > 0
-        ) {
+            item.className =
+            "conversation";
 
-            badge = `
 
-                <div class="badge">
-                    ${conversation.unread}
+            item.onclick =
+            function() {
+
+                window.location.href =
+                "conversas.html?user=" +
+                encodeURIComponent(
+                    profile.id
+                );
+
+            };
+
+
+            let badge = "";
+
+
+            if (
+                conversation.unread > 0
+            ) {
+
+                badge = `
+
+                    <div class="badge">
+
+                        ${
+                            conversation.unread > 99
+                            ? "99+"
+                            : conversation.unread
+                        }
+
+                    </div>
+
+                `;
+
+            }
+
+
+            item.innerHTML = `
+
+                <div class="avatar">
+
+                    ${initial(
+                        profile.username
+                    )}
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="name">
+
+                        ${
+                            escapeHTML(
+                                profile.username
+                            )
+                        }
+
+                    </div>
+
+
+                    <div class="last-message">
+
+                        ${
+                            escapeHTML(
+                                message.content
+                            )
+                        }
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="time">
+
+                        ${
+                            formatTime(
+                                message.created_at
+                            )
+                        }
+
+                    </div>
+
+                    ${badge}
+
                 </div>
 
             `;
 
+
+            list.appendChild(item);
+
         }
-
-
-        item.innerHTML = `
-
-            <div class="avatar">
-                ${initial(profile.username)}
-            </div>
-
-            <div class="info">
-
-                <div class="name">
-                    ${escapeHTML(profile.username)}
-                </div>
-
-                <div class="last-message">
-                    ${escapeHTML(message.content)}
-                </div>
-
-            </div>
-
-            <div>
-
-                <div class="time">
-                    ${formatTime(message.created_at)}
-                </div>
-
-                ${badge}
-
-            </div>
-
-        `;
-
-
-        list.appendChild(item);
-
-    });
+    );
 
 
     subscribeConversationList();
@@ -626,10 +947,15 @@ async function loadConversations() {
 
 
 /* =========================================
-   MARCAR COMO LIDA
-   ========================================= */
+   MARCAR MENSAGENS COMO LIDAS
+========================================= */
 
 async function markMessagesAsRead() {
+
+    if (!friendId) {
+        return;
+    }
+
 
     const {
         error
@@ -659,7 +985,7 @@ async function markMessagesAsRead() {
     if (error) {
 
         console.error(
-            "Erro ao marcar mensagens como lidas:",
+            "Erro ao marcar mensagens:",
             error
         );
 
@@ -669,8 +995,8 @@ async function markMessagesAsRead() {
 
 
 /* =========================================
-   CHAT
-   ========================================= */
+   CARREGAR CHAT
+========================================= */
 
 async function loadChat() {
 
@@ -688,13 +1014,17 @@ async function loadChat() {
     .single();
 
 
-    if (error) {
+    if (error || !profile) {
 
-        app.innerHTML =
-        `
-        <div class="empty">
-            Não foi possível encontrar esse usuário.
-        </div>
+        app.innerHTML = `
+
+            <div class="empty">
+
+                Não foi possível
+                encontrar esse usuário.
+
+            </div>
+
         `;
 
         return;
@@ -706,26 +1036,45 @@ async function loadChat() {
 
         <div class="chat">
 
+
             <div class="header">
 
                 <button
                     class="back"
-                    onclick="goBack()">
+                    onclick="goBack()"
+                >
+
                     ←
+
                 </button>
 
+
                 <div class="avatar">
-                    ${initial(profile.username)}
+
+                    ${initial(
+                        profile.username
+                    )}
+
                 </div>
+
 
                 <div class="info">
 
                     <div class="name">
-                        ${escapeHTML(profile.username)}
+
+                        ${
+                            escapeHTML(
+                                profile.username
+                            )
+                        }
+
                     </div>
 
+
                     <div class="last-message">
+
                         Conversa privada
+
                     </div>
 
                 </div>
@@ -735,10 +1084,13 @@ async function loadChat() {
 
             <div
                 class="chat-messages"
-                id="messages">
+                id="messages"
+            >
 
                 <div class="empty">
+
                     Carregando...
+
                 </div>
 
             </div>
@@ -746,7 +1098,8 @@ async function loadChat() {
 
             <form
                 class="composer"
-                id="messageForm">
+                id="messageForm"
+            >
 
                 <input
                     id="messageInput"
@@ -757,10 +1110,15 @@ async function loadChat() {
                     required
                 >
 
+
                 <button
                     class="send"
-                    type="submit">
+                    id="sendButton"
+                    type="submit"
+                >
+
                     ➤
+
                 </button>
 
             </form>
@@ -772,14 +1130,7 @@ async function loadChat() {
 
     await loadMessages();
 
-
-    /*
-     * Marca como lidas somente depois
-     * que o chat foi aberto.
-     */
-
     await markMessagesAsRead();
-
 
     subscribeChat();
 
@@ -794,12 +1145,21 @@ async function loadChat() {
 }
 
 
+/* =========================================
+   CARREGAR MENSAGENS
+========================================= */
+
 async function loadMessages() {
 
     const container =
     document.getElementById(
         "messages"
     );
+
+
+    if (!container) {
+        return;
+    }
 
 
     const {
@@ -830,13 +1190,21 @@ async function loadMessages() {
 
     if (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao carregar mensagens:",
+            error
+        );
 
-        container.innerHTML =
-        `
-        <div class="empty">
-            Não foi possível carregar as mensagens.
-        </div>
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Não foi possível
+                carregar as mensagens.
+
+            </div>
+
         `;
 
         return;
@@ -849,12 +1217,18 @@ async function loadMessages() {
 
     if (!data || !data.length) {
 
-        container.innerHTML =
-        `
-        <div class="empty">
-            Nenhuma mensagem ainda.<br>
-            Comece a conversa! 👋
-        </div>
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Nenhuma mensagem ainda.
+
+                <br>
+
+                Comece a conversa! 👋
+
+            </div>
+
         `;
 
         return;
@@ -872,6 +1246,10 @@ async function loadMessages() {
 }
 
 
+/* =========================================
+   ADICIONAR MENSAGEM
+========================================= */
+
 function addMessage(message) {
 
     const container =
@@ -881,6 +1259,19 @@ function addMessage(message) {
 
 
     if (!container) {
+        return;
+    }
+
+
+    const existing =
+    container.querySelector(
+        '[data-message-id="' +
+        message.id +
+        '"]'
+    );
+
+
+    if (existing) {
         return;
     }
 
@@ -905,18 +1296,29 @@ function addMessage(message) {
     div.className =
     "message " +
     (
-        message.sender_id === currentUser.id
+        message.sender_id ===
+        currentUser.id
         ? "mine"
         : "theirs"
     );
 
 
+    div.dataset.messageId =
+    message.id;
+
+
     div.innerHTML = `
 
-        ${escapeHTML(message.content)}
+        ${escapeHTML(
+            message.content
+        )}
 
         <span class="message-time">
-            ${formatTime(message.created_at)}
+
+            ${formatTime(
+                message.created_at
+            )}
+
         </span>
 
     `;
@@ -927,6 +1329,10 @@ function addMessage(message) {
 }
 
 
+/* =========================================
+   ENVIAR MENSAGEM
+========================================= */
+
 async function sendMessage(event) {
 
     event.preventDefault();
@@ -935,6 +1341,12 @@ async function sendMessage(event) {
     const input =
     document.getElementById(
         "messageInput"
+    );
+
+
+    const button =
+    document.getElementById(
+        "sendButton"
     );
 
 
@@ -949,8 +1361,11 @@ async function sendMessage(event) {
 
     input.disabled = true;
 
+    button.disabled = true;
+
 
     const {
+        data,
         error
     } =
     await supabaseClient
@@ -966,15 +1381,23 @@ async function sendMessage(event) {
         content:
         content
 
-    });
+    })
+    .select()
+    .single();
 
 
     input.disabled = false;
 
+    button.disabled = false;
+
 
     if (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao enviar mensagem:",
+            error
+        );
+
 
         alert(
             "Não foi possível enviar a mensagem."
@@ -989,15 +1412,37 @@ async function sendMessage(event) {
 
     input.focus();
 
+
+    /*
+     * O Realtime normalmente adicionará
+     * a mensagem automaticamente.
+     * Caso o Realtime demore, adicionamos
+     * imediatamente a mensagem retornada.
+     */
+
+    addMessage(data);
+
+    scrollBottom();
+
 }
 
 
 /* =========================================
    REALTIME DO CHAT
-   ========================================= */
+========================================= */
 
 function subscribeChat() {
 
+    if (chatChannel) {
+
+        supabaseClient.removeChannel(
+            chatChannel
+        );
+
+    }
+
+
+    chatChannel =
     supabaseClient
     .channel(
         "chat-" +
@@ -1020,175 +1465,7 @@ function subscribeChat() {
 
             const related =
             (
-                message.sender_id === currentUser.id &&
-                message.receiver_id === friendId
-            )
-            ||
-            (
-                message.sender_id === friendId &&
-                message.receiver_id === currentUser.id
-            );
-
-
-            if (!related) {
-                return;
-            }
-
-
-            addMessage(message);
-
-
-            if (
-                message.sender_id === friendId &&
-                message.receiver_id === currentUser.id
-            ) {
-
-                await supabaseClient
-                .from("messages")
-                .update({
-
-                    read_at:
-                    new Date().toISOString()
-
-                })
-                .eq(
-                    "id",
-                    message.id
-                );
-
-            }
-
-
-            scrollBottom();
-
-        }
-    )
-    .subscribe();
-
-}
-
-
-/* =========================================
-   REALTIME DA LISTA
-   ========================================= */
-
-function subscribeConversationList() {
-
-    supabaseClient
-    .channel(
-        "conversation-list-" +
-        currentUser.id
-    )
-    .on(
-        "postgres_changes",
-        {
-            event: "INSERT",
-            schema: "public",
-            table: "messages"
-        },
-        function(payload) {
-
-            const message =
-            payload.new;
-
-
-            if (
-                message.sender_id === currentUser.id ||
-                message.receiver_id === currentUser.id
-            ) {
-
-                loadConversations();
-
-            }
-
-        }
-    )
-    .on(
-        "postgres_changes",
-        {
-            event: "UPDATE",
-            schema: "public",
-            table: "messages"
-        },
-        function(payload) {
-
-            const message =
-            payload.new;
-
-
-            if (
-                message.sender_id === currentUser.id ||
-                message.receiver_id === currentUser.id
-            ) {
-
-                loadConversations();
-
-            }
-
-        }
-    )
-    .subscribe();
-
-}
-
-
-function scrollBottom() {
-
-    const messages =
-    document.getElementById(
-        "messages"
-    );
-
-
-    if (!messages) {
-        return;
-    }
-
-
-    setTimeout(
-        function() {
-
-            messages.scrollTop =
-            messages.scrollHeight;
-
-        },
-        50
-    );
-
-}
-
-
-/* =========================================
-   INICIAR
-   ========================================= */
-
-async function start() {
-
-    const logged =
-    await getUser();
-
-
-    if (!logged) {
-        return;
-    }
-
-
-    if (friendId) {
-
-        await loadChat();
-
-    } else {
-
-        await loadConversations();
-
-    }
-
-}
-
-
-start();
-
-</script>
-
-</body>
-</html>
+                message.sender_id ===
+                currentUser.id
+                &&
+                message.receiver_id 
