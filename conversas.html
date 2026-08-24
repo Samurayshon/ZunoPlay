@@ -5,10 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Conversas - ZunoPlay</title>
 
@@ -24,481 +21,255 @@
 }
 
 body {
-
     min-height: 100vh;
-
     background:
-        radial-gradient(
-            circle at 20% 20%,
-            #25145c 0%,
-            transparent 35%
-        ),
-        radial-gradient(
-            circle at 80% 80%,
-            #102d59 0%,
-            transparent 35%
-        ),
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
         #070811;
-
     color: white;
-
 }
 
 .app {
-
     width: 100%;
-
     max-width: 480px;
-
     min-height: 100vh;
-
     margin: auto;
-
 }
 
-
-/* =========================================
-   HEADER
-========================================= */
-
 .header {
-
     height: 70px;
-
     display: flex;
-
     align-items: center;
-
     gap: 12px;
-
     padding: 14px 20px;
-
     background: #0a0b14;
-
     border-bottom: 1px solid #292a3d;
-
     position: sticky;
-
     top: 0;
-
     z-index: 10;
-
 }
 
 .back {
-
     width: 42px;
-
     height: 42px;
-
     border-radius: 12px;
-
     border: 1px solid #303145;
-
     background: #1b1c2b;
-
     color: white;
-
     font-size: 20px;
-
     cursor: pointer;
-
 }
 
 .logo {
-
     font-size: 28px;
-
     font-weight: 800;
-
 }
 
 .logo span {
-
     color: #8b5cf6;
-
 }
 
-
-/* =========================================
-   LISTA
-========================================= */
-
 .page {
-
     padding: 20px;
-
 }
 
 .title {
-
     font-size: 26px;
-
     margin-bottom: 5px;
-
 }
 
 .subtitle {
-
     color: #9293a3;
-
     font-size: 13px;
-
     margin-bottom: 20px;
-
 }
 
 .status {
-
     padding: 12px;
-
     border-radius: 12px;
-
     background: #141523;
-
     border: 1px solid #292a3d;
-
     color: #4ade80;
-
     font-size: 12px;
-
     margin-bottom: 15px;
-
 }
 
 .conversation {
-
     width: 100%;
-
     display: flex;
-
     align-items: center;
-
     gap: 13px;
-
     padding: 15px;
-
     margin-bottom: 10px;
-
     border-radius: 17px;
-
     border: 1px solid #292a3d;
-
     background: #141523;
-
     color: white;
-
     text-align: left;
-
     cursor: pointer;
-
 }
 
 .conversation:active {
-
     transform: scale(.98);
-
 }
 
 .avatar {
-
     width: 50px;
-
     height: 50px;
-
     min-width: 50px;
-
     border-radius: 50%;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
-
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     font-weight: bold;
-
     font-size: 18px;
-
 }
 
 .info {
-
     min-width: 0;
-
     flex: 1;
-
 }
 
 .name {
-
     font-size: 15px;
-
     font-weight: bold;
-
     margin-bottom: 5px;
-
 }
 
 .last {
-
     color: #858697;
-
     font-size: 12px;
-
     white-space: nowrap;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
-
 }
 
 .time {
-
     color: #737486;
-
     font-size: 10px;
-
 }
 
 .empty {
-
     text-align: center;
-
     color: #737486;
-
     padding: 50px 20px;
-
 }
 
-
-/* =========================================
-   CHAT
-========================================= */
-
 .chat {
-
     min-height: 100vh;
-
     display: flex;
-
     flex-direction: column;
-
 }
 
 .chat-header {
-
     height: 70px;
-
     display: flex;
-
     align-items: center;
-
     gap: 12px;
-
     padding: 12px 15px;
-
     background: #0a0b14;
-
     border-bottom: 1px solid #292a3d;
-
     position: sticky;
-
     top: 0;
-
     z-index: 10;
-
 }
 
 .chat-name {
-
     font-weight: bold;
-
     font-size: 15px;
-
 }
 
 .chat-status {
-
     color: #4ade80;
-
     font-size: 10px;
-
     margin-top: 3px;
-
 }
 
 .messages {
-
     flex: 1;
-
     padding: 18px;
-
     display: flex;
-
     flex-direction: column;
-
     gap: 8px;
-
     overflow-y: auto;
-
     min-height: calc(100vh - 140px);
-
 }
 
 .message {
-
     max-width: 78%;
-
     padding: 11px 14px;
-
     border-radius: 17px;
-
     font-size: 14px;
-
     line-height: 1.4;
-
     word-break: break-word;
-
 }
 
 .mine {
-
     align-self: flex-end;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
-
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
     border-bottom-right-radius: 5px;
-
 }
 
 .theirs {
-
     align-self: flex-start;
-
     background: #1b1c2b;
-
     border: 1px solid #303145;
-
     border-bottom-left-radius: 5px;
-
 }
 
 .message-time {
-
     display: block;
-
     font-size: 9px;
-
     opacity: .6;
-
     margin-top: 4px;
-
     text-align: right;
-
 }
 
-
-/* =========================================
-   COMPOSITOR
-========================================= */
-
 .composer {
-
     display: flex;
-
     gap: 8px;
-
     padding: 12px;
-
     background: #0a0b14;
-
     border-top: 1px solid #292a3d;
-
     position: sticky;
-
     bottom: 0;
-
 }
 
 .composer input {
-
     flex: 1;
-
     min-width: 0;
-
     padding: 14px;
-
     border-radius: 14px;
-
     border: 1px solid #303145;
-
     background: #11121e;
-
     color: white;
-
     outline: none;
-
 }
 
 .composer input:focus {
-
     border-color: #8b5cf6;
-
 }
 
 .send {
-
     width: 52px;
-
     border: none;
-
     border-radius: 14px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
-
+    background: linear-gradient(135deg,#8b5cf6,#6366f1);
     color: white;
-
     font-size: 18px;
-
     cursor: pointer;
-
 }
 
 </style>
 
 </head>
 
-
 <body>
 
-
-<div
-    id="app"
-    class="app"
-></div>
-
+<div id="app" class="app"></div>
 
 <script>
-
 
 /* =========================================
    SUPABASE
@@ -507,10 +278,8 @@ body {
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
-
 const SUPABASE_KEY =
 "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
-
 
 const supabaseClient =
 window.supabase.createClient(
@@ -527,21 +296,18 @@ let currentUser = null;
 
 let friendId = null;
 
+let friendUsername = null;
 
 const params =
 new URLSearchParams(
     window.location.search
 );
 
-
 friendId =
 params.get("user");
 
-
 const app =
-document.getElementById(
-    "app"
-);
+document.getElementById("app");
 
 
 /* =========================================
@@ -551,9 +317,7 @@ document.getElementById(
 function escapeHTML(text) {
 
     const div =
-    document.createElement(
-        "div"
-    );
+    document.createElement("div");
 
     div.textContent =
     text || "";
@@ -566,15 +330,10 @@ function escapeHTML(text) {
 function formatTime(date) {
 
     if (!date) {
-
         return "";
-
     }
 
-
-    return new Date(
-        date
-    ).toLocaleTimeString(
+    return new Date(date).toLocaleTimeString(
         "pt-BR",
         {
             hour: "2-digit",
@@ -585,10 +344,10 @@ function formatTime(date) {
 }
 
 
-function initial(id) {
+function initial(name) {
 
     return (
-        id || "?"
+        name || "?"
     )
     .charAt(0)
     .toUpperCase();
@@ -605,12 +364,12 @@ function goBack() {
     if (friendId) {
 
         window.location.href =
-            "conversas.html";
+        "conversas.html";
 
     } else {
 
         window.location.href =
-            "index.html";
+        "index.html";
 
     }
 
@@ -628,9 +387,8 @@ async function getUser() {
         error
     } =
     await supabaseClient
-        .auth
-        .getSession();
-
+    .auth
+    .getSession();
 
     if (
         error ||
@@ -638,18 +396,51 @@ async function getUser() {
     ) {
 
         window.location.href =
-            "login.html";
+        "login.html";
 
         return false;
 
     }
 
-
     currentUser =
-        data.session.user;
-
+    data.session.user;
 
     return true;
+
+}
+
+
+/* =========================================
+   BUSCAR USERNAME
+========================================= */
+
+async function getUsername(userId) {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+    .from("profiles")
+    .select("username")
+    .eq(
+        "id",
+        userId
+    )
+    .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "Erro ao buscar username:",
+            error
+        );
+
+        return null;
+
+    }
+
+    return data?.username || null;
 
 }
 
@@ -688,13 +479,11 @@ async function loadList() {
 
             </h1>
 
-
             <p class="subtitle">
 
                 Suas conversas recentes.
 
             </p>
-
 
             <div
                 id="status"
@@ -704,7 +493,6 @@ async function loadList() {
                 ⏳ Carregando...
 
             </div>
-
 
             <div id="list">
 
@@ -726,20 +514,20 @@ async function loadList() {
         error
     } =
     await supabaseClient
-        .from("messages")
-        .select("*")
-        .or(
-            "sender_id.eq." +
-            currentUser.id +
-            ",receiver_id.eq." +
-            currentUser.id
-        )
-        .order(
-            "created_at",
-            {
-                ascending: false
-            }
-        );
+    .from("messages")
+    .select("*")
+    .or(
+        "sender_id.eq." +
+        currentUser.id +
+        ",receiver_id.eq." +
+        currentUser.id
+    )
+    .order(
+        "created_at",
+        {
+            ascending: false
+        }
+    );
 
 
     if (error) {
@@ -747,8 +535,8 @@ async function loadList() {
         document.getElementById(
             "status"
         ).textContent =
-            "❌ Erro: " +
-            error.message;
+        "❌ Erro: " +
+        error.message;
 
         return;
 
@@ -756,15 +544,15 @@ async function loadList() {
 
 
     const allMessages =
-        messages || [];
+    messages || [];
 
 
     document.getElementById(
         "status"
     ).textContent =
-        "✅ " +
-        allMessages.length +
-        " mensagens encontradas";
+    "✅ " +
+    allMessages.length +
+    " mensagens encontradas";
 
 
     const conversations = {};
@@ -774,32 +562,28 @@ async function loadList() {
         function(message) {
 
             const otherId =
-                message.sender_id ===
-                currentUser.id
+            message.sender_id ===
+            currentUser.id
 
-                ? message.receiver_id
+            ? message.receiver_id
 
-                : message.sender_id;
+            : message.sender_id;
 
 
             if (!otherId) {
-
                 return;
-
             }
 
 
-            if (
-                !conversations[otherId]
-            ) {
+            if (!conversations[otherId]) {
 
                 conversations[otherId] = {
 
                     last:
-                        message,
+                    message,
 
                     unread:
-                        0
+                    0
 
                 };
 
@@ -824,18 +608,18 @@ async function loadList() {
 
 
     const list =
-        document.getElementById(
-            "list"
-        );
+    document.getElementById(
+        "list"
+    );
 
 
     list.innerHTML = "";
 
 
     const ids =
-        Object.keys(
-            conversations
-        );
+    Object.keys(
+        conversations
+    );
 
 
     if (!ids.length) {
@@ -861,95 +645,102 @@ async function loadList() {
     }
 
 
-    ids.forEach(
-        function(otherId) {
+    for (
+        const otherId of ids
+    ) {
 
-            const conversation =
-                conversations[
-                    otherId
-                ];
-
-
-            const message =
-                conversation.last;
+        const conversation =
+        conversations[
+            otherId
+        ];
 
 
-            const item =
-                document.createElement(
-                    "button"
-                );
+        const username =
+        await getUsername(
+            otherId
+        );
 
 
-            item.className =
-                "conversation";
+        const displayName =
+        username ||
+        "Usuário " +
+        otherId.substring(
+            0,
+            8
+        );
 
 
-            item.onclick =
-                function() {
-
-                    window.location.href =
-                        "conversas.html?user=" +
-                        encodeURIComponent(
-                            otherId
-                        );
-
-                };
+        const item =
+        document.createElement(
+            "button"
+        );
 
 
-            item.innerHTML = `
-
-                <div class="avatar">
-
-                    ${escapeHTML(
-                        initial(otherId)
-                    )}
-
-                </div>
+        item.className =
+        "conversation";
 
 
-                <div class="info">
+        item.onclick =
+        function() {
 
-                    <div class="name">
-
-                        Usuário
-                        ${escapeHTML(
-                            otherId.substring(
-                                0,
-                                8
-                            )
-                        )}
-
-                    </div>
-
-
-                    <div class="last">
-
-                        ${escapeHTML(
-                            message.content
-                        )}
-
-                    </div>
-
-                </div>
-
-
-                <div class="time">
-
-                    ${formatTime(
-                        message.created_at
-                    )}
-
-                </div>
-
-            `;
-
-
-            list.appendChild(
-                item
+            window.location.href =
+            "conversas.html?user=" +
+            encodeURIComponent(
+                otherId
             );
 
-        }
-    );
+        };
+
+
+        item.innerHTML = `
+
+            <div class="avatar">
+
+                ${escapeHTML(
+                    initial(displayName)
+                )}
+
+            </div>
+
+
+            <div class="info">
+
+                <div class="name">
+
+                    ${escapeHTML(
+                        displayName
+                    )}
+
+                </div>
+
+
+                <div class="last">
+
+                    ${escapeHTML(
+                        conversation.last.content
+                    )}
+
+                </div>
+
+            </div>
+
+
+            <div class="time">
+
+                ${formatTime(
+                    conversation.last.created_at
+                )}
+
+            </div>
+
+        `;
+
+
+        list.appendChild(
+            item
+        );
+
+    }
 
 }
 
@@ -960,13 +751,26 @@ async function loadList() {
 
 async function loadChat() {
 
+    friendUsername =
+    await getUsername(
+        friendId
+    );
+
+
+    const displayName =
+    friendUsername ||
+    "Usuário " +
+    friendId.substring(
+        0,
+        8
+    );
+
+
     app.innerHTML = `
 
         <div class="chat">
 
-
             <div class="chat-header">
-
 
                 <button
                     class="back"
@@ -981,7 +785,7 @@ async function loadChat() {
                 <div class="avatar">
 
                     ${escapeHTML(
-                        initial(friendId)
+                        initial(displayName)
                     )}
 
                 </div>
@@ -991,12 +795,8 @@ async function loadChat() {
 
                     <div class="chat-name">
 
-                        Usuário
                         ${escapeHTML(
-                            friendId.substring(
-                                0,
-                                8
-                            )
+                            displayName
                         )}
 
                     </div>
@@ -1009,7 +809,6 @@ async function loadChat() {
                     </div>
 
                 </div>
-
 
             </div>
 
@@ -1054,7 +853,6 @@ async function loadChat() {
 
             </form>
 
-
         </div>
 
     `;
@@ -1067,27 +865,27 @@ async function loadChat() {
 
 
     document
-        .getElementById(
-            "composer"
-        )
-        .addEventListener(
-            "submit",
-            sendMessage
-        );
+    .getElementById(
+        "composer"
+    )
+    .addEventListener(
+        "submit",
+        sendMessage
+    );
 
 }
 
 
 /* =========================================
-   CARREGAR MENSAGENS DO CHAT
+   CARREGAR MENSAGENS
 ========================================= */
 
 async function loadMessages() {
 
     const container =
-        document.getElementById(
-            "messages"
-        );
+    document.getElementById(
+        "messages"
+    );
 
 
     const {
@@ -1095,25 +893,25 @@ async function loadMessages() {
         error
     } =
     await supabaseClient
-        .from("messages")
-        .select("*")
-        .or(
-            "and(sender_id.eq." +
-            currentUser.id +
-            ",receiver_id.eq." +
-            friendId +
-            "),and(sender_id.eq." +
-            friendId +
-            ",receiver_id.eq." +
-            currentUser.id +
-            ")"
-        )
-        .order(
-            "created_at",
-            {
-                ascending: true
-            }
-        );
+    .from("messages")
+    .select("*")
+    .or(
+        "and(sender_id.eq." +
+        currentUser.id +
+        ",receiver_id.eq." +
+        friendId +
+        "),and(sender_id.eq." +
+        friendId +
+        ",receiver_id.eq." +
+        currentUser.id +
+        ")"
+    )
+    .order(
+        "created_at",
+        {
+            ascending: true
+        }
+    );
 
 
     if (error) {
@@ -1144,7 +942,7 @@ async function loadMessages() {
 
 
     const messages =
-        data || [];
+    data || [];
 
 
     if (!messages.length) {
@@ -1169,13 +967,7 @@ async function loadMessages() {
 
 
     messages.forEach(
-        function(message) {
-
-            addMessage(
-                message
-            );
-
-        }
+        addMessage
     );
 
 
@@ -1191,22 +983,20 @@ async function loadMessages() {
 function addMessage(message) {
 
     const container =
-        document.getElementById(
-            "messages"
-        );
+    document.getElementById(
+        "messages"
+    );
 
 
     if (!container) {
-
         return;
-
     }
 
 
     const empty =
-        container.querySelector(
-            ".empty"
-        );
+    container.querySelector(
+        ".empty"
+    );
 
 
     if (empty) {
@@ -1216,15 +1006,13 @@ function addMessage(message) {
     }
 
 
-    const existing =
+    if (
         document.querySelector(
             '[data-message-id="' +
             message.id +
             '"]'
-        );
-
-
-    if (existing) {
+        )
+    ) {
 
         return;
 
@@ -1232,25 +1020,25 @@ function addMessage(message) {
 
 
     const div =
-        document.createElement(
-            "div"
-        );
+    document.createElement(
+        "div"
+    );
 
 
     div.dataset.messageId =
-        message.id;
+    message.id;
 
 
     div.className =
-        "message " +
-        (
-            message.sender_id ===
-            currentUser.id
+    "message " +
+    (
+        message.sender_id ===
+        currentUser.id
 
-            ? "mine"
+        ? "mine"
 
-            : "theirs"
-        );
+        : "theirs"
+    );
 
 
     div.innerHTML = `
@@ -1258,7 +1046,6 @@ function addMessage(message) {
         ${escapeHTML(
             message.content
         )}
-
 
         <span class="message-time">
 
@@ -1285,9 +1072,7 @@ function addMessage(message) {
 async function markAsRead() {
 
     if (!friendId) {
-
         return;
-
     }
 
 
@@ -1295,25 +1080,25 @@ async function markAsRead() {
         error
     } =
     await supabaseClient
-        .from("messages")
-        .update({
+    .from("messages")
+    .update({
 
-            read_at:
-                new Date().toISOString()
+        read_at:
+        new Date().toISOString()
 
-        })
-        .eq(
-            "sender_id",
-            friendId
-        )
-        .eq(
-            "receiver_id",
-            currentUser.id
-        )
-        .is(
-            "read_at",
-            null
-        );
+    })
+    .eq(
+        "sender_id",
+        friendId
+    )
+    .eq(
+        "receiver_id",
+        currentUser.id
+    )
+    .is(
+        "read_at",
+        null
+    );
 
 
     if (error) {
@@ -1332,31 +1117,28 @@ async function markAsRead() {
    ENVIAR MENSAGEM
 ========================================= */
 
-async function sendMessage(
-    event
-) {
+async function sendMessage(event) {
 
     event.preventDefault();
 
 
     const input =
-        document.getElementById(
-            "messageInput"
-        );
+    document.getElementById(
+        "messageInput"
+    );
 
 
     const content =
-        input.value.trim();
+    input.value.trim();
 
 
     if (!content) {
-
         return;
-
     }
 
 
-    input.disabled = true;
+    input.disabled =
+    true;
 
 
     const {
@@ -1364,24 +1146,25 @@ async function sendMessage(
         error
     } =
     await supabaseClient
-        .from("messages")
-        .insert({
+    .from("messages")
+    .insert({
 
-            sender_id:
-                currentUser.id,
+        sender_id:
+        currentUser.id,
 
-            receiver_id:
-                friendId,
+        receiver_id:
+        friendId,
 
-            content:
-                content
+        content:
+        content
 
-        })
-        .select()
-        .single();
+    })
+    .select()
+    .single();
 
 
-    input.disabled = false;
+    input.disabled =
+    false;
 
 
     if (error) {
@@ -1418,15 +1201,13 @@ async function sendMessage(
 function scrollBottom() {
 
     const container =
-        document.getElementById(
-            "messages"
-        );
+    document.getElementById(
+        "messages"
+    );
 
 
     if (!container) {
-
         return;
-
     }
 
 
@@ -1434,7 +1215,7 @@ function scrollBottom() {
         function() {
 
             container.scrollTop =
-                container.scrollHeight;
+            container.scrollHeight;
 
         },
         50
@@ -1450,13 +1231,11 @@ function scrollBottom() {
 async function start() {
 
     const logged =
-        await getUser();
+    await getUser();
 
 
     if (!logged) {
-
         return;
-
     }
 
 
