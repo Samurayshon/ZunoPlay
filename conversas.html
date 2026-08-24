@@ -1,267 +1,229 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Conversas - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
-body {
-    min-height: 100vh;
+body{
+    min-height:100vh;
     background:
-        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
-        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        radial-gradient(circle at 20% 20%,#25145c 0%,transparent 35%),
+        radial-gradient(circle at 80% 80%,#102d59 0%,transparent 35%),
         #070811;
-    color: white;
+    color:white;
 }
 
-.app {
-    width: 100%;
-    max-width: 480px;
-    min-height: 100vh;
-    margin: auto;
+.app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    margin:auto;
 }
 
-.header {
-    height: 70px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    background: #0a0b14;
-    border-bottom: 1px solid #292a3d;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+.header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:20px;
+    border-bottom:1px solid #292a3d;
+    background:rgba(10,11,20,.95);
+    position:sticky;
+    top:0;
+    z-index:5;
 }
 
-.back {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    border: 1px solid #303145;
-    background: #1b1c2b;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
+.back{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:1px solid #303145;
+    background:#1b1c2b;
+    color:white;
+    font-size:20px;
+    cursor:pointer;
 }
 
-.logo {
-    font-size: 28px;
-    font-weight: 800;
+.logo{
+    font-size:28px;
+    font-weight:800;
 }
 
-.logo span {
-    color: #8b5cf6;
+.logo span{
+    color:#8b5cf6;
 }
 
-.page {
-    padding: 20px;
+.page{
+    padding:20px;
 }
 
-.title {
-    font-size: 26px;
-    margin-bottom: 5px;
+.title{
+    font-size:25px;
+    margin-bottom:6px;
 }
 
-.subtitle {
-    color: #9293a3;
-    font-size: 13px;
-    margin-bottom: 20px;
+.subtitle{
+    color:#9293a3;
+    font-size:13px;
+    margin-bottom:20px;
 }
 
-.status {
-    padding: 12px;
-    border-radius: 12px;
-    background: #141523;
-    border: 1px solid #292a3d;
-    color: #4ade80;
-    font-size: 12px;
-    margin-bottom: 15px;
+.status{
+    padding:12px;
+    margin-bottom:15px;
+    border-radius:12px;
+    background:#141523;
+    border:1px solid #292a3d;
+    color:#4ade80;
+    font-size:12px;
 }
 
-.conversation {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 17px;
-    border: 1px solid #292a3d;
-    background: #141523;
-    color: white;
-    text-align: left;
-    cursor: pointer;
+.conversation{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    width:100%;
+    padding:14px;
+    margin-bottom:10px;
+    border-radius:16px;
+    border:1px solid #292a3d;
+    background:rgba(20,21,35,.9);
+    color:white;
+    cursor:pointer;
+    text-align:left;
 }
 
-.conversation:active {
-    transform: scale(.98);
+.avatar{
+    width:48px;
+    height:48px;
+    min-width:48px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#8b5cf6,#6366f1);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:18px;
 }
 
-.avatar {
-    width: 50px;
-    height: 50px;
-    min-width: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 18px;
+.info{
+    min-width:0;
+    flex:1;
 }
 
-.info {
-    min-width: 0;
-    flex: 1;
+.name{
+    font-size:15px;
+    font-weight:bold;
+    margin-bottom:5px;
 }
 
-.name {
-    font-size: 15px;
-    font-weight: bold;
-    margin-bottom: 5px;
+.last-message{
+    color:#858697;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
-.last {
-    color: #858697;
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.time{
+    color:#737486;
+    font-size:10px;
+    white-space:nowrap;
 }
 
-.time {
-    color: #737486;
-    font-size: 10px;
+.empty{
+    text-align:center;
+    color:#737486;
+    padding:60px 20px;
+    font-size:14px;
 }
 
-.empty {
-    text-align: center;
-    color: #737486;
-    padding: 50px 20px;
+.chat{
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
 }
 
-.chat {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+.chat-messages{
+    flex:1;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    overflow-y:auto;
+    min-height:calc(100vh - 145px);
 }
 
-.chat-header {
-    height: 70px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 15px;
-    background: #0a0b14;
-    border-bottom: 1px solid #292a3d;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+.message{
+    max-width:78%;
+    padding:11px 14px;
+    border-radius:16px;
+    font-size:14px;
+    line-height:1.4;
+    word-break:break-word;
 }
 
-.chat-name {
-    font-weight: bold;
-    font-size: 15px;
+.mine{
+    align-self:flex-end;
+    background:linear-gradient(135deg,#8b5cf6,#6366f1);
+    border-bottom-right-radius:5px;
 }
 
-.chat-status {
-    color: #4ade80;
-    font-size: 10px;
-    margin-top: 3px;
+.theirs{
+    align-self:flex-start;
+    background:#1b1c2b;
+    border:1px solid #303145;
+    border-bottom-left-radius:5px;
 }
 
-.messages {
-    flex: 1;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-    min-height: calc(100vh - 140px);
+.message-time{
+    display:block;
+    font-size:9px;
+    opacity:.6;
+    margin-top:4px;
 }
 
-.message {
-    max-width: 78%;
-    padding: 11px 14px;
-    border-radius: 17px;
-    font-size: 14px;
-    line-height: 1.4;
-    word-break: break-word;
+.composer{
+    display:flex;
+    gap:8px;
+    padding:12px 15px;
+    border-top:1px solid #292a3d;
+    background:rgba(10,11,20,.97);
+    position:sticky;
+    bottom:0;
 }
 
-.mine {
-    align-self: flex-end;
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
-    border-bottom-right-radius: 5px;
+.composer input{
+    flex:1;
+    min-width:0;
+    padding:14px;
+    border-radius:13px;
+    border:1px solid #303145;
+    background:#11121e;
+    color:white;
+    outline:none;
 }
 
-.theirs {
-    align-self: flex-start;
-    background: #1b1c2b;
-    border: 1px solid #303145;
-    border-bottom-left-radius: 5px;
+.send{
+    width:50px;
+    border:none;
+    border-radius:13px;
+    background:linear-gradient(135deg,#8b5cf6,#6366f1);
+    color:white;
+    font-size:19px;
+    cursor:pointer;
 }
-
-.message-time {
-    display: block;
-    font-size: 9px;
-    opacity: .6;
-    margin-top: 4px;
-    text-align: right;
-}
-
-.composer {
-    display: flex;
-    gap: 8px;
-    padding: 12px;
-    background: #0a0b14;
-    border-top: 1px solid #292a3d;
-    position: sticky;
-    bottom: 0;
-}
-
-.composer input {
-    flex: 1;
-    min-width: 0;
-    padding: 14px;
-    border-radius: 14px;
-    border: 1px solid #303145;
-    background: #11121e;
-    color: white;
-    outline: none;
-}
-
-.composer input:focus {
-    border-color: #8b5cf6;
-}
-
-.send {
-    width: 52px;
-    border: none;
-    border-radius: 14px;
-    background: linear-gradient(135deg,#8b5cf6,#6366f1);
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-}
-
 </style>
-
 </head>
 
 <body>
@@ -269,10 +231,6 @@ body {
 <div id="app" class="app"></div>
 
 <script>
-
-/* =========================================
-   SUPABASE
-========================================= */
 
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
@@ -286,15 +244,11 @@ window.supabase.createClient(
     SUPABASE_KEY
 );
 
-
-/* =========================================
-   VARIÁVEIS
-========================================= */
+const app =
+document.getElementById("app");
 
 let currentUser = null;
 let friendId = null;
-let friendUsername = null;
-let realtimeChannel = null;
 
 const params =
 new URLSearchParams(
@@ -304,15 +258,19 @@ new URLSearchParams(
 friendId =
 params.get("user");
 
-const app =
-document.getElementById("app");
+
+function initial(name){
+
+    return (
+        name || "?"
+    )
+    .charAt(0)
+    .toUpperCase();
+
+}
 
 
-/* =========================================
-   UTILIDADES
-========================================= */
-
-function escapeHTML(text) {
+function escapeHTML(text){
 
     const div =
     document.createElement("div");
@@ -325,62 +283,23 @@ function escapeHTML(text) {
 }
 
 
-function formatTime(date) {
+function formatTime(dateString){
 
-    if (!date) {
-        return "";
-    }
+    const date =
+    new Date(dateString);
 
-    return new Date(date).toLocaleTimeString(
+    return date.toLocaleTimeString(
         "pt-BR",
         {
-            hour: "2-digit",
-            minute: "2-digit"
+            hour:"2-digit",
+            minute:"2-digit"
         }
     );
 
 }
 
 
-function initial(name) {
-
-    return (
-        name || "?"
-    )
-    .charAt(0)
-    .toUpperCase();
-
-}
-
-
-/* =========================================
-   VOLTAR
-========================================= */
-
-function goBack() {
-
-    stopRealtime();
-
-    if (friendId) {
-
-        window.location.href =
-        "conversas.html";
-
-    } else {
-
-        window.location.href =
-        "index.html";
-
-    }
-
-}
-
-
-/* =========================================
-   USUÁRIO LOGADO
-========================================= */
-
-async function getUser() {
+async function getUser(){
 
     const {
         data,
@@ -390,10 +309,10 @@ async function getUser() {
     .auth
     .getSession();
 
-    if (
+    if(
         error ||
         !data.session
-    ) {
+    ){
 
         window.location.href =
         "login.html";
@@ -410,46 +329,28 @@ async function getUser() {
 }
 
 
-/* =========================================
-   BUSCAR USERNAME
-========================================= */
+function goBack(){
 
-async function getUsername(userId) {
+    if(friendId){
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-    .from("profiles")
-    .select("username")
-    .eq(
-        "id",
-        userId
-    )
-    .maybeSingle();
+        window.location.href =
+        "conversas.html";
 
-    if (error) {
+    }else{
 
-        console.error(
-            "Erro ao buscar username:",
-            error
-        );
-
-        return null;
+        window.location.href =
+        "index.html";
 
     }
-
-    return data?.username || null;
 
 }
 
 
 /* =========================================
-   LISTA DE CONVERSAS
+   LISTA
 ========================================= */
 
-async function loadList() {
+async function loadConversations(){
 
     app.innerHTML = `
 
@@ -463,43 +364,32 @@ async function loadList() {
             </button>
 
             <div class="logo">
-
                 Zuno<span>Play</span>
-
             </div>
 
         </div>
 
-
         <div class="page">
 
             <h1 class="title">
-
                 💬 Conversas
-
             </h1>
 
             <p class="subtitle">
-
                 Suas conversas recentes.
-
             </p>
 
             <div
                 id="status"
                 class="status"
             >
-
                 ⏳ Carregando...
-
             </div>
 
-            <div id="list">
+            <div id="conversationList">
 
                 <div class="empty">
-
                     Carregando conversas...
-
                 </div>
 
             </div>
@@ -510,7 +400,7 @@ async function loadList() {
 
 
     const {
-        data: messages,
+        data:messages,
         error
     } =
     await supabaseClient
@@ -525,41 +415,38 @@ async function loadList() {
     .order(
         "created_at",
         {
-            ascending: false
+            ascending:false
         }
     );
 
 
-    if (error) {
+    if(error){
+
+        console.error(error);
 
         document.getElementById(
             "status"
         ).textContent =
-        "❌ Erro: " +
-        error.message;
+        "❌ Erro ao carregar mensagens";
 
         return;
 
     }
 
 
-    const allMessages =
-    messages || [];
-
-
     document.getElementById(
         "status"
     ).textContent =
     "✅ " +
-    allMessages.length +
+    (messages || []).length +
     " mensagens encontradas";
 
 
     const conversations = {};
 
 
-    allMessages.forEach(
-        function(message) {
+    (messages || []).forEach(
+        function(message){
 
             const otherId =
             message.sender_id ===
@@ -570,32 +457,28 @@ async function loadList() {
             : message.sender_id;
 
 
-            if (!otherId) {
+            if(!otherId){
                 return;
             }
 
 
-            if (!conversations[otherId]) {
+            if(!conversations[otherId]){
 
                 conversations[otherId] = {
 
-                    last:
-                    message,
-
-                    unread:
-                    0
+                    lastMessage:message,
+                    unread:0
 
                 };
 
             }
 
 
-            if (
+            if(
                 message.receiver_id ===
-                currentUser.id
-                &&
+                currentUser.id &&
                 message.read_at === null
-            ) {
+            ){
 
                 conversations[
                     otherId
@@ -607,22 +490,22 @@ async function loadList() {
     );
 
 
-    const list =
-    document.getElementById(
-        "list"
-    );
-
-
-    list.innerHTML = "";
-
-
     const ids =
     Object.keys(
         conversations
     );
 
 
-    if (!ids.length) {
+    const list =
+    document.getElementById(
+        "conversationList"
+    );
+
+
+    list.innerHTML = "";
+
+
+    if(!ids.length){
 
         list.innerHTML = `
 
@@ -645,35 +528,36 @@ async function loadList() {
     }
 
 
-    for (
-        const otherId of ids
-    ) {
+    for(
+        const id of ids
+    ){
 
-        const conversation =
-        conversations[
-            otherId
-        ];
+        const {
+            data:profile
+        } =
+        await supabaseClient
+        .from("profiles")
+        .select("id, username")
+        .eq(
+            "id",
+            id
+        )
+        .maybeSingle();
 
 
         const username =
-        await getUsername(
-            otherId
-        );
-
-
-        const displayName =
-        username ||
+        profile?.username ||
         "Usuário " +
-        otherId.substring(
-            0,
-            8
-        );
+        id.substring(0,8);
+
+
+        const message =
+        conversations[id]
+        .lastMessage;
 
 
         const item =
-        document.createElement(
-            "button"
-        );
+        document.createElement("button");
 
 
         item.className =
@@ -681,13 +565,11 @@ async function loadList() {
 
 
         item.onclick =
-        function() {
+        function(){
 
             window.location.href =
             "conversas.html?user=" +
-            encodeURIComponent(
-                otherId
-            );
+            encodeURIComponent(id);
 
         };
 
@@ -697,38 +579,35 @@ async function loadList() {
             <div class="avatar">
 
                 ${escapeHTML(
-                    initial(displayName)
+                    initial(username)
                 )}
 
             </div>
-
 
             <div class="info">
 
                 <div class="name">
 
                     ${escapeHTML(
-                        displayName
+                        username
                     )}
 
                 </div>
 
-
-                <div class="last">
+                <div class="last-message">
 
                     ${escapeHTML(
-                        conversation.last.content
+                        message.content
                     )}
 
                 </div>
 
             </div>
 
-
             <div class="time">
 
                 ${formatTime(
-                    conversation.last.created_at
+                    message.created_at
                 )}
 
             </div>
@@ -736,9 +615,7 @@ async function loadList() {
         `;
 
 
-        list.appendChild(
-            item
-        );
+        list.appendChild(item);
 
     }
 
@@ -749,60 +626,77 @@ async function loadList() {
    CHAT
 ========================================= */
 
-async function loadChat() {
+async function loadChat(){
 
-    friendUsername =
-    await getUsername(
+    const {
+        data:profile,
+        error
+    } =
+    await supabaseClient
+    .from("profiles")
+    .select("id, username")
+    .eq(
+        "id",
         friendId
-    );
+    )
+    .maybeSingle();
 
 
-    const displayName =
-    friendUsername ||
+    if(error){
+
+        app.innerHTML = `
+
+            <div class="empty">
+
+                Erro ao carregar usuário.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    const username =
+    profile?.username ||
     "Usuário " +
-    friendId.substring(
-        0,
-        8
-    );
+    friendId.substring(0,8);
 
 
     app.innerHTML = `
 
         <div class="chat">
 
-            <div class="chat-header">
+            <div class="header">
 
                 <button
                     class="back"
                     onclick="goBack()"
                 >
-
                     ←
-
                 </button>
-
 
                 <div class="avatar">
 
                     ${escapeHTML(
-                        initial(displayName)
+                        initial(username)
                     )}
 
                 </div>
 
+                <div class="info">
 
-                <div>
-
-                    <div class="chat-name">
+                    <div class="name">
 
                         ${escapeHTML(
-                            displayName
+                            username
                         )}
 
                     </div>
 
-
-                    <div class="chat-status">
+                    <div class="last-message">
 
                         Conversa privada
 
@@ -815,7 +709,7 @@ async function loadChat() {
 
             <div
                 id="messages"
-                class="messages"
+                class="chat-messages"
             >
 
                 <div class="empty">
@@ -828,7 +722,7 @@ async function loadChat() {
 
 
             <form
-                id="composer"
+                id="messageForm"
                 class="composer"
             >
 
@@ -841,14 +735,11 @@ async function loadChat() {
                     required
                 >
 
-
                 <button
                     class="send"
                     type="submit"
                 >
-
                     ➤
-
                 </button>
 
             </form>
@@ -861,33 +752,20 @@ async function loadChat() {
     await loadMessages();
 
 
-    await markAsRead();
+    await markMessagesAsRead();
 
 
     document
-    .getElementById(
-        "composer"
-    )
+    .getElementById("messageForm")
     .addEventListener(
         "submit",
         sendMessage
     );
 
-
-    /* =====================================
-       INICIAR REALTIME
-    ====================================== */
-
-    startRealtime();
-
 }
 
 
-/* =========================================
-   CARREGAR MENSAGENS
-========================================= */
-
-async function loadMessages() {
+async function loadMessages(){
 
     const container =
     document.getElementById(
@@ -916,25 +794,20 @@ async function loadMessages() {
     .order(
         "created_at",
         {
-            ascending: true
+            ascending:true
         }
     );
 
 
-    if (error) {
+    if(error){
+
+        console.error(error);
 
         container.innerHTML = `
 
             <div class="empty">
 
-                ❌ Não foi possível
-                carregar as mensagens.
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message
-                )}
+                ❌ Erro ao carregar mensagens.
 
             </div>
 
@@ -948,11 +821,7 @@ async function loadMessages() {
     container.innerHTML = "";
 
 
-    const messages =
-    data || [];
-
-
-    if (!messages.length) {
+    if(!data || !data.length){
 
         container.innerHTML = `
 
@@ -973,7 +842,7 @@ async function loadMessages() {
     }
 
 
-    messages.forEach(
+    data.forEach(
         addMessage
     );
 
@@ -987,7 +856,7 @@ async function loadMessages() {
    ADICIONAR MENSAGEM
 ========================================= */
 
-function addMessage(message) {
+function addMessage(message){
 
     const container =
     document.getElementById(
@@ -995,21 +864,21 @@ function addMessage(message) {
     );
 
 
-    if (!container) {
+    if(!container){
         return;
     }
 
 
-    const existing =
-    container.querySelector(
-        '[data-message-id="' +
-        message.id +
-        '"]'
-    );
+    if(
+        document.querySelector(
+            '[data-message-id="' +
+            message.id +
+            '"]'
+        )
+    ){
 
-
-    if (existing) {
         return;
+
     }
 
 
@@ -1019,7 +888,7 @@ function addMessage(message) {
     );
 
 
-    if (empty) {
+    if(empty){
 
         container.innerHTML = "";
 
@@ -1065,9 +934,7 @@ function addMessage(message) {
     `;
 
 
-    container.appendChild(
-        div
-    );
+    container.appendChild(div);
 
 }
 
@@ -1076,12 +943,7 @@ function addMessage(message) {
    MARCAR COMO LIDA
 ========================================= */
 
-async function markAsRead() {
-
-    if (!friendId) {
-        return;
-    }
-
+async function markMessagesAsRead(){
 
     const {
         error
@@ -1089,18 +951,16 @@ async function markAsRead() {
     await supabaseClient
     .from("messages")
     .update({
-
         read_at:
         new Date().toISOString()
-
     })
-    .eq(
-        "sender_id",
-        friendId
-    )
     .eq(
         "receiver_id",
         currentUser.id
+    )
+    .eq(
+        "sender_id",
+        friendId
     )
     .is(
         "read_at",
@@ -1108,7 +968,7 @@ async function markAsRead() {
     );
 
 
-    if (error) {
+    if(error){
 
         console.error(
             "Erro ao marcar mensagens:",
@@ -1121,10 +981,10 @@ async function markAsRead() {
 
 
 /* =========================================
-   ENVIAR MENSAGEM
+   ENVIAR
 ========================================= */
 
-async function sendMessage(event) {
+async function sendMessage(event){
 
     event.preventDefault();
 
@@ -1139,7 +999,7 @@ async function sendMessage(event) {
     input.value.trim();
 
 
-    if (!content) {
+    if(!content){
         return;
     }
 
@@ -1166,7 +1026,7 @@ async function sendMessage(event) {
         content
 
     })
-    .select()
+    .select("*")
     .single();
 
 
@@ -1174,11 +1034,12 @@ async function sendMessage(event) {
     false;
 
 
-    if (error) {
+    if(error){
+
+        console.error(error);
 
         alert(
-            "Não foi possível enviar a mensagem:\n\n" +
-            error.message
+            "Não foi possível enviar a mensagem."
         );
 
         return;
@@ -1191,156 +1052,78 @@ async function sendMessage(event) {
     input.focus();
 
 
-    /*
-     * Adicionamos localmente para a mensagem
-     * aparecer imediatamente.
-     *
-     * O Realtime também poderá recebê-la,
-     * mas addMessage() impede duplicação.
-     */
+    if(data){
 
-    addMessage(
-        data
-    );
+        addMessage(data);
 
+        scrollBottom();
 
-    scrollBottom();
+    }
 
 }
 
 
 /* =========================================
-   REALTIME
+   SCROLL
 ========================================= */
 
-function startRealtime() {
+function scrollBottom(){
 
-    stopRealtime();
+    const container =
+    document.getElementById(
+        "messages"
+    );
 
 
-    if (
-        !currentUser ||
-        !friendId
-    ) {
-
+    if(!container){
         return;
-
     }
 
 
-    const channelName =
-        "zunoplay-chat-" +
-        currentUser.id +
-        "-" +
-        friendId;
+    setTimeout(
+        function(){
 
+            container.scrollTop =
+            container.scrollHeight;
 
-    realtimeChannel =
-    supabaseClient
-    .channel(
-        channelName
-    )
-
-
-    .on(
-        "postgres_changes",
-        {
-            event: "INSERT",
-            schema: "public",
-            table: "messages"
         },
-        function(payload) {
-
-            const message =
-            payload.new;
-
-
-            if (!message) {
-                return;
-            }
-
-
-            const isConversation =
-            (
-                message.sender_id ===
-                currentUser.id
-                &&
-                message.receiver_id ===
-                friendId
-            )
-            ||
-            (
-                message.sender_id ===
-                friendId
-                &&
-                message.receiver_id ===
-                currentUser.id
-            );
-
-
-            if (!isConversation) {
-
-                return;
-
-            }
-
-
-            addMessage(
-                message
-            );
-
-
-            scrollBottom();
-
-
-            /*
-             * Se a mensagem veio do outro usuário,
-             * marca automaticamente como lida.
-             */
-
-            if (
-                message.sender_id ===
-                friendId
-                &&
-                message.receiver_id ===
-                currentUser.id
-            ) {
-
-                supabaseClient
-                .from("messages")
-                .update({
-
-                    read_at:
-                    new Date().toISOString()
-
-                })
-                .eq(
-                    "id",
-                    message.id
-                )
-                .is(
-                    "read_at",
-                    null
-                );
-
-            }
-
-        }
-    )
-
-
-    .subscribe(
-        function(status) {
-
-            console.log(
-                "ZunoPlay Realtime:",
-                status
-            );
-
-        }
+        50
     );
 
 }
 
 
-/* ==========
+/* =========================================
+   INICIAR
+========================================= */
+
+async function start(){
+
+    const logged =
+    await getUser();
+
+
+    if(!logged){
+        return;
+    }
+
+
+    if(friendId){
+
+        await loadChat();
+
+    }else{
+
+        await loadConversations();
+
+    }
+
+}
+
+
+start();
+
+</script>
+
+</body>
+</html>
