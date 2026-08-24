@@ -4,7 +4,6 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Conversas - ZunoPlay</title>
@@ -293,10 +292,9 @@ window.supabase.createClient(
 ========================================= */
 
 let currentUser = null;
-
 let friendId = null;
-
 let friendUsername = null;
+let realtimeChannel = null;
 
 const params =
 new URLSearchParams(
@@ -360,6 +358,8 @@ function initial(name) {
 ========================================= */
 
 function goBack() {
+
+    stopRealtime();
 
     if (friendId) {
 
@@ -873,6 +873,13 @@ async function loadChat() {
         sendMessage
     );
 
+
+    /* =====================================
+       INICIAR REALTIME
+    ====================================== */
+
+    startRealtime();
+
 }
 
 
@@ -993,6 +1000,19 @@ function addMessage(message) {
     }
 
 
+    const existing =
+    container.querySelector(
+        '[data-message-id="' +
+        message.id +
+        '"]'
+    );
+
+
+    if (existing) {
+        return;
+    }
+
+
     const empty =
     container.querySelector(
         ".empty"
@@ -1002,19 +1022,6 @@ function addMessage(message) {
     if (empty) {
 
         container.innerHTML = "";
-
-    }
-
-
-    if (
-        document.querySelector(
-            '[data-message-id="' +
-            message.id +
-            '"]'
-        )
-    ) {
-
-        return;
 
     }
 
@@ -1184,6 +1191,14 @@ async function sendMessage(event) {
     input.focus();
 
 
+    /*
+     * Adicionamos localmente para a mensagem
+     * aparecer imediatamente.
+     *
+     * O Realtime também poderá recebê-la,
+     * mas addMessage() impede duplicação.
+     */
+
     addMessage(
         data
     );
@@ -1195,67 +1210,137 @@ async function sendMessage(event) {
 
 
 /* =========================================
-   SCROLL
+   REALTIME
 ========================================= */
 
-function scrollBottom() {
+function startRealtime() {
 
-    const container =
-    document.getElementById(
-        "messages"
-    );
+    stopRealtime();
 
 
-    if (!container) {
+    if (
+        !currentUser ||
+        !friendId
+    ) {
+
         return;
+
     }
 
 
-    setTimeout(
-        function() {
+    const channelName =
+        "zunoplay-chat-" +
+        currentUser.id +
+        "-" +
+        friendId;
 
-            container.scrollTop =
-            container.scrollHeight;
 
+    realtimeChannel =
+    supabaseClient
+    .channel(
+        channelName
+    )
+
+
+    .on(
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "messages"
         },
-        50
+        function(payload) {
+
+            const message =
+            payload.new;
+
+
+            if (!message) {
+                return;
+            }
+
+
+            const isConversation =
+            (
+                message.sender_id ===
+                currentUser.id
+                &&
+                message.receiver_id ===
+                friendId
+            )
+            ||
+            (
+                message.sender_id ===
+                friendId
+                &&
+                message.receiver_id ===
+                currentUser.id
+            );
+
+
+            if (!isConversation) {
+
+                return;
+
+            }
+
+
+            addMessage(
+                message
+            );
+
+
+            scrollBottom();
+
+
+            /*
+             * Se a mensagem veio do outro usuário,
+             * marca automaticamente como lida.
+             */
+
+            if (
+                message.sender_id ===
+                friendId
+                &&
+                message.receiver_id ===
+                currentUser.id
+            ) {
+
+                supabaseClient
+                .from("messages")
+                .update({
+
+                    read_at:
+                    new Date().toISOString()
+
+                })
+                .eq(
+                    "id",
+                    message.id
+                )
+                .is(
+                    "read_at",
+                    null
+                );
+
+            }
+
+        }
+    )
+
+
+    .subscribe(
+        function(status) {
+
+            console.log(
+                "ZunoPlay Realtime:",
+                status
+            );
+
+        }
     );
 
 }
 
 
-/* =========================================
-   INICIAR
-========================================= */
-
-async function start() {
-
-    const logged =
-    await getUser();
-
-
-    if (!logged) {
-        return;
-    }
-
-
-    if (friendId) {
-
-        await loadChat();
-
-    } else {
-
-        await loadList();
-
-    }
-
-}
-
-
-start();
-
-</script>
-
-</body>
-
-    </html>
+/* ==========
