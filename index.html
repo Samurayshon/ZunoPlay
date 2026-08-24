@@ -28,16 +28,8 @@ body {
     min-height: 100vh;
 
     background:
-        radial-gradient(
-            circle at 20% 20%,
-            #25145c 0%,
-            transparent 35%
-        ),
-        radial-gradient(
-            circle at 80% 80%,
-            #102d59 0%,
-            transparent 35%
-        ),
+        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
+        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
         #070811;
 
     color: white;
@@ -125,17 +117,13 @@ body {
 
     background: rgba(20, 21, 35, 0.9);
 
-    border:
-        1px solid
-        rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.2);
 
     border-radius: 24px;
 
     padding: 25px;
 
-    box-shadow:
-        0 20px 50px
-        rgba(0,0,0,0.35);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
 
 }
 
@@ -202,9 +190,7 @@ body {
 
     color: white;
 
-    border:
-        1px solid
-        #303145;
+    border: 1px solid #303145;
 
 }
 
@@ -266,9 +252,7 @@ body {
 
     border-radius: 50%;
 
-    border:
-        1px solid
-        #303145;
+    border: 1px solid #303145;
 
     background: #1b1c2b;
 
@@ -312,9 +296,7 @@ body {
 
     justify-content: center;
 
-    border:
-        2px solid
-        #070811;
+    border: 2px solid #070811;
 
 }
 
@@ -344,8 +326,7 @@ body {
 
     display: grid;
 
-    grid-template-columns:
-        1fr 1fr;
+    grid-template-columns: 1fr 1fr;
 
     gap: 12px;
 
@@ -353,12 +334,9 @@ body {
 
 .menu-card {
 
-    background:
-        rgba(20, 21, 35, 0.9);
+    background: rgba(20, 21, 35, 0.9);
 
-    border:
-        1px solid
-        #292a3d;
+    border: 1px solid #292a3d;
 
     border-radius: 20px;
 
@@ -368,13 +346,20 @@ body {
 
     cursor: pointer;
 
-    transition: transform .15s;
+    transition: transform .15s ease,
+                border-color .15s ease;
 
 }
 
 .menu-card:active {
 
-    transform: scale(.97);
+    transform: scale(.98);
+
+}
+
+.menu-card:hover {
+
+    border-color: rgba(139,92,246,.5);
 
 }
 
@@ -408,9 +393,7 @@ body {
 
     background: #171824;
 
-    border:
-        1px solid
-        #303145;
+    border: 1px solid #303145;
 
     color: #ff8f8f;
 
@@ -424,7 +407,10 @@ body {
 <body>
 
 
-<div id="loading" class="loading">
+<div
+    id="loading"
+    class="loading"
+>
 
     Carregando ZunoPlay...
 
@@ -438,9 +424,9 @@ body {
 >
 
 
-    <!-- ================================
+    <!-- =====================================
          TELA DE BOAS-VINDAS
-    ================================= -->
+    ====================================== -->
 
     <div
         id="welcomeScreen"
@@ -513,9 +499,9 @@ body {
     </div>
 
 
-    <!-- ================================
+    <!-- =====================================
          HOME
-    ================================= -->
+    ====================================== -->
 
     <div
         id="homeScreen"
@@ -540,12 +526,11 @@ body {
 
                 <button
                     class="header-button"
-                    onclick="openNotifications()"
+                    onclick="window.location.href='notificacoes.html'"
                     title="Notificações"
                 >
 
                     🔔
-
 
                     <span
                         id="notificationBadge"
@@ -577,6 +562,8 @@ body {
         </div>
 
 
+        <!-- SAUDAÇÃO -->
+
         <div class="greeting">
 
             <small>
@@ -595,9 +582,9 @@ body {
         </div>
 
 
-        <!-- ================================
-             MENU PRINCIPAL
-        ================================= -->
+        <!-- =====================================
+             MENU
+        ====================================== -->
 
         <div class="menu-grid">
 
@@ -692,6 +679,36 @@ body {
             </div>
 
 
+            <!-- HISTÓRICO -->
+
+            <div
+                class="menu-card"
+                onclick="window.location.href='historico.html'"
+            >
+
+                <div class="menu-icon">
+
+                    📊
+
+                </div>
+
+
+                <h2>
+
+                    Histórico
+
+                </h2>
+
+
+                <p>
+
+                    Veja suas partidas e pontuações.
+
+                </p>
+
+            </div>
+
+
             <!-- COMUNIDADES -->
 
             <div
@@ -724,7 +741,7 @@ body {
         </div>
 
 
-        <!-- LOGOUT -->
+        <!-- SAIR -->
 
         <button
             id="logoutButton"
@@ -775,28 +792,34 @@ window.supabase.createClient(
 ========================================= */
 
 const loading =
-document.getElementById("loading");
-
+document.getElementById(
+    "loading"
+);
 
 const app =
-document.getElementById("app");
-
+document.getElementById(
+    "app"
+);
 
 const welcomeScreen =
-document.getElementById("welcomeScreen");
-
+document.getElementById(
+    "welcomeScreen"
+);
 
 const homeScreen =
-document.getElementById("homeScreen");
-
+document.getElementById(
+    "homeScreen"
+);
 
 const usernameElement =
-document.getElementById("username");
-
+document.getElementById(
+    "username"
+);
 
 const logoutButton =
-document.getElementById("logoutButton");
-
+document.getElementById(
+    "logoutButton"
+);
 
 const notificationBadge =
 document.getElementById(
@@ -804,22 +827,16 @@ document.getElementById(
 );
 
 
-/* =========================================
-   VARIÁVEIS
-========================================= */
-
 let currentUser = null;
 
 let notificationChannel = null;
-
-let notificationTimer = null;
 
 
 /* =========================================
    INTERFACE
 ========================================= */
 
-function showApp() {
+function showApp(){
 
     loading.style.display =
         "none";
@@ -830,7 +847,7 @@ function showApp() {
 }
 
 
-function showWelcome() {
+function showWelcome(){
 
     showApp();
 
@@ -843,7 +860,7 @@ function showWelcome() {
 }
 
 
-function showHome(user) {
+function showHome(user){
 
     showApp();
 
@@ -858,7 +875,7 @@ function showHome(user) {
         user?.user_metadata?.username;
 
 
-    if (!username) {
+    if(!username){
 
         username =
             user?.email?.split("@")[0] ||
@@ -871,12 +888,7 @@ function showHome(user) {
         username;
 
 
-    updateNotificationCount(
-        user.id
-    );
-
-
-    startNotificationRefresh(
+    loadNotificationCount(
         user.id
     );
 
@@ -887,42 +899,38 @@ function showHome(user) {
    CONTADOR DE NOTIFICAÇÕES
 ========================================= */
 
-async function updateNotificationCount(
+async function loadNotificationCount(
     userId
-) {
+){
 
-    if (!userId) {
-
-        return;
-
-    }
-
-
-    const result =
-        await supabaseClient
-            .from("notifications")
-            .select(
-                "id",
-                {
-                    count: "exact",
-                    head: true
-                }
-            )
-            .eq(
-                "user_id",
-                userId
-            )
-            .is(
-                "read_at",
-                null
-            );
+    const {
+        count,
+        error
+    } =
+    await supabaseClient
+        .from("notifications")
+        .select(
+            "id",
+            {
+                count:"exact",
+                head:true
+            }
+        )
+        .eq(
+            "user_id",
+            userId
+        )
+        .is(
+            "read_at",
+            null
+        );
 
 
-    if (result.error) {
+    if(error){
 
         console.error(
-            "Erro no contador:",
-            result.error
+            "Erro ao carregar notificações:",
+            error
         );
 
         return;
@@ -930,26 +938,18 @@ async function updateNotificationCount(
     }
 
 
-    const count =
-        result.count || 0;
-
-
-    if (count > 0) {
+    if(count && count > 0){
 
         notificationBadge.textContent =
             count > 99
             ? "99+"
-            : String(count);
+            : count;
 
 
         notificationBadge.style.display =
             "flex";
 
-    } else {
-
-        notificationBadge.textContent =
-            "0";
-
+    }else{
 
         notificationBadge.style.display =
             "none";
@@ -960,58 +960,18 @@ async function updateNotificationCount(
 
 
 /* =========================================
-   ATUALIZAÇÃO AUTOMÁTICA
-========================================= */
-
-function startNotificationRefresh(
-    userId
-) {
-
-    if (notificationTimer) {
-
-        clearInterval(
-            notificationTimer
-        );
-
-    }
-
-
-    notificationTimer =
-        setInterval(
-            function() {
-
-                if (
-                    document.visibilityState ===
-                    "visible"
-                ) {
-
-                    updateNotificationCount(
-                        userId
-                    );
-
-                }
-
-            },
-            2000
-        );
-
-}
-
-
-/* =========================================
    REALTIME
 ========================================= */
 
 function subscribeNotifications(
     userId
-) {
+){
 
-    if (notificationChannel) {
+    if(notificationChannel){
 
-        supabaseClient
-            .removeChannel(
-                notificationChannel
-            );
+        supabaseClient.removeChannel(
+            notificationChannel
+        );
 
     }
 
@@ -1020,23 +980,21 @@ function subscribeNotifications(
         supabaseClient
             .channel(
                 "home-notifications-" +
-                userId +
-                "-" +
-                Date.now()
+                userId
             )
             .on(
                 "postgres_changes",
                 {
-                    event: "*",
-                    schema: "public",
-                    table: "notifications",
+                    event:"*",
+                    schema:"public",
+                    table:"notifications",
                     filter:
                         "user_id=eq." +
                         userId
                 },
-                function() {
+                function(){
 
-                    updateNotificationCount(
+                    loadNotificationCount(
                         userId
                     );
 
@@ -1048,80 +1006,12 @@ function subscribeNotifications(
 
 
 /* =========================================
-   ABRIR NOTIFICAÇÕES
-========================================= */
-
-function openNotifications() {
-
-    if (currentUser) {
-
-        updateNotificationCount(
-            currentUser.id
-        );
-
-    }
-
-
-    window.location.href =
-        "notificacoes.html";
-
-}
-
-
-/* =========================================
-   VOLTAR PARA A PÁGINA
-========================================= */
-
-document.addEventListener(
-    "visibilitychange",
-    function() {
-
-        if (
-            document.visibilityState ===
-            "visible"
-        ) {
-
-            if (currentUser) {
-
-                updateNotificationCount(
-                    currentUser.id
-                );
-
-            }
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   FOCUS
-========================================= */
-
-window.addEventListener(
-    "focus",
-    function() {
-
-        if (currentUser) {
-
-            updateNotificationCount(
-                currentUser.id
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================
    VERIFICAR USUÁRIO
 ========================================= */
 
-async function checkUser() {
+async function checkUser(){
 
-    try {
+    try{
 
         const {
             data,
@@ -1130,11 +1020,9 @@ async function checkUser() {
         await supabaseClient.auth.getSession();
 
 
-        if (error) {
+        if(error){
 
-            console.error(
-                error
-            );
+            console.error(error);
 
             showWelcome();
 
@@ -1147,7 +1035,7 @@ async function checkUser() {
             data?.session?.user;
 
 
-        if (user) {
+        if(user){
 
             currentUser =
                 user;
@@ -1162,14 +1050,14 @@ async function checkUser() {
                 user.id
             );
 
-        } else {
+        }else{
 
             showWelcome();
 
         }
 
 
-    } catch (error) {
+    }catch(error){
 
         console.error(
             "Erro ao verificar usuário:",
@@ -1184,6 +1072,50 @@ async function checkUser() {
 
 
 /* =========================================
+   LOGOUT
+========================================= */
+
+logoutButton.addEventListener(
+    "click",
+    async function(){
+
+        logoutButton.disabled =
+            true;
+
+
+        logoutButton.textContent =
+            "Saindo...";
+
+
+        if(notificationChannel){
+
+            await supabaseClient
+                .removeChannel(
+                    notificationChannel
+                );
+
+        }
+
+
+        try{
+
+            await supabaseClient.auth.signOut();
+
+        }catch(error){
+
+            console.error(error);
+
+        }
+
+
+        window.location.href =
+            "index.html";
+
+    }
+);
+
+
+/* =========================================
    AUTH STATE
 ========================================= */
 
@@ -1191,12 +1123,12 @@ supabaseClient.auth.onAuthStateChange(
     function(
         event,
         session
-    ) {
+    ){
 
-        if (
+        if(
             session?.user &&
             event !== "SIGNED_OUT"
-        ) {
+        ){
 
             currentUser =
                 session.user;
@@ -1214,22 +1146,12 @@ supabaseClient.auth.onAuthStateChange(
         }
 
 
-        if (
-            event ===
-            "SIGNED_OUT"
-        ) {
+        if(
+            event === "SIGNED_OUT"
+        ){
 
             currentUser =
                 null;
-
-
-            if (notificationTimer) {
-
-                clearInterval(
-                    notificationTimer
-                );
-
-            }
 
 
             showWelcome();
@@ -1241,73 +1163,16 @@ supabaseClient.auth.onAuthStateChange(
 
 
 /* =========================================
-   LOGOUT
-========================================= */
-
-logoutButton.addEventListener(
-    "click",
-    async function() {
-
-        logoutButton.disabled =
-            true;
-
-
-        logoutButton.textContent =
-            "Saindo...";
-
-
-        if (notificationTimer) {
-
-            clearInterval(
-                notificationTimer
-            );
-
-        }
-
-
-        if (notificationChannel) {
-
-            await supabaseClient
-                .removeChannel(
-                    notificationChannel
-                );
-
-        }
-
-
-        try {
-
-            await supabaseClient
-                .auth
-                .signOut();
-
-        } catch (error) {
-
-            console.error(
-                error
-            );
-
-        }
-
-
-        window.location.href =
-            "index.html";
-
-    }
-);
-
-
-/* =========================================
    FALLBACK
 ========================================= */
 
 setTimeout(
-    function() {
+    function(){
 
-        if (
+        if(
             loading.style.display !==
             "none"
-        ) {
+        ){
 
             showWelcome();
 
@@ -1325,7 +1190,6 @@ setTimeout(
 checkUser();
 
 </script>
-
 
 </body>
 
