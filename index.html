@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 * {
     margin: 0;
     padding: 0;
@@ -17,294 +24,553 @@
 }
 
 body {
+
     min-height: 100vh;
+
     background:
-        radial-gradient(circle at 20% 20%, #25145c 0%, transparent 35%),
-        radial-gradient(circle at 80% 80%, #102d59 0%, transparent 35%),
+        radial-gradient(
+            circle at 20% 20%,
+            #25145c 0%,
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            #102d59 0%,
+            transparent 35%
+        ),
         #070811;
+
     color: white;
+
 }
 
 .app {
+
     min-height: 100vh;
+
     max-width: 480px;
+
     margin: auto;
+
     padding: 25px;
+
 }
 
 .loading {
+
     min-height: 100vh;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     color: #9293a3;
+
     text-align: center;
+
 }
 
 .welcome-screen {
+
     min-height: calc(100vh - 50px);
+
     display: flex;
+
     flex-direction: column;
+
     justify-content: center;
+
 }
 
 .logo {
+
     text-align: center;
+
     margin-bottom: 15px;
+
 }
 
 .logo-main {
+
     font-size: 46px;
+
     font-weight: 800;
+
     letter-spacing: -2px;
+
 }
 
 .logo-main span,
 .header-logo span {
+
     color: #8b5cf6;
+
 }
 
 .tagline {
+
     text-align: center;
+
     color: #a7a7b5;
+
     font-size: 15px;
+
     margin-bottom: 45px;
+
 }
 
 .card {
+
     background: rgba(20, 21, 35, 0.9);
-    border: 1px solid rgba(139, 92, 246, 0.2);
+
+    border:
+        1px solid
+        rgba(139, 92, 246, 0.2);
+
     border-radius: 24px;
+
     padding: 25px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+
+    box-shadow:
+        0 20px 50px
+        rgba(0,0,0,0.35);
+
 }
 
 .card h1 {
+
     font-size: 24px;
+
     margin-bottom: 8px;
+
 }
 
 .card p {
+
     color: #9293a3;
+
     font-size: 14px;
+
     margin-bottom: 25px;
+
 }
 
 .button {
+
     display: block;
+
     width: 100%;
+
     padding: 16px;
+
     margin-top: 12px;
+
     border-radius: 14px;
+
     text-align: center;
+
     text-decoration: none;
+
     font-size: 16px;
+
     font-weight: bold;
+
     border: none;
+
     cursor: pointer;
+
 }
 
 .primary {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
     color: white;
+
 }
 
 .secondary {
+
     background: #1b1c2b;
+
     color: white;
-    border: 1px solid #303145;
+
+    border:
+        1px solid
+        #303145;
+
 }
 
 .footer {
+
     text-align: center;
+
     color: #686978;
+
     font-size: 12px;
+
     margin-top: 25px;
+
 }
 
 .home-screen {
+
     display: none;
+
 }
 
 .header {
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
     padding-top: 20px;
+
     margin-bottom: 30px;
+
 }
 
 .header-logo {
+
     font-size: 29px;
+
     font-weight: 800;
+
 }
 
 .header-actions {
+
     display: flex;
+
     align-items: center;
+
     gap: 8px;
+
 }
 
 .header-button {
+
     width: 44px;
+
     height: 44px;
+
     border-radius: 50%;
-    border: 1px solid #303145;
+
+    border:
+        1px solid
+        #303145;
+
     background: #1b1c2b;
+
     color: white;
+
     font-size: 19px;
+
     cursor: pointer;
+
     position: relative;
+
 }
 
 .notification-badge {
+
     position: absolute;
+
     top: -3px;
+
     right: -3px;
+
     min-width: 18px;
+
     height: 18px;
+
     padding: 0 4px;
+
     border-radius: 20px;
+
     background: #ef4444;
+
     color: white;
+
     font-size: 10px;
+
     font-weight: bold;
+
     display: none;
+
     align-items: center;
+
     justify-content: center;
-    border: 2px solid #070811;
+
+    border:
+        2px solid
+        #070811;
+
 }
 
 .greeting {
+
     margin-bottom: 25px;
+
 }
 
 .greeting small {
+
     color: #9293a3;
+
     font-size: 14px;
+
 }
 
 .greeting h1 {
+
     margin-top: 6px;
+
     font-size: 28px;
+
 }
 
 .menu-grid {
+
     display: grid;
-    grid-template-columns: 1fr 1fr;
+
+    grid-template-columns:
+        1fr 1fr;
+
     gap: 12px;
+
 }
 
 .menu-card {
-    background: rgba(20, 21, 35, 0.9);
-    border: 1px solid #292a3d;
+
+    background:
+        rgba(20, 21, 35, 0.9);
+
+    border:
+        1px solid
+        #292a3d;
+
     border-radius: 20px;
+
     padding: 22px 16px;
+
     min-height: 135px;
+
     cursor: pointer;
+
+    transition: transform .15s;
+
+}
+
+.menu-card:active {
+
+    transform: scale(.97);
+
 }
 
 .menu-icon {
+
     font-size: 30px;
+
     margin-bottom: 14px;
+
 }
 
 .menu-card h2 {
+
     font-size: 17px;
+
     margin-bottom: 5px;
+
 }
 
 .menu-card p {
+
     color: #858697;
+
     font-size: 12px;
+
 }
 
 .logout {
+
     margin-top: 25px;
+
     background: #171824;
-    border: 1px solid #303145;
+
+    border:
+        1px solid
+        #303145;
+
     color: #ff8f8f;
+
 }
+
 </style>
+
 </head>
+
 
 <body>
 
+
 <div id="loading" class="loading">
+
     Carregando ZunoPlay...
+
 </div>
 
-<div id="app" class="app" style="display:none;">
 
-    <div id="welcomeScreen" class="welcome-screen">
+<div
+    id="app"
+    class="app"
+    style="display:none;"
+>
+
+
+    <!-- ================================
+         TELA DE BOAS-VINDAS
+    ================================= -->
+
+    <div
+        id="welcomeScreen"
+        class="welcome-screen"
+    >
 
         <div class="logo">
+
             <div class="logo-main">
+
                 Zuno<span>Play</span>
+
             </div>
+
         </div>
 
+
         <div class="tagline">
+
             Conecte. Converse. Jogue.
+
         </div>
+
 
         <div class="card">
 
-            <h1>Bem-vindo ao ZunoPlay</h1>
+            <h1>
+
+                Bem-vindo ao ZunoPlay
+
+            </h1>
+
 
             <p>
+
                 Um novo espaço para conversar,
                 conhecer pessoas e jogar.
+
             </p>
 
-            <a href="cadastro.html" class="button primary">
+
+            <a
+                href="cadastro.html"
+                class="button primary"
+            >
+
                 Criar minha conta
+
             </a>
 
-            <a href="login.html" class="button secondary">
+
+            <a
+                href="login.html"
+                class="button secondary"
+            >
+
                 Já tenho uma conta
+
             </a>
 
         </div>
 
+
         <div class="footer">
+
             ZunoPlay © 2026
+
         </div>
 
     </div>
 
 
-    <div id="homeScreen" class="home-screen">
+    <!-- ================================
+         HOME
+    ================================= -->
+
+    <div
+        id="homeScreen"
+        class="home-screen"
+    >
+
 
         <div class="header">
 
+
             <div class="header-logo">
+
                 Zuno<span>Play</span>
+
             </div>
 
+
             <div class="header-actions">
+
+
+                <!-- NOTIFICAÇÕES -->
 
                 <button
                     class="header-button"
                     onclick="openNotifications()"
-                    title="Notificações">
+                    title="Notificações"
+                >
 
                     🔔
 
+
                     <span
                         id="notificationBadge"
-                        class="notification-badge">
+                        class="notification-badge"
+                    >
+
                         0
+
                     </span>
 
                 </button>
 
+
+                <!-- PERFIL -->
+
                 <button
                     class="header-button"
                     onclick="window.location.href='perfil.html'"
-                    title="Perfil">
+                    title="Perfil"
+                >
+
                     👤
+
                 </button>
+
 
             </div>
 
@@ -314,86 +580,168 @@ body {
         <div class="greeting">
 
             <small>
+
                 Bem-vindo de volta 👋
+
             </small>
 
+
             <h1 id="username">
+
                 ZunoPlayer
+
             </h1>
 
         </div>
 
 
+        <!-- ================================
+             MENU PRINCIPAL
+        ================================= -->
+
         <div class="menu-grid">
 
+
+            <!-- CONVERSAS -->
+
             <div
                 class="menu-card"
-                onclick="window.location.href='conversas.html'">
+                onclick="window.location.href='conversas.html'"
+            >
 
-                <div class="menu-icon">💬</div>
+                <div class="menu-icon">
 
-                <h2>Conversas</h2>
+                    💬
+
+                </div>
+
+
+                <h2>
+
+                    Conversas
+
+                </h2>
+
 
                 <p>
+
                     Converse com seus amigos.
+
                 </p>
 
             </div>
 
+
+            <!-- AMIGOS -->
 
             <div
                 class="menu-card"
-                onclick="window.location.href='amigos.html'">
+                onclick="window.location.href='amigos.html'"
+            >
 
-                <div class="menu-icon">👥</div>
+                <div class="menu-icon">
 
-                <h2>Amigos</h2>
+                    👥
+
+                </div>
+
+
+                <h2>
+
+                    Amigos
+
+                </h2>
+
 
                 <p>
+
                     Encontre e adicione pessoas.
+
                 </p>
 
             </div>
 
 
-            <div class="menu-card">
+            <!-- JOGOS -->
 
-                <div class="menu-icon">🎮</div>
+            <div
+                class="menu-card"
+                onclick="window.location.href='jogos.html'"
+            >
 
-                <h2>Jogos</h2>
+                <div class="menu-icon">
+
+                    🎮
+
+                </div>
+
+
+                <h2>
+
+                    Jogos
+
+                </h2>
+
 
                 <p>
+
                     Jogue e divirta-se.
+
                 </p>
 
             </div>
 
 
-            <div class="menu-card">
+            <!-- COMUNIDADES -->
 
-                <div class="menu-icon">🌐</div>
+            <div
+                class="menu-card"
+            >
 
-                <h2>Comunidades</h2>
+                <div class="menu-icon">
+
+                    🌐
+
+                </div>
+
+
+                <h2>
+
+                    Comunidades
+
+                </h2>
+
 
                 <p>
+
                     Conheça novas comunidades.
+
                 </p>
 
             </div>
+
 
         </div>
 
 
+        <!-- LOGOUT -->
+
         <button
             id="logoutButton"
-            class="button logout">
+            class="button logout"
+        >
+
             Sair da conta
+
         </button>
 
 
         <div class="footer">
+
             ZunoPlay © 2026
+
         </div>
+
 
     </div>
 
@@ -402,11 +750,18 @@ body {
 
 <script>
 
+
+/* =========================================
+   SUPABASE
+========================================= */
+
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
+
 const SUPABASE_KEY =
 "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
 
 const supabaseClient =
 window.supabase.createClient(
@@ -415,30 +770,48 @@ window.supabase.createClient(
 );
 
 
+/* =========================================
+   ELEMENTOS
+========================================= */
+
 const loading =
 document.getElementById("loading");
+
 
 const app =
 document.getElementById("app");
 
+
 const welcomeScreen =
 document.getElementById("welcomeScreen");
+
 
 const homeScreen =
 document.getElementById("homeScreen");
 
+
 const usernameElement =
 document.getElementById("username");
+
 
 const logoutButton =
 document.getElementById("logoutButton");
 
-const notificationBadge =
-document.getElementById("notificationBadge");
 
+const notificationBadge =
+document.getElementById(
+    "notificationBadge"
+);
+
+
+/* =========================================
+   VARIÁVEIS
+========================================= */
 
 let currentUser = null;
+
 let notificationChannel = null;
+
 let notificationTimer = null;
 
 
@@ -448,9 +821,11 @@ let notificationTimer = null;
 
 function showApp() {
 
-    loading.style.display = "none";
+    loading.style.display =
+        "none";
 
-    app.style.display = "block";
+    app.style.display =
+        "block";
 
 }
 
@@ -509,10 +884,12 @@ function showHome(user) {
 
 
 /* =========================================
-   CONTADOR
+   CONTADOR DE NOTIFICAÇÕES
 ========================================= */
 
-async function updateNotificationCount(userId) {
+async function updateNotificationCount(
+    userId
+) {
 
     if (!userId) {
 
@@ -541,12 +918,6 @@ async function updateNotificationCount(userId) {
             );
 
 
-    console.log(
-        "Contador de notificações:",
-        result
-    );
-
-
     if (result.error) {
 
         console.error(
@@ -570,6 +941,7 @@ async function updateNotificationCount(userId) {
             ? "99+"
             : String(count);
 
+
         notificationBadge.style.display =
             "flex";
 
@@ -577,6 +949,7 @@ async function updateNotificationCount(userId) {
 
         notificationBadge.textContent =
             "0";
+
 
         notificationBadge.style.display =
             "none";
@@ -590,7 +963,9 @@ async function updateNotificationCount(userId) {
    ATUALIZAÇÃO AUTOMÁTICA
 ========================================= */
 
-function startNotificationRefresh(userId) {
+function startNotificationRefresh(
+    userId
+) {
 
     if (notificationTimer) {
 
@@ -600,13 +975,6 @@ function startNotificationRefresh(userId) {
 
     }
 
-
-    /*
-       Atualiza o contador a cada 2 segundos.
-       Isso garante que o contador fique
-       sincronizado mesmo se o Realtime
-       não estiver ativo.
-    */
 
     notificationTimer =
         setInterval(
@@ -634,7 +1002,9 @@ function startNotificationRefresh(userId) {
    REALTIME
 ========================================= */
 
-function subscribeNotifications(userId) {
+function subscribeNotifications(
+    userId
+) {
 
     if (notificationChannel) {
 
@@ -683,10 +1053,6 @@ function subscribeNotifications(userId) {
 
 function openNotifications() {
 
-    /*
-       Atualiza antes de abrir a página.
-    */
-
     if (currentUser) {
 
         updateNotificationCount(
@@ -703,7 +1069,7 @@ function openNotifications() {
 
 
 /* =========================================
-   VOLTOU PARA A PÁGINA
+   VOLTAR PARA A PÁGINA
 ========================================= */
 
 document.addEventListener(
@@ -761,7 +1127,7 @@ async function checkUser() {
             data,
             error
         } =
-            await supabaseClient.auth.getSession();
+        await supabaseClient.auth.getSession();
 
 
         if (error) {
@@ -822,7 +1188,10 @@ async function checkUser() {
 ========================================= */
 
 supabaseClient.auth.onAuthStateChange(
-    function(event, session) {
+    function(
+        event,
+        session
+    ) {
 
         if (
             session?.user &&
@@ -881,6 +1250,7 @@ logoutButton.addEventListener(
 
         logoutButton.disabled =
             true;
+
 
         logoutButton.textContent =
             "Saindo...";
@@ -956,5 +1326,7 @@ checkUser();
 
 </script>
 
+
 </body>
+
 </html>
