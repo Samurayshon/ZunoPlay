@@ -36,6 +36,8 @@ body {
     margin: auto;
 }
 
+/* HEADER */
+
 .header {
     height: 70px;
     display: flex;
@@ -44,6 +46,9 @@ body {
     padding: 14px 20px;
     background: #0a0b14;
     border-bottom: 1px solid #292a3d;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .back {
@@ -54,6 +59,7 @@ body {
     background: #1b1c2b;
     color: white;
     font-size: 20px;
+    cursor: pointer;
 }
 
 .logo {
@@ -64,6 +70,8 @@ body {
 .logo span {
     color: #8b5cf6;
 }
+
+/* LISTA */
 
 .page {
     padding: 20px;
@@ -103,6 +111,10 @@ body {
     color: white;
     text-align: left;
     cursor: pointer;
+}
+
+.conversation:active {
+    transform: scale(.98);
 }
 
 .avatar {
@@ -148,6 +160,8 @@ body {
     padding: 50px 20px;
 }
 
+/* CHAT */
+
 .chat {
     min-height: 100vh;
     display: flex;
@@ -162,11 +176,20 @@ body {
     padding: 12px 15px;
     background: #0a0b14;
     border-bottom: 1px solid #292a3d;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .chat-name {
     font-weight: bold;
     font-size: 15px;
+}
+
+.chat-status {
+    color: #4ade80;
+    font-size: 10px;
+    margin-top: 3px;
 }
 
 .messages {
@@ -176,6 +199,7 @@ body {
     flex-direction: column;
     gap: 8px;
     overflow-y: auto;
+    min-height: calc(100vh - 140px);
 }
 
 .message {
@@ -214,6 +238,8 @@ body {
     padding: 12px;
     background: #0a0b14;
     border-top: 1px solid #292a3d;
+    position: sticky;
+    bottom: 0;
 }
 
 .composer input {
@@ -227,6 +253,10 @@ body {
     outline: none;
 }
 
+.composer input:focus {
+    border-color: #8b5cf6;
+}
+
 .send {
     width: 52px;
     border: none;
@@ -234,6 +264,7 @@ body {
     background: linear-gradient(135deg,#8b5cf6,#6366f1);
     color: white;
     font-size: 18px;
+    cursor: pointer;
 }
 
 </style>
@@ -242,54 +273,13 @@ body {
 
 <body>
 
-<div id="app" class="app">
-
-    <div class="header">
-
-        <button
-            class="back"
-            onclick="window.location.href='index.html'"
-        >
-            ←
-        </button>
-
-        <div class="logo">
-            Zuno<span>Play</span>
-        </div>
-
-    </div>
-
-    <div class="page">
-
-        <h1 class="title">
-            💬 Conversas
-        </h1>
-
-        <p class="subtitle">
-            Suas conversas recentes.
-        </p>
-
-        <div
-            id="status"
-            class="status"
-        >
-            ⏳ Verificando sessão...
-        </div>
-
-        <div id="conversationList">
-
-            <div class="empty">
-                Carregando conversas...
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
+<div id="app" class="app"></div>
 
 <script>
+
+/* =========================================
+   SUPABASE
+========================================= */
 
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
@@ -303,21 +293,31 @@ window.supabase.createClient(
     SUPABASE_KEY
 );
 
-const app =
-document.getElementById("app");
 
-const statusBox =
-document.getElementById("status");
-
-const list =
-document.getElementById("conversationList");
+/* =========================================
+   VARIÁVEIS
+========================================= */
 
 let currentUser = null;
 
+let friendId = null;
 
-/* ================================
-   SEGURANÇA
-================================ */
+const params =
+new URLSearchParams(
+    window.location.search
+);
+
+friendId =
+params.get("user");
+
+
+const app =
+document.getElementById("app");
+
+
+/* =========================================
+   FUNÇÕES
+========================================= */
 
 function escapeHTML(text) {
 
@@ -332,11 +332,7 @@ function escapeHTML(text) {
 }
 
 
-/* ================================
-   HORÁRIO
-================================ */
-
-function time(date) {
+function formatTime(date) {
 
     if (!date) {
         return "";
@@ -353,169 +349,151 @@ function time(date) {
 }
 
 
-/* ================================
-   CARREGAR
-================================ */
+function goBack() {
 
-async function iniciar() {
+    if (friendId) {
 
-    try {
+        window.location.href =
+        "conversas.html";
 
-        statusBox.textContent =
-            "⏳ Verificando usuário...";
+    } else {
 
-
-        const sessionResult =
-            await supabaseClient
-                .auth
-                .getSession();
-
-
-        if (sessionResult.error) {
-
-            throw sessionResult.error;
-
-        }
-
-
-        const session =
-            sessionResult.data.session;
-
-
-        if (!session) {
-
-            statusBox.textContent =
-                "❌ Nenhuma sessão ativa.";
-
-            list.innerHTML = `
-
-                <div class="empty">
-
-                    Faça login novamente.
-
-                </div>
-
-            `;
-
-            return;
-
-        }
-
-
-        currentUser =
-            session.user;
-
-
-        statusBox.textContent =
-            "⏳ Buscando mensagens...";
-
-
-        const result =
-            await supabaseClient
-                .from("messages")
-                .select("*")
-                .or(
-                    "sender_id.eq." +
-                    currentUser.id +
-                    ",receiver_id.eq." +
-                    currentUser.id
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-
-        if (result.error) {
-
-            throw result.error;
-
-        }
-
-
-        const messages =
-            result.data || [];
-
-
-        statusBox.textContent =
-            "✅ " +
-            messages.length +
-            " mensagens encontradas";
-
-
-        mostrarConversas(
-            messages
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "ZunoPlay:",
-            error
-        );
-
-
-        statusBox.textContent =
-            "❌ Erro: " +
-            (
-                error.message ||
-                "erro desconhecido"
-            );
-
-
-        list.innerHTML = `
-
-            <div class="empty">
-
-                Ocorreu um erro ao carregar as conversas.
-
-                <br><br>
-
-                ${
-                    escapeHTML(
-                        error.message ||
-                        String(error)
-                    )
-                }
-
-            </div>
-
-        `;
+        window.location.href =
+        "index.html";
 
     }
 
 }
 
 
-/* ================================
-   CONVERSAS
-================================ */
+/* =========================================
+   SESSÃO
+========================================= */
 
-function mostrarConversas(
-    messages
-) {
+async function getUser() {
 
-    list.innerHTML = "";
+    const result =
+    await supabaseClient
+        .auth
+        .getSession();
 
 
-    if (!messages.length) {
+    if (
+        result.error ||
+        !result.data.session
+    ) {
 
-        list.innerHTML = `
+        window.location.href =
+        "login.html";
 
-            <div class="empty">
+        return false;
 
-                Você ainda não possui conversas.
+    }
+
+
+    currentUser =
+    result.data.session.user;
+
+
+    return true;
+
+}
+
+
+/* =========================================
+   LISTA
+========================================= */
+
+async function loadList() {
+
+    app.innerHTML = `
+
+        <div class="header">
+
+            <button
+                class="back"
+                onclick="goBack()"
+            >
+                ←
+            </button>
+
+            <div class="logo">
+                Zuno<span>Play</span>
+            </div>
+
+        </div>
+
+        <div class="page">
+
+            <h1 class="title">
+                💬 Conversas
+            </h1>
+
+            <p class="subtitle">
+                Suas conversas recentes.
+            </p>
+
+            <div
+                id="status"
+                class="status"
+            >
+                ⏳ Carregando...
+            </div>
+
+            <div id="list">
+
+                <div class="empty">
+                    Carregando conversas...
+                </div>
 
             </div>
 
-        `;
+        </div>
+
+    `;
+
+
+    const result =
+    await supabaseClient
+        .from("messages")
+        .select("*")
+        .or(
+            "sender_id.eq." +
+            currentUser.id +
+            ",receiver_id.eq." +
+            currentUser.id
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (result.error) {
+
+        document.getElementById(
+            "status"
+        ).textContent =
+            "❌ " +
+            result.error.message;
 
         return;
 
     }
+
+
+    const messages =
+    result.data || [];
+
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        "✅ " +
+        messages.length +
+        " mensagens encontradas";
 
 
     const groups = {};
@@ -542,7 +520,7 @@ function mostrarConversas(
 
                 groups[otherId] = {
 
-                    message: message,
+                    last: message,
 
                     unread: 0
 
@@ -563,6 +541,13 @@ function mostrarConversas(
 
         }
     );
+
+
+    const list =
+    document.getElementById("list");
+
+
+    list.innerHTML = "";
 
 
     Object.keys(groups).forEach(
@@ -621,7 +606,7 @@ function mostrarConversas(
                     <div class="last">
 
                         ${escapeHTML(
-                            data.message.content
+                            data.last.content
                         )}
 
                     </div>
@@ -629,15 +614,11 @@ function mostrarConversas(
                 </div>
 
 
-                <div>
+                <div class="time">
 
-                    <div class="time">
-
-                        ${time(
-                            data.message.created_at
-                        )}
-
-                    </div>
+                    ${formatTime(
+                        data.last.created_at
+                    )}
 
                 </div>
 
@@ -654,11 +635,431 @@ function mostrarConversas(
 }
 
 
-/* ================================
-   INICIAR
-================================ */
+/* =========================================
+   CHAT
+========================================= */
 
-iniciar();
+async function loadChat() {
+
+    app.innerHTML = `
+
+        <div class="chat">
+
+            <div class="chat-header">
+
+                <button
+                    class="back"
+                    onclick="goBack()"
+                >
+                    ←
+                </button>
+
+
+                <div class="avatar">
+
+                    ${escapeHTML(
+                        friendId.charAt(0)
+                    )}
+
+                </div>
+
+
+                <div>
+
+                    <div class="chat-name">
+
+                        Usuário
+
+                        ${escapeHTML(
+                            friendId.substring(0,8)
+                        )}
+
+                    </div>
+
+
+                    <div class="chat-status">
+
+                        Conversa privada
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="messages"
+                class="messages"
+            >
+
+                <div class="empty">
+
+                    Carregando mensagens...
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="composer"
+                class="composer"
+            >
+
+                <input
+                    id="messageInput"
+                    type="text"
+                    placeholder="Digite uma mensagem..."
+                    maxlength="2000"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <button
+                    class="send"
+                    type="submit"
+                >
+
+                    ➤
+
+                </button>
+
+            </form>
+
+        </div>
+
+    `;
+
+
+    const result =
+    await supabaseClient
+        .from("messages")
+        .select("*")
+        .or(
+            "and(sender_id.eq." +
+            currentUser.id +
+            ",receiver_id.eq." +
+            friendId +
+            "),and(sender_id.eq." +
+            friendId +
+            ",receiver_id.eq." +
+            currentUser.id +
+            ")"
+        )
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
+
+
+    const container =
+    document.getElementById(
+        "messages"
+    );
+
+
+    if (result.error) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                ❌ Erro ao carregar mensagens.
+
+                <br><br>
+
+                ${escapeHTML(
+                    result.error.message
+                )}
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    const messages =
+    result.data || [];
+
+
+    if (!messages.length) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Nenhuma mensagem ainda.
+
+            </div>
+
+        `;
+
+    }
+
+
+    messages.forEach(
+        function(message) {
+
+            addMessage(
+                message
+            );
+
+        }
+    );
+
+
+    scrollBottom();
+
+
+    /* ============================
+       MARCAR RECEBIDAS COMO LIDAS
+    ============================ */
+
+    await supabaseClient
+        .from("messages")
+        .update({
+            read_at:
+                new Date().toISOString()
+        })
+        .eq(
+            "sender_id",
+            friendId
+        )
+        .eq(
+            "receiver_id",
+            currentUser.id
+        )
+        .is(
+            "read_at",
+            null
+        );
+
+
+    document
+        .getElementById("composer")
+        .addEventListener(
+            "submit",
+            sendMessage
+        );
+
+}
+
+
+/* =========================================
+   ADICIONAR MENSAGEM
+========================================= */
+
+function addMessage(message) {
+
+    const container =
+    document.getElementById(
+        "messages"
+    );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const empty =
+    container.querySelector(
+        ".empty"
+    );
+
+
+    if (empty) {
+
+        container.innerHTML = "";
+
+    }
+
+
+    const div =
+    document.createElement(
+        "div"
+    );
+
+
+    div.className =
+        "message " +
+        (
+            message.sender_id ===
+            currentUser.id
+            ? "mine"
+            : "theirs"
+        );
+
+
+    div.innerHTML = `
+
+        ${escapeHTML(
+            message.content
+        )}
+
+        <span class="message-time">
+
+            ${formatTime(
+                message.created_at
+            )}
+
+        </span>
+
+    `;
+
+
+    container.appendChild(
+        div
+    );
+
+}
+
+
+/* =========================================
+   ENVIAR MENSAGEM
+========================================= */
+
+async function sendMessage(event) {
+
+    event.preventDefault();
+
+
+    const input =
+    document.getElementById(
+        "messageInput"
+    );
+
+
+    const content =
+    input.value.trim();
+
+
+    if (!content) {
+        return;
+    }
+
+
+    input.disabled = true;
+
+
+    const result =
+    await supabaseClient
+        .from("messages")
+        .insert({
+
+            sender_id:
+                currentUser.id,
+
+            receiver_id:
+                friendId,
+
+            content:
+                content
+
+        })
+        .select()
+        .single();
+
+
+    input.disabled = false;
+
+
+    if (result.error) {
+
+        alert(
+            "Erro ao enviar: " +
+            result.error.message
+        );
+
+        return;
+
+    }
+
+
+    input.value = "";
+
+    input.focus();
+
+
+    addMessage(
+        result.data
+    );
+
+
+    scrollBottom();
+
+}
+
+
+/* =========================================
+   SCROLL
+========================================= */
+
+function scrollBottom() {
+
+    const container =
+    document.getElementById(
+        "messages"
+    );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    setTimeout(
+        function() {
+
+            container.scrollTop =
+                container.scrollHeight;
+
+        },
+        50
+    );
+
+}
+
+
+/* =========================================
+   INICIAR
+========================================= */
+
+async function start() {
+
+    const logged =
+        await getUser();
+
+
+    if (!logged) {
+        return;
+    }
+
+
+    if (friendId) {
+
+        await loadChat();
+
+    } else {
+
+        await loadList();
+
+    }
+
+}
+
+
+start();
 
 </script>
 
