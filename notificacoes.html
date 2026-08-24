@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Diagnóstico - ZunoPlay</title>
+<title>Notificações - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -35,10 +35,16 @@ body {
 .header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
     padding: 20px;
     border-bottom: 1px solid #292a3d;
     background: rgba(10,11,20,.95);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .back {
@@ -53,12 +59,21 @@ body {
 }
 
 .logo {
-    font-size: 28px;
+    font-size: 27px;
     font-weight: 800;
 }
 
 .logo span {
     color: #8b5cf6;
+}
+
+.mark-all {
+    border: none;
+    background: transparent;
+    color: #8b5cf6;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .page {
@@ -67,38 +82,101 @@ body {
 
 .title {
     font-size: 25px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
-.box {
-    margin-top: 15px;
-    padding: 18px;
-    border-radius: 16px;
-    background: #141523;
-    border: 1px solid #292a3d;
-}
-
-.label {
+.subtitle {
     color: #9293a3;
-    font-size: 12px;
-    margin-bottom: 6px;
-}
-
-.value {
-    color: #8b5cf6;
     font-size: 13px;
-    word-break: break-all;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
-.success {
-    color: #65d391;
+.notification {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 16px;
+    margin-bottom: 10px;
+    border-radius: 18px;
+    border: 1px solid #292a3d;
+    background: rgba(20,21,35,.9);
+    cursor: pointer;
+    transition: .2s;
+}
+
+.notification:hover {
+    border-color: #55506f;
+}
+
+.notification.unread {
+    border-color: rgba(139,92,246,.65);
+    background: rgba(38,31,62,.95);
+}
+
+.icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 50%;
+    background: #1b1c2b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+}
+
+.info {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-size: 14px;
     font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.notification-message {
+    color: #9697a7;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.notification-time {
+    color: #666879;
+    font-size: 10px;
+    margin-top: 8px;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    min-width: 9px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    margin-top: 5px;
+}
+
+.empty {
+    text-align: center;
+    color: #737486;
+    padding: 70px 20px;
+    font-size: 14px;
+}
+
+.loading {
+    text-align: center;
+    color: #737486;
+    padding: 50px 20px;
 }
 
 .error {
-    color: #ff7777;
-    font-weight: bold;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(239,68,68,.1);
+    border: 1px solid rgba(239,68,68,.3);
+    color: #fca5a5;
+    font-size: 13px;
 }
 </style>
 </head>
@@ -107,19 +185,54 @@ body {
 
 <div id="app" class="app">
 
+    <div class="header">
+
+        <div class="header-left">
+
+            <button
+                class="back"
+                onclick="window.location.href='index.html'">
+                ←
+            </button>
+
+            <div class="logo">
+                Zuno<span>Play</span>
+            </div>
+
+        </div>
+
+        <button
+            id="markAllButton"
+            class="mark-all"
+            onclick="markAllAsRead()">
+            Marcar todas
+        </button>
+
+    </div>
+
+
     <div class="page">
 
         <h1 class="title">
-            🔔 Diagnóstico ZunoPlay
+            🔔 Notificações
         </h1>
 
-        <div class="box">
-            Carregando...
+        <p class="subtitle">
+            Veja suas atividades recentes.
+        </p>
+
+        <div id="notifications">
+
+            <div class="loading">
+                Carregando notificações...
+            </div>
+
         </div>
 
     </div>
 
 </div>
+
 
 <script>
 
@@ -135,9 +248,26 @@ window.supabase.createClient(
     SUPABASE_KEY
 );
 
-const app =
-document.getElementById("app");
 
+const notificationsElement =
+document.getElementById(
+    "notifications"
+);
+
+
+const markAllButton =
+document.getElementById(
+    "markAllButton"
+);
+
+
+let currentUser = null;
+let notificationChannel = null;
+
+
+/* =========================================
+   INICIAR
+========================================= */
 
 async function start() {
 
@@ -148,175 +278,176 @@ async function start() {
     await supabaseClient.auth.getSession();
 
 
-    if (error) {
+    if (
+        error ||
+        !data.session
+    ) {
 
-        showError(
-            "Erro ao obter sessão: " +
-            error.message
-        );
-
-        return;
-
-    }
-
-
-    if (!data.session) {
-
-        showError(
-            "Nenhuma sessão encontrada. Faça login novamente."
-        );
+        window.location.href =
+        "login.html";
 
         return;
 
     }
 
 
-    const user =
+    currentUser =
     data.session.user;
 
 
-    app.innerHTML = `
+    await loadNotifications();
 
-        <div class="header">
 
-            <button
-                class="back"
-                onclick="window.location.href='index.html'">
-                ←
-            </button>
+    subscribeNotifications();
 
-            <div class="logo">
-                Zuno<span>Play</span>
-            </div>
+}
 
+
+/* =========================================
+   CARREGAR NOTIFICAÇÕES
+========================================= */
+
+async function loadNotifications() {
+
+    notificationsElement.innerHTML = `
+        <div class="loading">
+            Carregando notificações...
         </div>
-
-        <div class="page">
-
-            <h1 class="title">
-                🔔 Diagnóstico
-            </h1>
-
-            <div class="box">
-
-                <div class="label">
-                    ID da sessão
-                </div>
-
-                <div class="value">
-                    ${user.id}
-                </div>
-
-                <div class="label">
-                    E-mail
-                </div>
-
-                <div class="value">
-                    ${user.email || "sem e-mail"}
-                </div>
-
-                <div id="resultado">
-                    Consultando notificações...
-                </div>
-
-            </div>
-
-        </div>
-
     `;
 
 
     const {
-        data: notificacoes,
-        error: erroNotificacoes
+        data,
+        error
     } =
     await supabaseClient
     .from("notifications")
     .select("*")
     .eq(
         "user_id",
-        user.id
+        currentUser.id
+    )
+    .order(
+        "created_at",
+        {
+            ascending: false
+        }
     );
 
 
-    const resultado =
-    document.getElementById(
-        "resultado"
-    );
-
-
-    if (erroNotificacoes) {
-
-        resultado.innerHTML = `
-
-            <div class="error">
-                ERRO AO CONSULTAR NOTIFICAÇÕES
-            </div>
-
-            <br>
-
-            <div>
-                ${erroNotificacoes.message}
-            </div>
-
-        `;
+    if (error) {
 
         console.error(
-            erroNotificacoes
+            "Erro:",
+            error
         );
+
+        notificationsElement.innerHTML = `
+            <div class="error">
+                Não foi possível carregar suas notificações.
+                <br><br>
+                ${escapeHTML(error.message)}
+            </div>
+        `;
 
         return;
 
     }
 
 
-    resultado.innerHTML = `
+    if (
+        !data ||
+        data.length === 0
+    ) {
 
-        <div class="success">
-            Notificações encontradas:
-            ${notificacoes.length}
-        </div>
+        notificationsElement.innerHTML = `
+            <div class="empty">
+                Você não possui notificações ainda. 🔔
+            </div>
+        `;
 
-    `;
+        markAllButton.style.display =
+        "none";
 
+        return;
 
-    console.log(
-        "Usuário:",
-        user.id
-    );
-
-    console.log(
-        "Notificações:",
-        notificacoes
-    );
-
-}
+    }
 
 
-function showError(message) {
+    const unreadCount =
+    data.filter(function(notification) {
 
-    app.innerHTML = `
+        return notification.read_at === null;
 
-        <div class="page">
+    }).length;
 
-            <div class="box">
 
-                <div class="error">
-                    ${message}
+    if (unreadCount === 0) {
+
+        markAllButton.style.display =
+        "none";
+
+    } else {
+
+        markAllButton.style.display =
+        "block";
+
+    }
+
+
+    notificationsElement.innerHTML =
+    "";
+
+
+    data.forEach(function(notification) {
+
+        const element =
+        document.createElement(
+            "div"
+        );
+
+
+        const unread =
+        notification.read_at === null;
+
+
+        element.className =
+        "notification" +
+        (
+            unread
+            ? " unread"
+            : ""
+        );
+
+
+        element.innerHTML = `
+
+            <div class="icon">
+                ${getIcon(notification.type)}
+            </div>
+
+            <div class="info">
+
+                <div class="notification-title">
+                    ${escapeHTML(
+                        notification.title ||
+                        "Notificação"
+                    )}
+                </div>
+
+                <div class="notification-message">
+                    ${escapeHTML(
+                        notification.message ||
+                        ""
+                    )}
+                </div>
+
+                <div class="notification-time">
+                    ${formatDate(
+                        notification.created_at
+                    )}
                 </div>
 
             </div>
 
-        </div>
-
-    `;
-
-}
-
-
-start();
-
-</script>
-
-</body>
-</html>
+            ${
