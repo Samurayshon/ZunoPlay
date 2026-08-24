@@ -1464,73 +1464,6 @@ function scrollBottom() {
 
 
 /* =========================================
-   REALTIME - TESTE DE CONEXÃO
-========================================= */
-
-function iniciarRealtimeTeste() {
-
-    if (!currentUser) {
-
-        console.error(
-            "REALTIME ERRO: usuário não está carregado."
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        const realtimeChannel =
-        supabaseClient
-        .channel(
-            "messages-test-" +
-            currentUser.id
-        )
-        .on(
-            "postgres_changes",
-            {
-                event: "INSERT",
-                schema: "public",
-                table: "messages"
-            },
-            function (payload) {
-
-                console.log(
-                    "REALTIME OK:",
-                    payload.new
-                );
-
-            }
-        )
-        .subscribe(function (status) {
-
-            console.log(
-                "REALTIME STATUS:",
-                status
-            );
-
-        });
-
-
-        window.realtimeChannel =
-        realtimeChannel;
-
-
-    } catch (error) {
-
-        console.error(
-            "REALTIME ERRO:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================
    INICIAR
 ========================================= */
 
@@ -1538,4 +1471,60 @@ async function start() {
 
     try {
 
-        cons
+        const logged =
+        await getUser();
+
+
+        if (!logged) {
+
+            return;
+
+        }
+
+
+        if (friendId) {
+
+            await loadChat();
+
+        } else {
+
+            await loadConversations();
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erro geral:",
+            error
+        );
+
+
+        app.innerHTML = `
+
+            <div class="empty">
+
+                ❌ Erro ao carregar o ZunoPlay.
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+start();
+
+</script>
+
+</body>
+
+</html>
