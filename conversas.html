@@ -5,100 +5,568 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-<title>Teste ZunoPlay</title>
+<title>Conversas - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
-body {
+* {
     margin: 0;
-    min-height: 100vh;
-    background: #070811;
-    color: white;
+    padding: 0;
+    box-sizing: border-box;
     font-family: Arial, sans-serif;
-    padding: 20px;
 }
 
-.box {
-    max-width: 480px;
-    margin: 30px auto;
-    background: #141523;
-    border: 1px solid #303145;
-    border-radius: 20px;
-    padding: 20px;
-}
+body {
 
-h1 {
-    margin-top: 0;
-}
+    min-height: 100vh;
 
-.row {
-    margin: 12px 0;
-    padding: 12px;
-    background: #1b1c2b;
-    border-radius: 10px;
-    word-break: break-all;
-}
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            #25145c 0%,
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            #102d59 0%,
+            transparent 35%
+        ),
+        #070811;
 
-.ok {
-    color: #4ade80;
-}
-
-.erro {
-    color: #ff7777;
-}
-
-button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 10px;
-    border: 0;
-    border-radius: 12px;
-    background: #8b5cf6;
     color: white;
+
+}
+
+.app {
+
+    width: 100%;
+
+    max-width: 480px;
+
+    min-height: 100vh;
+
+    margin: auto;
+
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 18px 20px;
+
+    background: rgba(10,11,20,.97);
+
+    border-bottom: 1px solid #292a3d;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 20;
+
+}
+
+.back {
+
+    width: 42px;
+
+    height: 42px;
+
+    border-radius: 12px;
+
+    border: 1px solid #303145;
+
+    background: #1b1c2b;
+
+    color: white;
+
+    font-size: 21px;
+
+    cursor: pointer;
+
+}
+
+.logo {
+
+    font-size: 28px;
+
+    font-weight: 800;
+
+}
+
+.logo span {
+
+    color: #8b5cf6;
+
+}
+
+
+/* =========================================
+   PAGE
+========================================= */
+
+.page {
+
+    padding: 20px;
+
+}
+
+.title {
+
+    font-size: 25px;
+
+    margin-bottom: 6px;
+
+}
+
+.subtitle {
+
+    color: #9293a3;
+
+    font-size: 13px;
+
+    margin-bottom: 20px;
+
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+.status {
+
+    padding: 12px 14px;
+
+    border-radius: 12px;
+
+    background: #141523;
+
+    border: 1px solid #292a3d;
+
+    color: #9293a3;
+
+    font-size: 12px;
+
+    margin-bottom: 15px;
+
+}
+
+.status.ok {
+
+    color: #4ade80;
+
+}
+
+
+/* =========================================
+   CONVERSA
+========================================= */
+
+.conversation {
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 14px;
+
+    margin-bottom: 10px;
+
+    border-radius: 17px;
+
+    border: 1px solid #292a3d;
+
+    background: rgba(20,21,35,.95);
+
+    color: white;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition: .15s;
+
+}
+
+.conversation:hover {
+
+    border-color: #8b5cf6;
+
+    transform: translateY(-1px);
+
+}
+
+.avatar {
+
+    width: 50px;
+
+    height: 50px;
+
+    min-width: 50px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 18px;
+
     font-weight: bold;
-    font-size: 16px;
+
+}
+
+.info {
+
+    flex: 1;
+
+    min-width: 0;
+
+}
+
+.name {
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    margin-bottom: 5px;
+
+}
+
+.last-message {
+
+    color: #858697;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+.right {
+
+    text-align: right;
+
+}
+
+.time {
+
+    color: #737486;
+
+    font-size: 10px;
+
+    margin-bottom: 6px;
+
+}
+
+.badge {
+
+    min-width: 21px;
+
+    height: 21px;
+
+    padding: 0 6px;
+
+    border-radius: 11px;
+
+    background: #8b5cf6;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+}
+
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.empty {
+
+    text-align: center;
+
+    color: #737486;
+
+    padding: 60px 20px;
+
+    font-size: 14px;
+
+}
+
+
+/* =========================================
+   CHAT
+========================================= */
+
+.chat {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+.chat-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 14px 20px;
+
+    background: rgba(10,11,20,.97);
+
+    border-bottom: 1px solid #292a3d;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 20;
+
+}
+
+.chat-messages {
+
+    flex: 1;
+
+    padding: 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+    overflow-y: auto;
+
+    min-height: calc(100vh - 140px);
+
+}
+
+.message {
+
+    max-width: 78%;
+
+    padding: 11px 14px;
+
+    border-radius: 16px;
+
+    font-size: 14px;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+
+}
+
+.mine {
+
+    align-self: flex-end;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    border-bottom-right-radius: 5px;
+
+}
+
+.theirs {
+
+    align-self: flex-start;
+
+    background: #1b1c2b;
+
+    border: 1px solid #303145;
+
+    border-bottom-left-radius: 5px;
+
+}
+
+.message-time {
+
+    display: block;
+
+    font-size: 9px;
+
+    opacity: .6;
+
+    margin-top: 4px;
+
+}
+
+.composer {
+
+    display: flex;
+
+    gap: 8px;
+
+    padding: 12px 15px;
+
+    background: rgba(10,11,20,.98);
+
+    border-top: 1px solid #292a3d;
+
+    position: sticky;
+
+    bottom: 0;
+
+}
+
+.composer input {
+
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 14px;
+
+    border-radius: 13px;
+
+    border: 1px solid #303145;
+
+    background: #11121e;
+
+    color: white;
+
+    outline: none;
+
+}
+
+.send {
+
+    width: 50px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    color: white;
+
+    font-size: 19px;
+
+    cursor: pointer;
+
+}
+
+.send:disabled {
+
+    opacity: .5;
+
+}
+
+
+/* =========================================
+   DEBUG
+========================================= */
+
+.debug {
+
+    margin-top: 20px;
+
+    padding: 12px;
+
+    border-radius: 12px;
+
+    background: #10111c;
+
+    border: 1px solid #242537;
+
+    color: #686978;
+
+    font-size: 10px;
+
+    word-break: break-all;
+
 }
 
 </style>
 
 </head>
 
+
 <body>
 
-<div class="box">
 
-<h1>🔎 Diagnóstico ZunoPlay</h1>
-
-<div id="status" class="row">
-    Iniciando...
-</div>
-
-<div id="user" class="row">
-    Verificando usuário...
-</div>
-
-<div id="messages" class="row">
-    Verificando mensagens...
-</div>
-
-<button onclick="window.location.href='index.html'">
-    Voltar para o ZunoPlay
-</button>
-
+<div
+    id="app"
+    class="app"
+>
 </div>
 
 
 <script>
 
+
+/* =========================================
+   SUPABASE
+========================================= */
+
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
+
 const SUPABASE_KEY =
 "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
 
 const supabaseClient =
 window.supabase.createClient(
@@ -107,173 +575,936 @@ window.supabase.createClient(
 );
 
 
-async function teste() {
+/* =========================================
+   VARIÁVEIS
+========================================= */
 
-    const status =
-    document.getElementById("status");
+const app =
+document.getElementById("app");
 
-    const userBox =
-    document.getElementById("user");
+let currentUser = null;
 
-    const messagesBox =
-    document.getElementById("messages");
+let friendId = null;
 
-
-    try {
-
-        status.innerHTML =
-            "⏳ Supabase carregado. Verificando sessão...";
+let realtimeChannel = null;
 
 
-        const {
-            data,
-            error
-        } =
-        await supabaseClient
-            .auth
-            .getSession();
+const params =
+new URLSearchParams(
+    window.location.search
+);
+
+friendId =
+params.get("user");
 
 
-        if (error) {
+/* =========================================
+   FUNÇÕES AUXILIARES
+========================================= */
 
-            status.innerHTML =
-                "❌ Erro na sessão";
+function escapeHTML(text) {
 
-            status.className =
-                "row erro";
+    const div =
+    document.createElement("div");
 
-            userBox.innerHTML =
-                error.message;
+    div.textContent =
+    text || "";
 
-            return;
+    return div.innerHTML;
 
+}
+
+
+function initial(name) {
+
+    if (!name) {
+
+        return "?";
+
+    }
+
+    return name
+        .charAt(0)
+        .toUpperCase();
+
+}
+
+
+function formatTime(dateString) {
+
+    if (!dateString) {
+
+        return "";
+
+    }
+
+    return new Date(
+        dateString
+    ).toLocaleTimeString(
+        "pt-BR",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
         }
+    );
+
+}
 
 
-        if (
-            !data ||
-            !data.session ||
-            !data.session.user
-        ) {
+function goBack() {
 
-            status.innerHTML =
-                "⚠️ Página abriu, mas não existe sessão.";
+    if (friendId) {
 
-            status.className =
-                "row erro";
+        window.location.href =
+            "conversas.html";
 
-            userBox.innerHTML =
-                "Nenhum usuário autenticado.";
+    } else {
 
-            messagesBox.innerHTML =
-                "Consulta não executada.";
-
-            return;
-
-        }
-
-
-        const user =
-        data.session.user;
-
-
-        status.innerHTML =
-            "✅ Supabase funcionando e sessão ativa.";
-
-        status.className =
-            "row ok";
-
-
-        userBox.innerHTML =
-
-            "<strong>ID do usuário:</strong><br><br>" +
-
-            user.id;
-
-
-        const {
-            data: messages,
-            error: messageError
-        } =
-        await supabaseClient
-            .from("messages")
-            .select("*")
-            .or(
-                "sender_id.eq." +
-                user.id +
-                ",receiver_id.eq." +
-                user.id
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
-
-        if (messageError) {
-
-            messagesBox.innerHTML =
-                "❌ Erro ao consultar messages:<br><br>" +
-                messageError.message;
-
-            messagesBox.className =
-                "row erro";
-
-            return;
-
-        }
-
-
-        messagesBox.innerHTML =
-
-            "✅ Consulta funcionando.<br><br>" +
-
-            "<strong>Total de mensagens:</strong> " +
-
-            messages.length;
-
-
-        messagesBox.className =
-            "row ok";
-
-
-        if (messages.length > 0) {
-
-            messagesBox.innerHTML +=
-                "<br><br>Primeira mensagem:<br>" +
-                (
-                    messages[0].content ||
-                    "(sem conteúdo)"
-                );
-
-        }
-
-
-    } catch (error) {
-
-        status.innerHTML =
-            "❌ JavaScript encontrou um erro.";
-
-        status.className =
-            "row erro";
-
-
-        userBox.innerHTML =
-            error.message ||
-            error;
-
+        window.location.href =
+            "index.html";
 
     }
 
 }
 
 
-teste();
+/* =========================================
+   AUTENTICAÇÃO
+========================================= */
 
-</script>
+async function getCurrentUser() {
 
-</body>
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .auth
+        .getSession();
 
-</html>
+
+    if (error) {
+
+        console.error(error);
+
+        return null;
+
+    }
+
+
+    if (
+        !data ||
+        !data.session ||
+        !data.session.user
+    ) {
+
+        return null;
+
+    }
+
+
+    return data.session.user;
+
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+function createHeader() {
+
+    return `
+
+        <div class="header">
+
+            <button
+                class="back"
+                onclick="goBack()"
+            >
+                ←
+            </button>
+
+            <div class="logo">
+
+                Zuno<span>Play</span>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================
+   LISTA
+========================================= */
+
+async function showConversationList() {
+
+
+    app.innerHTML =
+
+        createHeader() +
+
+        `
+
+        <div class="page">
+
+            <h1 class="title">
+                💬 Conversas
+            </h1>
+
+            <p class="subtitle">
+                Suas conversas recentes.
+            </p>
+
+
+            <div
+                id="status"
+                class="status"
+            >
+                Carregando mensagens...
+            </div>
+
+
+            <div
+                id="conversationList"
+            >
+            </div>
+
+
+            <div
+                id="debug"
+                class="debug"
+            >
+            </div>
+
+        </div>
+
+        `;
+
+
+    const status =
+    document.getElementById(
+        "status"
+    );
+
+    const list =
+    document.getElementById(
+        "conversationList"
+    );
+
+    const debug =
+    document.getElementById(
+        "debug"
+    );
+
+
+    /* =====================================
+       CONSULTA EXATAMENTE COMO NO TESTE
+    ===================================== */
+
+    const {
+        data: messages,
+        error
+    } =
+    await supabaseClient
+        .from("messages")
+        .select("*")
+        .or(
+            "sender_id.eq." +
+            currentUser.id +
+            ",receiver_id.eq." +
+            currentUser.id
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (error) {
+
+        status.textContent =
+            "❌ Erro ao carregar mensagens.";
+
+        debug.textContent =
+            error.message;
+
+        return;
+
+    }
+
+
+    const allMessages =
+        messages || [];
+
+
+    status.className =
+        "status ok";
+
+
+    status.innerHTML =
+
+        "✅ " +
+
+        allMessages.length +
+
+        " mensagens encontradas.";
+
+
+    debug.innerHTML =
+
+        "Usuário: " +
+
+        escapeHTML(
+            currentUser.id
+        );
+
+
+    if (!allMessages.length) {
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                Nenhuma conversa encontrada.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /* =====================================
+       AGRUPAR POR OUTRO USUÁRIO
+    ===================================== */
+
+    const conversations = {};
+
+
+    allMessages.forEach(
+        function(message) {
+
+
+            let otherId;
+
+
+            if (
+                message.sender_id ===
+                currentUser.id
+            ) {
+
+                otherId =
+                    message.receiver_id;
+
+            } else {
+
+                otherId =
+                    message.sender_id;
+
+            }
+
+
+            if (!otherId) {
+
+                return;
+
+            }
+
+
+            if (
+                !conversations[otherId]
+            ) {
+
+                conversations[otherId] = {
+
+                    lastMessage:
+                        message,
+
+                    unread: 0,
+
+                    count: 0
+
+                };
+
+            }
+
+
+            conversations[otherId]
+                .count++;
+
+
+            if (
+
+                message.receiver_id ===
+                currentUser.id
+
+                &&
+
+                message.read_at ===
+                null
+
+            ) {
+
+                conversations[otherId]
+                    .unread++;
+
+            }
+
+        }
+    );
+
+
+    const ids =
+    Object.keys(
+        conversations
+    );
+
+
+    if (!ids.length) {
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                As mensagens existem,
+                mas não foi possível identificar
+                os participantes.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /* =====================================
+       BUSCAR USERNAMES
+       OPCIONAL
+    ===================================== */
+
+    let profiles = [];
+
+
+    try {
+
+        const {
+            data
+        } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "id,username"
+            )
+            .in(
+                "id",
+                ids
+            );
+
+
+        if (data) {
+
+            profiles =
+                data;
+
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Profiles não disponíveis."
+        );
+
+    }
+
+
+    const profileMap = {};
+
+
+    profiles.forEach(
+        function(profile) {
+
+            profileMap[
+                profile.id
+            ] = profile;
+
+        }
+    );
+
+
+    /* =====================================
+       MOSTRAR CONVERSAS
+    ===================================== */
+
+    list.innerHTML = "";
+
+
+    ids.forEach(
+        function(otherId) {
+
+
+            const conversation =
+            conversations[otherId];
+
+
+            const profile =
+            profileMap[otherId];
+
+
+            const username =
+
+                profile &&
+                profile.username
+
+                ?
+
+                profile.username
+
+                :
+
+                "Usuário";
+
+
+            const message =
+            conversation.lastMessage;
+
+
+            const button =
+            document.createElement(
+                "button"
+            );
+
+
+            button.type =
+                "button";
+
+
+            button.className =
+                "conversation";
+
+
+            button.onclick =
+            function() {
+
+                window.location.href =
+
+                    "conversas.html?user=" +
+
+                    encodeURIComponent(
+                        otherId
+                    );
+
+            };
+
+
+            let badge = "";
+
+
+            if (
+                conversation.unread > 0
+            ) {
+
+                badge = `
+
+                    <div class="badge">
+
+                        ${
+                            conversation.unread > 99
+                            ? "99+"
+                            : conversation.unread
+                        }
+
+                    </div>
+
+                `;
+
+            }
+
+
+            button.innerHTML = `
+
+                <div class="avatar">
+
+                    ${initial(username)}
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="name">
+
+                        ${escapeHTML(
+                            username
+                        )}
+
+                    </div>
+
+
+                    <div class="last-message">
+
+                        ${escapeHTML(
+                            message.content
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="right">
+
+                    <div class="time">
+
+                        ${formatTime(
+                            message.created_at
+                        )}
+
+                    </div>
+
+                    ${badge}
+
+                </div>
+
+            `;
+
+
+            list.appendChild(
+                button
+            );
+
+        }
+    );
+
+
+    subscribeRealtime();
+
+}
+
+
+/* =========================================
+   CHAT
+========================================= */
+
+async function showChat() {
+
+
+    let username =
+        "Usuário";
+
+
+    try {
+
+        const {
+            data
+        } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "username"
+            )
+            .eq(
+                "id",
+                friendId
+            )
+            .maybeSingle();
+
+
+        if (
+            data &&
+            data.username
+        ) {
+
+            username =
+                data.username;
+
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+
+    app.innerHTML = `
+
+        <div class="chat">
+
+
+            <div class="chat-header">
+
+                <button
+                    class="back"
+                    onclick="goBack()"
+                >
+                    ←
+                </button>
+
+
+                <div class="avatar">
+
+                    ${initial(username)}
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="name">
+
+                        ${escapeHTML(
+                            username
+                        )}
+
+                    </div>
+
+                    <div class="last-message">
+
+                        Conversa privada
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="messages"
+                class="chat-messages"
+            >
+
+                <div class="empty">
+
+                    Carregando mensagens...
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="messageForm"
+                class="composer"
+            >
+
+                <input
+                    id="messageInput"
+                    type="text"
+                    maxlength="2000"
+                    placeholder="Digite uma mensagem..."
+                    autocomplete="off"
+                    required
+                >
+
+
+                <button
+                    id="sendButton"
+                    class="send"
+                    type="submit"
+                >
+
+                    ➤
+
+                </button>
+
+            </form>
+
+        </div>
+
+    `;
+
+
+    await loadChatMessages();
+
+
+    await markAsRead();
+
+
+    subscribeRealtime();
+
+
+    document
+        .getElementById(
+            "messageForm"
+        )
+        .addEventListener(
+            "submit",
+            sendMessage
+        );
+
+}
+
+
+/* =========================================
+   MENSAGENS DO CHAT
+========================================= */
+
+async function loadChatMessages() {
+
+
+    const container =
+    document.getElementById(
+        "messages"
+    );
+
+
+    const {
+        data: messages,
+        error
+    } =
+    await supabaseClient
+        .from("messages")
+        .select("*")
+        .or(
+
+            "and(sender_id.eq." +
+            currentUser.id +
+            ",receiver_id.eq." +
+            friendId +
+            ")," +
+
+            "and(sender_id.eq." +
+            friendId +
+            ",receiver_id.eq." +
+            currentUser.id +
+            ")"
+
+        )
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(error);
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                ❌ Não foi possível carregar
+                as mensagens.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    const data =
+        messages || [];
+
+
+    if (!data.length) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Nenhuma mensagem ainda.
+
+                <br><br>
+
+                Comece a conversa! 👋
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    data.forEach(
+        renderMessage
+    );
+
+
+    scrollBottom();
+
+}
+
+
+/* =========================================
+   RENDERIZAR
+========================================= */
+
+function renderMessage(message) {
+
+
+    const container =
+    document.getElementById(
+        "messages"
+    );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const existing =
+    container.querySelector(
+        '[data-message-id="' +
+        message.id +
+        '"]'
+    );
+
+
+    if (existing) {
+
+        return;
+
+    }
+
+
+    const empty =
+    container.querySelector(
+        ".empty"
+    );
+
+
+    if (empty) {
+
+        container.innerHTML = "";
+
+    }
+
+
+    const div =
+    document.createElement(
+        "div"
+    );
+
+
+    div.dataset.messageId =
+        message.id;
+
+
+    div.classN
