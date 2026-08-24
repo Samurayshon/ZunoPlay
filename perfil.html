@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Meu Perfil - ZunoPlay</title>
+<title>Perfil - ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -31,6 +31,14 @@ body {
     min-height: 100vh;
     margin: auto;
     padding: 25px;
+}
+
+.loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9293a3;
 }
 
 .header {
@@ -66,6 +74,7 @@ body {
     border: 1px solid rgba(139, 92, 246, 0.2);
     border-radius: 24px;
     padding: 25px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
 }
 
 .avatar {
@@ -111,7 +120,7 @@ body {
 
 .info-value {
     font-size: 14px;
-    word-break: break-word;
+    word-break: break-all;
 }
 
 label {
@@ -153,6 +162,10 @@ input:focus {
     color: white;
 }
 
+.save:disabled {
+    opacity: 0.6;
+}
+
 .logout {
     background: #171824;
     border: 1px solid #303145;
@@ -168,24 +181,16 @@ input:focus {
     text-align: center;
 }
 
-.success {
+.message.success {
     display: block;
     background: rgba(34, 197, 94, 0.12);
     color: #86efac;
 }
 
-.error {
+.message.error {
     display: block;
     background: rgba(239, 68, 68, 0.12);
     color: #fca5a5;
-}
-
-.loading {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9293a3;
 }
 </style>
 </head>
@@ -212,12 +217,9 @@ input:focus {
 
     </div>
 
-
     <div class="card">
 
-        <div id="avatar" class="avatar">
-            S
-        </div>
+        <div id="avatar" class="avatar">S</div>
 
         <div id="profileName" class="profile-name">
             ZunoPlayer
@@ -227,9 +229,7 @@ input:focus {
             carregando...
         </div>
 
-
         <div class="info">
-
             <div class="info-label">
                 ID da conta
             </div>
@@ -237,12 +237,9 @@ input:focus {
             <div id="userId" class="info-value">
                 carregando...
             </div>
-
         </div>
 
-
         <div class="info">
-
             <div class="info-label">
                 Conta criada em
             </div>
@@ -250,22 +247,20 @@ input:focus {
             <div id="createdAt" class="info-value">
                 carregando...
             </div>
-
         </div>
 
-
         <label for="newUsername">
-            Alterar nome de usuário
+            Nome de usuário
         </label>
 
         <input
             type="text"
             id="newUsername"
-            placeholder="Novo nome"
+            placeholder="Digite seu novo nome"
             minlength="3"
             maxlength="20"
+            autocomplete="off"
         >
-
 
         <button
             id="saveButton"
@@ -273,9 +268,7 @@ input:focus {
             Salvar alteração
         </button>
 
-
         <div id="message" class="message"></div>
-
 
         <button
             id="logoutButton"
@@ -287,19 +280,13 @@ input:focus {
 
 </div>
 
-
 <script>
 
-/* =========================================
-   SUPABASE
-   ========================================= */
-
 const SUPABASE_URL =
-    "COLE_AQUI_A_MESMA_API_URL";
+    "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
 const SUPABASE_KEY =
-    "COLE_AQUI_A_MESMA_PUBLISHABLE_KEY";
-
+    "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
 
 const supabaseClient =
     window.supabase.createClient(
@@ -307,10 +294,6 @@ const supabaseClient =
         SUPABASE_KEY
     );
 
-
-/* =========================================
-   ELEMENTOS
-   ========================================= */
 
 const loading =
     document.getElementById("loading");
@@ -346,10 +329,6 @@ const message =
     document.getElementById("message");
 
 
-/* =========================================
-   MOSTRAR MENSAGEM
-   ========================================= */
-
 function showMessage(text, type) {
 
     message.className =
@@ -360,33 +339,48 @@ function showMessage(text, type) {
 }
 
 
-/* =========================================
-   CARREGAR PERFIL
-   ========================================= */
+function updateVisualProfile(username) {
+
+    profileName.textContent =
+        username;
+
+    avatar.textContent =
+        username
+            .charAt(0)
+            .toUpperCase();
+
+    newUsername.value =
+        username;
+}
+
 
 async function loadProfile() {
 
     try {
 
         const {
-            data: {
-                session
-            }
+            data,
+            error
         } =
-            await supabaseClient.auth.getSession();
+            await supabaseClient.auth.getUser();
 
 
-        if (!session) {
+        if (error) {
+            throw error;
+        }
+
+
+        const user =
+            data.user;
+
+
+        if (!user) {
 
             window.location.href =
                 "login.html";
 
             return;
         }
-
-
-        const user =
-            session.user;
 
 
         let username =
@@ -401,11 +395,7 @@ async function loadProfile() {
         }
 
 
-        profileName.textContent =
-            username;
-
-        newUsername.value =
-            username;
+        updateVisualProfile(username);
 
 
         profileEmail.textContent =
@@ -430,14 +420,7 @@ async function loadProfile() {
                         year: "numeric"
                     }
                 );
-
         }
-
-
-        avatar.textContent =
-            username
-                .charAt(0)
-                .toUpperCase();
 
 
         loading.style.display =
@@ -454,15 +437,12 @@ async function loadProfile() {
             error
         );
 
-        window.location.href =
-            "login.html";
+        loading.textContent =
+            "Não foi possível carregar o perfil.";
+
     }
 }
 
-
-/* =========================================
-   ALTERAR NOME
-   ========================================= */
 
 saveButton.addEventListener(
     "click",
@@ -483,11 +463,25 @@ saveButton.addEventListener(
         }
 
 
+        if (username.length > 20) {
+
+            showMessage(
+                "O nome pode ter no máximo 20 caracteres.",
+                "error"
+            );
+
+            return;
+        }
+
+
         saveButton.disabled =
             true;
 
         saveButton.textContent =
             "Salvando...";
+
+        message.className =
+            "message";
 
 
         try {
@@ -510,14 +504,24 @@ saveButton.addEventListener(
             }
 
 
-            profileName.textContent =
-                username;
+            const updatedUser =
+                data.user;
 
 
-            avatar.textContent =
-                username
-                    .charAt(0)
-                    .toUpperCase();
+            let savedUsername =
+                updatedUser
+                    ?.user_metadata
+                    ?.username;
+
+
+            if (!savedUsername) {
+                savedUsername = username;
+            }
+
+
+            updateVisualProfile(
+                savedUsername
+            );
 
 
             showMessage(
@@ -553,10 +557,6 @@ saveButton.addEventListener(
 );
 
 
-/* =========================================
-   SAIR
-   ========================================= */
-
 logoutButton.addEventListener(
     "click",
     async function() {
@@ -568,26 +568,17 @@ logoutButton.addEventListener(
             "Saindo...";
 
 
-        const {
-            error
-        } =
+        try {
+
             await supabaseClient.auth.signOut();
 
+        } catch (error) {
 
-        if (error) {
-
-            showMessage(
-                "Erro ao sair da conta.",
-                "error"
+            console.error(
+                "Erro ao sair:",
+                error
             );
 
-            logoutButton.disabled =
-                false;
-
-            logoutButton.textContent =
-                "Sair da conta";
-
-            return;
         }
 
 
@@ -597,10 +588,6 @@ logoutButton.addEventListener(
     }
 );
 
-
-/* =========================================
-   INICIAR
-   ========================================= */
 
 loadProfile();
 
