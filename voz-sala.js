@@ -137,15 +137,39 @@
     updateCount();
   }
 
-  async function setRoomPresence(state){
-    if(desiredPresence===state)return;
+  function applyVoiceState(payload){
+    if(!payload||payload.room_id!==roomId||!payload.user_id)return;
+    const state=payload.state||'online';
+    const escaped=CSS.escape(String(payload.user_id));
+    const selector='.avatar-slot[data-user-id="'+escaped+'"],.member[data-user-id="'+escaped+'"],.top-avatar[data-user-id="'+escaped+'"]';
+    document.querySelectorAll(selector).forEach(el=>{
+      el.classList.toggle('is-speaking',state==='speaking');
+      el.classList.toggle('is-away',false);
+      const badge=el.querySelector('.presence-status');
+      if(badge){
+        badge.textContent=state==='speaking'?'🎙️ Falando':state==='listening'?'🎧 Ouvindo':'● Online';
+        badge.style.color=state==='speaking'||state==='listening'?'#4ade80':'';
+      }
+    });
+    try{window.dispatchEvent(new CustomEvent('zuno:voice-presence',{detail:payload}))}catch(_){}
+  }
+
+  async function setRoomPresence(state,force=false){
+    if(!force&&desiredPresence===state)return;
     desiredPresence=state;
-    try{await window.zunoSetRoomPresence?.(state)}catch(error){console.warn('Presence de voz',error)}
+    const payload={user_id:user?.id,room_id:roomId,state,muted,at:Date.now()};
+    applyVoiceState(payload);
+    if(!channel||!subscribed||!user)return;
+    try{
+      await channel.send({type:'broadcast',event:'voice-state',payload});
+    }catch(error){
+      console.warn('Estado de voz via Broadcast',error);
+    }
   }
 
   async function setInitialListening(){
     desiredPresence='online';
-    await setRoomPresence('listening');
+    await setRoomPresence('listening',true);
   }
 
   function stopVad(){
@@ -375,6 +399,11 @@
     }
   }
 
+  function handleVoiceState(payload){
+    if(!payload||payload.room_id!==roomId||payload.user_id===user?.id)return;
+    applyVoiceState(payload);
+  }
+
   function voicePresenceState(){return channel?.presenceState?.()||{}}
 
   function syncVoicePeers(){
@@ -407,6 +436,7 @@
         await openChannel();
         channelReconnectAttempts=0;
         syncVoicePeers();
+        await setRoomPresence(desiredPresence||'listening',true);
         for(const id of peerIds())recoverPeer(id,'channel-restored');
         setStatus('Voz reconectada'+(turnReady?' · relay disponível':''));
       }catch(error){
@@ -422,9 +452,16 @@
     channel=sb.channel(roomTopic(),{config:{private:true,presence:{key:user.id},broadcast:{self:false,ack:true}}});
     channel
       .on('broadcast',{event:'signal'},message=>handleSignal(message?.payload).catch(console.error))
+      .on('broadcast',{event:'voice-state'},message=>handleVoiceState(message?.payload))
       .on('presence',{event:'sync'},syncVoicePeers)
       .on('presence',{event:'join'},syncVoicePeers)
-      .on('presence',{event:'leave'},({key})=>{if(key&&key!==user.id)closePeer(key);syncVoicePeers()});
+      .on('presence',{event:'leave'},({key})=>{
+        if(key&&key!==user.id){
+          closePeer(key);
+          applyVoiceState({user_id:key,room_id:roomId,state:'online',muted:false,at:Date.now()});
+        }
+        syncVoicePeers();
+      });
 
     await new Promise((resolve,reject)=>{
       let initialPending=true;
@@ -435,7 +472,7 @@
         if(status==='SUBSCRIBED'){
           try{
             subscribed=true;
-            await channel.track({user_id:user.id,room_id:roomId,voice:true,muted,at:new Date().toISOString()});
+            await channel.track({user_id:user.id,room_id:roomId,voice:true,at:new Date().toISOString()});
             clearChannelReconnect();
             channelReconnectAttempts=0;
             if(initialPending){initialPending=false;clearTimeout(timeout);resolve()}
@@ -489,10 +526,10 @@
       };
       muted=false;
       voiceActive=true;
-      startVad();
-      if(audioContext?.state==='suspended')await audioContext.resume().catch(()=>{});
       await openChannel();
       await setInitialListening();
+      startVad();
+      if(audioContext?.state==='suspended')await audioContext.resume().catch(()=>{});
       updateControls();
       setStatus('Na voz · aguardando participantes'+(turnReady?' · relay disponível':''));
       syncVoicePeers();
@@ -511,8 +548,7 @@
     if(!voiceActive||!localStream)return;
     muted=!muted;
     for(const track of localStream.getAudioTracks())track.enabled=!muted;
-    try{await channel?.track({user_id:user.id,room_id:roomId,voice:true,muted,at:new Date().toISOString()})}catch(_){}
-    await setRoomPresence('listening');
+    await setRoomPresence('listening',true);
     await unlockAudio();
     updateControls();
     setStatus(muted?'Na voz · microfone mutado':'Na voz · microfone ativo');
@@ -529,6 +565,12 @@
     if(wasActive&&!internal&&subscribed){
       await Promise.allSettled(peerIds().map(id=>sendSignal(id,'bye',null)));
     }
+    if(subscribed&&user){
+      desiredPresence='listening';
+      await setRoomPresence('online',true);
+    }else if(user){
+      applyVoiceState({user_id:user.id,room_id:roomId,state:'online',muted:false,at:Date.now()});
+    }
     subscribed=false;
     for(const id of peerIds())closePeer(id);
     if(channel){
@@ -544,8 +586,7 @@
       localStream=null;
     }
     muted=false;
-    desiredPresence='listening';
-    if(!internal)await setRoomPresence('online');else{try{const p=window.zunoSetRoomPresence?.('online');p?.catch?.(()=>{})}catch(_){}}
+    desiredPresence='online';
     updateControls();
     if(!internal)setStatus('Voz desligada');
     if(wasActive)window.dispatchEvent(new CustomEvent('zuno:voice-stopped',{detail:{room_id:roomId}}));
