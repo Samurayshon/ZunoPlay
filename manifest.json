@@ -1,10 +1,26 @@
 {
   "name": "ZunoPlay",
   "short_name": "ZunoPlay",
-  "description": "Salas e conversas do ZunoPlay",
+  "description": "Conecte, converse e jogue no ZunoPlay.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#070811",
   "theme_color": "#8b5cf6",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
