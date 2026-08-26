@@ -10,6 +10,17 @@
     content="width=device-width, initial-scale=1.0"
 >
 
+<!-- CONFIGURAÇÃO DO APLICATIVO -->
+<link
+    rel="manifest"
+    href="manifest.json"
+>
+
+<meta
+    name="theme-color"
+    content="#8b5cf6"
+>
+
 <title>ZunoPlay</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -583,9 +594,7 @@ body {
         </div>
 
 
-        <!-- =====================================
-             MENU
-        ====================================== -->
+        <!-- MENU -->
 
         <div class="menu-grid">
 
@@ -798,7 +807,6 @@ body {
 
 <script>
 
-
 /* =========================================
    SUPABASE
 ========================================= */
@@ -806,10 +814,8 @@ body {
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
-
 const SUPABASE_KEY =
 "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
-
 
 const supabaseClient =
 window.supabase.createClient(
