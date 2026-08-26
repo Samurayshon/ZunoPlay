@@ -4,18 +4,19 @@
 
     const homeUrl = new URL('./index.html', window.location.href).href;
     const goHome = () => { window.location.href = homeUrl; };
-    const refresh = () => { window.location.reload(); };
 
     const style = document.createElement('style');
     style.textContent = `
         .zunoplay-home-button {
             appearance:none !important;
             -webkit-appearance:none !important;
-            border:1px solid rgba(139,92,246,.45) !important;
-            background:rgba(27,28,43,.96) !important;
+            width:42px !important;
+            height:42px !important;
+            border:1px solid #303145 !important;
+            background:#1b1c2b !important;
             color:#fff !important;
             font:inherit !important;
-            padding:8px 12px !important;
+            padding:0 !important;
             margin:0 !important;
             border-radius:12px !important;
             cursor:pointer !important;
@@ -27,66 +28,66 @@
             z-index:10000 !important;
             text-decoration:none !important;
             line-height:1 !important;
+            font-size:20px !important;
         }
-        .zunoplay-home-button span { color:#8b5cf6 !important; }
         .zunoplay-home-button:active { transform:scale(.97); }
-        .zunoplay-global-nav { display:flex;align-items:center;gap:8px;margin-left:auto;position:relative;z-index:10000; }
-        .zunoplay-refresh-button { width:42px;height:42px;border-radius:12px;border:1px solid #303145;background:#1b1c2b;color:#fff;font-size:20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;position:relative;z-index:10000; }
-        .zunoplay-refresh-button:active { transform:scale(.97); }
-        .zunoplay-floating-refresh { position:fixed;top:16px;right:16px;z-index:99999; }
+        .zunoplay-global-nav {
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-left:auto;
+            position:relative;
+            z-index:10000;
+        }
+        .zunoplay-plain-logo {
+            cursor:default !important;
+            pointer-events:none !important;
+            border:0 !important;
+            background:transparent !important;
+            padding:0 !important;
+            margin:0 !important;
+            text-decoration:none !important;
+        }
+        .zunoplay-plain-logo span { color:#8b5cf6 !important; }
     `;
     document.head.appendChild(style);
 
-    function makeHomeButton(text) {
+    function makeHomeButton() {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'zunoplay-home-button';
         button.title = 'Voltar para a tela inicial';
         button.setAttribute('aria-label', 'Voltar para a tela inicial');
-        button.innerHTML = text || 'Zuno<span>Play</span>';
+        button.textContent = '⌂';
         button.addEventListener('click', goHome);
         return button;
     }
 
+    function makePlainLogo(text) {
+        const logo = document.createElement('div');
+        logo.className = 'zunoplay-plain-logo';
+        logo.innerHTML = text || 'Zuno<span>Play</span>';
+        return logo;
+    }
+
     document.querySelectorAll('.header-logo, .logo-main').forEach(logo => {
-        if (logo.dataset.zunoplayConverted === '1') return;
-        logo.dataset.zunoplayConverted = '1';
-        const button = makeHomeButton(logo.innerHTML);
-        logo.replaceWith(button);
+        if (logo.dataset.zunoplayPlain === '1') return;
+        logo.dataset.zunoplayPlain = '1';
+        const plainLogo = makePlainLogo(logo.innerHTML);
+        logo.replaceWith(plainLogo);
     });
 
     document.querySelectorAll('.logo').forEach(logo => {
+        if (logo.classList.contains('zunoplay-plain-logo')) return;
         if (logo.querySelector('.zunoplay-home-button')) return;
-        const main = logo.querySelector('.logo-main');
-        if (main) return;
-        const button = makeHomeButton(logo.textContent.trim() || 'ZunoPlay');
-        logo.replaceChildren(button);
+        const text = logo.innerHTML.trim() || 'Zuno<span>Play</span>';
+        logo.classList.add('zunoplay-plain-logo');
+        logo.innerHTML = text;
     });
 
-    const headers = document.querySelectorAll('.header, .chat-header');
-    headers.forEach(header => {
-        if (header.querySelector('.zunoplay-global-nav')) return;
-        const nav = document.createElement('div');
-        nav.className = 'zunoplay-global-nav';
-        const refreshButton = document.createElement('button');
-        refreshButton.type = 'button';
-        refreshButton.className = 'zunoplay-refresh-button';
-        refreshButton.title = 'Atualizar página';
-        refreshButton.setAttribute('aria-label', 'Atualizar página');
-        refreshButton.textContent = '↻';
-        refreshButton.addEventListener('click', refresh);
-        nav.appendChild(refreshButton);
-        header.appendChild(nav);
+    document.querySelectorAll('.header, .chat-header').forEach(header => {
+        if (header.querySelector('.zunoplay-home-button')) return;
+        const home = makeHomeButton();
+        header.insertBefore(home, header.firstChild);
     });
-
-    if (!headers.length && !document.querySelector('.zunoplay-floating-refresh')) {
-        const refreshButton = document.createElement('button');
-        refreshButton.type = 'button';
-        refreshButton.className = 'zunoplay-refresh-button zunoplay-floating-refresh';
-        refreshButton.title = 'Atualizar página';
-        refreshButton.setAttribute('aria-label', 'Atualizar página');
-        refreshButton.textContent = '↻';
-        refreshButton.addEventListener('click', refresh);
-        document.body.appendChild(refreshButton);
-    }
 })();
