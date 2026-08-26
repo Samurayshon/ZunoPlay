@@ -59,7 +59,8 @@
       if(!user){globalStatus='offline';emit('auth:none',null);return null}
       if(globalPresence)return user;
 
-      globalPresence=sb.channel('zuno-global-presence',{config:{presence:{key:user.id}}});
+      await sb.realtime.setAuth();
+      globalPresence=sb.channel('zuno-global-presence',{config:{private:true,presence:{key:user.id}}});
       globalPresence
         .on('presence',{event:'sync'},()=>emit('presence:sync',globalPresence.presenceState()))
         .on('presence',{event:'join'},payload=>emit('presence:join',payload))
@@ -92,11 +93,12 @@
     if(!sb)throw new Error('Supabase indisponível');
     const id='presence:'+topic+':'+key;
     if(scopes.has(id))return scopes.get(id);
-    const channel=sb.channel(topic,{config:{presence:{key}}});
+    const channel=sb.channel(topic,{config:{private:true,presence:{key}}});
     const api={
       type:'presence',topic,channel,
       on(event,fn){channel.on('presence',{event},fn);return api},
       async subscribe(){
+        await sb.realtime.setAuth();
         return new Promise((resolve,reject)=>{
           channel.subscribe(async status=>{
             if(status==='SUBSCRIBED'){
