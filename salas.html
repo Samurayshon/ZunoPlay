@@ -107,9 +107,9 @@ body {
 
 .title {
 
-    font-size: 25px;
+    font-size: 26px;
 
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 
 }
 
@@ -117,7 +117,7 @@ body {
 
     color: #9293a3;
 
-    font-size: 13px;
+    font-size: 14px;
 
     margin-bottom: 20px;
 
@@ -137,7 +137,7 @@ body {
 
     color: #4ade80;
 
-    font-size: 12px;
+    font-size: 13px;
 
 }
 
@@ -145,52 +145,47 @@ body {
 
     width: 100%;
 
-    padding: 16px;
+    padding: 18px;
 
     margin-bottom: 12px;
 
-    border-radius: 16px;
+    border-radius: 18px;
 
     border: 1px solid #292a3d;
 
     background: rgba(20,21,35,.9);
 
-    color: white;
-
-}
-
-.room-top {
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-
 }
 
 .room-name {
 
-    font-size: 17px;
+    font-size: 18px;
+
     font-weight: bold;
+
+    margin-bottom: 7px;
 
 }
 
 .room-info {
 
     color: #858697;
+
     font-size: 12px;
-    margin-top: 6px;
+
+    margin-bottom: 15px;
 
 }
 
 .enter-button {
 
-    flex-shrink: 0;
+    width: 100%;
 
-    padding: 10px 15px;
+    padding: 13px;
 
     border: none;
-    border-radius: 11px;
+
+    border-radius: 12px;
 
     background:
         linear-gradient(
@@ -198,212 +193,6 @@ body {
             #8b5cf6,
             #6366f1
         );
-
-    color: white;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-}
-
-.enter-button:disabled {
-
-    opacity: .6;
-    cursor: default;
-
-}
-
-.empty {
-
-    text-align: center;
-
-    color: #737486;
-
-    padding: 60px 20px;
-
-    font-size: 14px;
-
-}
-
-
-/* =========================================
-   SALA INTERNA
-========================================= */
-
-.room-screen {
-
-    padding: 20px;
-
-}
-
-.room-header {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 12px;
-
-    margin-bottom: 25px;
-
-}
-
-.room-title {
-
-    font-size: 25px;
-
-    font-weight: 800;
-
-}
-
-.room-subtitle {
-
-    color: #9293a3;
-
-    font-size: 13px;
-
-    margin-top: 5px;
-
-}
-
-.live {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    color: #4ade80;
-
-    font-size: 11px;
-
-}
-
-.live-dot {
-
-    width: 8px;
-    height: 8px;
-
-    border-radius: 50%;
-
-    background: #4ade80;
-
-}
-
-.room-card {
-
-    background: rgba(20,21,35,.9);
-
-    border: 1px solid #292a3d;
-
-    border-radius: 22px;
-
-    padding: 20px;
-
-    margin-bottom: 15px;
-
-}
-
-.section-title {
-
-    font-size: 17px;
-
-    margin-bottom: 15px;
-
-}
-
-.participant {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 12px 0;
-
-    border-bottom: 1px solid #292a3d;
-
-}
-
-.participant:last-child {
-
-    border-bottom: none;
-
-}
-
-.avatar {
-
-    width: 44px;
-    height: 44px;
-
-    border-radius: 50%;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    font-size: 20px;
-
-}
-
-.participant-name {
-
-    font-size: 14px;
-
-    font-weight: bold;
-
-}
-
-.participant-status {
-
-    color: #858697;
-
-    font-size: 11px;
-
-    margin-top: 3px;
-
-}
-
-.you {
-
-    color: #a78bfa;
-
-}
-
-.controls {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 12px;
-
-    margin-top: 20px;
-
-}
-
-.control-button {
-
-    padding: 16px;
-
-    border-radius: 15px;
-
-    border: 1px solid #303145;
-
-    background: #1b1c2b;
 
     color: white;
 
@@ -415,69 +204,21 @@ body {
 
 }
 
-.control-button.mic {
+.enter-button:disabled {
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
-
-    border: none;
+    opacity: .6;
 
 }
 
-.control-button.exit {
+.empty {
 
-    color: #ff8f8f;
+    text-align: center;
 
-}
+    color: #737486;
 
-.count {
+    padding: 50px 20px;
 
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    min-width: 22px;
-
-    height: 22px;
-
-    padding: 0 7px;
-
-    margin-left: 5px;
-
-    border-radius: 20px;
-
-    background: #292a3d;
-
-    color: white;
-
-    font-size: 11px;
-
-}
-
-
-/* =========================================
-   RESPONSIVO
-========================================= */
-
-@media(max-width:360px) {
-
-    .room-top {
-
-        align-items: flex-start;
-
-    }
-
-    .enter-button {
-
-        padding: 9px 11px;
-
-    }
+    font-size: 14px;
 
 }
 
@@ -485,14 +226,73 @@ body {
 
 </head>
 
-
 <body>
-
 
 <div
     id="app"
     class="app"
-></div>
+>
+
+    <div class="header">
+
+        <button
+            class="back"
+            onclick="history.back()"
+        >
+
+            ←
+
+        </button>
+
+        <div class="logo">
+
+            Zuno<span>Play</span>
+
+        </div>
+
+    </div>
+
+
+    <div class="page">
+
+        <h1 class="title">
+
+            🎙️ Salas
+
+        </h1>
+
+
+        <p class="subtitle">
+
+            Encontre pessoas e participe
+            de uma sala.
+
+        </p>
+
+
+        <div
+            id="status"
+            class="status"
+        >
+
+            ⏳ Carregando salas...
+
+        </div>
+
+
+        <div id="roomList">
+
+            <div class="empty">
+
+                Carregando...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 
 <script>
@@ -515,96 +315,223 @@ window.supabase.createClient(
 
 
 /* =========================================
-   APP
+   ELEMENTOS
 ========================================= */
 
-const app =
-document.getElementById("app");
+const statusElement =
+document.getElementById(
+    "status"
+);
 
-
-let currentUser = null;
-
-let currentRoomId = null;
-
-let currentRoom = null;
-
-let roomChannel = null;
+const roomList =
+document.getElementById(
+    "roomList"
+);
 
 
 /* =========================================
-   CABEÇALHO
+   SEGURANÇA
 ========================================= */
 
-function header(showBack = true) {
+function escapeHTML(text) {
 
-    return `
+    const div =
+        document.createElement(
+            "div"
+        );
 
-        <div class="header">
+    div.textContent =
+        text || "";
 
-            ${
-                showBack
-                ?
-                `
-                <button
-                    class="back"
-                    onclick="goBackToRooms()"
-                >
-                    ←
-                </button>
-                `
-                :
-                ""
-            }
-
-            <div class="logo">
-
-                Zuno<span>Play</span>
-
-            </div>
-
-        </div>
-
-    `;
+    return div.innerHTML;
 
 }
 
 
 /* =========================================
-   USUÁRIO
+   DATA
 ========================================= */
 
-async function getCurrentUser() {
+function formatDate(
+    dateString
+) {
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient.auth.getUser();
+    const date =
+        new Date(
+            dateString
+        );
 
-    if(error) {
+    return date.toLocaleDateString(
+        "pt-BR"
+    );
+
+}
+
+
+/* =========================================
+   CARREGAR SALAS
+========================================= */
+
+async function loadRooms() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+            .from("rooms")
+            .select(
+                "id, name, owner_id, created_at"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+        if(error) {
+
+            console.error(
+                error
+            );
+
+
+            statusElement.textContent =
+                "❌ Erro ao carregar salas";
+
+
+            roomList.innerHTML = `
+
+                <div class="empty">
+
+                    Não foi possível carregar
+                    as salas.
+
+                    <br><br>
+
+                    ${escapeHTML(
+                        error.message
+                    )}
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        statusElement.textContent =
+
+            "✅ " +
+            data.length +
+            " sala(s) encontrada(s)";
+
+
+        roomList.innerHTML = "";
+
+
+        if(!data.length) {
+
+            roomList.innerHTML = `
+
+                <div class="empty">
+
+                    Nenhuma sala disponível.
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        data.forEach(
+            function(room) {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "room";
+
+
+                item.innerHTML = `
+
+                    <div class="room-name">
+
+                        🎙️
+                        ${escapeHTML(
+                            room.name
+                        )}
+
+                    </div>
+
+
+                    <div class="room-info">
+
+                        Sala criada em
+                        ${formatDate(
+                            room.created_at
+                        )}
+
+                    </div>
+
+
+                    <button
+                        class="enter-button"
+                        data-room-id="${room.id}"
+                        onclick="enterRoom('${room.id}')"
+                    >
+
+                        Entrar na sala
+
+                    </button>
+
+                `;
+
+
+                roomList.appendChild(
+                    item
+                );
+
+            }
+        );
+
+
+    } catch(error) {
 
         console.error(
-            "Erro ao verificar usuário:",
             error
         );
 
-        return null;
+
+        statusElement.textContent =
+            "❌ Erro inesperado";
+
+
+        roomList.innerHTML = `
+
+            <div class="empty">
+
+                Ocorreu um erro ao
+                carregar as salas.
+
+            </div>
+
+        `;
 
     }
-
-    return data?.user || null;
-
-}
-
-
-/* =========================================
-   VOLTAR PARA SALAS
-========================================= */
-
-function goBackToRooms() {
-
-    window.location.href =
-        "sala.html";
 
 }
 
@@ -613,18 +540,9 @@ function goBackToRooms() {
    ENTRAR NA SALA
 ========================================= */
 
-async function enterRoom(roomId) {
-
-    if(!currentUser) {
-
-        alert(
-            "Você precisa estar conectado para entrar em uma sala."
-        );
-
-        return;
-
-    }
-
+async function enterRoom(
+    roomId
+) {
 
     const button =
         document.querySelector(
@@ -634,7 +552,8 @@ async function enterRoom(roomId) {
 
     if(button) {
 
-        button.disabled = true;
+        button.disabled =
+            true;
 
         button.textContent =
             "Entrando...";
@@ -645,32 +564,18 @@ async function enterRoom(roomId) {
     try {
 
         const {
+            data,
             error
         } =
         await supabaseClient
-            .from("room_members")
-            .upsert(
-                {
-                    room_id: roomId,
-                    user_id: currentUser.id
-                },
-                {
-                    onConflict:
-                        "room_id,user_id"
-                }
-            );
+            .auth
+            .getUser();
 
 
-        if(error) {
-
-            console.error(
-                "Erro ao entrar na sala:",
-                error
-            );
+        if(error || !data?.user) {
 
             alert(
-                "Não foi possível entrar na sala:\n\n" +
-                error.message
+                "Você precisa estar conectado."
             );
 
             return;
@@ -678,773 +583,88 @@ async function enterRoom(roomId) {
         }
 
 
-        /*
-         * Agora que a entrada foi registrada,
-         * abrimos a sala interna.
-         */
-
-        window.location.href =
-            "sala.html?room=" +
-            encodeURIComponent(
-                roomId
-            );
-
-
-    } finally {
-
-        if(button) {
-
-            button.disabled = false;
-
-            button.textContent =
-                "Entrar";
-
-        }
-
-    }
-
-}
-
-
-/* =========================================
-   CARREGAR LISTA DE SALAS
-========================================= */
-
-async function loadRooms() {
-
-    app.innerHTML =
-
-        header(false) +
-
-        `
-
-        <div class="page">
-
-            <h1 class="title">
-
-                🎙️ Salas
-
-            </h1>
-
-            <p class="subtitle">
-
-                Encontre pessoas e participe
-                de uma sala.
-
-            </p>
-
-            <div
-                id="status"
-                class="status"
-            >
-
-                ⏳ Carregando salas...
-
-            </div>
-
-            <div
-                id="roomList"
-            >
-
-                <div class="empty">
-
-                    Carregando...
-
-                </div>
-
-            </div>
-
-        </div>
-
-        `;
-
-
-    const {
-
-        data,
-        error
-
-    } =
-
-    await supabaseClient
-
-        .from("rooms")
-
-        .select(
-            "id, name, owner_id, created_at"
-        )
-
-        .order(
-            "created_at",
-            {
-                ascending: false
-            }
-        );
-
-
-    if(error) {
-
-        console.error(
-            "Erro ao carregar salas:",
-            error
-        );
-
-
-        document.getElementById(
-            "status"
-        ).textContent =
-
-            "❌ Erro ao carregar salas";
-
-
-        document.getElementById(
-            "roomList"
-        ).innerHTML = `
-
-            <div class="empty">
-
-                Não foi possível carregar
-                as salas.
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message
-                )}
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    document.getElementById(
-        "status"
-    ).textContent =
-
-        "✅ " +
-        data.length +
-        " sala(s) encontrada(s)";
-
-
-    const list =
-        document.getElementById(
-            "roomList"
-        );
-
-
-    list.innerHTML = "";
-
-
-    if(!data.length) {
-
-        list.innerHTML = `
-
-            <div class="empty">
-
-                Nenhuma sala disponível.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    data.forEach(
-        function(room) {
-
-            const item =
-                document.createElement(
-                    "div"
+        const user =
+            data.user;
+
+
+        const result =
+            await supabaseClient
+                .from(
+                    "room_members"
+                )
+                .upsert(
+                    {
+                        room_id:
+                            roomId,
+
+                        user_id:
+                            user.id
+                    },
+                    {
+                        onConflict:
+                            "room_id,user_id"
+                    }
                 );
 
 
-            item.className =
-                "room";
+        if(result.error) {
 
-
-            item.innerHTML = `
-
-                <div class="room-top">
-
-                    <div>
-
-                        <div class="room-name">
-
-                            🎙️
-                            ${escapeHTML(
-                                room.name
-                            )}
-
-                        </div>
-
-                        <div class="room-info">
-
-                            Sala criada em
-                            ${formatDate(
-                                room.created_at
-                            )}
-
-                        </div>
-
-                    </div>
-
-                    <button
-                        class="enter-button"
-                        data-room-id="${room.id}"
-                        onclick="enterRoom('${room.id}')"
-                    >
-
-                        Entrar
-
-                    </button>
-
-                </div>
-
-            `;
-
-
-            list.appendChild(
-                item
+            console.error(
+                result.error
             );
 
-        }
-    );
 
-}
-
-
-/* =========================================
-   CARREGAR SALA INTERNA
-========================================= */
-
-async function loadRoom(roomId) {
-
-    currentRoomId =
-        roomId;
-
-
-    app.innerHTML =
-
-        header(true) +
-
-        `
-
-        <div class="room-screen">
-
-            <div class="room-header">
-
-                <div>
-
-                    <div
-                        id="roomTitle"
-                        class="room-title"
-                    >
-
-                        Carregando...
-
-                    </div>
-
-                    <div
-                        class="room-subtitle"
-                    >
-
-                        Sala social ZunoPlay
-
-                    </div>
-
-                </div>
-
-                <div class="live">
-
-                    <span class="live-dot"></span>
-
-                    AO VIVO
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="roomStatus"
-                class="status"
-            >
-
-                ⏳ Carregando sala...
-
-            </div>
-
-
-            <div class="room-card">
-
-                <div class="section-title">
-
-                    👥 Pessoas na sala
-
-                    <span
-                        id="participantCount"
-                        class="count"
-                    >
-
-                        0
-
-                    </span>
-
-                </div>
-
-
-                <div
-                    id="participants"
-                >
-
-                    <div class="empty">
-
-                        Carregando participantes...
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="room-card">
-
-                <div class="section-title">
-
-                    🎙️ Controles
-
-                </div>
-
-
-                <div class="controls">
-
-                    <button
-                        id="micButton"
-                        class="control-button mic"
-                        onclick="toggleMic()"
-                    >
-
-                        🎤 Microfone
-
-                    </button>
-
-
-                    <button
-                        class="control-button exit"
-                        onclick="leaveRoom()"
-                    >
-
-                        🚪 Sair
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        `;
-
-
-    const {
-
-        data,
-        error
-
-    } =
-
-    await supabaseClient
-
-        .from("rooms")
-
-        .select(
-            "id, name, owner_id, created_at"
-        )
-
-        .eq(
-            "id",
-            roomId
-        )
-
-        .maybeSingle();
-
-
-    if(error || !data) {
-
-        console.error(
-            "Erro ao carregar sala:",
-            error
-        );
-
-
-        document.getElementById(
-            "roomStatus"
-        ).textContent =
-
-            "❌ Sala não encontrada.";
-
-        return;
-
-    }
-
-
-    currentRoom =
-        data;
-
-
-    document.getElementById(
-        "roomTitle"
-    ).textContent =
-
-        "🎙️ " +
-        data.name;
-
-
-    document.getElementById(
-        "roomStatus"
-    ).textContent =
-
-        "✅ Você está na sala";
-
-
-    await loadParticipants();
-
-    subscribeRoom();
-
-}
-
-
-/* =========================================
-   PARTICIPANTES
-========================================= */
-
-async function loadParticipants() {
-
-    if(!currentRoomId) {
-
-        return;
-
-    }
-
-
-    const {
-
-        data,
-        error
-
-    } =
-
-    await supabaseClient
-
-        .from("room_members")
-
-        .select(
-            "id, user_id"
-        )
-
-        .eq(
-            "room_id",
-            currentRoomId
-        );
-
-
-    if(error) {
-
-        console.error(
-            "Erro ao carregar participantes:",
-            error
-        );
-
-
-        document.getElementById(
-            "participants"
-        ).innerHTML = `
-
-            <div class="empty">
-
-                Não foi possível carregar
-                os participantes.
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message
-                )}
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    const participants =
-        data || [];
-
-
-    document.getElementById(
-        "participantCount"
-    ).textContent =
-        participants.length;
-
-
-    const container =
-        document.getElementById(
-            "participants"
-        );
-
-
-    container.innerHTML = "";
-
-
-    if(!participants.length) {
-
-        container.innerHTML = `
-
-            <div class="empty">
-
-                Ninguém está na sala.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    participants.forEach(
-        function(member) {
-
-            const isYou =
-                member.user_id ===
-                currentUser.id;
-
-
-            const name =
-                isYou
-                ?
-                "Você"
-                :
-                "Jogador";
-
-
-            const item =
-                document.createElement(
-                    "div"
-                );
-
-
-            item.className =
-                "participant";
-
-
-            item.innerHTML = `
-
-                <div class="avatar">
-
-                    👤
-
-                </div>
-
-
-                <div>
-
-                    <div class="participant-name">
-
-                        ${name}
-
-                        ${
-                            isYou
-                            ?
-                            `
-                            <span class="you">
-                                (você)
-                            </span>
-                            `
-                            :
-                            ""
-                        }
-
-                    </div>
-
-
-                    <div class="participant-status">
-
-                        🟢 Na sala
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            container.appendChild(
-                item
+            alert(
+                "Não foi possível entrar na sala:\n\n" +
+                result.error.message
             );
 
+            return;
+
         }
-    );
-
-}
 
 
-/* =========================================
-   REALTIME DA SALA
-========================================= */
-
-function subscribeRoom() {
-
-    if(roomChannel) {
-
-        supabaseClient.removeChannel(
-            roomChannel
-        );
-
-    }
-
-
-    roomChannel =
-        supabaseClient
-
-            .channel(
-                "room-" +
-                currentRoomId
-            )
-
-            .on(
-                "postgres_changes",
-                {
-                    event: "*",
-                    schema: "public",
-                    table: "room_members",
-                    filter:
-                        "room_id=eq." +
-                        currentRoomId
-                },
-                function() {
-
-                    loadParticipants();
-
-                }
-            )
-
-            .subscribe();
-
-}
-
-
-/* =========================================
-   MICROFONE
-========================================= */
-
-function toggleMic() {
-
-    alert(
-        "O sistema de voz será conectado na próxima etapa."
-    );
-
-}
-
-
-/* =========================================
-   SAIR DA SALA
-========================================= */
-
-async function leaveRoom() {
-
-    if(!currentUser || !currentRoomId) {
-
-        goBackToRooms();
-
-        return;
-
-    }
-
-
-    const confirmed =
-        confirm(
-            "Deseja sair desta sala?"
+        alert(
+            "Você entrou na sala!"
         );
 
 
-    if(!confirmed) {
-
-        return;
-
-    }
-
-
-    const {
-        error
-    } =
-    await supabaseClient
-
-        .from("room_members")
-
-        .delete()
-
-        .eq(
-            "room_id",
-            currentRoomId
-        )
-
-        .eq(
-            "user_id",
-            currentUser.id
-        );
-
-
-    if(error) {
+    } catch(error) {
 
         console.error(
-            "Erro ao sair da sala:",
             error
         );
 
 
         alert(
-            "Não foi possível sair da sala:\n\n" +
-            error.message
+            "Ocorreu um erro ao entrar na sala."
         );
 
-        return;
+    } finally {
+
+        if(button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Entrar na sala";
+
+        }
 
     }
-
-
-    if(roomChannel) {
-
-        await supabaseClient
-            .removeChannel(
-                roomChannel
-            );
-
-        roomChannel =
-            null;
-
-    }
-
-
-    window.location.href =
-        "sala.html";
 
 }
 
 
 /* =========================================
-   SEGURANÇA HTML
-=========
+   INICIAR
+========================================= */
+
+loadRooms();
+
+</script>
+
+</body>
+
+</html>
