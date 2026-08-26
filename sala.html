@@ -2,13 +2,8 @@
 <html lang="pt-BR">
 
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Sala - ZunoPlay</title>
 
@@ -323,7 +318,7 @@ body {
 }
 
 .error {
-    padding: 40px 20px;
+    padding: 50px 20px;
 
     text-align: center;
 
@@ -332,27 +327,16 @@ body {
     line-height: 1.5;
 }
 
-.debug {
-    margin-top: 15px;
-
-    padding: 10px;
-
-    border-radius: 10px;
-
-    background: #11121d;
-
-    border: 1px solid #292a3d;
-
-    color: #77798b;
-
-    font-size: 10px;
-
-    word-break: break-word;
+.success {
+    color: #4ade80;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px;
 }
 
 </style>
-
 </head>
+
 
 <body>
 
@@ -384,6 +368,7 @@ body {
 
     </div>
 
+
     <div class="content">
 
         <div class="hero">
@@ -402,6 +387,7 @@ body {
 
         </div>
 
+
         <div class="panel">
 
             <div class="panel-title">
@@ -417,6 +403,7 @@ body {
             </div>
 
         </div>
+
 
         <div class="panel">
 
@@ -434,6 +421,7 @@ body {
                 </div>
 
             </div>
+
 
             <form
                 id="chatForm"
@@ -461,6 +449,7 @@ body {
 
         </div>
 
+
         <button
             id="leaveButton"
             class="leave"
@@ -471,6 +460,7 @@ body {
     </div>
 
 </div>
+
 
 <script>
 
@@ -521,12 +511,12 @@ document.getElementById("leaveButton");
 
 
 /* =========================================
-   ESTADO
+   VARIÁVEIS
 ========================================= */
 
-let currentUser = null;
-
 let roomId = null;
+
+let currentUser = null;
 
 let messagesChannel = null;
 
@@ -534,7 +524,7 @@ let membersChannel = null;
 
 
 /* =========================================
-   PEGAR ID DA SALA
+   OBTER ID DA SALA
 ========================================= */
 
 function getRoomId() {
@@ -547,24 +537,33 @@ function getRoomId() {
     let id =
         params.get("room");
 
-    if(id) {
+    /*
+        Também aceita outros nomes
+        caso o link antigo esteja usando.
+    */
 
-        sessionStorage.setItem(
-            "zunoplay_room_id",
-            id
-        );
+    if(!id) {
+        id = params.get("room_id");
+    }
 
-        return id;
+    if(!id) {
+        id = params.get("id");
+    }
+
+    /*
+        Recupera do sessionStorage.
+    */
+
+    if(!id) {
+
+        id =
+            sessionStorage.getItem(
+                "zunoplay_room_id"
+            );
 
     }
 
-    id =
-        sessionStorage.getItem(
-            "zunoplay_room_id"
-        );
-
-    return id || null;
-
+    return id;
 }
 
 
@@ -578,12 +577,9 @@ function escapeHTML(text) {
         document.createElement("div");
 
     div.textContent =
-        text == null
-        ? ""
-        : String(text);
+        text || "";
 
     return div.innerHTML;
-
 }
 
 
@@ -593,18 +589,12 @@ function escapeHTML(text) {
 
 function formatTime(dateString) {
 
+    if(!dateString) {
+        return "";
+    }
+
     const date =
         new Date(dateString);
-
-    if(
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "";
-
-    }
 
     return date.toLocaleTimeString(
         "pt-BR",
@@ -613,7 +603,6 @@ function formatTime(dateString) {
             minute: "2-digit"
         }
     );
-
 }
 
 
@@ -625,7 +614,6 @@ function goBack() {
 
     window.location.href =
         "salas.html";
-
 }
 
 
@@ -633,19 +621,56 @@ function goBack() {
    USUÁRIO
 ========================================= */
 
-async function getUser() {
+async function loadCurrentUser() {
 
-    const result =
-        await supabaseClient.auth.getUser();
+    /*
+        Primeiro tenta obter a sessão.
+    */
 
-    if(result.error) {
+    const {
+        data: sessionData,
+        error: sessionError
+    } =
+    await supabaseClient.auth.getSession();
 
-        throw result.error;
+    if(sessionError) {
 
+        throw sessionError;
     }
 
-    return result.data?.user || null;
+    if(
+        sessionData &&
+        sessionData.session &&
+        sessionData.session.user
+    ) {
 
+        currentUser =
+            sessionData.session.user;
+
+        return currentUser;
+    }
+
+
+    /*
+        Se não encontrou na sessão,
+        tenta getUser().
+    */
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient.auth.getUser();
+
+    if(error) {
+
+        throw error;
+    }
+
+    currentUser =
+        data?.user || null;
+
+    return currentUser;
 }
 
 
@@ -660,41 +685,44 @@ async function loadRoom() {
         throw new Error(
             "O endereço da sala não contém o ID da sala."
         );
-
     }
 
-    const result =
-        await supabaseClient
-            .from("rooms")
-            .select(
-                "id,name,owner_id,created_at"
-            )
-            .eq(
-                "id",
-                roomId
-            )
-            .maybeSingle();
 
-    if(result.error) {
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("rooms")
+        .select(
+            "id, name, owner_id, created_at"
+        )
+        .eq(
+            "id",
+            roomId
+        )
+        .maybeSingle();
 
-        throw result.error;
 
+    if(error) {
+
+        throw error;
     }
 
-    if(!result.data) {
+
+    if(!data) {
 
         throw new Error(
             "A sala não foi encontrada."
         );
-
     }
 
+
     roomTitle.textContent =
-        result.data.name || "Sala";
+        data.name || "Sala";
 
     heroTitle.textContent =
-        result.data.name || "Sala";
-
+        data.name || "Sala";
 }
 
 
@@ -704,76 +732,82 @@ async function loadRoom() {
 
 async function loadMembers() {
 
-    members.innerHTML = `
+    if(!roomId) {
+        return;
+    }
 
-        <div class="empty">
-            Carregando participantes...
-        </div>
 
-    `;
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("room_members")
+        .select("user_id")
+        .eq(
+            "room_id",
+            roomId
+        );
 
-    const result =
-        await supabaseClient
-            .from("room_members")
-            .select("user_id")
-            .eq(
-                "room_id",
-                roomId
-            );
 
-    if(result.error) {
+    if(error) {
+
+        console.error(
+            "Erro nos participantes:",
+            error
+        );
 
         members.innerHTML = `
 
             <div class="empty">
 
-                Erro ao carregar participantes.
-
-                <br><br>
-
-                ${escapeHTML(
-                    result.error.message
-                )}
+                Não foi possível carregar
+                os participantes.
 
             </div>
 
         `;
 
         return;
-
     }
 
-    const list =
-        result.data || [];
-
-    if(!list.length) {
-
-        members.innerHTML = `
-
-            <div class="empty">
-                Nenhum participante.
-            </div>
-
-        `;
-
-        return;
-
-    }
 
     members.innerHTML = "";
 
-    list.forEach(
+
+    if(!data || !data.length) {
+
+        members.innerHTML = `
+
+            <div class="empty">
+
+                Nenhum participante.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    data.forEach(
         function(member) {
 
             const item =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
             item.className =
                 "member";
 
+
             const isMe =
+                currentUser &&
                 member.user_id ===
                 currentUser.id;
+
 
             item.innerHTML = `
 
@@ -802,10 +836,8 @@ async function loadMembers() {
             `;
 
             members.appendChild(item);
-
         }
     );
-
 }
 
 
@@ -815,72 +847,55 @@ async function loadMembers() {
 
 async function loadMessages() {
 
-    messages.innerHTML = `
+    if(!roomId) {
 
-        <div class="empty">
-            Carregando mensagens...
-        </div>
-
-    `;
-
-    const result =
-        await supabaseClient
-            .from("room_messages")
-            .select(
-                "id,room_id,user_id,message,created_at"
-            )
-            .eq(
-                "room_id",
-                roomId
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: true
-                }
-            );
-
-    if(result.error) {
-
-        messages.innerHTML = `
-
-            <div class="empty">
-
-                Erro ao carregar mensagens.
-
-                <br><br>
-
-                ${escapeHTML(
-                    result.error.message
-                )}
-
-            </div>
-
-        `;
-
-        console.error(
-            "Erro ao carregar mensagens:",
-            result.error
+        throw new Error(
+            "ID da sala não encontrado."
         );
-
-        return;
-
     }
 
-    renderMessages(
-        result.data || []
-    );
 
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("room_messages")
+        .select(
+            "id, room_id, user_id, message, created_at"
+        )
+        .eq(
+            "room_id",
+            roomId
+        )
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
+
+
+    if(error) {
+
+        throw error;
+    }
+
+
+    renderMessages(
+        data || []
+    );
 }
 
 
 /* =========================================
-   RENDERIZAR
+   RENDERIZAR MENSAGENS
 ========================================= */
 
 function renderMessages(list) {
 
     messages.innerHTML = "";
+
 
     if(!list.length) {
 
@@ -899,8 +914,8 @@ function renderMessages(list) {
         `;
 
         return;
-
     }
+
 
     list.forEach(
         function(item) {
@@ -913,9 +928,9 @@ function renderMessages(list) {
         }
     );
 
+
     messages.scrollTop =
         messages.scrollHeight;
-
 }
 
 
@@ -932,6 +947,11 @@ function addMessage(
         return;
     }
 
+
+    /*
+        Evita duplicação.
+    */
+
     if(item.id) {
 
         const existing =
@@ -942,42 +962,52 @@ function addMessage(
         if(existing) {
             return;
         }
-
     }
+
 
     const empty =
         messages.querySelector(
             ".empty"
         );
 
+
     if(empty) {
 
-        messages.innerHTML = "";
-
+        messages.innerHTML =
+            "";
     }
 
+
     const div =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     div.className =
         "message";
+
 
     if(item.id) {
 
         div.dataset.messageId =
             item.id;
-
     }
 
+
     const isMe =
+        currentUser &&
         item.user_id ===
         currentUser.id;
 
+
     if(isMe) {
 
-        div.classList.add("me");
-
+        div.classList.add(
+            "me"
+        );
     }
+
 
     div.innerHTML = `
 
@@ -1009,15 +1039,15 @@ function addMessage(
 
     `;
 
+
     messages.appendChild(div);
+
 
     if(scroll) {
 
         messages.scrollTop =
             messages.scrollHeight;
-
     }
-
 }
 
 
@@ -1031,29 +1061,36 @@ chatForm.addEventListener(
 
         event.preventDefault();
 
+
         const text =
             chatInput.value.trim();
+
 
         if(!text) {
             return;
         }
 
+
         if(!currentUser) {
 
             alert(
-                "Usuário não encontrado."
+                "Usuário não autenticado. Saia e entre novamente no ZunoPlay."
             );
 
             return;
-
         }
+
+
+        /*
+            Confirma o ID da sala.
+        */
 
         if(!roomId) {
 
             roomId =
                 getRoomId();
-
         }
+
 
         if(!roomId) {
 
@@ -1062,8 +1099,8 @@ chatForm.addEventListener(
             );
 
             return;
-
         }
+
 
         sendButton.disabled =
             true;
@@ -1071,56 +1108,65 @@ chatForm.addEventListener(
         chatInput.disabled =
             true;
 
+
         try {
 
             console.log(
-                "Enviando mensagem para sala:",
-                roomId
+                "Enviando mensagem:",
+                {
+                    roomId: roomId,
+                    userId: currentUser.id,
+                    message: text
+                }
             );
 
-            const result =
-                await supabaseClient
-                    .from("room_messages")
-                    .insert({
-                        room_id:
-                            roomId,
 
-                        user_id:
-                            currentUser.id,
+            const {
+                data,
+                error
+            } =
+            await supabaseClient
+                .from("room_messages")
+                .insert({
+                    room_id: roomId,
+                    user_id: currentUser.id,
+                    message: text
+                })
+                .select(
+                    "id, room_id, user_id, message, created_at"
+                )
+                .single();
 
-                        message:
-                            text
-                    })
-                    .select(
-                        "id,room_id,user_id,message,created_at"
-                    )
-                    .single();
 
-            if(result.error) {
+            if(error) {
 
                 console.error(
-                    "ERRO SUPABASE:",
-                    result.error
+                    "Erro Supabase:",
+                    error
                 );
 
                 alert(
                     "Erro ao enviar mensagem:\n\n" +
-                    result.error.message
+                    error.message
                 );
 
                 return;
-
             }
 
-            console.log(
-                "Mensagem enviada:",
-                result.data
-            );
+
+            /*
+                Limpa o campo.
+            */
 
             chatInput.value = "";
 
+
+            /*
+                Mostra imediatamente.
+            */
+
             addMessage(
-                result.data,
+                data,
                 true
             );
 
@@ -1149,7 +1195,6 @@ chatForm.addEventListener(
                 false;
 
             chatInput.focus();
-
         }
 
     }
@@ -1166,13 +1211,14 @@ function subscribeMessages() {
         return;
     }
 
+
     if(messagesChannel) {
 
         supabaseClient.removeChannel(
             messagesChannel
         );
-
     }
+
 
     messagesChannel =
         supabaseClient
@@ -1186,11 +1232,8 @@ function subscribeMessages() {
                 "postgres_changes",
                 {
                     event: "INSERT",
-
                     schema: "public",
-
                     table: "room_messages",
-
                     filter:
                         "room_id=eq." +
                         roomId
@@ -1198,28 +1241,26 @@ function subscribeMessages() {
                 function(payload) {
 
                     console.log(
-                        "Realtime:",
+                        "Nova mensagem recebida:",
                         payload.new
                     );
+
 
                     addMessage(
                         payload.new,
                         true
                     );
-
                 }
             )
             .subscribe(
                 function(status) {
 
                     console.log(
-                        "Realtime status:",
+                        "Status Realtime:",
                         status
                     );
-
                 }
             );
-
 }
 
 
@@ -1233,13 +1274,14 @@ function subscribeMembers() {
         return;
     }
 
+
     if(membersChannel) {
 
         supabaseClient.removeChannel(
             membersChannel
         );
-
     }
+
 
     membersChannel =
         supabaseClient
@@ -1253,24 +1295,5 @@ function subscribeMembers() {
                 "postgres_changes",
                 {
                     event: "*",
-
                     schema: "public",
-
-                    table: "room_members",
-
-                    filter:
-                        "room_id=eq." +
-                        roomId
-                },
-                function() {
-
-                    loadMembers();
-
-                }
-            )
-            .subscribe();
-
-}
-
-
-/* =================
+                    table: "room_
