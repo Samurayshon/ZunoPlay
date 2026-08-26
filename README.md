@@ -10,6 +10,7 @@ A base do aplicativo está funcional e a preparação para produção está em a
 
 - Supabase Auth + perfis protegidos por RLS
 - Realtime global com Presence, Broadcast e Postgres Changes separados por finalidade
+- Presence reservado para presença/entrada/saída; estados rápidos de voz (`speaking`, `listening`, `muted`) usam Broadcast para evitar rate limit do Presence
 - Conversas e mensagens de sala via Broadcast privado
 - Salas de voz WebRTC P2P
 - Reconexão de ICE, reconexão de canal Realtime e recuperação após queda de rede
