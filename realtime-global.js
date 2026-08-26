@@ -4,7 +4,7 @@
   const URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
   const listeners=new Map();
-  const scopedChannels=new Map();
+  const scopes=new Map();
   let client=window.ZunoSupabaseClient||null;
   let globalPresence=null;
   let user=null;
@@ -29,6 +29,14 @@
     client=window.supabase.createClient(URL,KEY);
     window.ZunoSupabaseClient=client;
     return client;
+  }
+
+  async function removeScope(id,channel){
+    const sb=getClient();
+    if(!sb)return;
+    try{await channel.untrack?.()}catch(_){}
+    try{await sb.removeChannel(channel)}catch(_){}
+    scopes.delete(id);
   }
 
   async function stopGlobalPresence(){
@@ -79,16 +87,14 @@
     return true;
   }
 
-  function getPresence(){return globalPresence?.presenceState()||{}}
-
   function scopedPresence(topic,key,payload={}){
     const sb=getClient();
     if(!sb)throw new Error('Supabase indisponível');
     const id='presence:'+topic+':'+key;
-    if(scopedChannels.has(id))return scopedChannels.get(id);
+    if(scopes.has(id))return scopes.get(id);
     const channel=sb.channel(topic,{config:{presence:{key}}});
     const api={
-      channel,
+      type:'presence',topic,channel,
       on(event,fn){channel.on('presence',{event},fn);return api},
       async subscribe(){
         return new Promise((resolve,reject)=>{
@@ -101,10 +107,66 @@
       },
       track(next){return channel.track(next)},
       state(){return channel.presenceState()},
-      async close(){try{await channel.untrack()}catch(_){};try{await sb.removeChannel(channel)}catch(_){};scopedChannels.delete(id)}
+      close(){return removeScope(id,channel)}
     };
-    scopedChannels.set(id,api);
+    scopes.set(id,api);
     return api;
+  }
+
+  function scopedBroadcast(topic,options={}){
+    const sb=getClient();
+    if(!sb)throw new Error('Supabase indisponível');
+    const config={
+      private:options.private===true,
+      broadcast:{self:options.self===true,ack:options.ack===true}
+    };
+    const id='broadcast:'+topic+':'+JSON.stringify(config);
+    if(scopes.has(id))return scopes.get(id);
+    const channel=sb.channel(topic,{config});
+    let subscribed=false;
+    const api={
+      type:'broadcast',topic,channel,
+      on(event,fn){channel.on('broadcast',{event},fn);return api},
+      async subscribe(){
+        if(subscribed)return api;
+        return new Promise((resolve,reject)=>{
+          channel.subscribe(status=>{
+            if(status==='SUBSCRIBED'){subscribed=true;resolve(api)}
+            else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reject(new Error('Falha no Broadcast: '+status));
+          })
+        })
+      },
+      async send(event,payload={}){
+        if(!subscribed)await api.subscribe();
+        return channel.send({type:'broadcast',event,payload});
+      },
+      close(){subscribed=false;return removeScope(id,channel)}
+    };
+    scopes.set(id,api);
+    return api;
+  }
+
+  function databaseSubscribe({table,event='*',schema='public',filter,channelName},handler){
+    const sb=getClient();
+    if(!sb)throw new Error('Supabase indisponível');
+    if(!table)throw new Error('Tabela obrigatória');
+    const name=channelName||['zuno-db',table,event,filter||'all',crypto.randomUUID?.()||Date.now()].join('-');
+    const channel=sb.channel(name);
+    const rule={event,schema,table};
+    if(filter)rule.filter=filter;
+    channel.on('postgres_changes',rule,handler);
+    let subscribed=false;
+    return{
+      type:'database',channel,
+      subscribe(){
+        if(subscribed)return Promise.resolve(this);
+        return new Promise((resolve,reject)=>channel.subscribe(status=>{
+          if(status==='SUBSCRIBED'){subscribed=true;resolve(this)}
+          else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reject(new Error('Falha no Postgres Changes: '+status));
+        }));
+      },
+      async close(){subscribed=false;try{await sb.removeChannel(channel)}catch(_){}}
+    };
   }
 
   const api={
@@ -114,9 +176,11 @@
     stop:stopGlobalPresence,
     setPresence,
     getUser:()=>user,
-    getPresence,
+    getPresence:()=>globalPresence?.presenceState()||{},
     getStatus:()=>globalStatus,
-    presence:{scope:scopedPresence}
+    presence:{scope:scopedPresence},
+    broadcast:{scope:scopedBroadcast},
+    database:{subscribe:databaseSubscribe}
   };
 
   window.ZunoRealtime=api;
@@ -128,6 +192,7 @@
       if(event==='SIGNED_OUT'){
         user=null;
         await stopGlobalPresence();
+        for(const scope of [...scopes.values()]){try{await scope.close?.()}catch(_){}}
         emit('auth:signed_out',null);
       }else if(session?.user&&(!user||session.user.id!==user.id)){
         user=session.user;
