@@ -5,8 +5,14 @@
   let scope=null;
   let user=null;
   let currentState={};
+  let profilesById={};
+  let bindScheduled=false;
   const q=new URLSearchParams(location.search);
   const room=q.get('room')||q.get('room_id')||q.get('id')||sessionStorage.getItem('zunoplay_room_id');
+
+  const style=document.createElement('style');
+  style.textContent='.presence-status{font-size:9px;margin-top:3px;color:#4ade80}.is-speaking .avatar{box-shadow:0 0 0 4px rgba(34,197,94,.22)}.is-away .avatar,.is-offline .avatar{filter:saturate(.45);opacity:.72}.is-away .presence-status{color:#fbbf24}.is-offline .presence-status{color:#858697}';
+  document.head.appendChild(style);
 
   function waitForCore(){
     if(window.ZunoRealtime)return Promise.resolve(window.ZunoRealtime);
@@ -25,6 +31,10 @@
     });
   }
 
+  function statusText(value){
+    return value==='speaking'?'🎙️ Falando':value==='listening'?'🎧 Ouvindo':value==='away'?'⏸️ Ausente':value==='offline'?'○ Offline':'● Online';
+  }
+
   function applyStatus(id,state){
     const value=state||'offline';
     const selector='.avatar-slot[data-user-id="'+CSS.escape(String(id))+'"],.member[data-user-id="'+CSS.escape(String(id))+'"]';
@@ -34,13 +44,57 @@
       el.classList.toggle('is-away',value==='away');
       el.classList.toggle('is-offline',value==='offline');
       const badge=el.querySelector('.presence-status');
-      if(badge)badge.textContent=value==='speaking'?'🎙️ Falando':value==='away'?'⏸️ Ausente':value==='offline'?'○ Offline':'● Online';
+      if(badge)badge.textContent=statusText(value);
     });
+  }
+
+  async function loadProfiles(ids){
+    const missing=[...new Set(ids.filter(Boolean))].filter(id=>!profilesById[id]);
+    if(!missing.length)return;
+    const core=await waitForCore();
+    const{data,error}=await core.client.from('profiles').select('id,username').in('id',missing);
+    if(error)return;
+    (data||[]).forEach(p=>profilesById[p.id]=p);
+  }
+
+  function attachMarker(el,id){
+    if(!el||!id)return;
+    el.dataset.userId=id;
+    if(!el.querySelector('.presence-status')){
+      const badge=document.createElement('div');
+      badge.className='presence-status';
+      badge.textContent=statusText(currentState[id]?.[0]?.status||'offline');
+      el.appendChild(badge);
+    }
+    applyStatus(id,currentState[id]?.[0]?.status||'offline');
+  }
+
+  async function bindInterface(){
+    bindScheduled=false;
+    const ids=Object.keys(currentState);
+    if(!ids.length)return;
+    await loadProfiles(ids);
+    const byUsername=new Map(Object.values(profilesById).filter(p=>p?.username).map(p=>[p.username.trim().toLowerCase(),p.id]));
+
+    document.querySelectorAll('.avatar-slot').forEach(el=>{
+      const text=(el.querySelector('.avatar-name')?.textContent||'').trim().replace(/^@/,'').toLowerCase();
+      attachMarker(el,byUsername.get(text));
+    });
+    document.querySelectorAll('.member').forEach(el=>{
+      const text=(el.querySelector('.member-name')?.childNodes?.[0]?.textContent||el.querySelector('.member-name')?.textContent||'').trim().replace(/^@/,'').replace(/\s*\(Você\).*$/i,'').toLowerCase();
+      attachMarker(el,byUsername.get(text));
+    });
+  }
+
+  function scheduleBind(){
+    if(bindScheduled)return;
+    bindScheduled=true;
+    requestAnimationFrame(()=>bindInterface().catch(console.error));
   }
 
   function sync(){
     currentState=scope?.state()||{};
-    Object.keys(currentState).forEach(id=>applyStatus(id,currentState[id]?.[0]?.status||'online'));
+    scheduleBind();
     window.dispatchEvent(new CustomEvent('zuno:room-presence-sync',{detail:currentState}));
   }
 
@@ -55,22 +109,30 @@
     scope
       .on('sync',sync)
       .on('join',({key,newPresences})=>{
-        applyStatus(key,newPresences?.[0]?.status||'online');
+        currentState=scope.state();
+        scheduleBind();
         window.dispatchEvent(new CustomEvent('zuno:room-presence-join',{detail:{key,newPresences}}));
       })
       .on('leave',({key,leftPresences})=>{
+        currentState=scope.state();
         applyStatus(key,'offline');
+        scheduleBind();
         window.dispatchEvent(new CustomEvent('zuno:room-presence-leave',{detail:{key,leftPresences}}));
       });
 
     await scope.subscribe();
     sync();
+
+    const roots=[document.getElementById('roomStage'),document.getElementById('members')].filter(Boolean);
+    const observer=new MutationObserver(scheduleBind);
+    roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));
   }
 
   window.zunoSetRoomPresence=async state=>{
     if(!scope)await start();
     if(!scope||!user)return false;
     await scope.track({user_id:user.id,room_id:room,status:state,at:new Date().toISOString()});
+    currentState=scope.state();
     applyStatus(user.id,state);
     return true;
   };
