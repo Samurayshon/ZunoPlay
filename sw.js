@@ -1,5 +1,28 @@
-const CACHE_NAME = "zunoplay-v19";
-const STATIC_FILES = ["./", "./index.html", "./cadastro.html", "./login.html", "./avatar.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./nav.js", "./realtime-global.js", "./presenca-sala.js", "./voz-sala.js"];
+const CACHE_NAME = "zunoplay-v20";
+const STATIC_FILES = [
+  "./",
+  "./index.html",
+  "./cadastro.html",
+  "./login.html",
+  "./perfil.html",
+  "./avatar.html",
+  "./amigos.html",
+  "./conversas.html",
+  "./notificacoes.html",
+  "./comunidades.html",
+  "./salas.html",
+  "./sala.html",
+  "./jogos.html",
+  "./desafio.html",
+  "./historico.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./nav.js",
+  "./realtime-global.js",
+  "./presenca-sala.js",
+  "./voz-sala.js"
+];
 
 self.addEventListener("install", event => {
   event.waitUntil(
@@ -29,6 +52,6 @@ self.addEventListener("fetch", event => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(event.request).then(hit => hit || caches.match("./index.html")))
   );
 });
