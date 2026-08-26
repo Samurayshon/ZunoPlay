@@ -162,11 +162,8 @@ body {
 .room-top {
 
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     gap: 12px;
 
 }
@@ -174,7 +171,6 @@ body {
 .room-name {
 
     font-size: 17px;
-
     font-weight: bold;
 
 }
@@ -182,9 +178,7 @@ body {
 .room-info {
 
     color: #858697;
-
     font-size: 12px;
-
     margin-top: 6px;
 
 }
@@ -196,7 +190,6 @@ body {
     padding: 10px 15px;
 
     border: none;
-
     border-radius: 11px;
 
     background:
@@ -217,7 +210,6 @@ body {
 .enter-button:disabled {
 
     opacity: .6;
-
     cursor: default;
 
 }
@@ -231,6 +223,261 @@ body {
     padding: 60px 20px;
 
     font-size: 14px;
+
+}
+
+
+/* =========================================
+   SALA INTERNA
+========================================= */
+
+.room-screen {
+
+    padding: 20px;
+
+}
+
+.room-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 25px;
+
+}
+
+.room-title {
+
+    font-size: 25px;
+
+    font-weight: 800;
+
+}
+
+.room-subtitle {
+
+    color: #9293a3;
+
+    font-size: 13px;
+
+    margin-top: 5px;
+
+}
+
+.live {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: #4ade80;
+
+    font-size: 11px;
+
+}
+
+.live-dot {
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #4ade80;
+
+}
+
+.room-card {
+
+    background: rgba(20,21,35,.9);
+
+    border: 1px solid #292a3d;
+
+    border-radius: 22px;
+
+    padding: 20px;
+
+    margin-bottom: 15px;
+
+}
+
+.section-title {
+
+    font-size: 17px;
+
+    margin-bottom: 15px;
+
+}
+
+.participant {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #292a3d;
+
+}
+
+.participant:last-child {
+
+    border-bottom: none;
+
+}
+
+.avatar {
+
+    width: 44px;
+    height: 44px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+
+}
+
+.participant-name {
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+}
+
+.participant-status {
+
+    color: #858697;
+
+    font-size: 11px;
+
+    margin-top: 3px;
+
+}
+
+.you {
+
+    color: #a78bfa;
+
+}
+
+.controls {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+
+    margin-top: 20px;
+
+}
+
+.control-button {
+
+    padding: 16px;
+
+    border-radius: 15px;
+
+    border: 1px solid #303145;
+
+    background: #1b1c2b;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.control-button.mic {
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    border: none;
+
+}
+
+.control-button.exit {
+
+    color: #ff8f8f;
+
+}
+
+.count {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 22px;
+
+    height: 22px;
+
+    padding: 0 7px;
+
+    margin-left: 5px;
+
+    border-radius: 20px;
+
+    background: #292a3d;
+
+    color: white;
+
+    font-size: 11px;
+
+}
+
+
+/* =========================================
+   RESPONSIVO
+========================================= */
+
+@media(max-width:360px) {
+
+    .room-top {
+
+        align-items: flex-start;
+
+    }
+
+    .enter-button {
+
+        padding: 9px 11px;
+
+    }
 
 }
 
@@ -277,25 +524,37 @@ document.getElementById("app");
 
 let currentUser = null;
 
+let currentRoomId = null;
+
+let currentRoom = null;
+
+let roomChannel = null;
+
 
 /* =========================================
    CABEÇALHO
 ========================================= */
 
-function header() {
+function header(showBack = true) {
 
     return `
 
         <div class="header">
 
-            <button
-                class="back"
-                onclick="history.back()"
-            >
-
-                ←
-
-            </button>
+            ${
+                showBack
+                ?
+                `
+                <button
+                    class="back"
+                    onclick="goBackToRooms()"
+                >
+                    ←
+                </button>
+                `
+                :
+                ""
+            }
 
             <div class="logo">
 
@@ -311,7 +570,7 @@ function header() {
 
 
 /* =========================================
-   VERIFICAR USUÁRIO
+   USUÁRIO
 ========================================= */
 
 async function getCurrentUser() {
@@ -334,6 +593,18 @@ async function getCurrentUser() {
     }
 
     return data?.user || null;
+
+}
+
+
+/* =========================================
+   VOLTAR PARA SALAS
+========================================= */
+
+function goBackToRooms() {
+
+    window.location.href =
+        "sala.html";
 
 }
 
@@ -407,9 +678,16 @@ async function enterRoom(roomId) {
         }
 
 
-        alert(
-            "Você entrou na sala!"
-        );
+        /*
+         * Agora que a entrada foi registrada,
+         * abrimos a sala interna.
+         */
+
+        window.location.href =
+            "sala.html?room=" +
+            encodeURIComponent(
+                roomId
+            );
 
 
     } finally {
@@ -429,14 +707,14 @@ async function enterRoom(roomId) {
 
 
 /* =========================================
-   CARREGAR SALAS
+   CARREGAR LISTA DE SALAS
 ========================================= */
 
 async function loadRooms() {
 
     app.innerHTML =
 
-        header() +
+        header(false) +
 
         `
 
@@ -643,61 +921,132 @@ async function loadRooms() {
 
 
 /* =========================================
-   SEGURANÇA HTML
+   CARREGAR SALA INTERNA
 ========================================= */
 
-function escapeHTML(text) {
+async function loadRoom(roomId) {
 
-    const div =
-        document.createElement(
-            "div"
-        );
+    currentRoomId =
+        roomId;
 
-    div.textContent =
-        text || "";
-
-    return div.innerHTML;
-
-}
-
-
-/* =========================================
-   DATA
-========================================= */
-
-function formatDate(
-    dateString
-) {
-
-    const date =
-        new Date(
-            dateString
-        );
-
-
-    return date.toLocaleDateString(
-        "pt-BR"
-    );
-
-}
-
-
-/* =========================================
-   INICIAR
-========================================= */
-
-async function init() {
 
     app.innerHTML =
-        header() +
+
+        header(true) +
 
         `
 
-        <div class="page">
+        <div class="room-screen">
 
-            <div class="empty">
+            <div class="room-header">
 
-                ⏳ Verificando usuário...
+                <div>
+
+                    <div
+                        id="roomTitle"
+                        class="room-title"
+                    >
+
+                        Carregando...
+
+                    </div>
+
+                    <div
+                        class="room-subtitle"
+                    >
+
+                        Sala social ZunoPlay
+
+                    </div>
+
+                </div>
+
+                <div class="live">
+
+                    <span class="live-dot"></span>
+
+                    AO VIVO
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="roomStatus"
+                class="status"
+            >
+
+                ⏳ Carregando sala...
+
+            </div>
+
+
+            <div class="room-card">
+
+                <div class="section-title">
+
+                    👥 Pessoas na sala
+
+                    <span
+                        id="participantCount"
+                        class="count"
+                    >
+
+                        0
+
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="participants"
+                >
+
+                    <div class="empty">
+
+                        Carregando participantes...
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="room-card">
+
+                <div class="section-title">
+
+                    🎙️ Controles
+
+                </div>
+
+
+                <div class="controls">
+
+                    <button
+                        id="micButton"
+                        class="control-button mic"
+                        onclick="toggleMic()"
+                    >
+
+                        🎤 Microfone
+
+                    </button>
+
+
+                    <button
+                        class="control-button exit"
+                        onclick="leaveRoom()"
+                    >
+
+                        🚪 Sair
+
+                    </button>
+
+                </div>
 
             </div>
 
@@ -706,45 +1055,396 @@ async function init() {
         `;
 
 
-    currentUser =
-        await getCurrentUser();
+    const {
+
+        data,
+        error
+
+    } =
+
+    await supabaseClient
+
+        .from("rooms")
+
+        .select(
+            "id, name, owner_id, created_at"
+        )
+
+        .eq(
+            "id",
+            roomId
+        )
+
+        .maybeSingle();
 
 
-    if(!currentUser) {
+    if(error || !data) {
 
-        app.innerHTML =
-            header() +
+        console.error(
+            "Erro ao carregar sala:",
+            error
+        );
 
-            `
 
-            <div class="page">
+        document.getElementById(
+            "roomStatus"
+        ).textContent =
 
-                <div class="empty">
-
-                    Você precisa estar
-                    conectado para acessar
-                    as salas.
-
-                </div>
-
-            </div>
-
-            `;
+            "❌ Sala não encontrada.";
 
         return;
 
     }
 
 
-    await loadRooms();
+    currentRoom =
+        data;
+
+
+    document.getElementById(
+        "roomTitle"
+    ).textContent =
+
+        "🎙️ " +
+        data.name;
+
+
+    document.getElementById(
+        "roomStatus"
+    ).textContent =
+
+        "✅ Você está na sala";
+
+
+    await loadParticipants();
+
+    subscribeRoom();
 
 }
 
 
-init();
+/* =========================================
+   PARTICIPANTES
+========================================= */
 
-</script>
+async function loadParticipants() {
 
-</body>
+    if(!currentRoomId) {
 
-</html>
+        return;
+
+    }
+
+
+    const {
+
+        data,
+        error
+
+    } =
+
+    await supabaseClient
+
+        .from("room_members")
+
+        .select(
+            "id, user_id"
+        )
+
+        .eq(
+            "room_id",
+            currentRoomId
+        );
+
+
+    if(error) {
+
+        console.error(
+            "Erro ao carregar participantes:",
+            error
+        );
+
+
+        document.getElementById(
+            "participants"
+        ).innerHTML = `
+
+            <div class="empty">
+
+                Não foi possível carregar
+                os participantes.
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    const participants =
+        data || [];
+
+
+    document.getElementById(
+        "participantCount"
+    ).textContent =
+        participants.length;
+
+
+    const container =
+        document.getElementById(
+            "participants"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if(!participants.length) {
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Ninguém está na sala.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    participants.forEach(
+        function(member) {
+
+            const isYou =
+                member.user_id ===
+                currentUser.id;
+
+
+            const name =
+                isYou
+                ?
+                "Você"
+                :
+                "Jogador";
+
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "participant";
+
+
+            item.innerHTML = `
+
+                <div class="avatar">
+
+                    👤
+
+                </div>
+
+
+                <div>
+
+                    <div class="participant-name">
+
+                        ${name}
+
+                        ${
+                            isYou
+                            ?
+                            `
+                            <span class="you">
+                                (você)
+                            </span>
+                            `
+                            :
+                            ""
+                        }
+
+                    </div>
+
+
+                    <div class="participant-status">
+
+                        🟢 Na sala
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            container.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   REALTIME DA SALA
+========================================= */
+
+function subscribeRoom() {
+
+    if(roomChannel) {
+
+        supabaseClient.removeChannel(
+            roomChannel
+        );
+
+    }
+
+
+    roomChannel =
+        supabaseClient
+
+            .channel(
+                "room-" +
+                currentRoomId
+            )
+
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "room_members",
+                    filter:
+                        "room_id=eq." +
+                        currentRoomId
+                },
+                function() {
+
+                    loadParticipants();
+
+                }
+            )
+
+            .subscribe();
+
+}
+
+
+/* =========================================
+   MICROFONE
+========================================= */
+
+function toggleMic() {
+
+    alert(
+        "O sistema de voz será conectado na próxima etapa."
+    );
+
+}
+
+
+/* =========================================
+   SAIR DA SALA
+========================================= */
+
+async function leaveRoom() {
+
+    if(!currentUser || !currentRoomId) {
+
+        goBackToRooms();
+
+        return;
+
+    }
+
+
+    const confirmed =
+        confirm(
+            "Deseja sair desta sala?"
+        );
+
+
+    if(!confirmed) {
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+    await supabaseClient
+
+        .from("room_members")
+
+        .delete()
+
+        .eq(
+            "room_id",
+            currentRoomId
+        )
+
+        .eq(
+            "user_id",
+            currentUser.id
+        );
+
+
+    if(error) {
+
+        console.error(
+            "Erro ao sair da sala:",
+            error
+        );
+
+
+        alert(
+            "Não foi possível sair da sala:\n\n" +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    if(roomChannel) {
+
+        await supabaseClient
+            .removeChannel(
+                roomChannel
+            );
+
+        roomChannel =
+            null;
+
+    }
+
+
+    window.location.href =
+        "sala.html";
+
+}
+
+
+/* =========================================
+   SEGURANÇA HTML
+=========
