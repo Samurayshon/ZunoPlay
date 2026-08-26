@@ -1,0 +1,10 @@
+{
+  "name": "ZunoPlay",
+  "short_name": "ZunoPlay",
+  "description": "Salas e conversas do ZunoPlay",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#070811",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait"
+}
