@@ -5,10 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Sala - ZunoPlay</title>
 
@@ -237,7 +234,7 @@ body {
 
     min-height: 150px;
 
-    max-height: 300px;
+    max-height: 320px;
 
     overflow-y: auto;
 
@@ -260,6 +257,12 @@ body {
     border-radius: 13px;
 
     background: #1b1c2b;
+
+}
+
+.message.me {
+
+    border-left: 3px solid #8b5cf6;
 
 }
 
@@ -374,9 +377,9 @@ body {
 
 .leave {
 
-    width: calc(100% - 40px);
+    width: 100%;
 
-    margin: 20px;
+    margin-top: 20px;
 
     padding: 15px;
 
@@ -425,6 +428,9 @@ body {
     class="app"
 >
 
+
+    <!-- CABEÇALHO -->
+
     <div class="header">
 
         <button
@@ -463,6 +469,8 @@ body {
     <div class="content">
 
 
+        <!-- SALA -->
+
         <div class="hero">
 
             <div class="hero-icon">
@@ -488,6 +496,8 @@ body {
         </div>
 
 
+        <!-- PARTICIPANTES -->
+
         <div class="panel">
 
             <div class="panel-title">
@@ -509,6 +519,8 @@ body {
 
         </div>
 
+
+        <!-- CONVERSA -->
 
         <div class="panel">
 
@@ -563,6 +575,8 @@ body {
         </div>
 
 
+        <!-- SAIR -->
+
         <button
             id="leaveButton"
             class="leave"
@@ -571,6 +585,7 @@ body {
             Sair da sala
 
         </button>
+
 
     </div>
 
@@ -603,44 +618,28 @@ window.supabase.createClient(
 ========================================= */
 
 const roomTitle =
-document.getElementById(
-    "roomTitle"
-);
+document.getElementById("roomTitle");
 
 const heroTitle =
-document.getElementById(
-    "heroTitle"
-);
+document.getElementById("heroTitle");
 
 const members =
-document.getElementById(
-    "members"
-);
+document.getElementById("members");
 
 const messages =
-document.getElementById(
-    "messages"
-);
+document.getElementById("messages");
 
 const chatForm =
-document.getElementById(
-    "chatForm"
-);
+document.getElementById("chatForm");
 
 const chatInput =
-document.getElementById(
-    "chatInput"
-);
+document.getElementById("chatInput");
 
 const sendButton =
-document.getElementById(
-    "sendButton"
-);
+document.getElementById("sendButton");
 
 const leaveButton =
-document.getElementById(
-    "leaveButton"
-);
+document.getElementById("leaveButton");
 
 
 /* =========================================
@@ -654,14 +653,12 @@ new URLSearchParams(
 
 
 let roomId =
-params.get(
-    "room"
-);
+params.get("room");
 
 
 /*
-    Se o ID veio pela URL,
-    guardamos no navegador.
+    Se a URL trouxe o ID,
+    salvamos também no navegador.
 */
 
 if(roomId) {
@@ -675,9 +672,8 @@ if(roomId) {
 
 
 /*
-    Se a URL não tiver o ID,
-    tentamos recuperar o último
-    ID salvo.
+    Se não veio pela URL,
+    recuperamos o último ID salvo.
 */
 
 if(!roomId) {
@@ -704,14 +700,10 @@ null;
    ESCAPE HTML
 ========================================= */
 
-function escapeHTML(
-    text
-) {
+function escapeHTML(text) {
 
     const div =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     div.textContent =
         text || "";
@@ -725,15 +717,10 @@ function escapeHTML(
    HORA
 ========================================= */
 
-function formatTime(
-    dateString
-) {
+function formatTime(dateString) {
 
     const date =
-        new Date(
-            dateString
-        );
-
+        new Date(dateString);
 
     return date.toLocaleTimeString(
         "pt-BR",
@@ -874,7 +861,7 @@ async function loadMembers() {
         "";
 
 
-    if(!data.length) {
+    if(!data || !data.length) {
 
         members.innerHTML = `
 
@@ -895,9 +882,7 @@ async function loadMembers() {
         function(member) {
 
             const item =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             item.className =
@@ -942,9 +927,7 @@ async function loadMembers() {
             `;
 
 
-            members.appendChild(
-                item
-            );
+            members.appendChild(item);
 
         }
     );
@@ -958,6 +941,15 @@ async function loadMembers() {
 
 async function loadMessages() {
 
+    if(!roomId) {
+
+        throw new Error(
+            "ID da sala não encontrado."
+        );
+
+    }
+
+
     const {
         data,
         error
@@ -965,7 +957,7 @@ async function loadMessages() {
     await supabaseClient
         .from("room_messages")
         .select(
-            "id, user_id, message, created_at"
+            "id, room_id, user_id, message, created_at"
         )
         .eq(
             "room_id",
@@ -981,6 +973,11 @@ async function loadMessages() {
 
     if(error) {
 
+        console.error(
+            "Erro ao carregar mensagens:",
+            error
+        );
+
         throw error;
 
     }
@@ -994,12 +991,10 @@ async function loadMessages() {
 
 
 /* =========================================
-   MOSTRAR MENSAGENS
+   RENDERIZAR MENSAGENS
 ========================================= */
 
-function renderMessages(
-    list
-) {
+function renderMessages(list) {
 
     messages.innerHTML =
         "";
@@ -1027,7 +1022,14 @@ function renderMessages(
 
 
     list.forEach(
-        addMessage
+        function(item) {
+
+            addMessage(
+                item,
+                false
+            );
+
+        }
     );
 
 
@@ -1042,8 +1044,30 @@ function renderMessages(
 ========================================= */
 
 function addMessage(
-    item
+    item,
+    scroll = true
 ) {
+
+    /*
+        Evita mensagens duplicadas.
+    */
+
+    if(item.id) {
+
+        const existing =
+            messages.querySelector(
+                `[data-message-id="${item.id}"]`
+            );
+
+
+        if(existing) {
+
+            return;
+
+        }
+
+    }
+
 
     const empty =
         messages.querySelector(
@@ -1069,9 +1093,32 @@ function addMessage(
         "message";
 
 
+    /*
+        IMPORTANTE:
+        guardamos o ID da mensagem
+        no elemento HTML.
+    */
+
+    if(item.id) {
+
+        div.dataset.messageId =
+            item.id;
+
+    }
+
+
     const isMe =
         item.user_id ===
         currentUser.id;
+
+
+    if(isMe) {
+
+        div.classList.add(
+            "me"
+        );
+
+    }
 
 
     div.innerHTML = `
@@ -1112,8 +1159,12 @@ function addMessage(
     );
 
 
-    messages.scrollTop =
-        messages.scrollHeight;
+    if(scroll) {
+
+        messages.scrollTop =
+            messages.scrollHeight;
+
+    }
 
 }
 
@@ -1129,14 +1180,36 @@ chatForm.addEventListener(
         event.preventDefault();
 
 
+        if(!currentUser) {
+
+            alert(
+                "Usuário não encontrado."
+            );
+
+            return;
+
+        }
+
+
         /*
-            Confirma novamente o ID.
+            Recupera novamente o ID,
+            caso a variável tenha sido perdida.
         */
 
         if(!roomId) {
 
+            roomId =
+                sessionStorage.getItem(
+                    "zunoplay_room_id"
+                );
+
+        }
+
+
+        if(!roomId) {
+
             alert(
-                "O ID da sala não foi encontrado."
+                "O endereço da sala não contém o ID da sala."
             );
 
             return;
@@ -1155,62 +1228,59 @@ chatForm.addEventListener(
         }
 
 
-        if(!currentUser) {
-
-            alert(
-                "Usuário não encontrado."
-            );
-
-            return;
-
-        }
-
-
         sendButton.disabled =
             true;
-
 
         chatInput.disabled =
             true;
 
 
-        const {
-            data,
-            error
-        } =
-        await supabaseClient
-            .from("room_messages")
-            .insert(
-                {
-                    room_id:
-                        roomId,
+        try {
 
-                    user_id:
-                        currentUser.id,
-
-                    message:
-                        text
-                }
-            )
-            .select()
-            .single();
-
-
-        if(error) {
-
-            console.error(
-                "Erro ao enviar mensagem:",
+            const {
+                data,
                 error
-            );
+            } =
+            await supabaseClient
+                .from("room_messages")
+                .insert(
+                    {
+                        room_id:
+                            roomId,
+
+                        user_id:
+                            currentUser.id,
+
+                        message:
+                            text
+                    }
+                )
+                .select(
+                    "id, room_id, user_id, message, created_at"
+                )
+                .single();
 
 
-            alert(
-                "Não foi possível enviar a mensagem:\n\n" +
-                error.message
-            );
+            if(error) {
+
+                console.error(
+                    "Erro ao enviar mensagem:",
+                    error
+                );
+
+                alert(
+                    "Não foi possível enviar a mensagem:\n\n" +
+                    error.message
+                );
+
+                return;
+
+            }
 
 
-        } else {
+            /*
+                Limpa o campo.
+            */
 
             chatInput.value =
                 "";
@@ -1222,21 +1292,37 @@ chatForm.addEventListener(
             */
 
             addMessage(
-                data
+                data,
+                true
             );
 
         }
 
+        catch(error) {
 
-        sendButton.disabled =
-            false;
+            console.error(
+                "Erro inesperado:",
+                error
+            );
 
+            alert(
+                "Erro ao enviar mensagem:\n\n" +
+                error.message
+            );
 
-        chatInput.disabled =
-            false;
+        }
 
+        finally {
 
-        chatInput.focus();
+            sendButton.disabled =
+                false;
+
+            chatInput.disabled =
+                false;
+
+            chatInput.focus();
+
+        }
 
     }
 );
@@ -1248,11 +1334,22 @@ chatForm.addEventListener(
 
 function subscribeMessages() {
 
+    if(messagesChannel) {
+
+        supabaseClient.removeChannel(
+            messagesChannel
+        );
+
+    }
+
+
     messagesChannel =
         supabaseClient
             .channel(
                 "zunoplay-chat-" +
-                roomId
+                roomId +
+                "-" +
+                Date.now()
             )
             .on(
                 "postgres_changes",
@@ -1266,31 +1363,29 @@ function subscribeMessages() {
                 },
                 function(payload) {
 
-                    /*
-                        Evita duplicar a mensagem
-                        que já foi mostrada localmente.
-                    */
-
-                    const existing =
-                        messages.querySelector(
-                            `[data-message-id="${payload.new.id}"]`
-                        );
-
-
-                    if(existing) {
-
-                        return;
-
-                    }
+                    console.log(
+                        "Nova mensagem:",
+                        payload.new
+                    );
 
 
                     addMessage(
-                        payload.new
+                        payload.new,
+                        true
                     );
 
                 }
             )
-            .subscribe();
+            .subscribe(
+                function(status) {
+
+                    console.log(
+                        "Chat Realtime:",
+                        status
+                    );
+
+                }
+            );
 
 }
 
@@ -1301,11 +1396,22 @@ function subscribeMessages() {
 
 function subscribeMembers() {
 
+    if(membersChannel) {
+
+        supabaseClient.removeChannel(
+            membersChannel
+        );
+
+    }
+
+
     membersChannel =
         supabaseClient
             .channel(
                 "zunoplay-members-" +
-                roomId
+                roomId +
+                "-" +
+                Date.now()
             )
             .on(
                 "postgres_changes",
@@ -1358,123 +1464,4 @@ leaveButton.addEventListener(
 
             await supabaseClient
                 .removeChannel(
-                    membersChannel
-                );
-
-        }
-
-
-        const {
-            error
-        } =
-        await supabaseClient
-            .from("room_members")
-            .delete()
-            .eq(
-                "room_id",
-                roomId
-            )
-            .eq(
-                "user_id",
-                currentUser.id
-            );
-
-
-        if(error) {
-
-            console.error(
-                error
-            );
-
-
-            alert(
-                "Não foi possível sair da sala:\n\n" +
-                error.message
-            );
-
-
-            leaveButton.disabled =
-                false;
-
-
-            leaveButton.textContent =
-                "Sair da sala";
-
-
-            return;
-
-        }
-
-
-        /*
-            Só apagamos o ID quando
-            o usuário realmente saiu.
-        */
-
-        sessionStorage.removeItem(
-            "zunoplay_room_id"
-        );
-
-
-        window.location.href =
-            "salas.html";
-
-    }
-);
-
-
-/* =========================================
-   ERRO
-========================================= */
-
-function showError(
-    message
-) {
-
-    document.querySelector(
-        ".content"
-    ).innerHTML = `
-
-        <div class="error">
-
-            ❌
-
-            <br><br>
-
-            ${escapeHTML(
-                message
-            )}
-
-            <br><br>
-
-            <button
-                onclick="window.location.href='salas.html'"
-                style="
-                    padding:14px 20px;
-                    border:0;
-                    border-radius:12px;
-                    background:#8b5cf6;
-                    color:white;
-                    font-weight:bold;
-                    cursor:pointer;
-                "
-            >
-
-                Voltar para salas
-
-            </button>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================
-   INICIAR
-========================================= */
-
-async function init() {
-
-    try 
+              
