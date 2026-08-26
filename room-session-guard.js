@@ -36,17 +36,12 @@
 
   async function touchCurrentRoom(){
     if(stopped||!sb||!user||!roomId)return false;
-    const{data,error}=await sb.from('room_members')
-      .update({last_seen_at:new Date().toISOString()})
-      .eq('room_id',roomId)
-      .eq('user_id',user.id)
-      .select('id')
-      .maybeSingle();
+    const{data,error}=await sb.rpc('touch_room_session',{p_room_id:roomId});
     if(error){
       console.warn('ZunoPlay: heartbeat da sala falhou.',error);
       return false;
     }
-    if(!data){
+    if(data!==true){
       stopped=true;
       if(heartbeat)clearInterval(heartbeat);
       sessionStorage.removeItem('zunoplay_room_id');
