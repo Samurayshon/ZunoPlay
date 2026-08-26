@@ -9,11 +9,23 @@
   let roomMemberIds=[];
   let directoryLoadedAt=0;
   let bindScheduled=false;
+  let hasSynced=false;
   const q=new URLSearchParams(location.search);
   const room=q.get('room')||q.get('room_id')||q.get('id')||sessionStorage.getItem('zunoplay_room_id');
 
   const style=document.createElement('style');
-  style.textContent='.presence-status{font-size:9px;margin-top:3px;color:#4ade80}.is-speaking .avatar{box-shadow:0 0 0 4px rgba(34,197,94,.22)}.is-away .avatar,.is-offline .avatar{filter:saturate(.45);opacity:.72}.is-away .presence-status{color:#fbbf24}.is-offline .presence-status{color:#858697}';
+  style.textContent=`
+    .presence-status{font-size:9px;margin-top:3px;color:#4ade80}
+    .is-speaking .avatar{box-shadow:0 0 0 4px rgba(34,197,94,.22)}
+    .is-away .avatar{filter:saturate(.55);opacity:.78}
+    .is-away .presence-status{color:#fbbf24}
+    .is-offline .presence-status{color:#858697}
+    .avatar-slot.presence-vacant{cursor:default;pointer-events:none}
+    .avatar-slot.presence-vacant>*{display:none!important}
+    .avatar-slot.presence-vacant:before{content:'＋';width:62px;height:62px;border-radius:50%;border:1.5px solid #756c95;background:rgba(255,255,255,.015);display:grid;place-items:center;color:#8b8b9b;font-size:31px;font-weight:200}
+    .avatar-slot.presence-vacant:after{content:'Livre';margin-top:7px;font-size:9px;color:#66687a}
+    .member.presence-vacant,.top-avatar.presence-vacant{display:none!important}
+  `;
   document.head.appendChild(style);
 
   function waitForCore(){
@@ -33,7 +45,11 @@
         script.onerror=()=>{if(!settled){settled=true;reject(new Error('Falha ao carregar realtime-global.js'))}};
         document.head.appendChild(script);
       }
-      setTimeout(()=>{if(!settled){if(window.ZunoRealtime){settled=true;resolve(window.ZunoRealtime)}else{settled=true;reject(new Error('ZunoRealtime indisponível'))}}},5000);
+      setTimeout(()=>{
+        if(settled)return;
+        if(window.ZunoRealtime){settled=true;resolve(window.ZunoRealtime)}
+        else{settled=true;reject(new Error('ZunoRealtime indisponível'))}
+      },5000);
     });
   }
 
@@ -41,17 +57,47 @@
     return value==='speaking'?'🎙️ Falando':value==='listening'?'🎧 Ouvindo':value==='away'?'⏸️ Ausente':value==='offline'?'○ Offline':'● Online';
   }
 
+  function stateFor(id){
+    const list=currentState?.[id];
+    if(!Array.isArray(list)||!list.length)return 'offline';
+    const active=[...list].reverse().find(p=>p?.status&&p.status!=='offline');
+    return active?.status||list[list.length-1]?.status||'online';
+  }
+
+  function activeIds(){
+    if(!hasSynced)return roomMemberIds.slice();
+    return roomMemberIds.filter(id=>stateFor(id)!=='offline');
+  }
+
+  function updateVisibleCount(){
+    if(!hasSynced)return;
+    const count=activeIds().length;
+    const roomCount=document.getElementById('roomCountText');
+    const sheetCount=document.getElementById('sheetCount');
+    if(roomCount)roomCount.textContent=count+' '+(count===1?'pessoa':'pessoas');
+    if(sheetCount)sheetCount.textContent=count+' '+(count===1?'participante':'participantes');
+    document.querySelectorAll('.people-count').forEach(el=>el.textContent=String(count));
+  }
+
   function applyStatus(id,state){
     const value=state||'offline';
-    const selector='.avatar-slot[data-user-id="'+CSS.escape(String(id))+'"],.member[data-user-id="'+CSS.escape(String(id))+'"]';
+    const gone=hasSynced&&value==='offline';
+    const escaped=CSS.escape(String(id));
+    const selector='.avatar-slot[data-user-id="'+escaped+'"],.member[data-user-id="'+escaped+'"],.top-avatar[data-user-id="'+escaped+'"]';
     document.querySelectorAll(selector).forEach(el=>{
       el.dataset.presence=value;
-      el.classList.toggle('is-speaking',value==='speaking');
-      el.classList.toggle('is-away',value==='away');
-      el.classList.toggle('is-offline',value==='offline');
+      el.classList.toggle('presence-vacant',gone);
+      el.classList.toggle('is-speaking',!gone&&value==='speaking');
+      el.classList.toggle('is-away',!gone&&value==='away');
+      el.classList.toggle('is-offline',gone);
       const badge=el.querySelector('.presence-status');
       if(badge)badge.textContent=statusText(value);
     });
+  }
+
+  function applyAllStatuses(){
+    roomMemberIds.forEach(id=>applyStatus(id,stateFor(id)));
+    updateVisibleCount();
   }
 
   async function loadProfiles(ids){
@@ -67,7 +113,7 @@
     const memberCount=document.querySelectorAll('.member').length;
     if(!force&&roomMemberIds.length&&memberCount===roomMemberIds.length&&Date.now()-directoryLoadedAt<5000)return;
     const core=await waitForCore();
-    const{data,error}=await core.client.from('room_members').select('user_id').eq('room_id',room);
+    const{data,error}=await core.client.from('room_members').select('user_id,seat_index').eq('room_id',room).order('seat_index',{ascending:true});
     if(error)return;
     roomMemberIds=[...new Set((data||[]).map(x=>x.user_id).filter(Boolean))];
     await loadProfiles(roomMemberIds);
@@ -84,15 +130,15 @@
     return node?.tagName==='IMG'?(node.getAttribute('src')||''):'';
   }
 
-  function attachMarker(el,id){
+  function attachMarker(el,id,compact=false){
     if(!el||!id)return;
     el.dataset.userId=id;
-    if(!el.querySelector('.presence-status')){
+    if(!compact&&!el.querySelector('.presence-status')){
       const badge=document.createElement('div');
       badge.className='presence-status';
       el.appendChild(badge);
     }
-    applyStatus(id,currentState[id]?.[0]?.status||'offline');
+    applyStatus(id,stateFor(id));
   }
 
   function makeQueues(){
@@ -118,14 +164,22 @@
       return null;
     };
     elements.forEach(el=>{
-      let id=null;
+      let id=el.dataset.userId||null;
       const isMe=type==='stage'?el.classList.contains('me'):/\(Você\)/i.test(el.querySelector('.member-name')?.textContent||'');
       if(isMe&&user?.id){id=user.id;used.add(id)}
       if(!id){
         const name=usernameOf(el,type),avatar=avatarOf(el,type);
         id=take(exact.get(name+'|'+avatar))||take(byName.get(name));
       }
-      if(id)attachMarker(el,id);
+      if(id)attachMarker(el,id,false);
+    });
+  }
+
+  function assignTopAvatars(){
+    const top=[...document.querySelectorAll('.top-avatar')];
+    top.forEach((el,index)=>{
+      const id=roomMemberIds[index];
+      if(id)attachMarker(el,id,true);
     });
   }
 
@@ -134,6 +188,8 @@
     await refreshDirectory();
     assignElements([...document.querySelectorAll('.avatar-slot')],'stage');
     assignElements([...document.querySelectorAll('.member')],'member');
+    assignTopAvatars();
+    applyAllStatuses();
   }
 
   function scheduleBind(){
@@ -143,6 +199,7 @@
   }
 
   function sync(){
+    hasSynced=true;
     currentState=scope?.state()||{};
     scheduleBind();
     window.dispatchEvent(new CustomEvent('zuno:room-presence-sync',{detail:currentState}));
@@ -160,13 +217,17 @@
     scope
       .on('sync',sync)
       .on('join',({key,newPresences})=>{
+        hasSynced=true;
         currentState=scope.state();
         scheduleBind();
         window.dispatchEvent(new CustomEvent('zuno:room-presence-join',{detail:{key,newPresences}}));
       })
       .on('leave',({key,leftPresences})=>{
+        hasSynced=true;
         currentState=scope.state();
         applyStatus(key,'offline');
+        updateVisibleCount();
+        directoryLoadedAt=0;
         scheduleBind();
         window.dispatchEvent(new CustomEvent('zuno:room-presence-leave',{detail:{key,leftPresences}}));
       });
@@ -174,7 +235,7 @@
     await scope.subscribe();
     sync();
 
-    const roots=[document.getElementById('roomStage'),document.getElementById('members')].filter(Boolean);
+    const roots=[document.getElementById('roomStage'),document.getElementById('members'),document.getElementById('topPeople')].filter(Boolean);
     const observer=new MutationObserver(()=>{directoryLoadedAt=0;scheduleBind()});
     roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));
   }
@@ -185,10 +246,18 @@
     await scope.track({user_id:user.id,room_id:room,status:state,at:new Date().toISOString()});
     currentState=scope.state();
     applyStatus(user.id,state);
+    updateVisibleCount();
     return true;
   };
 
-  window.ZunoRoomPresence={start,getState:()=>currentState,set:window.zunoSetRoomPresence,getUser:()=>user,refresh:()=>{directoryLoadedAt=0;return bindInterface()}};
+  window.ZunoRoomPresence={
+    start,
+    getState:()=>currentState,
+    set:window.zunoSetRoomPresence,
+    getUser:()=>user,
+    refresh:()=>{directoryLoadedAt=0;return bindInterface()}
+  };
+
   start().catch(error=>console.error('Zuno room presence',error));
   window.addEventListener('beforeunload',()=>{scope?.close?.().catch?.(()=>{})});
 })();
