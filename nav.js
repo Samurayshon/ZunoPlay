@@ -44,6 +44,16 @@
     document.head.appendChild(script);
   }
 
+  function loadRoomVoice() {
+    if (page !== 'sala.html' || document.getElementById('zunoplay-room-voice')) return;
+    const script = document.createElement('script');
+    script.id = 'zunoplay-room-voice';
+    script.src = new URL('./voz-sala.js', location.href).href;
+    script.async = true;
+    script.onerror = () => console.error('ZunoPlay: não foi possível carregar voz-sala.js');
+    document.head.appendChild(script);
+  }
+
   function bootstrapRealtime() {
     if (patchSupabaseFactory()) {
       loadRealtimeCore();
@@ -62,6 +72,7 @@
   }
 
   bootstrapRealtime();
+  loadRoomVoice();
 
   if (skipNavigation) return;
 
