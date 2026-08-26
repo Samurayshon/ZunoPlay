@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v22";
+const CACHE_NAME = "zunoplay-v23";
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -21,7 +21,8 @@ const STATIC_FILES = [
   "./nav.js",
   "./realtime-global.js",
   "./presenca-sala.js",
-  "./voz-sala.js"
+  "./voz-sala.js",
+  "./room-chat-sync.js"
 ];
 
 self.addEventListener("install", event => {
