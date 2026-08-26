@@ -8,15 +8,31 @@
     document.head.appendChild(style);
     function makeHomeButton(){const b=document.createElement('button');b.type='button';b.className='zunoplay-home-button';b.title='Voltar para a tela inicial';b.setAttribute('aria-label','Voltar para a tela inicial');b.textContent='⌂';b.addEventListener('click',goHome);return b;}
     function makePlainLogo(text){const d=document.createElement('div');d.className='zunoplay-plain-logo';d.innerHTML=text||'Zuno<span>Play</span>';return d;}
+    function normalizeHeader(header){
+        if(header.dataset.zunoplayNavNormalized==='1') return;
+        header.dataset.zunoplayNavNormalized='1';
+        const candidates=[...header.querySelectorAll('.zunoplay-home-button, .home-button, a[href="index.html"]')];
+        const homes=candidates.filter(el=>el.matches('.zunoplay-home-button,.home-button') || (el.tagName==='A' && (el.textContent.includes('⌂') || el.textContent.toLowerCase().includes('home'))));
+        homes.slice(1).forEach(el=>el.remove());
+        let home=homes[0];
+        if(!home){
+            const legacy=[...header.querySelectorAll('.home-button')][0];
+            if(legacy) home=legacy;
+        }
+        if(home){
+            home.className='zunoplay-home-button';
+            home.type='button';
+            home.removeAttribute('href');
+            home.title='Voltar para a tela inicial';
+            home.setAttribute('aria-label','Voltar para a tela inicial');
+            home.textContent='⌂';
+            home.onclick=goHome;
+        } else {
+            header.insertBefore(makeHomeButton(),header.firstChild);
+        }
+        [...header.querySelectorAll('.zunoplay-home-button')].slice(1).forEach(el=>el.remove());
+    }
     document.querySelectorAll('.header-logo, .logo-main').forEach(logo=>{if(logo.dataset.zunoplayPlain==='1')return;logo.dataset.zunoplayPlain='1';logo.replaceWith(makePlainLogo(logo.innerHTML));});
     document.querySelectorAll('.logo').forEach(logo=>{if(logo.classList.contains('zunoplay-plain-logo'))return;if(logo.querySelector('.zunoplay-home-button'))return;logo.classList.add('zunoplay-plain-logo');});
-    document.querySelectorAll('.header, .chat-header').forEach(header=>{
-        const existing=[...header.querySelectorAll('.zunoplay-home-button, .home-button')];
-        existing.slice(1).forEach(button=>button.remove());
-        if(!header.querySelector('.zunoplay-home-button')){
-            const legacy=header.querySelector('.home-button');
-            if(legacy){legacy.className='zunoplay-home-button';legacy.type='button';legacy.title='Voltar para a tela inicial';legacy.setAttribute('aria-label','Voltar para a tela inicial');legacy.textContent='⌂';legacy.onclick=goHome;}
-            else header.insertBefore(makeHomeButton(),header.firstChild);
-        }
-    });
+    document.querySelectorAll('.header, .chat-header').forEach(normalizeHeader);
 })();
