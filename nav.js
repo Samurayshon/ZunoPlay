@@ -35,15 +35,6 @@
     document.head.appendChild(s);
   }
 
-  function loadStyle(id,file){
-    if(document.getElementById(id))return;
-    const link=document.createElement('link');
-    link.id=id;
-    link.rel='stylesheet';
-    link.href=new URL(file,location.href).href;
-    document.head.appendChild(link);
-  }
-
   function loadRealtimeCore(){
     if(window.ZunoRealtime){window.ZunoRealtime.start?.().catch?.(console.error);return}
     loadScript('zunoplay-realtime-global','./realtime-global.js','ZunoPlay: não foi possível carregar realtime-global.js');
@@ -55,12 +46,6 @@
 
   function loadRoomSessionGuard(){
     loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: não foi possível carregar room-session-guard.js');
-  }
-
-  function loadOfficialHome(){
-    if(page!=='index.html')return;
-    loadStyle('zunoplay-home-v29-style','./home-v29.css');
-    loadScript('zunoplay-home-v29-script','./home-v29.js','ZunoPlay: não foi possível carregar home-v29.js');
   }
 
   function bootstrapRealtime() {
@@ -78,7 +63,6 @@
   bootstrapRealtime();
   loadRoomVoice();
   loadRoomSessionGuard();
-  loadOfficialHome();
 
   if (skipNavigation) return;
 
