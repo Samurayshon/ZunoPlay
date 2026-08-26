@@ -1,4 +1,5 @@
-const CACHE_NAME = "zunoplay-v3";
+const CACHE_NAME = "zunoplay-v4";
+const NAV_SCRIPT = "<script src=\"./nav.js\"></script>";
 
 const FILES_TO_CACHE = [
     "./",
@@ -17,29 +18,33 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
     event.waitUntil(
         caches.keys().then(keys => Promise.all(
-            keys
-                .filter(key => key !== CACHE_NAME)
-                .map(key => caches.delete(key))
+            keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
         ))
     );
     self.clients.claim();
 });
 
-async function injectNavigation(response) {
+async function addNavigationControls(response) {
+    if (!response || !response.ok) return response;
     const contentType = response.headers.get("content-type") || "";
     if (!contentType.includes("text/html")) return response;
 
-    const text = await response.text();
-    const script = '<script src="./nav.js"></script>';
-    const transformed = text.includes("./nav.js")
-        ? text
-        : text.replace(/<\/body>/i, script + "</body>");
+    const html = await response.text();
+    if (html.includes('src="./nav.js"') || html.includes("src='./nav.js'")) {
+        return new Response(html, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+        });
+    }
+
+    const updated = html.includes("</body>")
+        ? html.replace(/<\/body>/i, `${NAV_SCRIPT}</body>`)
+        : `${html}${NAV_SCRIPT}`;
 
     const headers = new Headers(response.headers);
-    headers.set("content-type", "text/html; charset=utf-8");
     headers.delete("content-length");
-
-    return new Response(transformed, {
+    return new Response(updated, {
         status: response.status,
         statusText: response.statusText,
         headers
@@ -52,19 +57,19 @@ self.addEventListener("fetch", event => {
     event.respondWith(
         fetch(event.request)
             .then(async response => {
-                if (!response || response.status !== 200) return response;
+                const result = event.request.mode === "navigate"
+                    ? await addNavigationControls(response)
+                    : response;
 
-                const finalResponse = await injectNavigation(response.clone());
+                if (result && result.status === 200) {
+                    const clone = result.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, clone).catch(() => {});
+                    });
+                }
 
-                caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, finalResponse.clone());
-                });
-
-                return finalResponse;
+                return result;
             })
-            .catch(async () => {
-                const cached = await caches.match(event.request);
-                return cached || Response.error();
-            })
+            .catch(() => caches.match(event.request))
     );
 });
