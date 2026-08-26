@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v27";
+const CACHE_NAME = "zunoplay-v28";
 const STATIC_FILES = [
   "./",
   "./index.html",
