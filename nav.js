@@ -10,5 +10,13 @@
     function makePlainLogo(text){const d=document.createElement('div');d.className='zunoplay-plain-logo';d.innerHTML=text||'Zuno<span>Play</span>';return d;}
     document.querySelectorAll('.header-logo, .logo-main').forEach(logo=>{if(logo.dataset.zunoplayPlain==='1')return;logo.dataset.zunoplayPlain='1';logo.replaceWith(makePlainLogo(logo.innerHTML));});
     document.querySelectorAll('.logo').forEach(logo=>{if(logo.classList.contains('zunoplay-plain-logo'))return;if(logo.querySelector('.zunoplay-home-button'))return;logo.classList.add('zunoplay-plain-logo');});
-    document.querySelectorAll('.header, .chat-header').forEach(header=>{if(header.querySelector('.zunoplay-home-button'))return;header.insertBefore(makeHomeButton(),header.firstChild);});
+    document.querySelectorAll('.header, .chat-header').forEach(header=>{
+        const existing=[...header.querySelectorAll('.zunoplay-home-button, .home-button')];
+        existing.slice(1).forEach(button=>button.remove());
+        if(!header.querySelector('.zunoplay-home-button')){
+            const legacy=header.querySelector('.home-button');
+            if(legacy){legacy.className='zunoplay-home-button';legacy.type='button';legacy.title='Voltar para a tela inicial';legacy.setAttribute('aria-label','Voltar para a tela inicial');legacy.textContent='⌂';legacy.onclick=goHome;}
+            else header.insertBefore(makeHomeButton(),header.firstChild);
+        }
+    });
 })();
