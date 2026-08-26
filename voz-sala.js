@@ -6,10 +6,12 @@
   const roomId=params.get('room')||params.get('room_id')||params.get('id')||sessionStorage.getItem('zunoplay_room_id');
   if(!roomId)return;
 
-  const ICE_SERVERS=[
+  const BASE_ICE_SERVERS=[
     {urls:'stun:stun.l.google.com:19302'},
     {urls:'stun:stun1.l.google.com:19302'}
   ];
+  let iceServers=[...BASE_ICE_SERVERS];
+  let turnReady=false;
 
   let core=null;
   let sb=null;
@@ -24,6 +26,10 @@
   let muted=false;
   let subscribed=false;
   let desiredPresence='online';
+  let channelReconnectTimer=null;
+  let channelReconnectAttempts=0;
+  let networkOnline=navigator.onLine!==false;
+  let stopping=false;
   const peers=new Map();
   const remoteAudio=new Map();
 
@@ -32,6 +38,14 @@
   function roomTopic(){return 'room:'+roomId+':voice'}
   function peerIds(){return [...peers.keys()]}
   function isSecureMediaContext(){return window.isSecureContext&&!!navigator.mediaDevices?.getUserMedia}
+  function urlsOf(server){return Array.isArray(server?.urls)?server.urls:[server?.urls]}
+  function hasTurn(servers){return servers.some(server=>urlsOf(server).some(url=>typeof url==='string'&&/^turns?:/i.test(url)))}
+  function validIceServer(server){
+    const urls=urlsOf(server).filter(url=>typeof url==='string'&&/^(stun|turn|turns):/i.test(url));
+    if(!urls.length)return false;
+    if(urls.some(url=>/^turns?:/i.test(url)))return typeof server.username==='string'&&typeof server.credential==='string';
+    return true;
+  }
 
   function waitForCore(){
     if(window.ZunoRealtime)return Promise.resolve(window.ZunoRealtime);
@@ -50,10 +64,35 @@
     });
   }
 
+  async function resolveIceServers(){
+    let supplied=[];
+    try{
+      if(typeof window.ZunoVoiceICEProvider==='function'){
+        const result=await window.ZunoVoiceICEProvider({roomId,userId:user?.id,supabase:sb});
+        supplied=Array.isArray(result)?result:Array.isArray(result?.iceServers)?result.iceServers:[];
+      }else if(typeof window.ZUNO_TURN_ENDPOINT==='string'&&window.ZUNO_TURN_ENDPOINT){
+        const {data}=await sb.auth.getSession();
+        const token=data?.session?.access_token;
+        if(token){
+          const response=await fetch(window.ZUNO_TURN_ENDPOINT,{headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store'});
+          if(response.ok){
+            const payload=await response.json();
+            supplied=Array.isArray(payload)?payload:Array.isArray(payload?.iceServers)?payload.iceServers:[];
+          }
+        }
+      }
+    }catch(error){
+      console.warn('TURN temporário indisponível; usando STUN.',error);
+    }
+    supplied=supplied.filter(validIceServer);
+    iceServers=[...BASE_ICE_SERVERS,...supplied];
+    turnReady=hasTurn(iceServers);
+  }
+
   function mount(){
     if(ui.root||!document.body)return;
     const style=document.createElement('style');
-    style.textContent='.zuno-voice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:13px 14px;margin:12px 0 2px;border:1px solid #303145;border-radius:16px;background:#10111c}.zuno-voice button{border:0;border-radius:11px;padding:11px 13px;color:#fff;font-weight:700;cursor:pointer}.zuno-voice .voice-join{background:linear-gradient(135deg,#8b5cf6,#6366f1)}.zuno-voice .voice-mute{background:#24253a;border:1px solid #3b3c55}.zuno-voice button:disabled{opacity:.55;cursor:default}.zuno-voice .voice-status{flex:1;min-width:160px;font-size:11px;color:#a7a7b5;line-height:1.4}.zuno-voice .voice-count{font-size:10px;color:#4ade80}.zuno-voice.is-active{border-color:rgba(34,197,94,.45)}';
+    style.textContent='.zuno-voice{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:13px 14px;margin:12px 0 2px;border:1px solid #303145;border-radius:16px;background:#10111c}.zuno-voice button{border:0;border-radius:11px;padding:11px 13px;color:#fff;font-weight:700;cursor:pointer}.zuno-voice .voice-join{background:linear-gradient(135deg,#8b5cf6,#6366f1)}.zuno-voice .voice-mute{background:#24253a;border:1px solid #3b3c55}.zuno-voice button:disabled{opacity:.55;cursor:default}.zuno-voice .voice-status{flex:1;min-width:160px;font-size:11px;color:#a7a7b5;line-height:1.4}.zuno-voice .voice-count{font-size:10px;color:#4ade80}.zuno-voice.is-active{border-color:rgba(34,197,94,.45)}.zuno-voice.is-offline{border-color:rgba(239,68,68,.5)}';
     document.head.appendChild(style);
 
     const root=document.createElement('div');
@@ -91,6 +130,7 @@
     mount();
     if(!ui.root)return;
     ui.root.classList.toggle('is-active',voiceActive);
+    ui.root.classList.toggle('is-offline',voiceActive&&!networkOnline);
     ui.join.textContent=voiceActive?'⏹️ Sair da voz':'🎙️ Ativar voz';
     ui.mute.disabled=!voiceActive;
     ui.mute.textContent=muted?'🎙️ Desmutar':'🔇 Mutar';
@@ -179,16 +219,29 @@
   }
 
   async function sendSignal(to,kind,data){
-    if(!channel||!subscribed||!user)return;
-    const result=await channel.send({type:'broadcast',event:'signal',payload:{from:user.id,to,kind,data,room_id:roomId,at:Date.now()}});
-    if(result!=='ok'&&result!=='OK')console.warn('Sinal WebRTC não confirmado',result);
+    if(!channel||!subscribed||!user)return false;
+    try{
+      const result=await channel.send({type:'broadcast',event:'signal',payload:{from:user.id,to,kind,data,room_id:roomId,at:Date.now()}});
+      const ok=result==='ok'||result==='OK';
+      if(!ok)console.warn('Sinal WebRTC não confirmado',result);
+      return ok;
+    }catch(error){
+      console.warn('Falha ao enviar sinal WebRTC',error);
+      return false;
+    }
+  }
+
+  function clearPeerTimers(rec){
+    if(rec?.restartTimer){clearTimeout(rec.restartTimer);rec.restartTimer=null}
+    if(rec?.disconnectTimer){clearTimeout(rec.disconnectTimer);rec.disconnectTimer=null}
   }
 
   function closePeer(peerId){
     const rec=peers.get(peerId);
     if(rec){
       rec.closed=true;
-      try{rec.pc.onicecandidate=null;rec.pc.ontrack=null;rec.pc.close()}catch(_){}
+      clearPeerTimers(rec);
+      try{rec.pc.onicecandidate=null;rec.pc.ontrack=null;rec.pc.onconnectionstatechange=null;rec.pc.oniceconnectionstatechange=null;rec.pc.close()}catch(_){}
       peers.delete(peerId);
     }
     removeRemoteAudio(peerId);
@@ -197,11 +250,39 @@
 
   function shouldInitiate(peerId){return String(user.id).localeCompare(String(peerId))<0}
 
+  async function recoverPeer(peerId,reason='network'){
+    if(!voiceActive||!networkOnline)return;
+    const rec=peers.get(peerId);
+    if(!rec||rec.closed)return;
+    if(rec.recovering)return;
+    rec.recovering=true;
+    rec.restartAttempts=(rec.restartAttempts||0)+1;
+    try{
+      setStatus('Reconectando áudio…',false);
+      if(rec.restartAttempts<=2){
+        try{rec.pc.restartIce?.()}catch(_){}
+        if(shouldInitiate(peerId))await makeOffer(peerId,true);
+        else await sendSignal(peerId,'restart-request',{reason});
+      }else{
+        closePeer(peerId);
+        const fresh=ensurePeer(peerId);
+        fresh.restartAttempts=0;
+        if(shouldInitiate(peerId))await makeOffer(peerId,true);
+        else await sendSignal(peerId,'restart-request',{reason:'recreate'});
+      }
+    }catch(error){
+      console.warn('Recuperação WebRTC',peerId,error);
+    }finally{
+      const latest=peers.get(peerId);
+      if(latest)latest.recovering=false;
+    }
+  }
+
   function ensurePeer(peerId){
     let rec=peers.get(peerId);
     if(rec&&!rec.closed)return rec;
-    const pc=new RTCPeerConnection({iceServers:ICE_SERVERS});
-    rec={pc,pendingIce:[],makingOffer:false,offerSent:false,closed:false,restartTimer:null};
+    const pc=new RTCPeerConnection({iceServers,iceCandidatePoolSize:2});
+    rec={pc,pendingIce:[],makingOffer:false,offerSent:false,closed:false,restartTimer:null,disconnectTimer:null,restartAttempts:0,recovering:false};
     peers.set(peerId,rec);
 
     for(const track of localStream?.getTracks?.()||[])pc.addTrack(track,localStream);
@@ -209,6 +290,7 @@
     pc.onicecandidate=event=>{
       if(event.candidate)sendSignal(peerId,'ice',event.candidate.toJSON?event.candidate.toJSON():event.candidate).catch(console.error);
     };
+    pc.onicecandidateerror=event=>console.warn('ICE candidate error',event?.errorCode||'',event?.errorText||'');
     pc.ontrack=event=>{
       let stream=event.streams?.[0];
       if(!stream){
@@ -221,21 +303,20 @@
     pc.onconnectionstatechange=()=>{
       updateCount();
       const state=pc.connectionState;
-      if(state==='connected')setStatus(muted?'Na voz · microfone mutado':'Na voz · áudio conectado');
-      if(state==='failed'){
-        setStatus('Reconectando áudio…',false);
-        if(rec.restartTimer)clearTimeout(rec.restartTimer);
-        rec.restartTimer=setTimeout(()=>{
-          if(!voiceActive||rec.closed)return;
-          if(shouldInitiate(peerId))makeOffer(peerId,true).catch(console.error);
-        },1200);
-      }
-      if(state==='closed')closePeer(peerId);
+      if(state==='connected'){
+        clearPeerTimers(rec);
+        rec.restartAttempts=0;
+        setStatus(muted?'Na voz · microfone mutado':'Na voz · áudio conectado'+(turnReady?' · relay disponível':''));
+      }else if(state==='disconnected'){
+        if(rec.disconnectTimer)clearTimeout(rec.disconnectTimer);
+        rec.disconnectTimer=setTimeout(()=>recoverPeer(peerId,'disconnected'),4500);
+      }else if(state==='failed'){
+        clearPeerTimers(rec);
+        rec.restartTimer=setTimeout(()=>recoverPeer(peerId,'failed'),700);
+      }else if(state==='closed')closePeer(peerId);
     };
     pc.oniceconnectionstatechange=()=>{
-      if(pc.iceConnectionState==='failed'&&typeof pc.restartIce==='function'){
-        try{pc.restartIce()}catch(_){}
-      }
+      if(pc.iceConnectionState==='failed')recoverPeer(peerId,'ice-failed');
     };
     return rec;
   }
@@ -253,6 +334,7 @@
     const rec=ensurePeer(peerId);
     if(rec.makingOffer)return;
     if(!iceRestart&&rec.offerSent&&rec.pc.signalingState!=='closed')return;
+    if(rec.pc.signalingState!=='stable')return;
     try{
       rec.makingOffer=true;
       const offer=await rec.pc.createOffer(iceRestart?{iceRestart:true}:undefined);
@@ -284,6 +366,8 @@
       }else if(payload.kind==='ice'&&payload.data){
         const candidate=new RTCIceCandidate(payload.data);
         if(rec.pc.remoteDescription)await rec.pc.addIceCandidate(candidate);else rec.pendingIce.push(candidate);
+      }else if(payload.kind==='restart-request'){
+        if(shouldInitiate(peerId))await makeOffer(peerId,true);
       }else if(payload.kind==='bye')closePeer(peerId);
     }catch(error){
       console.error('Sinalização WebRTC',payload.kind,error);
@@ -304,6 +388,35 @@
     updateCount();
   }
 
+  function clearChannelReconnect(){
+    if(channelReconnectTimer){clearTimeout(channelReconnectTimer);channelReconnectTimer=null}
+  }
+
+  function scheduleChannelReconnect(immediate=false){
+    if(!voiceActive||!networkOnline||stopping)return;
+    clearChannelReconnect();
+    channelReconnectAttempts++;
+    const delay=immediate?100:Math.min(1000*Math.pow(2,Math.min(channelReconnectAttempts-1,4)),10000);
+    channelReconnectTimer=setTimeout(async()=>{
+      if(!voiceActive||!networkOnline||stopping)return;
+      try{
+        subscribed=false;
+        const old=channel;
+        channel=null;
+        if(old){try{await sb?.removeChannel(old)}catch(_){}}
+        await openChannel();
+        channelReconnectAttempts=0;
+        syncVoicePeers();
+        for(const id of peerIds())recoverPeer(id,'channel-restored');
+        setStatus('Voz reconectada'+(turnReady?' · relay disponível':''));
+      }catch(error){
+        console.warn('Reconexão do canal de voz',error);
+        setStatus('Reconectando canal de voz…',false);
+        scheduleChannelReconnect(false);
+      }
+    },delay);
+  }
+
   async function openChannel(){
     await sb.realtime.setAuth();
     channel=sb.channel(roomTopic(),{config:{private:true,presence:{key:user.id},broadcast:{self:false,ack:true}}});
@@ -314,18 +427,29 @@
       .on('presence',{event:'leave'},({key})=>{if(key&&key!==user.id)closePeer(key);syncVoicePeers()});
 
     await new Promise((resolve,reject)=>{
-      let done=false;
-      const timeout=setTimeout(()=>{if(!done){done=true;reject(new Error('Tempo esgotado ao conectar a voz'))}},8000);
+      let initialPending=true;
+      const timeout=setTimeout(()=>{
+        if(initialPending){initialPending=false;reject(new Error('Tempo esgotado ao conectar a voz'))}
+      },8000);
       channel.subscribe(async status=>{
-        if(done)return;
         if(status==='SUBSCRIBED'){
           try{
             subscribed=true;
             await channel.track({user_id:user.id,room_id:roomId,voice:true,muted,at:new Date().toISOString()});
-            done=true;clearTimeout(timeout);resolve();
-          }catch(error){done=true;clearTimeout(timeout);reject(error)}
-        }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
-          done=true;clearTimeout(timeout);reject(new Error('Canal de voz indisponível: '+status));
+            clearChannelReconnect();
+            channelReconnectAttempts=0;
+            if(initialPending){initialPending=false;clearTimeout(timeout);resolve()}
+          }catch(error){
+            if(initialPending){initialPending=false;clearTimeout(timeout);reject(error)}
+          }
+        }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+          subscribed=false;
+          if(initialPending){
+            initialPending=false;clearTimeout(timeout);reject(new Error('Canal de voz indisponível: '+status));
+          }else if(voiceActive&&!stopping){
+            setStatus('Reconectando canal de voz…',false);
+            scheduleChannelReconnect(false);
+          }
         }
       });
     });
@@ -338,6 +462,10 @@
       setStatus('O navegador não liberou acesso ao microfone neste contexto.',false);
       return;
     }
+    if(!networkOnline){
+      setStatus('Sem conexão com a internet. Reconecte e tente novamente.',false);
+      return;
+    }
     ui.join.disabled=true;
     setStatus('Solicitando acesso ao microfone…');
     try{
@@ -346,11 +474,19 @@
       sb=core.client;
       user=core.getUser();
       if(!user)throw new Error('Sessão não encontrada');
+      await resolveIceServers();
 
       localStream=await navigator.mediaDevices.getUserMedia({
         audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},
         video:false
       });
+      const micTrack=localStream.getAudioTracks()[0];
+      if(micTrack)micTrack.onended=()=>{
+        if(voiceActive&&!stopping){
+          setStatus('O microfone foi desconectado.',false);
+          stopVoice(false).catch(()=>{});
+        }
+      };
       muted=false;
       voiceActive=true;
       startVad();
@@ -358,9 +494,9 @@
       await openChannel();
       await setInitialListening();
       updateControls();
-      setStatus('Na voz · aguardando participantes');
+      setStatus('Na voz · aguardando participantes'+(turnReady?' · relay disponível':''));
       syncVoicePeers();
-      window.dispatchEvent(new CustomEvent('zuno:voice-started',{detail:{room_id:roomId,user_id:user.id}}));
+      window.dispatchEvent(new CustomEvent('zuno:voice-started',{detail:{room_id:roomId,user_id:user.id,turn:turnReady}}));
     }catch(error){
       console.error('Zuno voz',error);
       setStatus(error?.name==='NotAllowedError'?'Microfone negado. Libere a permissão do navegador e tente novamente.':'Não foi possível ativar a voz: '+(error.message||'erro desconhecido'),false);
@@ -384,8 +520,11 @@
   }
 
   async function stopVoice(internal=false){
+    if(stopping)return;
+    stopping=true;
     const wasActive=voiceActive;
     voiceActive=false;
+    clearChannelReconnect();
     stopVad();
     if(wasActive&&!internal&&subscribed){
       await Promise.allSettled(peerIds().map(id=>sendSignal(id,'bye',null)));
@@ -398,7 +537,10 @@
       channel=null;
     }
     if(localStream){
-      for(const track of localStream.getTracks())track.stop();
+      for(const track of localStream.getTracks()){
+        track.onended=null;
+        track.stop();
+      }
       localStream=null;
     }
     muted=false;
@@ -407,15 +549,40 @@
     updateControls();
     if(!internal)setStatus('Voz desligada');
     if(wasActive)window.dispatchEvent(new CustomEvent('zuno:voice-stopped',{detail:{room_id:roomId}}));
+    stopping=false;
+  }
+
+  function handleOffline(){
+    networkOnline=false;
+    updateControls();
+    if(voiceActive)setStatus('Sem internet · mantendo o microfone e aguardando reconexão…',false);
+  }
+
+  function handleOnline(){
+    networkOnline=true;
+    updateControls();
+    if(!voiceActive)return;
+    setStatus('Internet restaurada · reconectando voz…');
+    if(!subscribed)scheduleChannelReconnect(true);
+    else{
+      syncVoicePeers();
+      for(const id of peerIds())recoverPeer(id,'network-online');
+    }
   }
 
   window.ZunoRoomVoice={
     start:startVoice,
     stop:()=>stopVoice(false),
     mute:async value=>{if(!voiceActive)return false;if(Boolean(value)!==muted)await toggleMute();return true},
-    getState:()=>({active:voiceActive,muted,peers:peerIds(),room_id:roomId})
+    getState:()=>({active:voiceActive,muted,peers:peerIds(),room_id:roomId,online:networkOnline,turn:turnReady,channel:subscribed?'connected':'disconnected'}),
+    refreshIce:async()=>{if(!sb)return false;await resolveIceServers();return turnReady}
   };
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+  window.addEventListener('offline',handleOffline);
+  window.addEventListener('online',handleOnline);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'&&voiceActive){unlockAudio();if(networkOnline&&!subscribed)scheduleChannelReconnect(true)}
+  });
   window.addEventListener('pagehide',()=>{stopVoice(true).catch(()=>{})});
 })();
