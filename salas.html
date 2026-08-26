@@ -395,14 +395,10 @@ async function loadRooms() {
 
         if(error) {
 
-            console.error(
-                error
-            );
-
+            console.error(error);
 
             statusElement.textContent =
                 "❌ Erro ao carregar salas";
-
 
             roomList.innerHTML = `
 
@@ -427,7 +423,6 @@ async function loadRooms() {
 
 
         statusElement.textContent =
-
             "✅ " +
             data.length +
             " sala(s) encontrada(s)";
@@ -511,14 +506,10 @@ async function loadRooms() {
 
     } catch(error) {
 
-        console.error(
-            error
-        );
-
+        console.error(error);
 
         statusElement.textContent =
             "❌ Erro inesperado";
-
 
         roomList.innerHTML = `
 
@@ -589,16 +580,11 @@ async function enterRoom(
 
         const result =
             await supabaseClient
-                .from(
-                    "room_members"
-                )
+                .from("room_members")
                 .upsert(
                     {
-                        room_id:
-                            roomId,
-
-                        user_id:
-                            user.id
+                        room_id: roomId,
+                        user_id: user.id
                     },
                     {
                         onConflict:
@@ -624,9 +610,16 @@ async function enterRoom(
         }
 
 
-        alert(
-            "Você entrou na sala!"
-        );
+        /*
+         * A entrada foi registrada.
+         * Agora abrimos a sala interna.
+         */
+
+        window.location.href =
+            "sala.html?room=" +
+            encodeURIComponent(
+                roomId
+            );
 
 
     } catch(error) {
