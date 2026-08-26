@@ -129,6 +129,7 @@
       on(event,fn){channel.on('broadcast',{event},fn);return api},
       async subscribe(){
         if(subscribed)return api;
+        if(config.private)await sb.realtime.setAuth();
         return new Promise((resolve,reject)=>{
           channel.subscribe(status=>{
             if(status==='SUBSCRIBED'){subscribed=true;resolve(api)}
