@@ -619,6 +619,36 @@ body {
             </div>
 
 
+            <!-- SALAS -->
+
+            <div
+                class="menu-card"
+                onclick="window.location.href='salas.html'"
+            >
+
+                <div class="menu-icon">
+
+                    🎙️
+
+                </div>
+
+
+                <h2>
+
+                    Salas
+
+                </h2>
+
+
+                <p>
+
+                    Converse por voz e conheça pessoas.
+
+                </p>
+
+            </div>
+
+
             <!-- AMIGOS -->
 
             <div
@@ -842,355 +872,4 @@ function showApp(){
         "none";
 
     app.style.display =
-        "block";
-
-}
-
-
-function showWelcome(){
-
-    showApp();
-
-    welcomeScreen.style.display =
-        "flex";
-
-    homeScreen.style.display =
-        "none";
-
-}
-
-
-function showHome(user){
-
-    showApp();
-
-    welcomeScreen.style.display =
-        "none";
-
-    homeScreen.style.display =
-        "block";
-
-
-    let username =
-        user?.user_metadata?.username;
-
-
-    if(!username){
-
-        username =
-            user?.email?.split("@")[0] ||
-            "ZunoPlayer";
-
-    }
-
-
-    usernameElement.textContent =
-        username;
-
-
-    loadNotificationCount(
-        user.id
-    );
-
-}
-
-
-/* =========================================
-   CONTADOR DE NOTIFICAÇÕES
-========================================= */
-
-async function loadNotificationCount(
-    userId
-){
-
-    const {
-        count,
-        error
-    } =
-    await supabaseClient
-        .from("notifications")
-        .select(
-            "id",
-            {
-                count:"exact",
-                head:true
-            }
-        )
-        .eq(
-            "user_id",
-            userId
-        )
-        .is(
-            "read_at",
-            null
-        );
-
-
-    if(error){
-
-        console.error(
-            "Erro ao carregar notificações:",
-            error
-        );
-
-        return;
-
-    }
-
-
-    if(count && count > 0){
-
-        notificationBadge.textContent =
-            count > 99
-            ? "99+"
-            : count;
-
-
-        notificationBadge.style.display =
-            "flex";
-
-    }else{
-
-        notificationBadge.style.display =
-            "none";
-
-    }
-
-}
-
-
-/* =========================================
-   REALTIME
-========================================= */
-
-function subscribeNotifications(
-    userId
-){
-
-    if(notificationChannel){
-
-        supabaseClient.removeChannel(
-            notificationChannel
-        );
-
-    }
-
-
-    notificationChannel =
-        supabaseClient
-            .channel(
-                "home-notifications-" +
-                userId
-            )
-            .on(
-                "postgres_changes",
-                {
-                    event:"*",
-                    schema:"public",
-                    table:"notifications",
-                    filter:
-                        "user_id=eq." +
-                        userId
-                },
-                function(){
-
-                    loadNotificationCount(
-                        userId
-                    );
-
-                }
-            )
-            .subscribe();
-
-}
-
-
-/* =========================================
-   VERIFICAR USUÁRIO
-========================================= */
-
-async function checkUser(){
-
-    try{
-
-        const {
-            data,
-            error
-        } =
-        await supabaseClient.auth.getSession();
-
-
-        if(error){
-
-            console.error(error);
-
-            showWelcome();
-
-            return;
-
-        }
-
-
-        const user =
-            data?.session?.user;
-
-
-        if(user){
-
-            currentUser =
-                user;
-
-
-            showHome(
-                user
-            );
-
-
-            subscribeNotifications(
-                user.id
-            );
-
-        }else{
-
-            showWelcome();
-
-        }
-
-
-    }catch(error){
-
-        console.error(
-            "Erro ao verificar usuário:",
-            error
-        );
-
-        showWelcome();
-
-    }
-
-}
-
-
-/* =========================================
-   LOGOUT
-========================================= */
-
-logoutButton.addEventListener(
-    "click",
-    async function(){
-
-        logoutButton.disabled =
-            true;
-
-
-        logoutButton.textContent =
-            "Saindo...";
-
-
-        if(notificationChannel){
-
-            await supabaseClient
-                .removeChannel(
-                    notificationChannel
-                );
-
-        }
-
-
-        try{
-
-            await supabaseClient.auth.signOut();
-
-        }catch(error){
-
-            console.error(error);
-
-        }
-
-
-        window.location.href =
-            "index.html";
-
-    }
-);
-
-
-/* =========================================
-   AUTH STATE
-========================================= */
-
-supabaseClient.auth.onAuthStateChange(
-    function(
-        event,
-        session
-    ){
-
-        if(
-            session?.user &&
-            event !== "SIGNED_OUT"
-        ){
-
-            currentUser =
-                session.user;
-
-
-            showHome(
-                session.user
-            );
-
-
-            subscribeNotifications(
-                session.user.id
-            );
-
-        }
-
-
-        if(
-            event === "SIGNED_OUT"
-        ){
-
-            currentUser =
-                null;
-
-
-            showWelcome();
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   FALLBACK
-========================================= */
-
-setTimeout(
-    function(){
-
-        if(
-            loading.style.display !==
-            "none"
-        ){
-
-            showWelcome();
-
-        }
-
-    },
-    6000
-);
-
-
-/* =========================================
-   INICIAR
-========================================= */
-
-checkUser();
-
-</script>
-
-</body>
-
-</html>
+        "
