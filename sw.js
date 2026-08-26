@@ -1,5 +1,5 @@
-const CACHE_NAME = "zunoplay-v9";
-const STATIC_FILES = ["./", "./index.html", "./manifest.json", "./nav.js", "./realtime-global.js"];
+const CACHE_NAME = "zunoplay-v10";
+const STATIC_FILES = ["./", "./index.html", "./manifest.json", "./nav.js", "./realtime-global.js", "./presenca-sala.js"];
 
 self.addEventListener("install", event => {
   event.waitUntil(
