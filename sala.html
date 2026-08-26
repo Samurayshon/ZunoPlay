@@ -124,23 +124,23 @@ body {
 
     text-align: center;
 
-    padding: 25px 10px;
+    padding: 15px 10px 20px;
 
 }
 
 .hero-icon {
 
-    font-size: 55px;
+    font-size: 45px;
 
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 
 }
 
 .hero h1 {
 
-    font-size: 24px;
+    font-size: 23px;
 
-    margin-bottom: 8px;
+    margin-bottom: 7px;
 
 }
 
@@ -172,7 +172,7 @@ body {
 
     font-weight: bold;
 
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 
 }
 
@@ -184,7 +184,7 @@ body {
 
     gap: 12px;
 
-    padding: 12px 0;
+    padding: 10px 0;
 
     border-bottom: 1px solid #292a3d;
 
@@ -198,8 +198,8 @@ body {
 
 .avatar {
 
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
 
     border-radius: 50%;
 
@@ -211,10 +211,9 @@ body {
         );
 
     display: flex;
+
     align-items: center;
     justify-content: center;
-
-    font-weight: bold;
 
 }
 
@@ -228,26 +227,170 @@ body {
 .member-role {
 
     color: #858697;
+
     font-size: 11px;
+
     margin-top: 3px;
+
+}
+
+.chat {
+
+    margin-top: 15px;
+
+}
+
+.chat-title {
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+
+}
+
+.messages {
+
+    min-height: 160px;
+    max-height: 300px;
+
+    overflow-y: auto;
+
+    padding: 12px;
+
+    border-radius: 16px;
+
+    background: #0f101b;
+
+    border: 1px solid #292a3d;
 
 }
 
 .message {
 
-    margin-top: 15px;
+    margin-bottom: 10px;
 
-    padding: 14px;
+    padding: 10px 12px;
 
-    border-radius: 14px;
+    border-radius: 13px;
 
     background: #1b1c2b;
 
-    color: #9293a3;
+}
+
+.message:last-child {
+
+    margin-bottom: 0;
+
+}
+
+.message-user {
+
+    font-size: 11px;
+
+    color: #a78bfa;
+
+    font-weight: bold;
+
+    margin-bottom: 4px;
+
+}
+
+.message-text {
 
     font-size: 13px;
 
+    line-height: 1.4;
+
+    word-break: break-word;
+
+}
+
+.message-time {
+
+    color: #686978;
+
+    font-size: 9px;
+
+    margin-top: 4px;
+
+}
+
+.empty-chat {
+
     text-align: center;
+
+    color: #686978;
+
+    font-size: 12px;
+
+    padding: 40px 10px;
+
+}
+
+.chat-form {
+
+    display: flex;
+
+    gap: 8px;
+
+    margin-top: 10px;
+
+}
+
+.chat-input {
+
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 13px;
+
+    border-radius: 12px;
+
+    border: 1px solid #303145;
+
+    background: #141523;
+
+    color: white;
+
+    outline: none;
+
+}
+
+.chat-input:focus {
+
+    border-color: #8b5cf6;
+
+}
+
+.send-button {
+
+    width: 52px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    color: white;
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+}
+
+.send-button:disabled {
+
+    opacity: .6;
 
 }
 
@@ -348,7 +491,7 @@ body {
 
             <p>
 
-                Você está dentro da sala.
+                Converse com as pessoas da sala.
 
             </p>
 
@@ -366,7 +509,7 @@ body {
 
             <div id="members">
 
-                <div class="message">
+                <div class="empty-chat">
 
                     Carregando participantes...
 
@@ -377,10 +520,55 @@ body {
         </div>
 
 
-        <div class="message">
+        <div class="panel chat">
 
-            🎤 A área de conversa da sala
-            será adicionada nesta próxima etapa.
+            <div class="chat-title">
+
+                💬 Conversa
+
+            </div>
+
+
+            <div
+                id="messages"
+                class="messages"
+            >
+
+                <div class="empty-chat">
+
+                    Carregando mensagens...
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="chatForm"
+                class="chat-form"
+            >
+
+                <input
+                    id="chatInput"
+                    class="chat-input"
+                    type="text"
+                    maxlength="500"
+                    placeholder="Digite uma mensagem..."
+                    autocomplete="off"
+                >
+
+
+                <button
+                    id="sendButton"
+                    class="send-button"
+                    type="submit"
+                >
+
+                    ➤
+
+                </button>
+
+            </form>
 
         </div>
 
@@ -437,6 +625,26 @@ document.getElementById(
     "members"
 );
 
+const messagesElement =
+document.getElementById(
+    "messages"
+);
+
+const chatForm =
+document.getElementById(
+    "chatForm"
+);
+
+const chatInput =
+document.getElementById(
+    "chatInput"
+);
+
+const sendButton =
+document.getElementById(
+    "sendButton"
+);
+
 const leaveButton =
 document.getElementById(
     "leaveButton"
@@ -444,7 +652,7 @@ document.getElementById(
 
 
 /* =========================================
-   ID DA SALA
+   SALA
 ========================================= */
 
 const params =
@@ -456,7 +664,17 @@ const roomId =
 params.get("room");
 
 
-let currentUser = null;
+let currentUser =
+null;
+
+let roomData =
+null;
+
+let messagesChannel =
+null;
+
+let membersChannel =
+null;
 
 
 /* =========================================
@@ -474,6 +692,30 @@ function escapeHTML(text) {
         text || "";
 
     return div.innerHTML;
+
+}
+
+
+/* =========================================
+   DATA
+========================================= */
+
+function formatTime(
+    dateString
+) {
+
+    const date =
+        new Date(
+            dateString
+        );
+
+    return date.toLocaleTimeString(
+        "pt-BR",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
 
 }
 
@@ -521,7 +763,7 @@ async function loadRoom() {
             "Sala não encontrada."
         );
 
-        return;
+        return false;
 
     }
 
@@ -552,9 +794,13 @@ async function loadRoom() {
             "Não foi possível carregar a sala."
         );
 
-        return;
+        return false;
 
     }
+
+
+    roomData =
+        data;
 
 
     const name =
@@ -569,13 +815,13 @@ async function loadRoom() {
         name;
 
 
-    await loadMembers();
+    return true;
 
 }
 
 
 /* =========================================
-   PARTICIPANTES
+   CARREGAR PARTICIPANTES
 ========================================= */
 
 async function loadMembers() {
@@ -603,7 +849,7 @@ async function loadMembers() {
 
         membersElement.innerHTML = `
 
-            <div class="message">
+            <div class="empty-chat">
 
                 Não foi possível carregar
                 os participantes.
@@ -617,16 +863,17 @@ async function loadMembers() {
     }
 
 
-    membersElement.innerHTML = "";
+    membersElement.innerHTML =
+        "";
 
 
     if(!data || !data.length) {
 
         membersElement.innerHTML = `
 
-            <div class="message">
+            <div class="empty-chat">
 
-                Você é o primeiro participante.
+                Nenhum participante.
 
             </div>
 
@@ -638,12 +885,13 @@ async function loadMembers() {
 
 
     data.forEach(
-        function(member, index) {
+        function(member) {
 
             const item =
                 document.createElement(
                     "div"
                 );
+
 
             item.className =
                 "member";
@@ -679,10 +927,7 @@ async function loadMembers() {
 
                     <div class="member-role">
 
-                        ${isMe
-                            ? "Participante"
-                            : "Participante"
-                        }
+                        Participante
 
                     </div>
 
@@ -697,6 +942,440 @@ async function loadMembers() {
 
         }
     );
+
+}
+
+
+/* =========================================
+   CARREGAR MENSAGENS
+========================================= */
+
+async function loadMessages() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("room_messages")
+        .select(
+            "id, user_id, message, created_at"
+        )
+        .eq(
+            "room_id",
+            roomId
+        )
+        .order(
+            "created_at",
+            {
+                ascending: true
+            }
+        );
+
+
+    if(error) {
+
+        console.error(
+            error
+        );
+
+
+        messagesElement.innerHTML = `
+
+            <div class="empty-chat">
+
+                Não foi possível carregar
+                as mensagens.
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    renderMessages(
+        data || []
+    );
+
+}
+
+
+/* =========================================
+   MOSTRAR MENSAGENS
+========================================= */
+
+function renderMessages(
+    messages
+) {
+
+    messagesElement.innerHTML =
+        "";
+
+
+    if(!messages.length) {
+
+        messagesElement.innerHTML = `
+
+            <div class="empty-chat">
+
+                Nenhuma mensagem ainda.
+                <br>
+                Seja o primeiro a falar! 👋
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    messages.forEach(
+        function(item) {
+
+            const element =
+                document.createElement(
+                    "div"
+                );
+
+
+            element.className =
+                "message";
+
+
+            const isMe =
+                currentUser &&
+                item.user_id ===
+                currentUser.id;
+
+
+            const username =
+                isMe
+                ? "Você"
+                : "ZunoPlayer";
+
+
+            element.innerHTML = `
+
+                <div class="message-user">
+
+                    ${escapeHTML(
+                        username
+                    )}
+
+                </div>
+
+
+                <div class="message-text">
+
+                    ${escapeHTML(
+                        item.message
+                    )}
+
+                </div>
+
+
+                <div class="message-time">
+
+                    ${formatTime(
+                        item.created_at
+                    )}
+
+                </div>
+
+            `;
+
+
+            messagesElement.appendChild(
+                element
+            );
+
+        }
+    );
+
+
+    messagesElement.scrollTop =
+        messagesElement.scrollHeight;
+
+}
+
+
+/* =========================================
+   ENVIAR MENSAGEM
+========================================= */
+
+chatForm.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+
+        const text =
+            chatInput.value.trim();
+
+
+        if(!text) {
+
+            return;
+
+        }
+
+
+        if(!currentUser) {
+
+            alert(
+                "Você precisa estar conectado."
+            );
+
+            return;
+
+        }
+
+
+        sendButton.disabled =
+            true;
+
+
+        chatInput.disabled =
+            true;
+
+
+        const {
+            error
+        } =
+        await supabaseClient
+            .from("room_messages")
+            .insert(
+                {
+                    room_id:
+                        roomId,
+
+                    user_id:
+                        currentUser.id,
+
+                    message:
+                        text
+                }
+            );
+
+
+        if(error) {
+
+            console.error(
+                error
+            );
+
+
+            alert(
+                "Não foi possível enviar a mensagem:\n\n" +
+                error.message
+            );
+
+        } else {
+
+            chatInput.value =
+                "";
+
+        }
+
+
+        sendButton.disabled =
+            false;
+
+        chatInput.disabled =
+            false;
+
+        chatInput.focus();
+
+    }
+);
+
+
+/* =========================================
+   REALTIME DO CHAT
+========================================= */
+
+function subscribeMessages() {
+
+    if(messagesChannel) {
+
+        supabaseClient
+            .removeChannel(
+                messagesChannel
+            );
+
+    }
+
+
+    messagesChannel =
+        supabaseClient
+            .channel(
+                "room-messages-" +
+                roomId
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "room_messages",
+                    filter:
+                        "room_id=eq." +
+                        roomId
+                },
+                function(payload) {
+
+                    const message =
+                        payload.new;
+
+
+                    addMessage(
+                        message
+                    );
+
+                }
+            )
+            .subscribe();
+
+}
+
+
+/* =========================================
+   ADICIONAR MENSAGEM EM TEMPO REAL
+========================================= */
+
+function addMessage(
+    item
+) {
+
+    const empty =
+        messagesElement.querySelector(
+            ".empty-chat"
+        );
+
+
+    if(empty) {
+
+        messagesElement.innerHTML =
+            "";
+
+    }
+
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+
+    element.className =
+        "message";
+
+
+    const isMe =
+        currentUser &&
+        item.user_id ===
+        currentUser.id;
+
+
+    const username =
+        isMe
+        ? "Você"
+        : "ZunoPlayer";
+
+
+    element.innerHTML = `
+
+        <div class="message-user">
+
+            ${escapeHTML(
+                username
+            )}
+
+        </div>
+
+
+        <div class="message-text">
+
+            ${escapeHTML(
+                item.message
+            )}
+
+        </div>
+
+
+        <div class="message-time">
+
+            ${formatTime(
+                item.created_at
+            )}
+
+        </div>
+
+    `;
+
+
+    messagesElement.appendChild(
+        element
+    );
+
+
+    messagesElement.scrollTop =
+        messagesElement.scrollHeight;
+
+}
+
+
+/* =========================================
+   REALTIME PARTICIPANTES
+========================================= */
+
+function subscribeMembers() {
+
+    if(membersChannel) {
+
+        supabaseClient
+            .removeChannel(
+                membersChannel
+            );
+
+    }
+
+
+    membersChannel =
+        supabaseClient
+            .channel(
+                "room-members-" +
+                roomId
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "room_members",
+                    filter:
+                        "room_id=eq." +
+                        roomId
+                },
+                function() {
+
+                    loadMembers();
+
+                }
+            )
+            .subscribe();
 
 }
 
@@ -726,6 +1405,26 @@ leaveButton.addEventListener(
             "Saindo...";
 
 
+        if(messagesChannel) {
+
+            await supabaseClient
+                .removeChannel(
+                    messagesChannel
+                );
+
+        }
+
+
+        if(membersChannel) {
+
+            await supabaseClient
+                .removeChannel(
+                    membersChannel
+                );
+
+        }
+
+
         const {
             error
         } =
@@ -748,10 +1447,12 @@ leaveButton.addEventListener(
                 error
             );
 
+
             alert(
                 "Não foi possível sair da sala:\n\n" +
                 error.message
             );
+
 
             leaveButton.disabled =
                 false;
@@ -759,93 +1460,4 @@ leaveButton.addEventListener(
             leaveButton.textContent =
                 "Sair da sala";
 
-            return;
-
-        }
-
-
-        window.location.href =
-            "salas.html";
-
-    }
-);
-
-
-/* =========================================
-   ERRO
-========================================= */
-
-function showError(
-    message
-) {
-
-    document.getElementById(
-        "app"
-    ).innerHTML = `
-
-        <div class="error">
-
-            ❌
-
-            <br><br>
-
-            ${escapeHTML(message)}
-
-            <br><br>
-
-            <button
-                onclick="window.location.href='salas.html'"
-                style="
-                    padding:13px 20px;
-                    border:0;
-                    border-radius:12px;
-                    background:#8b5cf6;
-                    color:white;
-                    font-weight:bold;
-                "
-            >
-
-                Voltar para salas
-
-            </button>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================
-   INICIAR
-========================================= */
-
-async function init() {
-
-    currentUser =
-        await getUser();
-
-
-    if(!currentUser) {
-
-        showError(
-            "Você precisa estar conectado."
-        );
-
-        return;
-
-    }
-
-
-    await loadRoom();
-
-}
-
-
-init();
-
-</script>
-
-</body>
-
-</html>
+            retu
