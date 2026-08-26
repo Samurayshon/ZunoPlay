@@ -1,1 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
 
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Sala - ZunoPlay</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            #25145c 0%,
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            #102d59 0%,
+            transparent 35%
+        ),
+        #070811;
+
+    color: white;
+
+}
+
+.app {
+
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: auto;
+
+    display: flex;
+    flex-direction: column;
+
+}
+
+.header {
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #292a3d;
+
+    background: rgba(10,11,20,.95);
+
+}
+
+.back {
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+
+    border: 1px solid #303145;
+
+    background: #1b1c2b;
+
+    color: white;
+
+    font-size: 20px;
+
+    cursor: pointer;
+
+}
+
+.header-info {
+
+    flex: 1;
+
+}
+
+.room-title {
+
+    font-size: 18px;
+    font-weight: bold;
+
+}
+
+.room-status {
+
+    color: #4ade80;
+
+    font-size: 11px;
+
+    margin-top: 3px;
+
+}
+
+.content {
+
+    flex: 1;
+
+    padding: 20px;
+
+}
+
+.hero {
+
+    text-align: center;
+
+    padding: 25px 10px;
+
+}
+
+.hero-icon {
+
+    font-size: 55px;
+
+    margin-bottom: 15px;
+
+}
+
+.hero h1 {
+
+    font-size: 24px;
+
+    margin-bottom: 8px;
+
+}
+
+.hero p {
+
+    color: #9293a3;
+
+    font-size: 13px;
+
+}
+
+.panel {
+
+    background: rgba(20,21,35,.9);
+
+    border: 1px solid #292a3d;
+
+    border-radius: 20px;
+
+    padding: 18px;
+
+    margin-top: 15px;
+
+}
+
+.panel-title {
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    margin-bottom: 15px;
+
+}
+
+.member {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #292a3d;
+
+}
+
+.member:last-child {
+
+    border-bottom: none;
+
+}
+
+.avatar {
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
+
+}
+
+.member-name {
+
+    font-size: 14px;
+    font-weight: bold;
+
+}
+
+.member-role {
+
+    color: #858697;
+    font-size: 11px;
+    margin-top: 3px;
+
+}
+
+.message {
+
+    margin-top: 15px;
+
+    padding: 14px;
+
+    border-radius: 14px;
+
+    background: #1b1c2b;
+
+    color: #9293a3;
+
+    font-size: 13px;
+
+    text-align: center;
+
+}
+
+.leave {
+
+    width: calc(100% - 40px);
+
+    margin: 0 20px 20px;
+
+    padding: 15px;
+
+    border-radius: 14px;
+
+    border: 1px solid #5b2830;
+
+    background: #24151a;
+
+    color: #ff8f8f;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.error {
+
+    text-align: center;
+
+    padding: 60px 20px;
+
+    color: #ff8f8f;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div
+    id="app"
+    class="app"
+>
+
+    <div class="header">
+
+        <button
+            class="back"
+            onclick="window.location.href='salas.html'"
+        >
+
+            ←
+
+        </button>
+
+
+        <div class="header-info">
+
+            <div
+                id="roomTitle"
+                class="room-title"
+            >
+
+                Carregando sala...
+
+            </div>
+
+            <div class="room-status">
+
+                ● Sala ativa
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="content">
+
+        <div class="hero">
+
+            <div class="hero-icon">
+
+                🎙️
+
+            </div>
+
+            <h1 id="heroTitle">
+
+                Sala
+
+            </h1>
+
+            <p>
+
+                Você está dentro da sala.
+
+            </p>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                👥 Pessoas na sala
+
+            </div>
+
+
+            <div id="members">
+
+                <div class="message">
+
+                    Carregando participantes...
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="message">
+
+            🎤 A área de conversa da sala
+            será adicionada nesta próxima etapa.
+
+        </div>
+
+    </div>
+
+
+    <button
+        id="leaveButton"
+        class="leave"
+    >
+
+        Sair da sala
+
+    </button>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   SUPABASE
+========================================= */
+
+const SUPABASE_URL =
+"https://rliymfbbhqoejgfvsbuu.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+/* =========================================
+   ELEMENTOS
+========================================= */
+
+const roomTitle =
+document.getElementById(
+    "roomTitle"
+);
+
+const heroTitle =
+document.getElementById(
+    "heroTitle"
+);
+
+const membersElement =
+document.getElementById(
+    "members"
+);
+
+const leaveButton =
+document.getElementById(
+    "leaveButton"
+);
+
+
+/* =========================================
+   ID DA SALA
+========================================= */
+
+const params =
+new URLSearchParams(
+    window.location.search
+);
+
+const roomId =
+params.get("room");
+
+
+let currentUser = null;
+
+
+/* =========================================
+   SEGURANÇA
+========================================= */
+
+function escapeHTML(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        text || "";
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================
+   USUÁRIO
+========================================= */
+
+async function getUser() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .auth
+        .getUser();
+
+
+    if(error) {
+
+        console.error(
+            error
+        );
+
+        return null;
+
+    }
+
+
+    return data?.user || null;
+
+}
+
+
+/* =========================================
+   CARREGAR SALA
+========================================= */
+
+async function loadRoom() {
+
+    if(!roomId) {
+
+        showError(
+            "Sala não encontrada."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("rooms")
+        .select(
+            "id, name, owner_id, created_at"
+        )
+        .eq(
+            "id",
+            roomId
+        )
+        .single();
+
+
+    if(error) {
+
+        console.error(
+            error
+        );
+
+        showError(
+            "Não foi possível carregar a sala."
+        );
+
+        return;
+
+    }
+
+
+    const name =
+        data.name ||
+        "Sala";
+
+
+    roomTitle.textContent =
+        name;
+
+    heroTitle.textContent =
+        name;
+
+
+    await loadMembers();
+
+}
+
+
+/* =========================================
+   PARTICIPANTES
+========================================= */
+
+async function loadMembers() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("room_members")
+        .select(
+            "user_id"
+        )
+        .eq(
+            "room_id",
+            roomId
+        );
+
+
+    if(error) {
+
+        console.error(
+            error
+        );
+
+        membersElement.innerHTML = `
+
+            <div class="message">
+
+                Não foi possível carregar
+                os participantes.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    membersElement.innerHTML = "";
+
+
+    if(!data || !data.length) {
+
+        membersElement.innerHTML = `
+
+            <div class="message">
+
+                Você é o primeiro participante.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    data.forEach(
+        function(member, index) {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "member";
+
+
+            const isMe =
+                currentUser &&
+                member.user_id ===
+                currentUser.id;
+
+
+            const label =
+                isMe
+                ? "Você"
+                : "ZunoPlayer";
+
+
+            item.innerHTML = `
+
+                <div class="avatar">
+
+                    👤
+
+                </div>
+
+                <div>
+
+                    <div class="member-name">
+
+                        ${escapeHTML(label)}
+
+                    </div>
+
+                    <div class="member-role">
+
+                        ${isMe
+                            ? "Participante"
+                            : "Participante"
+                        }
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            membersElement.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   SAIR DA SALA
+========================================= */
+
+leaveButton.addEventListener(
+    "click",
+    async function() {
+
+        if(!currentUser) {
+
+            window.location.href =
+                "salas.html";
+
+            return;
+
+        }
+
+
+        leaveButton.disabled =
+            true;
+
+        leaveButton.textContent =
+            "Saindo...";
+
+
+        const {
+            error
+        } =
+        await supabaseClient
+            .from("room_members")
+            .delete()
+            .eq(
+                "room_id",
+                roomId
+            )
+            .eq(
+                "user_id",
+                currentUser.id
+            );
+
+
+        if(error) {
+
+            console.error(
+                error
+            );
+
+            alert(
+                "Não foi possível sair da sala:\n\n" +
+                error.message
+            );
+
+            leaveButton.disabled =
+                false;
+
+            leaveButton.textContent =
+                "Sair da sala";
+
+            return;
+
+        }
+
+
+        window.location.href =
+            "salas.html";
+
+    }
+);
+
+
+/* =========================================
+   ERRO
+========================================= */
+
+function showError(
+    message
+) {
+
+    document.getElementById(
+        "app"
+    ).innerHTML = `
+
+        <div class="error">
+
+            ❌
+
+            <br><br>
+
+            ${escapeHTML(message)}
+
+            <br><br>
+
+            <button
+                onclick="window.location.href='salas.html'"
+                style="
+                    padding:13px 20px;
+                    border:0;
+                    border-radius:12px;
+                    background:#8b5cf6;
+                    color:white;
+                    font-weight:bold;
+                "
+            >
+
+                Voltar para salas
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================
+   INICIAR
+========================================= */
+
+async function init() {
+
+    currentUser =
+        await getUser();
+
+
+    if(!currentUser) {
+
+        showError(
+            "Você precisa estar conectado."
+        );
+
+        return;
+
+    }
+
+
+    await loadRoom();
+
+}
+
+
+init();
+
+</script>
+
+</body>
+
+</html>
