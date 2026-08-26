@@ -2,11 +2,68 @@
   if (window.__ZUNOPLAY_GLOBAL_NAV__) return;
   window.__ZUNOPLAY_GLOBAL_NAV__ = true;
 
-  const page = location.pathname.split('/').pop().toLowerCase();
+  const SUPABASE_URL = 'https://rliymfbbhqoejgfvsbuu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
+  const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   const homeUrl = new URL('./index.html', location.href).href;
-  const isRoomPage = page === 'sala.html';
+  const skipNavigation = ['index.html', 'sala.html', 'desafio.html', 'login.html', 'cadastro.html'].includes(page);
   let scheduled = false;
   let running = false;
+
+  function patchSupabaseFactory() {
+    if (!window.supabase?.createClient) return false;
+    if (window.__ZUNOPLAY_SUPABASE_FACTORY_PATCHED__) return true;
+
+    const originalCreateClient = window.supabase.createClient.bind(window.supabase);
+    if (!window.ZunoSupabaseClient) {
+      window.ZunoSupabaseClient = originalCreateClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+
+    window.supabase.createClient = function(url, key, options) {
+      const sameProject = url === SUPABASE_URL && key === SUPABASE_KEY;
+      const defaultOptions = !options || Object.keys(options).length === 0;
+      if (sameProject && defaultOptions) return window.ZunoSupabaseClient;
+      return originalCreateClient(url, key, options);
+    };
+
+    window.__ZUNOPLAY_SUPABASE_FACTORY_PATCHED__ = true;
+    return true;
+  }
+
+  function loadRealtimeCore() {
+    if (window.ZunoRealtime) {
+      window.ZunoRealtime.start?.().catch?.(console.error);
+      return;
+    }
+    if (document.getElementById('zunoplay-realtime-global')) return;
+    const script = document.createElement('script');
+    script.id = 'zunoplay-realtime-global';
+    script.src = new URL('./realtime-global.js', location.href).href;
+    script.async = true;
+    script.onerror = () => console.error('ZunoPlay: não foi possível carregar realtime-global.js');
+    document.head.appendChild(script);
+  }
+
+  function bootstrapRealtime() {
+    if (patchSupabaseFactory()) {
+      loadRealtimeCore();
+      return;
+    }
+    if (document.getElementById('zunoplay-supabase-sdk')) return;
+    const sdk = document.createElement('script');
+    sdk.id = 'zunoplay-supabase-sdk';
+    sdk.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    sdk.async = true;
+    sdk.onload = () => {
+      if (patchSupabaseFactory()) loadRealtimeCore();
+    };
+    sdk.onerror = () => console.error('ZunoPlay: não foi possível carregar Supabase');
+    document.head.appendChild(sdk);
+  }
+
+  bootstrapRealtime();
+
+  if (skipNavigation) return;
 
   const style = document.createElement('style');
   style.textContent = `.zunoplay-global-home{width:42px;height:42px;min-width:42px;flex:0 0 42px;box-sizing:border-box;border:1px solid #303145;border-radius:12px;background:#1b1c2b;color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;font:20px Arial,sans-serif;line-height:1;cursor:pointer;text-decoration:none;position:relative;z-index:10000}`;
@@ -18,16 +75,16 @@
   }
 
   function isCandidate(el) {
-    if (!(el instanceof Element) || isRoomPage) return false;
+    if (!(el instanceof Element)) return false;
     if (el.classList.contains('zunoplay-global-home')) return true;
-    if (el.classList.contains('home-button') || el.classList.contains('zunoplay-home-button')) return true;
+    if (el.classList.contains('home-button') || el.classList.contains('zunoplay-home-button') || el.classList.contains('home')) return true;
     if (el.tagName === 'A' && /(^|\/)index\.html(?:$|[?#])/.test(el.getAttribute('href') || '')) return true;
     const text = (el.textContent || '').trim().toLowerCase();
     return (el.tagName === 'BUTTON' || el.tagName === 'A') && (text === '⌂' || text === '🏠' || text === 'home');
   }
 
   function mount() {
-    if (running || isRoomPage) return;
+    if (running) return;
     running = true;
     try {
       const all = [...document.querySelectorAll('button,a,[role="button"]')];
@@ -42,8 +99,7 @@
       }
       if (!home) return;
 
-      const wasGlobal = home.classList.contains('zunoplay-global-home');
-      if (!wasGlobal) {
+      if (!home.classList.contains('zunoplay-global-home')) {
         home.className = 'zunoplay-global-home';
         home.removeAttribute('href');
         home.removeAttribute('onclick');
@@ -77,9 +133,9 @@
     schedule();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, {once:true});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true });
   else ready();
 
-  const observer = new MutationObserver(() => schedule());
-  observer.observe(document.documentElement, {childList:true, subtree:true});
+  const observer = new MutationObserver(schedule);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
