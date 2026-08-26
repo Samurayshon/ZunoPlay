@@ -1,1 +1,141 @@
-(()=>{if(window.ZunoRealtime)return;const URL='https://rliymfbbhqoejgfvsbuu.supabase.co',KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';const sb=window.supabase?.createClient(URL,KEY);if(!sb)return;const listeners=new Map();let channel=null,user=null;const api={client:sb,events:{on(name,fn){if(!listeners.has(name))listeners.set(name,new Set);listeners.get(name).add(fn);return()=>listeners.get(name)?.delete(fn)},emit(name,payload){listeners.get(name)?.forEach(fn=>{try{fn(payload)}catch(e){console.error('ZunoRealtime listener',e)}})},async start(){const s=await sb.auth.getSession();user=s.data?.session?.user||null;if(!user)return;channel=sb.channel('zuno-global',{config:{presence:{key:user.id}}});channel.on('presence',{event:'sync'},()=>api.emit('presence:sync',channel.presenceState())).on('presence',{event:'join'},p=>api.emit('presence:join',p)).on('presence',{event:'leave'},p=>api.emit('presence:leave',p)).on('postgres_changes',{event:'*',schema:'public',table:'profiles'},p=>api.emit('profiles',p)).on('postgres_changes',{event:'*',schema:'public',table:'friendships'},p=>api.emit('friendships',p)).on('postgres_changes',{event:'*',schema:'public',table:'communities'},p=>api.emit('communities',p)).on('postgres_changes',{event:'*',schema:'public',table:'rooms'},p=>api.emit('rooms',p)).on('postgres_changes',{event:'*',schema:'public',table:'room_members'},p=>api.emit('room_members',p)).on('postgres_changes',{event:'*',schema:'public',table:'room_messages'},p=>api.emit('room_messages',p)).on('postgres_changes',{event:'*',schema:'public',table:'conversations'},p=>api.emit('conversations',p)).on('postgres_changes',{event:'*',schema:'public',table:'messages'},p=>api.emit('messages',p)).on('postgres_changes',{event:'*',schema:'public',table:'notifications'},p=>api.emit('notifications',p)).subscribe(async state=>{if(state==='SUBSCRIBED'){await channel.track({status:'online',at:Date.now()});api.emit('ready',user)}})},async setPresence(status,extra={}){if(!channel||!user)return;await channel.track({status,...extra,at:Date.now()});api.emit('presence:self',{status,...extra})},getUser(){return user},getPresence(){return channel?.presenceState()||{}}};window.ZunoRealtime=api;api.start().catch(e=>console.error('ZunoRealtime start',e));window.addEventListener('beforeunload',()=>{if(channel)sb.removeChannel(channel)})})();
+(()=>{
+  if(window.ZunoRealtime){window.ZunoRealtime.start?.().catch?.(console.error);return}
+
+  const URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
+  const KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
+  const listeners=new Map();
+  const scopedChannels=new Map();
+  let client=window.ZunoSupabaseClient||null;
+  let globalPresence=null;
+  let user=null;
+  let startPromise=null;
+  let globalStatus='offline';
+
+  function emit(name,payload){
+    listeners.get(name)?.forEach(fn=>{try{fn(payload)}catch(error){console.error('ZunoRealtime listener',error)}});
+    try{window.dispatchEvent(new CustomEvent('zuno:'+name,{detail:payload}))}catch(_){}
+  }
+
+  function on(name,fn){
+    if(!listeners.has(name))listeners.set(name,new Set());
+    listeners.get(name).add(fn);
+    return()=>listeners.get(name)?.delete(fn);
+  }
+
+  function getClient(){
+    if(client)return client;
+    if(window.ZunoSupabaseClient){client=window.ZunoSupabaseClient;return client}
+    if(!window.supabase?.createClient)return null;
+    client=window.supabase.createClient(URL,KEY);
+    window.ZunoSupabaseClient=client;
+    return client;
+  }
+
+  async function stopGlobalPresence(){
+    const sb=getClient();
+    if(!sb||!globalPresence)return;
+    try{await globalPresence.untrack()}catch(_){}
+    try{await sb.removeChannel(globalPresence)}catch(_){}
+    globalPresence=null;
+    globalStatus='offline';
+  }
+
+  async function start(){
+    if(startPromise)return startPromise;
+    startPromise=(async()=>{
+      const sb=getClient();
+      if(!sb){emit('error',new Error('Supabase indisponível'));return null}
+      const{data,error}=await sb.auth.getSession();
+      if(error){emit('error',error);return null}
+      user=data?.session?.user||null;
+      if(!user){globalStatus='offline';emit('auth:none',null);return null}
+      if(globalPresence)return user;
+
+      globalPresence=sb.channel('zuno-global-presence',{config:{presence:{key:user.id}}});
+      globalPresence
+        .on('presence',{event:'sync'},()=>emit('presence:sync',globalPresence.presenceState()))
+        .on('presence',{event:'join'},payload=>emit('presence:join',payload))
+        .on('presence',{event:'leave'},payload=>emit('presence:leave',payload))
+        .subscribe(async status=>{
+          emit('connection',status);
+          if(status==='SUBSCRIBED'){
+            globalStatus='online';
+            await globalPresence.track({user_id:user.id,status:'online',page:location.pathname.split('/').pop()||'index.html',at:new Date().toISOString()});
+            emit('ready',user);
+          }
+          if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')globalStatus='offline';
+        });
+      return user;
+    })().finally(()=>{startPromise=null});
+    return startPromise;
+  }
+
+  async function setPresence(status,extra={}){
+    if(!globalPresence)await start();
+    if(!globalPresence||!user)return false;
+    globalStatus=status;
+    await globalPresence.track({user_id:user.id,status,page:location.pathname.split('/').pop()||'index.html',at:new Date().toISOString(),...extra});
+    emit('presence:self',{status,...extra});
+    return true;
+  }
+
+  function getPresence(){return globalPresence?.presenceState()||{}}
+
+  function scopedPresence(topic,key,payload={}){
+    const sb=getClient();
+    if(!sb)throw new Error('Supabase indisponível');
+    const id='presence:'+topic+':'+key;
+    if(scopedChannels.has(id))return scopedChannels.get(id);
+    const channel=sb.channel(topic,{config:{presence:{key}}});
+    const api={
+      channel,
+      on(event,fn){channel.on('presence',{event},fn);return api},
+      async subscribe(){
+        return new Promise((resolve,reject)=>{
+          channel.subscribe(async status=>{
+            if(status==='SUBSCRIBED'){
+              try{await channel.track(payload);resolve(api)}catch(error){reject(error)}
+            }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reject(new Error('Falha no Presence: '+status));
+          })
+        })
+      },
+      track(next){return channel.track(next)},
+      state(){return channel.presenceState()},
+      async close(){try{await channel.untrack()}catch(_){};try{await sb.removeChannel(channel)}catch(_){};scopedChannels.delete(id)}
+    };
+    scopedChannels.set(id,api);
+    return api;
+  }
+
+  const api={
+    get client(){return getClient()},
+    events:{on,emit},
+    start,
+    stop:stopGlobalPresence,
+    setPresence,
+    getUser:()=>user,
+    getPresence,
+    getStatus:()=>globalStatus,
+    presence:{scope:scopedPresence}
+  };
+
+  window.ZunoRealtime=api;
+  window.dispatchEvent(new CustomEvent('zuno:realtime-installed',{detail:api}));
+
+  const sb=getClient();
+  if(sb){
+    sb.auth.onAuthStateChange(async(event,session)=>{
+      if(event==='SIGNED_OUT'){
+        user=null;
+        await stopGlobalPresence();
+        emit('auth:signed_out',null);
+      }else if(session?.user&&(!user||session.user.id!==user.id)){
+        user=session.user;
+        await stopGlobalPresence();
+        start().catch(error=>emit('error',error));
+      }
+    });
+  }
+
+  start().catch(error=>emit('error',error));
+})();
