@@ -51,9 +51,6 @@ body {
     min-height: 100vh;
     margin: auto;
 
-    display: flex;
-    flex-direction: column;
-
 }
 
 .header {
@@ -98,6 +95,7 @@ body {
 .room-title {
 
     font-size: 18px;
+
     font-weight: bold;
 
 }
@@ -114,8 +112,6 @@ body {
 
 .content {
 
-    flex: 1;
-
     padding: 20px;
 
 }
@@ -124,13 +120,13 @@ body {
 
     text-align: center;
 
-    padding: 15px 10px 20px;
+    padding: 20px 10px;
 
 }
 
 .hero-icon {
 
-    font-size: 45px;
+    font-size: 48px;
 
     margin-bottom: 10px;
 
@@ -140,7 +136,7 @@ body {
 
     font-size: 23px;
 
-    margin-bottom: 7px;
+    margin-bottom: 8px;
 
 }
 
@@ -199,20 +195,21 @@ body {
 .avatar {
 
     width: 38px;
+
     height: 38px;
 
     border-radius: 50%;
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #6366f1
+    );
 
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
 }
@@ -220,6 +217,7 @@ body {
 .member-name {
 
     font-size: 14px;
+
     font-weight: bold;
 
 }
@@ -240,19 +238,10 @@ body {
 
 }
 
-.chat-title {
-
-    font-size: 15px;
-
-    font-weight: bold;
-
-    margin-bottom: 10px;
-
-}
-
 .messages {
 
-    min-height: 160px;
+    min-height: 150px;
+
     max-height: 300px;
 
     overflow-y: auto;
@@ -279,17 +268,11 @@ body {
 
 }
 
-.message:last-child {
-
-    margin-bottom: 0;
-
-}
-
 .message-user {
 
-    font-size: 11px;
-
     color: #a78bfa;
+
+    font-size: 11px;
 
     font-weight: bold;
 
@@ -300,8 +283,6 @@ body {
 .message-text {
 
     font-size: 13px;
-
-    line-height: 1.4;
 
     word-break: break-word;
 
@@ -317,15 +298,15 @@ body {
 
 }
 
-.empty-chat {
+.empty {
 
     text-align: center;
 
-    color: #686978;
+    color: #737486;
 
     font-size: 12px;
 
-    padding: 40px 10px;
+    padding: 30px 10px;
 
 }
 
@@ -359,12 +340,6 @@ body {
 
 }
 
-.chat-input:focus {
-
-    border-color: #8b5cf6;
-
-}
-
 .send-button {
 
     width: 52px;
@@ -373,24 +348,15 @@ body {
 
     border-radius: 12px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6366f1
-        );
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #6366f1
+    );
 
     color: white;
 
     font-size: 18px;
-
-    cursor: pointer;
-
-}
-
-.send-button:disabled {
-
-    opacity: .6;
 
 }
 
@@ -398,7 +364,7 @@ body {
 
     width: calc(100% - 40px);
 
-    margin: 0 20px 20px;
+    margin: 20px;
 
     padding: 15px;
 
@@ -412,15 +378,13 @@ body {
 
     font-weight: bold;
 
-    cursor: pointer;
-
 }
 
 .error {
 
-    text-align: center;
+    padding: 50px 20px;
 
-    padding: 60px 20px;
+    text-align: center;
 
     color: #ff8f8f;
 
@@ -434,10 +398,8 @@ body {
 <body>
 
 
-<div
-    id="app"
-    class="app"
->
+<div class="app">
+
 
     <div class="header">
 
@@ -462,6 +424,7 @@ body {
 
             </div>
 
+
             <div class="room-status">
 
                 ● Sala ativa
@@ -475,6 +438,7 @@ body {
 
     <div class="content">
 
+
         <div class="hero">
 
             <div class="hero-icon">
@@ -483,11 +447,13 @@ body {
 
             </div>
 
+
             <h1 id="heroTitle">
 
                 Sala
 
             </h1>
+
 
             <p>
 
@@ -509,7 +475,7 @@ body {
 
             <div id="members">
 
-                <div class="empty-chat">
+                <div class="empty">
 
                     Carregando participantes...
 
@@ -522,7 +488,7 @@ body {
 
         <div class="panel chat">
 
-            <div class="chat-title">
+            <div class="panel-title">
 
                 💬 Conversa
 
@@ -534,7 +500,7 @@ body {
                 class="messages"
             >
 
-                <div class="empty-chat">
+                <div class="empty">
 
                     Carregando mensagens...
 
@@ -559,7 +525,6 @@ body {
 
 
                 <button
-                    id="sendButton"
                     class="send-button"
                     type="submit"
                 >
@@ -572,17 +537,17 @@ body {
 
         </div>
 
+
+        <button
+            id="leaveButton"
+            class="leave"
+        >
+
+            Sair da sala
+
+        </button>
+
     </div>
-
-
-    <button
-        id="leaveButton"
-        class="leave"
-    >
-
-        Sair da sala
-
-    </button>
 
 </div>
 
@@ -611,48 +576,29 @@ window.supabase.createClient(
 ========================================= */
 
 const roomTitle =
-document.getElementById(
-    "roomTitle"
-);
+document.getElementById("roomTitle");
 
 const heroTitle =
-document.getElementById(
-    "heroTitle"
-);
+document.getElementById("heroTitle");
 
-const membersElement =
-document.getElementById(
-    "members"
-);
+const members =
+document.getElementById("members");
 
-const messagesElement =
-document.getElementById(
-    "messages"
-);
+const messages =
+document.getElementById("messages");
 
 const chatForm =
-document.getElementById(
-    "chatForm"
-);
+document.getElementById("chatForm");
 
 const chatInput =
-document.getElementById(
-    "chatInput"
-);
-
-const sendButton =
-document.getElementById(
-    "sendButton"
-);
+document.getElementById("chatInput");
 
 const leaveButton =
-document.getElementById(
-    "leaveButton"
-);
+document.getElementById("leaveButton");
 
 
 /* =========================================
-   SALA
+   ID DA SALA
 ========================================= */
 
 const params =
@@ -667,26 +613,15 @@ params.get("room");
 let currentUser =
 null;
 
-let roomData =
-null;
-
-let messagesChannel =
-null;
-
-let membersChannel =
-null;
-
 
 /* =========================================
-   SEGURANÇA
+   ESCAPE
 ========================================= */
 
 function escapeHTML(text) {
 
     const div =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     div.textContent =
         text || "";
@@ -697,114 +632,73 @@ function escapeHTML(text) {
 
 
 /* =========================================
-   DATA
-========================================= */
-
-function formatTime(
-    dateString
-) {
-
-    const date =
-        new Date(
-            dateString
-        );
-
-    return date.toLocaleTimeString(
-        "pt-BR",
-        {
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-
-}
-
-
-/* =========================================
    USUÁRIO
 ========================================= */
 
 async function getUser() {
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-        .auth
-        .getUser();
+    const result =
+        await supabaseClient
+            .auth
+            .getUser();
 
+    if(result.error) {
 
-    if(error) {
-
-        console.error(
-            error
-        );
-
-        return null;
+        throw result.error;
 
     }
 
-
-    return data?.user || null;
+    return result.data.user;
 
 }
 
 
 /* =========================================
-   CARREGAR SALA
+   SALA
 ========================================= */
 
 async function loadRoom() {
 
     if(!roomId) {
 
-        showError(
-            "Sala não encontrada."
+        throw new Error(
+            "O endereço da sala não contém o ID da sala."
         );
-
-        return false;
 
     }
 
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-        .from("rooms")
-        .select(
-            "id, name, owner_id, created_at"
-        )
-        .eq(
-            "id",
-            roomId
-        )
-        .single();
+    const result =
+        await supabaseClient
+            .from("rooms")
+            .select(
+                "id, name, owner_id, created_at"
+            )
+            .eq(
+                "id",
+                roomId
+            )
+            .maybeSingle();
 
 
-    if(error) {
+    if(result.error) {
 
-        console.error(
-            error
-        );
-
-        showError(
-            "Não foi possível carregar a sala."
-        );
-
-        return false;
+        throw result.error;
 
     }
 
 
-    roomData =
-        data;
+    if(!result.data) {
+
+        throw new Error(
+            "A sala não foi encontrada no banco de dados."
+        );
+
+    }
 
 
     const name =
-        data.name ||
+        result.data.name ||
         "Sala";
 
 
@@ -814,64 +708,43 @@ async function loadRoom() {
     heroTitle.textContent =
         name;
 
-
-    return true;
-
 }
 
 
 /* =========================================
-   CARREGAR PARTICIPANTES
+   PARTICIPANTES
 ========================================= */
 
 async function loadMembers() {
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-        .from("room_members")
-        .select(
-            "user_id"
-        )
-        .eq(
-            "room_id",
-            roomId
-        );
+    const result =
+        await supabaseClient
+            .from("room_members")
+            .select(
+                "user_id"
+            )
+            .eq(
+                "room_id",
+                roomId
+            );
 
 
-    if(error) {
+    if(result.error) {
 
-        console.error(
-            error
-        );
-
-        membersElement.innerHTML = `
-
-            <div class="empty-chat">
-
-                Não foi possível carregar
-                os participantes.
-
-            </div>
-
-        `;
-
-        return;
+        throw result.error;
 
     }
 
 
-    membersElement.innerHTML =
+    members.innerHTML =
         "";
 
 
-    if(!data || !data.length) {
+    if(!result.data.length) {
 
-        membersElement.innerHTML = `
+        members.innerHTML = `
 
-            <div class="empty-chat">
+            <div class="empty">
 
                 Nenhum participante.
 
@@ -884,32 +757,23 @@ async function loadMembers() {
     }
 
 
-    data.forEach(
+    result.data.forEach(
         function(member) {
 
-            const item =
-                document.createElement(
-                    "div"
-                );
+            const div =
+                document.createElement("div");
 
 
-            item.className =
+            div.className =
                 "member";
 
 
             const isMe =
-                currentUser &&
                 member.user_id ===
                 currentUser.id;
 
 
-            const label =
-                isMe
-                ? "Você"
-                : "ZunoPlayer";
-
-
-            item.innerHTML = `
+            div.innerHTML = `
 
                 <div class="avatar">
 
@@ -921,7 +785,11 @@ async function loadMembers() {
 
                     <div class="member-name">
 
-                        ${escapeHTML(label)}
+                        ${
+                            isMe
+                            ? "Você"
+                            : "ZunoPlayer"
+                        }
 
                     </div>
 
@@ -936,8 +804,8 @@ async function loadMembers() {
             `;
 
 
-            membersElement.appendChild(
-                item
+            members.appendChild(
+                div
             );
 
         }
@@ -947,88 +815,61 @@ async function loadMembers() {
 
 
 /* =========================================
-   CARREGAR MENSAGENS
+   MENSAGENS
 ========================================= */
 
 async function loadMessages() {
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-        .from("room_messages")
-        .select(
-            "id, user_id, message, created_at"
-        )
-        .eq(
-            "room_id",
-            roomId
-        )
-        .order(
-            "created_at",
-            {
-                ascending: true
-            }
-        );
+    const result =
+        await supabaseClient
+            .from("room_messages")
+            .select(
+                "id, user_id, message, created_at"
+            )
+            .eq(
+                "room_id",
+                roomId
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: true
+                }
+            );
 
 
-    if(error) {
+    if(result.error) {
 
-        console.error(
-            error
-        );
-
-
-        messagesElement.innerHTML = `
-
-            <div class="empty-chat">
-
-                Não foi possível carregar
-                as mensagens.
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message
-                )}
-
-            </div>
-
-        `;
-
-        return;
+        throw result.error;
 
     }
 
 
     renderMessages(
-        data || []
+        result.data || []
     );
 
 }
 
 
-/* =========================================
-   MOSTRAR MENSAGENS
-========================================= */
-
 function renderMessages(
-    messages
+    list
 ) {
 
-    messagesElement.innerHTML =
+    messages.innerHTML =
         "";
 
 
-    if(!messages.length) {
+    if(!list.length) {
 
-        messagesElement.innerHTML = `
+        messages.innerHTML = `
 
-            <div class="empty-chat">
+            <div class="empty">
 
                 Nenhuma mensagem ainda.
-                <br>
+
+                <br><br>
+
                 Seja o primeiro a falar! 👋
 
             </div>
@@ -1040,78 +881,86 @@ function renderMessages(
     }
 
 
-    messages.forEach(
-        function(item) {
+    list.forEach(
+        addMessage
+    );
 
-            const element =
-                document.createElement(
-                    "div"
-                );
+}
 
 
-            element.className =
-                "message";
+function addMessage(
+    item
+) {
+
+    const div =
+        document.createElement("div");
 
 
-            const isMe =
-                currentUser &&
-                item.user_id ===
-                currentUser.id;
+    div.className =
+        "message";
 
 
-            const username =
+    const isMe =
+        item.user_id ===
+        currentUser.id;
+
+
+    const time =
+        new Date(
+            item.created_at
+        ).toLocaleTimeString(
+            "pt-BR",
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+
+    div.innerHTML = `
+
+        <div class="message-user">
+
+            ${
                 isMe
                 ? "Você"
-                : "ZunoPlayer";
+                : "ZunoPlayer"
+            }
+
+        </div>
 
 
-            element.innerHTML = `
+        <div class="message-text">
 
-                <div class="message-user">
+            ${escapeHTML(
+                item.message
+            )}
 
-                    ${escapeHTML(
-                        username
-                    )}
-
-                </div>
+        </div>
 
 
-                <div class="message-text">
+        <div class="message-time">
 
-                    ${escapeHTML(
-                        item.message
-                    )}
+            ${time}
 
-                </div>
+        </div>
 
-
-                <div class="message-time">
-
-                    ${formatTime(
-                        item.created_at
-                    )}
-
-                </div>
-
-            `;
+    `;
 
 
-            messagesElement.appendChild(
-                element
-            );
-
-        }
+    messages.appendChild(
+        div
     );
 
 
-    messagesElement.scrollTop =
-        messagesElement.scrollHeight;
+    messages.scrollTop =
+        messages.scrollHeight;
 
 }
 
 
 /* =========================================
-   ENVIAR MENSAGEM
+   ENVIAR
 ========================================= */
 
 chatForm.addEventListener(
@@ -1132,10 +981,28 @@ chatForm.addEventListener(
         }
 
 
-        if(!currentUser) {
+        const result =
+            await supabaseClient
+                .from("room_messages")
+                .insert(
+                    {
+                        room_id:
+                            roomId,
+
+                        user_id:
+                            currentUser.id,
+
+                        message:
+                            text
+                    }
+                );
+
+
+        if(result.error) {
 
             alert(
-                "Você precisa estar conectado."
+                "Erro ao enviar mensagem:\n\n" +
+                result.error.message
             );
 
             return;
@@ -1143,260 +1010,22 @@ chatForm.addEventListener(
         }
 
 
-        sendButton.disabled =
-            true;
+        chatInput.value =
+            "";
 
-
-        chatInput.disabled =
-            true;
-
-
-        const {
-            error
-        } =
-        await supabaseClient
-            .from("room_messages")
-            .insert(
-                {
-                    room_id:
-                        roomId,
-
-                    user_id:
-                        currentUser.id,
-
-                    message:
-                        text
-                }
-            );
-
-
-        if(error) {
-
-            console.error(
-                error
-            );
-
-
-            alert(
-                "Não foi possível enviar a mensagem:\n\n" +
-                error.message
-            );
-
-        } else {
-
-            chatInput.value =
-                "";
-
-        }
-
-
-        sendButton.disabled =
-            false;
-
-        chatInput.disabled =
-            false;
-
-        chatInput.focus();
+        await loadMessages();
 
     }
 );
 
 
 /* =========================================
-   REALTIME DO CHAT
-========================================= */
-
-function subscribeMessages() {
-
-    if(messagesChannel) {
-
-        supabaseClient
-            .removeChannel(
-                messagesChannel
-            );
-
-    }
-
-
-    messagesChannel =
-        supabaseClient
-            .channel(
-                "room-messages-" +
-                roomId
-            )
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "room_messages",
-                    filter:
-                        "room_id=eq." +
-                        roomId
-                },
-                function(payload) {
-
-                    const message =
-                        payload.new;
-
-
-                    addMessage(
-                        message
-                    );
-
-                }
-            )
-            .subscribe();
-
-}
-
-
-/* =========================================
-   ADICIONAR MENSAGEM EM TEMPO REAL
-========================================= */
-
-function addMessage(
-    item
-) {
-
-    const empty =
-        messagesElement.querySelector(
-            ".empty-chat"
-        );
-
-
-    if(empty) {
-
-        messagesElement.innerHTML =
-            "";
-
-    }
-
-
-    const element =
-        document.createElement(
-            "div"
-        );
-
-
-    element.className =
-        "message";
-
-
-    const isMe =
-        currentUser &&
-        item.user_id ===
-        currentUser.id;
-
-
-    const username =
-        isMe
-        ? "Você"
-        : "ZunoPlayer";
-
-
-    element.innerHTML = `
-
-        <div class="message-user">
-
-            ${escapeHTML(
-                username
-            )}
-
-        </div>
-
-
-        <div class="message-text">
-
-            ${escapeHTML(
-                item.message
-            )}
-
-        </div>
-
-
-        <div class="message-time">
-
-            ${formatTime(
-                item.created_at
-            )}
-
-        </div>
-
-    `;
-
-
-    messagesElement.appendChild(
-        element
-    );
-
-
-    messagesElement.scrollTop =
-        messagesElement.scrollHeight;
-
-}
-
-
-/* =========================================
-   REALTIME PARTICIPANTES
-========================================= */
-
-function subscribeMembers() {
-
-    if(membersChannel) {
-
-        supabaseClient
-            .removeChannel(
-                membersChannel
-            );
-
-    }
-
-
-    membersChannel =
-        supabaseClient
-            .channel(
-                "room-members-" +
-                roomId
-            )
-            .on(
-                "postgres_changes",
-                {
-                    event: "*",
-                    schema: "public",
-                    table: "room_members",
-                    filter:
-                        "room_id=eq." +
-                        roomId
-                },
-                function() {
-
-                    loadMembers();
-
-                }
-            )
-            .subscribe();
-
-}
-
-
-/* =========================================
-   SAIR DA SALA
+   SAIR
 ========================================= */
 
 leaveButton.addEventListener(
     "click",
     async function() {
-
-        if(!currentUser) {
-
-            window.location.href =
-                "salas.html";
-
-            return;
-
-        }
-
 
         leaveButton.disabled =
             true;
@@ -1405,54 +1034,26 @@ leaveButton.addEventListener(
             "Saindo...";
 
 
-        if(messagesChannel) {
-
+        const result =
             await supabaseClient
-                .removeChannel(
-                    messagesChannel
+                .from("room_members")
+                .delete()
+                .eq(
+                    "room_id",
+                    roomId
+                )
+                .eq(
+                    "user_id",
+                    currentUser.id
                 );
 
-        }
 
-
-        if(membersChannel) {
-
-            await supabaseClient
-                .removeChannel(
-                    membersChannel
-                );
-
-        }
-
-
-        const {
-            error
-        } =
-        await supabaseClient
-            .from("room_members")
-            .delete()
-            .eq(
-                "room_id",
-                roomId
-            )
-            .eq(
-                "user_id",
-                currentUser.id
-            );
-
-
-        if(error) {
-
-            console.error(
-                error
-            );
-
+        if(result.error) {
 
             alert(
-                "Não foi possível sair da sala:\n\n" +
-                error.message
+                "Erro ao sair:\n\n" +
+                result.error.message
             );
-
 
             leaveButton.disabled =
                 false;
@@ -1460,4 +1061,103 @@ leaveButton.addEventListener(
             leaveButton.textContent =
                 "Sair da sala";
 
-            retu
+            return;
+
+        }
+
+
+        window.location.href =
+            "salas.html";
+
+    }
+);
+
+
+/* =========================================
+   INICIAR
+========================================= */
+
+async function init() {
+
+    try {
+
+        roomTitle.textContent =
+            "Carregando...";
+
+
+        currentUser =
+            await getUser();
+
+
+        if(!currentUser) {
+
+            throw new Error(
+                "Você não está conectado."
+            );
+
+        }
+
+
+        await loadRoom();
+
+        await loadMembers();
+
+        await loadMessages();
+
+
+    } catch(error) {
+
+        console.error(
+            "ERRO ZUNOPLAY:",
+            error
+        );
+
+
+        document.querySelector(
+            ".content"
+        ).innerHTML = `
+
+            <div class="error">
+
+                ❌
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+                <br><br>
+
+                <button
+                    onclick="window.location.href='salas.html'"
+                    style="
+                        padding:14px 20px;
+                        border:0;
+                        border-radius:12px;
+                        background:#8b5cf6;
+                        color:white;
+                        font-weight:bold;
+                    "
+                >
+
+                    Voltar para salas
+
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+init();
+
+</script>
+
+</body>
+
+</html>
