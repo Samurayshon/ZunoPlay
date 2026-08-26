@@ -5,7 +5,10 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>Sala - ZunoPlay</title>
 
@@ -92,7 +95,6 @@ body {
 .room-title {
 
     font-size: 18px;
-
     font-weight: bold;
 
 }
@@ -124,7 +126,6 @@ body {
 .hero-icon {
 
     font-size: 48px;
-
     margin-bottom: 10px;
 
 }
@@ -132,7 +133,6 @@ body {
 .hero h1 {
 
     font-size: 23px;
-
     margin-bottom: 8px;
 
 }
@@ -140,7 +140,6 @@ body {
 .hero p {
 
     color: #9293a3;
-
     font-size: 13px;
 
 }
@@ -162,9 +161,7 @@ body {
 .panel-title {
 
     font-size: 15px;
-
     font-weight: bold;
-
     margin-bottom: 12px;
 
 }
@@ -172,7 +169,6 @@ body {
 .member {
 
     display: flex;
-
     align-items: center;
 
     gap: 12px;
@@ -192,7 +188,6 @@ body {
 .avatar {
 
     width: 38px;
-
     height: 38px;
 
     border-radius: 50%;
@@ -205,9 +200,7 @@ body {
         );
 
     display: flex;
-
     align-items: center;
-
     justify-content: center;
 
 }
@@ -215,7 +208,6 @@ body {
 .member-name {
 
     font-size: 14px;
-
     font-weight: bold;
 
 }
@@ -313,9 +305,7 @@ body {
 .chat-form {
 
     display: flex;
-
     gap: 8px;
-
     margin-top: 10px;
 
 }
@@ -323,7 +313,6 @@ body {
 .chat-input {
 
     flex: 1;
-
     min-width: 0;
 
     padding: 13px;
@@ -422,14 +411,7 @@ body {
 
 <body>
 
-
-<div
-    id="app"
-    class="app"
->
-
-
-    <!-- CABEÇALHO -->
+<div id="app" class="app">
 
     <div class="header">
 
@@ -437,11 +419,8 @@ body {
             class="back"
             onclick="goBack()"
         >
-
             ←
-
         </button>
-
 
         <div class="header-info">
 
@@ -449,16 +428,11 @@ body {
                 id="roomTitle"
                 class="room-title"
             >
-
                 Carregando sala...
-
             </div>
 
-
             <div class="room-status">
-
                 ● Sala ativa
-
             </div>
 
         </div>
@@ -468,51 +442,33 @@ body {
 
     <div class="content">
 
-
-        <!-- SALA -->
-
         <div class="hero">
 
             <div class="hero-icon">
-
                 🎙️
-
             </div>
 
-
             <h1 id="heroTitle">
-
                 Sala
-
             </h1>
 
-
             <p>
-
                 Converse com as pessoas da sala.
-
             </p>
 
         </div>
 
 
-        <!-- PARTICIPANTES -->
-
         <div class="panel">
 
             <div class="panel-title">
-
                 👥 Pessoas na sala
-
             </div>
-
 
             <div id="members">
 
                 <div class="empty">
-
                     Carregando participantes...
-
                 </div>
 
             </div>
@@ -520,16 +476,11 @@ body {
         </div>
 
 
-        <!-- CONVERSA -->
-
         <div class="panel">
 
             <div class="panel-title">
-
                 💬 Conversa
-
             </div>
-
 
             <div
                 id="messages"
@@ -537,9 +488,7 @@ body {
             >
 
                 <div class="empty">
-
                     Carregando mensagens...
-
                 </div>
 
             </div>
@@ -559,15 +508,12 @@ body {
                     autocomplete="off"
                 >
 
-
                 <button
                     id="sendButton"
                     class="send-button"
                     type="submit"
                 >
-
                     ➤
-
                 </button>
 
             </form>
@@ -575,17 +521,12 @@ body {
         </div>
 
 
-        <!-- SAIR -->
-
         <button
             id="leaveButton"
             class="leave"
         >
-
             Sair da sala
-
         </button>
-
 
     </div>
 
@@ -601,10 +542,8 @@ body {
 const SUPABASE_URL =
 "https://rliymfbbhqoejgfvsbuu.supabase.co";
 
-
 const SUPABASE_KEY =
 "sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0";
-
 
 const supabaseClient =
 window.supabase.createClient(
@@ -643,61 +582,66 @@ document.getElementById("leaveButton");
 
 
 /* =========================================
+   VARIÁVEIS
+========================================= */
+
+let currentUser = null;
+
+let roomId = null;
+
+let messagesChannel = null;
+
+let membersChannel = null;
+
+
+/* =========================================
    ID DA SALA
 ========================================= */
 
-const params =
-new URLSearchParams(
-    window.location.search
-);
+function getRoomId() {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    let id =
+        params.get("room");
 
 
-let roomId =
-params.get("room");
+    if(!id) {
+
+        id =
+            params.get("id");
+
+    }
 
 
-/*
-    Se a URL trouxe o ID,
-    salvamos também no navegador.
-*/
+    if(id) {
 
-if(roomId) {
+        sessionStorage.setItem(
+            "zunoplay_room_id",
+            id
+        );
 
-    sessionStorage.setItem(
-        "zunoplay_room_id",
-        roomId
+        return id;
+
+    }
+
+
+    return sessionStorage.getItem(
+        "zunoplay_room_id"
     );
 
 }
 
 
-/*
-    Se não veio pela URL,
-    recuperamos o último ID salvo.
-*/
-
-if(!roomId) {
-
-    roomId =
-        sessionStorage.getItem(
-            "zunoplay_room_id"
-        );
-
-}
-
-
-let currentUser =
-null;
-
-let messagesChannel =
-null;
-
-let membersChannel =
-null;
+roomId =
+getRoomId();
 
 
 /* =========================================
-   ESCAPE HTML
+   SEGURANÇA HTML
 ========================================= */
 
 function escapeHTML(text) {
@@ -721,6 +665,17 @@ function formatTime(dateString) {
 
     const date =
         new Date(dateString);
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "";
+
+    }
+
 
     return date.toLocaleTimeString(
         "pt-BR",
@@ -755,9 +710,7 @@ async function getUser() {
         data,
         error
     } =
-    await supabaseClient
-        .auth
-        .getUser();
+    await supabaseClient.auth.getUser();
 
 
     if(error) {
@@ -822,7 +775,6 @@ async function loadRoom() {
     roomTitle.textContent =
         data.name || "Sala";
 
-
     heroTitle.textContent =
         data.name || "Sala";
 
@@ -857,8 +809,7 @@ async function loadMembers() {
     }
 
 
-    members.innerHTML =
-        "";
+    members.innerHTML = "";
 
 
     if(!data || !data.length) {
@@ -866,9 +817,7 @@ async function loadMembers() {
         members.innerHTML = `
 
             <div class="empty">
-
                 Nenhum participante.
-
             </div>
 
         `;
@@ -882,8 +831,9 @@ async function loadMembers() {
         function(member) {
 
             const item =
-                document.createElement("div");
-
+                document.createElement(
+                    "div"
+                );
 
             item.className =
                 "member";
@@ -897,11 +847,8 @@ async function loadMembers() {
             item.innerHTML = `
 
                 <div class="avatar">
-
                     👤
-
                 </div>
-
 
                 <div>
 
@@ -915,11 +862,8 @@ async function loadMembers() {
 
                     </div>
 
-
                     <div class="member-role">
-
                         Participante
-
                     </div>
 
                 </div>
@@ -927,7 +871,9 @@ async function loadMembers() {
             `;
 
 
-            members.appendChild(item);
+            members.appendChild(
+                item
+            );
 
         }
     );
@@ -940,15 +886,6 @@ async function loadMembers() {
 ========================================= */
 
 async function loadMessages() {
-
-    if(!roomId) {
-
-        throw new Error(
-            "ID da sala não encontrado."
-        );
-
-    }
-
 
     const {
         data,
@@ -991,13 +928,12 @@ async function loadMessages() {
 
 
 /* =========================================
-   RENDERIZAR MENSAGENS
+   RENDERIZAR
 ========================================= */
 
 function renderMessages(list) {
 
-    messages.innerHTML =
-        "";
+    messages.innerHTML = "";
 
 
     if(!list.length) {
@@ -1048,15 +984,24 @@ function addMessage(
     scroll = true
 ) {
 
+    if(!item) {
+
+        return;
+
+    }
+
+
     /*
-        Evita mensagens duplicadas.
+        Evita duplicação.
     */
 
     if(item.id) {
 
         const existing =
             messages.querySelector(
-                `[data-message-id="${item.id}"]`
+                '[data-message-id="' +
+                item.id +
+                '"]'
             );
 
 
@@ -1093,16 +1038,12 @@ function addMessage(
         "message";
 
 
-    /*
-        IMPORTANTE:
-        guardamos o ID da mensagem
-        no elemento HTML.
-    */
-
     if(item.id) {
 
-        div.dataset.messageId =
-            item.id;
+        div.setAttribute(
+            "data-message-id",
+            item.id
+        );
 
     }
 
@@ -1133,7 +1074,6 @@ function addMessage(
 
         </div>
 
-
         <div class="message-text">
 
             ${escapeHTML(
@@ -1141,7 +1081,6 @@ function addMessage(
             )}
 
         </div>
-
 
         <div class="message-time">
 
@@ -1180,6 +1119,17 @@ chatForm.addEventListener(
         event.preventDefault();
 
 
+        const text =
+            chatInput.value.trim();
+
+
+        if(!text) {
+
+            return;
+
+        }
+
+
         if(!currentUser) {
 
             alert(
@@ -1191,17 +1141,10 @@ chatForm.addEventListener(
         }
 
 
-        /*
-            Recupera novamente o ID,
-            caso a variável tenha sido perdida.
-        */
-
         if(!roomId) {
 
             roomId =
-                sessionStorage.getItem(
-                    "zunoplay_room_id"
-                );
+                getRoomId();
 
         }
 
@@ -1211,17 +1154,6 @@ chatForm.addEventListener(
             alert(
                 "O endereço da sala não contém o ID da sala."
             );
-
-            return;
-
-        }
-
-
-        const text =
-            chatInput.value.trim();
-
-
-        if(!text) {
 
             return;
 
@@ -1264,7 +1196,7 @@ chatForm.addEventListener(
             if(error) {
 
                 console.error(
-                    "Erro ao enviar mensagem:",
+                    "Erro ao inserir mensagem:",
                     error
                 );
 
@@ -1279,7 +1211,9 @@ chatForm.addEventListener(
 
 
             /*
-                Limpa o campo.
+                IMPORTANTE:
+                limpamos o campo somente depois
+                de o Supabase confirmar o envio.
             */
 
             chatInput.value =
@@ -1287,8 +1221,7 @@ chatForm.addEventListener(
 
 
             /*
-                Mostra imediatamente
-                a mensagem enviada.
+                Mostra imediatamente.
             */
 
             addMessage(
@@ -1329,10 +1262,17 @@ chatForm.addEventListener(
 
 
 /* =========================================
-   REALTIME CHAT
+   REALTIME — MENSAGENS
 ========================================= */
 
 function subscribeMessages() {
+
+    if(!roomId) {
+
+        return;
+
+    }
+
 
     if(messagesChannel) {
 
@@ -1347,9 +1287,7 @@ function subscribeMessages() {
         supabaseClient
             .channel(
                 "zunoplay-chat-" +
-                roomId +
-                "-" +
-                Date.now()
+                roomId
             )
             .on(
                 "postgres_changes",
@@ -1364,7 +1302,7 @@ function subscribeMessages() {
                 function(payload) {
 
                     console.log(
-                        "Nova mensagem:",
+                        "Mensagem recebida:",
                         payload.new
                     );
 
@@ -1380,7 +1318,7 @@ function subscribeMessages() {
                 function(status) {
 
                     console.log(
-                        "Chat Realtime:",
+                        "Realtime chat:",
                         status
                     );
 
@@ -1391,10 +1329,17 @@ function subscribeMessages() {
 
 
 /* =========================================
-   REALTIME PARTICIPANTES
+   REALTIME — PARTICIPANTES
 ========================================= */
 
 function subscribeMembers() {
+
+    if(!roomId) {
+
+        return;
+
+    }
+
 
     if(membersChannel) {
 
@@ -1409,9 +1354,7 @@ function subscribeMembers() {
         supabaseClient
             .channel(
                 "zunoplay-members-" +
-                roomId +
-                "-" +
-                Date.now()
+                roomId
             )
             .on(
                 "postgres_changes",
@@ -1425,7 +1368,10 @@ function subscribeMembers() {
                 },
                 function() {
 
-                    loadMembers();
+                    loadMembers()
+                        .catch(
+                            console.error
+                        );
 
                 }
             )
@@ -1442,26 +1388,28 @@ leaveButton.addEventListener(
     "click",
     async function() {
 
+        if(!currentUser || !roomId) {
+
+            window.location.href =
+                "salas.html";
+
+            return;
+
+        }
+
+
         leaveButton.disabled =
             true;
-
 
         leaveButton.textContent =
             "Saindo...";
 
 
-        if(messagesChannel) {
+        try {
 
-            await supabaseClient
-                .removeChannel(
-                    messagesChannel
-                );
+            if(messagesChannel) {
 
-        }
-
-
-        if(membersChannel) {
-
-            await supabaseClient
-                .removeChannel(
-              
+                await supabaseClient
+                    .removeChannel(
+                        messagesChannel
+       
