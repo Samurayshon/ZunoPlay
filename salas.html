@@ -5,7 +5,10 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>Salas - ZunoPlay</title>
 
@@ -154,7 +157,17 @@ body {
 
     color: white;
 
-    text-align: left;
+}
+
+.room-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
 
 }
 
@@ -164,8 +177,6 @@ body {
 
     font-weight: bold;
 
-    margin-bottom: 6px;
-
 }
 
 .room-info {
@@ -173,6 +184,41 @@ body {
     color: #858697;
 
     font-size: 12px;
+
+    margin-top: 6px;
+
+}
+
+.enter-button {
+
+    flex-shrink: 0;
+
+    padding: 10px 15px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6366f1
+        );
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.enter-button:disabled {
+
+    opacity: .6;
+
+    cursor: default;
 
 }
 
@@ -229,6 +275,9 @@ const app =
 document.getElementById("app");
 
 
+let currentUser = null;
+
+
 /* =========================================
    CABEÇALHO
 ========================================= */
@@ -257,6 +306,124 @@ function header() {
         </div>
 
     `;
+
+}
+
+
+/* =========================================
+   VERIFICAR USUÁRIO
+========================================= */
+
+async function getCurrentUser() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient.auth.getUser();
+
+    if(error) {
+
+        console.error(
+            "Erro ao verificar usuário:",
+            error
+        );
+
+        return null;
+
+    }
+
+    return data?.user || null;
+
+}
+
+
+/* =========================================
+   ENTRAR NA SALA
+========================================= */
+
+async function enterRoom(roomId) {
+
+    if(!currentUser) {
+
+        alert(
+            "Você precisa estar conectado para entrar em uma sala."
+        );
+
+        return;
+
+    }
+
+
+    const button =
+        document.querySelector(
+            `[data-room-id="${roomId}"]`
+        );
+
+
+    if(button) {
+
+        button.disabled = true;
+
+        button.textContent =
+            "Entrando...";
+
+    }
+
+
+    try {
+
+        const {
+            error
+        } =
+        await supabaseClient
+            .from("room_members")
+            .upsert(
+                {
+                    room_id: roomId,
+                    user_id: currentUser.id
+                },
+                {
+                    onConflict:
+                        "room_id,user_id"
+                }
+            );
+
+
+        if(error) {
+
+            console.error(
+                "Erro ao entrar na sala:",
+                error
+            );
+
+            alert(
+                "Não foi possível entrar na sala:\n\n" +
+                error.message
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Você entrou na sala!"
+        );
+
+
+    } finally {
+
+        if(button) {
+
+            button.disabled = false;
+
+            button.textContent =
+                "Entrar";
+
+        }
+
+    }
 
 }
 
@@ -323,21 +490,21 @@ async function loadRooms() {
 
     await supabaseClient
 
-    .from("rooms")
+        .from("rooms")
 
-    .select(
-        "id, name, owner_id, created_at"
-    )
+        .select(
+            "id, name, owner_id, created_at"
+        )
 
-    .order(
-        "created_at",
-        {
-            ascending: false
-        }
-    );
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
 
 
-    if (error) {
+    if(error) {
 
         console.error(
             "Erro ao carregar salas:",
@@ -386,16 +553,15 @@ async function loadRooms() {
 
 
     const list =
-    document.getElementById(
-        "roomList"
-    );
+        document.getElementById(
+            "roomList"
+        );
 
 
-    list.innerHTML =
-    "";
+    list.innerHTML = "";
 
 
-    if (!data.length) {
+    if(!data.length) {
 
         list.innerHTML = `
 
@@ -416,32 +582,50 @@ async function loadRooms() {
         function(room) {
 
             const item =
-            document.createElement(
-                "div"
-            );
+                document.createElement(
+                    "div"
+                );
 
 
             item.className =
-            "room";
+                "room";
 
 
             item.innerHTML = `
 
-                <div class="room-name">
+                <div class="room-top">
 
-                    🎙️
-                    ${escapeHTML(
-                        room.name
-                    )}
+                    <div>
 
-                </div>
+                        <div class="room-name">
 
-                <div class="room-info">
+                            🎙️
+                            ${escapeHTML(
+                                room.name
+                            )}
 
-                    Sala criada em
-                    ${formatDate(
-                        room.created_at
-                    )}
+                        </div>
+
+                        <div class="room-info">
+
+                            Sala criada em
+                            ${formatDate(
+                                room.created_at
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="enter-button"
+                        data-room-id="${room.id}"
+                        onclick="enterRoom('${room.id}')"
+                    >
+
+                        Entrar
+
+                    </button>
 
                 </div>
 
@@ -465,10 +649,12 @@ async function loadRooms() {
 function escapeHTML(text) {
 
     const div =
-    document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     div.textContent =
-    text || "";
+        text || "";
 
     return div.innerHTML;
 
@@ -484,9 +670,9 @@ function formatDate(
 ) {
 
     const date =
-    new Date(
-        dateString
-    );
+        new Date(
+            dateString
+        );
 
 
     return date.toLocaleDateString(
@@ -500,7 +686,62 @@ function formatDate(
    INICIAR
 ========================================= */
 
-loadRooms();
+async function init() {
+
+    app.innerHTML =
+        header() +
+
+        `
+
+        <div class="page">
+
+            <div class="empty">
+
+                ⏳ Verificando usuário...
+
+            </div>
+
+        </div>
+
+        `;
+
+
+    currentUser =
+        await getCurrentUser();
+
+
+    if(!currentUser) {
+
+        app.innerHTML =
+            header() +
+
+            `
+
+            <div class="page">
+
+                <div class="empty">
+
+                    Você precisa estar
+                    conectado para acessar
+                    as salas.
+
+                </div>
+
+            </div>
+
+            `;
+
+        return;
+
+    }
+
+
+    await loadRooms();
+
+}
+
+
+init();
 
 </script>
 
