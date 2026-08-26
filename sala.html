@@ -26,7 +26,6 @@
     .top-avatar{width:31px;height:31px;border-radius:50%;object-fit:cover;border:2px solid #090a12;background:#34265e;display:grid;place-items:center;font-size:14px;margin-left:-8px;overflow:hidden}
     .top-avatar:first-child{margin-left:0}
     .people-count{height:31px;min-width:31px;padding:0 8px;border-radius:16px;border:1px solid #37384b;background:#20212f;color:#d9d9e4;font-size:11px;display:grid;place-items:center;margin-left:-5px}
-
     .main{min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden}
     .stage-shell{flex:0 0 auto;padding:12px 14px 8px}
     .stage-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;padding:0 3px}
@@ -53,7 +52,6 @@
     .seat-empty .empty-circle{width:62px;height:62px;border-radius:50%;border:1.5px solid #756c95;background:rgba(255,255,255,.015);display:grid;place-items:center;color:#8b8b9b;font-size:31px;font-weight:200}
     .seat-empty .empty-label{margin-top:7px;font-size:9px;color:#66687a}
     .stage-overflow{position:absolute;right:11px;top:10px;font-size:9px;color:#a7a8b8;background:#1c1d2a;border:1px solid #303145;border-radius:999px;padding:5px 8px;z-index:2}
-
     .chat-section{min-height:0;flex:1;display:flex;flex-direction:column;border-top:1px solid rgba(255,255,255,.035)}
     .chat-head{height:40px;flex:0 0 auto;padding:9px 17px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,11,19,.72)}
     .chat-title{font-size:12px;font-weight:800;color:#d7d7e2}
@@ -75,7 +73,6 @@
     .system-event span{display:inline-block;padding:6px 10px;border-radius:999px;background:#10111b;border:1px solid #222332}
     .empty{text-align:center;color:#737486;font-size:11px;padding:28px 10px;line-height:1.5}
     .error{padding:24px 12px;text-align:center;color:var(--danger);font-size:12px;line-height:1.5}
-
     .composer-wrap{flex:0 0 auto;padding:7px 10px calc(8px + env(safe-area-inset-bottom));border-top:1px solid #292a3d;background:rgba(10,11,19,.97);backdrop-filter:blur(18px);z-index:12}
     .voice-dock .hero{display:none!important}
     .voice-dock .zuno-voice{width:100%;margin:0 0 7px!important;padding:7px 8px!important;border-radius:13px!important;background:#11121d!important;border:1px solid #27283a!important;gap:7px!important}
@@ -91,7 +88,6 @@
     .send-button{border:0;background:linear-gradient(135deg,var(--purple),var(--indigo));font-size:16px}
     .emoji-pop{display:none;position:absolute;left:10px;right:10px;bottom:calc(66px + env(safe-area-inset-bottom));padding:9px;border-radius:16px;border:1px solid #303145;background:#171827;box-shadow:0 16px 50px #0008;grid-template-columns:repeat(8,1fr);gap:4px;z-index:30}
     .emoji-pop.open{display:grid}.emoji-pop button{border:0;background:transparent;font-size:21px;padding:5px;border-radius:9px}.emoji-pop button:hover{background:#242538}
-
     .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;opacity:0;pointer-events:none;transition:.2s}
     .sheet-backdrop.open{opacity:1;pointer-events:auto}
     .members-sheet{position:absolute;left:50%;bottom:0;width:min(680px,100%);max-height:72dvh;transform:translate(-50%,105%);transition:.24s ease;background:#11121d;border:1px solid #303145;border-bottom:0;border-radius:25px 25px 0 0;padding:10px 14px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -20px 70px #000b}
@@ -119,19 +115,16 @@
     <div id="topPeople" class="top-people" aria-hidden="true"></div>
     <button id="peopleButton" class="icon-btn" type="button" aria-label="Ver participantes">•••</button>
   </header>
-
   <main class="main">
     <section class="stage-shell">
       <div class="stage-head"><span class="stage-label">Palco de voz</span><span class="stage-live">● Ao vivo</span></div>
       <div id="roomStage" class="room-stage" aria-label="Participantes no palco"></div>
     </section>
-
     <section class="chat-section">
       <div class="chat-head"><span class="chat-title">Conversa da sala</span><span class="chat-hint">Toque no avatar para abrir o perfil</span></div>
       <div id="messages" class="messages"><div class="empty">Carregando mensagens...</div></div>
     </section>
   </main>
-
   <div class="composer-wrap">
     <div id="voiceDock" class="voice-dock"><div class="hero" aria-hidden="true"></div></div>
     <div class="composer">
@@ -145,7 +138,6 @@
     <div id="emojiPop" class="emoji-pop" aria-label="Escolher emoji"></div>
   </div>
 </div>
-
 <div id="sheetBackdrop" class="sheet-backdrop" aria-hidden="true">
   <section class="members-sheet" role="dialog" aria-modal="true" aria-label="Pessoas na sala">
     <div class="sheet-handle"></div>
@@ -154,7 +146,6 @@
     <button id="leaveButton" class="leave" type="button">Sair da sala</button>
   </section>
 </div>
-
 <script>
 const SUPABASE_URL="https://rliymfbbhqoejgfvsbuu.supabase.co",SUPABASE_KEY="sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0",supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const roomTitle=document.getElementById("roomTitle"),roomStatus=document.getElementById("roomStatus"),roomCountText=document.getElementById("roomCountText"),topPeople=document.getElementById("topPeople"),members=document.getElementById("members"),roomStage=document.getElementById("roomStage"),messages=document.getElementById("messages"),chatForm=document.getElementById("chatForm"),chatInput=document.getElementById("chatInput"),sendButton=document.getElementById("sendButton"),leaveButton=document.getElementById("leaveButton"),peopleButton=document.getElementById("peopleButton"),sheetBackdrop=document.getElementById("sheetBackdrop"),sheetCount=document.getElementById("sheetCount"),speakerButton=document.getElementById("speakerButton"),emojiButton=document.getElementById("emojiButton"),emojiPop=document.getElementById("emojiPop");
@@ -169,8 +160,11 @@ function getRoomId(){const p=new URLSearchParams(location.search);return p.get("
 function setStatus(t,ok=true){roomStatus.textContent="● "+t;roomStatus.style.color=ok?"#4ade80":"#ff8f8f"}
 function toggleSheet(open){const value=open??!sheetBackdrop.classList.contains("open");sheetBackdrop.classList.toggle("open",value);sheetBackdrop.setAttribute("aria-hidden",String(!value))}
 peopleButton.addEventListener("click",()=>toggleSheet(true));sheetBackdrop.addEventListener("click",e=>{if(e.target===sheetBackdrop)toggleSheet(false)});document.addEventListener("keydown",e=>{if(e.key==="Escape")toggleSheet(false)});
-function applySpeakerMute(){document.querySelectorAll('audio[data-peer-id]').forEach(a=>a.muted=speakerMuted);speakerButton.classList.toggle("muted",speakerMuted);speakerButton.textContent=speakerMuted?"🔇":"🔊";speakerButton.setAttribute("aria-label",speakerMuted?"Ativar áudio da sala":"Silenciar áudio da sala")}
-speakerButton.addEventListener("click",()=>{speakerMuted=!speakerMuted;applySpeakerMute()});new MutationObserver(applySpeakerMute).observe(document.body,{childList:true,subtree:true});
+function applyRemoteMute(){document.querySelectorAll('audio[data-peer-id]').forEach(a=>a.muted=speakerMuted)}
+function renderSpeaker(){speakerButton.classList.toggle("muted",speakerMuted);speakerButton.textContent=speakerMuted?"🔇":"🔊";speakerButton.setAttribute("aria-label",speakerMuted?"Ativar áudio da sala":"Silenciar áudio da sala")}
+function applySpeakerMute(){applyRemoteMute();renderSpeaker()}
+speakerButton.addEventListener("click",()=>{speakerMuted=!speakerMuted;applySpeakerMute()});
+const audioObserver=new MutationObserver(records=>{for(const record of records){for(const node of record.addedNodes){if(node.nodeType!==1)continue;if(node.matches?.('audio[data-peer-id]')||node.querySelector?.('audio[data-peer-id]')){applyRemoteMute();return}}}});audioObserver.observe(document.body,{childList:true,subtree:true});
 EMOJIS.forEach(emoji=>{const b=document.createElement("button");b.type="button";b.textContent=emoji;b.addEventListener("click",()=>{chatInput.value+=emoji;emojiPop.classList.remove("open");chatInput.focus()});emojiPop.appendChild(b)});emojiButton.addEventListener("click",()=>emojiPop.classList.toggle("open"));
 async function loadCurrentUser(){const{data,error}=await supabaseClient.auth.getSession();if(error)throw error;currentUser=data?.session?.user||null;if(!currentUser)throw new Error("Você precisa estar conectado para acessar a sala.")}
 async function loadRoom(){if(!roomId)throw new Error("O endereço da sala não contém o ID da sala.");const{data,error}=await supabaseClient.from("rooms").select("id,name,owner_id,created_at").eq("id",roomId).maybeSingle();if(error)throw error;if(!data)throw new Error("A sala não foi encontrada.");roomOwnerId=data.owner_id||null;roomTitle.textContent=data.name||"Sala"}
@@ -191,7 +185,7 @@ chatForm.addEventListener("submit",async e=>{e.preventDefault();emojiPop.classLi
 leaveButton.addEventListener("click",async()=>{leaveButton.disabled=true;leaveButton.textContent="Saindo...";try{await window.ZunoRoomVoice?.stop?.();if(currentUser&&roomId)await supabaseClient.from("room_members").delete().eq("room_id",roomId).eq("user_id",currentUser.id)}finally{if(messagesChannel)await messagesChannel.close?.();if(membersChannel)await supabaseClient.removeChannel(membersChannel);sessionStorage.removeItem("zunoplay_room_id");goBack()}});
 async function init(){try{roomId=getRoomId();if(!roomId)throw new Error("ID da sala não encontrado.");sessionStorage.setItem("zunoplay_room_id",roomId);await loadCurrentUser();await loadRoom();await subscribeMessages();await loadMessages();await loadMembers();subscribeMembers();setStatus("Sala ativa");chatInput.focus()}catch(err){console.error(err);setStatus("Erro",false);roomTitle.textContent="Erro na sala";messages.innerHTML='<div class="error">'+escapeHTML(err.message||"Não foi possível carregar a sala.")+'</div>';chatForm.style.display="none"}}
 supabaseClient.auth.onAuthStateChange(event=>{if(event==="SIGNED_OUT")goBack()});
-window.addEventListener("pagehide",()=>{messagesChannel?.close?.().catch?.(()=>{});if(membersChannel)supabaseClient.removeChannel(membersChannel).catch?.(()=>{})});
+window.addEventListener("pagehide",()=>{audioObserver.disconnect();messagesChannel?.close?.().catch?.(()=>{});if(membersChannel)supabaseClient.removeChannel(membersChannel).catch?.(()=>{})});
 init();
 </script>
 </body>
