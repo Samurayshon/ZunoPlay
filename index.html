@@ -10,7 +10,7 @@
     content="width=device-width, initial-scale=1.0"
 >
 
-<!-- CONFIGURAÇÃO DO APLICATIVO -->
+<!-- PWA -->
 <link
     rel="manifest"
     href="manifest.json"
@@ -436,9 +436,7 @@ body {
 >
 
 
-    <!-- =====================================
-         TELA DE BOAS-VINDAS
-    ====================================== -->
+    <!-- TELA DE BOAS-VINDAS -->
 
     <div
         id="welcomeScreen"
@@ -511,9 +509,7 @@ body {
     </div>
 
 
-    <!-- =====================================
-         HOME
-    ====================================== -->
+    <!-- HOME -->
 
     <div
         id="homeScreen"
@@ -523,7 +519,6 @@ body {
 
         <div class="header">
 
-
             <div class="header-logo">
 
                 Zuno<span>Play</span>
@@ -532,9 +527,6 @@ body {
 
 
             <div class="header-actions">
-
-
-                <!-- NOTIFICAÇÕES -->
 
                 <button
                     class="header-button"
@@ -556,8 +548,6 @@ body {
                 </button>
 
 
-                <!-- PERFIL -->
-
                 <button
                     class="header-button"
                     onclick="window.location.href='perfil.html'"
@@ -568,13 +558,10 @@ body {
 
                 </button>
 
-
             </div>
 
         </div>
 
-
-        <!-- SAUDAÇÃO -->
 
         <div class="greeting">
 
@@ -594,12 +581,8 @@ body {
         </div>
 
 
-        <!-- MENU -->
-
         <div class="menu-grid">
 
-
-            <!-- CONVERSAS -->
 
             <div
                 class="menu-card"
@@ -629,8 +612,6 @@ body {
             </div>
 
 
-            <!-- SALAS -->
-
             <div
                 class="menu-card"
                 onclick="window.location.href='salas.html'"
@@ -658,8 +639,6 @@ body {
 
             </div>
 
-
-            <!-- AMIGOS -->
 
             <div
                 class="menu-card"
@@ -689,8 +668,6 @@ body {
             </div>
 
 
-            <!-- JOGOS -->
-
             <div
                 class="menu-card"
                 onclick="window.location.href='jogos.html'"
@@ -718,8 +695,6 @@ body {
 
             </div>
 
-
-            <!-- HISTÓRICO -->
 
             <div
                 class="menu-card"
@@ -749,11 +724,7 @@ body {
             </div>
 
 
-            <!-- COMUNIDADES -->
-
-            <div
-                class="menu-card"
-            >
+            <div class="menu-card">
 
                 <div class="menu-icon">
 
@@ -780,8 +751,6 @@ body {
 
         </div>
 
-
-        <!-- SAIR -->
 
         <button
             id="logoutButton"
@@ -829,39 +798,25 @@ window.supabase.createClient(
 ========================================= */
 
 const loading =
-document.getElementById(
-    "loading"
-);
+document.getElementById("loading");
 
 const app =
-document.getElementById(
-    "app"
-);
+document.getElementById("app");
 
 const welcomeScreen =
-document.getElementById(
-    "welcomeScreen"
-);
+document.getElementById("welcomeScreen");
 
 const homeScreen =
-document.getElementById(
-    "homeScreen"
-);
+document.getElementById("homeScreen");
 
 const usernameElement =
-document.getElementById(
-    "username"
-);
+document.getElementById("username");
 
 const logoutButton =
-document.getElementById(
-    "logoutButton"
-);
+document.getElementById("logoutButton");
 
 const notificationBadge =
-document.getElementById(
-    "notificationBadge"
-);
+document.getElementById("notificationBadge");
 
 
 let currentUser = null;
@@ -933,12 +888,10 @@ function showHome(user){
 
 
 /* =========================================
-   CONTADOR DE NOTIFICAÇÕES
+   NOTIFICAÇÕES
 ========================================= */
 
-async function loadNotificationCount(
-    userId
-){
+async function loadNotificationCount(userId){
 
     const {
         count,
@@ -982,7 +935,6 @@ async function loadNotificationCount(
             ? "99+"
             : count;
 
-
         notificationBadge.style.display =
             "flex";
 
@@ -997,12 +949,10 @@ async function loadNotificationCount(
 
 
 /* =========================================
-   REALTIME
+   REALTIME NOTIFICAÇÕES
 ========================================= */
 
-function subscribeNotifications(
-    userId
-){
+function subscribeNotifications(userId){
 
     if(notificationChannel){
 
@@ -1054,7 +1004,9 @@ async function checkUser(){
             data,
             error
         } =
-        await supabaseClient.auth.getSession();
+        await supabaseClient
+            .auth
+            .getSession();
 
 
         if(error){
@@ -1119,7 +1071,6 @@ logoutButton.addEventListener(
         logoutButton.disabled =
             true;
 
-
         logoutButton.textContent =
             "Saindo...";
 
@@ -1136,7 +1087,9 @@ logoutButton.addEventListener(
 
         try{
 
-            await supabaseClient.auth.signOut();
+            await supabaseClient
+                .auth
+                .signOut();
 
         }catch(error){
 
@@ -1218,6 +1171,46 @@ setTimeout(
     },
     6000
 );
+
+
+/* =========================================
+   SERVICE WORKER / PWA
+========================================= */
+
+if(
+    "serviceWorker" in navigator
+){
+
+    window.addEventListener(
+        "load",
+        function(){
+
+            navigator.serviceWorker
+                .register("./sw.js")
+                .then(
+                    function(){
+
+                        console.log(
+                            "ZunoPlay: aplicativo pronto."
+                        );
+
+                    }
+                )
+                .catch(
+                    function(error){
+
+                        console.error(
+                            "Erro ao ativar o aplicativo:",
+                            error
+                        );
+
+                    }
+                );
+
+        }
+    );
+
+}
 
 
 /* =========================================
