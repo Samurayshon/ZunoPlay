@@ -56,13 +56,28 @@ jobs:
             avatar-renderer.js avatar-home-sync.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
             zuno-game-progression.js zuno-game-progression.css zuno-game-social.js zuno-game-social.css
-            zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-rush.js zuno-pulse.js zuno-stack.js zuno-stack-catalog.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.webp
+            zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-rush.js zuno-pulse.js zuno-stack.js zuno-stack-catalog.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
             zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
           )
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }
           done
+      - name: Validate Zuno Stack premium sprite
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          path='zuno-stack-pieces.svg'
+          root=ET.parse(path).getroot()
+          ids={el.attrib.get('id') for el in root.iter() if el.attrib.get('id')}
+          expected={f'piece-{name}' for name in ['pulse','core','nova','bolt','orb','prism','echo','flux','spark','link','comet','shift']}
+          missing=expected-ids
+          if missing:
+              raise SystemExit('Missing premium pieces: '+', '.join(sorted(missing)))
+          print('Zuno Stack SVG sprite OK: 12 pieces')
+          PY
       - name: Guard current Home boot
         shell: bash
         run: |
