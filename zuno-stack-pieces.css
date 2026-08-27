@@ -1,12 +1,12 @@
 /* Zuno Stack premium pieces — performance build v161.
-   Raster sprite + no per-tile blur/filter effects. */
+   Lightweight rendering: no per-tile blur/drop-shadow filters. */
 .zsp-art{
   --zsp-x:0%;
   --zsp-y:0%;
   display:block!important;
   width:100%;
   aspect-ratio:1/1;
-  background-image:url('./zuno-stack-pieces.webp?v=161');
+  background-image:url('./zuno-stack-pieces.svg?v=161');
   background-size:600% 200%;
   background-position:var(--zsp-x) var(--zsp-y);
   background-repeat:no-repeat;
