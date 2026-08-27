@@ -58,13 +58,13 @@
   }
 
   function loadOfficialAvatars(){
-    loadScript('zunoplay-official-avatars','./official-avatars.js?v=32','ZunoPlay: não foi possível carregar os avatares oficiais');
+    loadScript('zunoplay-official-avatars-v34','./official-avatars.js?v=34','ZunoPlay: não foi possível carregar os avatares oficiais');
   }
 
   function loadOfficialHome(){
     if(page!=='index.html')return;
-    loadStyle('zunoplay-home-v32-style','./home-v29.css?v=32');
-    loadScript('zunoplay-home-v32-script','./home-v29.js?v=32','ZunoPlay: não foi possível carregar a Home oficial');
+    loadStyle('zunoplay-home-v34-style','./home-v29.css?v=34');
+    loadScript('zunoplay-home-v34-script','./home-v29.js?v=34','ZunoPlay: não foi possível carregar a Home oficial');
   }
 
   function bootstrapRealtime() {
@@ -95,7 +95,7 @@
     if(!(el instanceof Element))return false;
     if(el.classList.contains('zunoplay-global-home'))return true;
     if(el.classList.contains('home-button')||el.classList.contains('zunoplay-home-button')||el.classList.contains('home'))return true;
-    if(el.tagName==='A'&&/(^|\/)index\.html(?:$|[?#])/.test(el.getAttribute('href')||''))return true;
+    if(el.tagName==='A'&&/(^|\\/)index\\.html(?:$|[?#])/.test(el.getAttribute('href')||''))return true;
     const text=(el.textContent||'').trim().toLowerCase();
     return(el.tagName==='BUTTON'||el.tagName==='A')&&(text==='⌂'||text==='🏠'||text==='home');
   }

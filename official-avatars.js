@@ -2,9 +2,10 @@
   if(window.__ZUNOPLAY_OFFICIAL_AVATARS__)return;
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
 
+  const VERSION='34';
   const ASSETS={
-    masculino:'./assets/avatars/avatar-masculino-oficial.webp?v=33',
-    feminino:'./assets/avatars/avatar-feminino-oficial.webp?v=33'
+    masculino:'./assets/avatars/avatar-masculino-oficial.webp?v='+VERSION,
+    feminino:'./assets/avatars/avatar-feminino-oficial.webp?v='+VERSION
   };
   const cache={};
 
@@ -37,23 +38,13 @@
     }
     return null;
   }
-  function renderHome(src){
+  function renderEverywhere(src){
     const wrap=document.getElementById('profileAvatarWrap');
     if(wrap)wrap.innerHTML='<div class="profile-glow"></div><img class="profile-avatar zuno-official-starter" src="'+src+'" alt="Avatar oficial ZunoPlay">';
     const mini=document.getElementById('profileButton');
     if(mini)mini.innerHTML='<img src="'+src+'" alt="Perfil">';
-  }
-  function renderEditorStarter(src,sex){
-    if((location.pathname.split('/').pop()||'').toLowerCase()!=='avatar.html')return;
     const preview=document.getElementById('avatarPreview');
-    if(!preview)return;
-    preview.src=src;
-    preview.dataset.officialStarter=sex;
-    preview.alt='Avatar oficial '+(sex==='feminino'?'feminino':'masculino')+' do ZunoPlay';
-    const badge=document.querySelector('.preview-badge');
-    if(badge)badge.innerHTML='Modelo inicial <b>'+(sex==='feminino'?'Feminino':'Masculino')+'</b> · ZunoPlay';
-    const legacy=document.getElementById('legacyNote');
-    if(legacy)legacy.style.display='none';
+    if(preview && (location.pathname.split('/').pop()||'').toLowerCase()==='avatar.html') preview.src=src;
   }
   async function ensureForCurrentUser(){
     const sb=await waitClient();
@@ -70,8 +61,7 @@
       const{error:updateError}=await sb.from('profiles').update({avatar_url:base}).eq('id',user.id);
       if(updateError)console.warn('ZunoPlay: não foi possível definir avatar inicial oficial.',updateError);
     }
-    renderHome(base);
-    setTimeout(()=>renderEditorStarter(base,sex),200);
+    renderEverywhere(base);
     window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src:base}}));
     return base;
   }

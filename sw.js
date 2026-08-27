@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v33";
+const CACHE_NAME = "zunoplay-v34";
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -48,6 +48,7 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
   event.respondWith(
     fetch(event.request, { cache: "no-store" })
       .then(response => {
