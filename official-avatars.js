@@ -2,7 +2,7 @@
   if(window.__ZUNOPLAY_OFFICIAL_AVATARS__)return;
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
 
-  const VERSION='36';
+  const VERSION='37';
   const ASSETS={
     masculino:'./assets/avatars/avatar-masculino-oficial.webp?v='+VERSION,
     feminino:'./assets/avatars/avatar-feminino-oficial.webp?v='+VERSION
