@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='151';
+  const VERSION='152';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -73,9 +73,9 @@
     if(document.getElementById(id))return;
     const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script);
   }
-  function installV151Refresh(){
+  function installV152Refresh(){
     if(!('serviceWorker' in navigator))return;
-    const key='zuno-sw-v151-reloaded';
+    const key='zuno-sw-v152-reloaded';
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(sessionStorage.getItem(key)==='1')return;
       sessionStorage.setItem(key,'1');
@@ -90,6 +90,7 @@
       injectStyle('zunoplay-current-home-mobile-style','./zuno-current-home-mobile.css');
       injectStyle('zunoplay-current-home-stats-style','./zuno-current-home-stats.css');
       injectStyle('zunoplay-current-interactions-style','./zuno-current-interactions.css');
+      injectStyle('zunoplay-home-reference-v152-style','./zuno-home-reference-v152.css');
     }
   }
   function mount(){
@@ -99,7 +100,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
-    installV151Refresh();
+    installV152Refresh();
     loadCurrentModules();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
