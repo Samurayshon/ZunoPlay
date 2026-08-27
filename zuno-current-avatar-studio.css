@@ -1,0 +1,176 @@
+/* ZunoPlay Avatar Studio — identidade simples e direta */
+@media (max-width:620px){
+  html[data-zuno-interface="current"] body.zuno-official-avatar{
+    background:#03050f!important;
+    color:#f8f8ff!important;
+    overflow-x:hidden!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .app{
+    width:100%!important;
+    max-width:520px!important;
+    min-height:100dvh!important;
+    padding:8px 14px calc(92px + env(safe-area-inset-bottom))!important;
+    background:
+      radial-gradient(circle at 82% 19%,rgba(90,45,220,.18),transparent 27%),
+      linear-gradient(180deg,#040612 0%,#03050e 100%)!important;
+  }
+
+  /* Cabeçalho direto: voltar, título e ações essenciais. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .top{
+    height:54px!important;
+    min-height:54px!important;
+    grid-template-columns:40px minmax(0,1fr) auto!important;
+    gap:8px!important;
+    padding:0!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .brand{gap:8px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .brand .mark{
+    width:28px!important;height:28px!important;border-radius:9px!important;
+    background:linear-gradient(135deg,#7838ff,#c33ef2 55%,#27d9ff)!important;
+    box-shadow:0 0 18px rgba(123,56,255,.34)!important;
+    font-size:14px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .brand h1{
+    font-size:17px!important;font-weight:900!important;letter-spacing:-.35px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .iconBtn{
+    width:38px!important;height:38px!important;border-radius:12px!important;
+    border:1px solid rgba(142,123,211,.20)!important;
+    background:#0b1020!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar #saveTop{
+    background:linear-gradient(135deg,#7436ff,#bd3eef)!important;
+    border-color:transparent!important;
+  }
+
+  /* Preview é o foco da tela. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .hero{
+    height:334px!important;
+    margin-top:4px!important;
+    border-radius:24px!important;
+    border:1px solid rgba(113,91,184,.25)!important;
+    background:
+      radial-gradient(circle at 50% 56%,rgba(116,49,225,.22),transparent 40%),
+      linear-gradient(180deg,#090d1d,#050713)!important;
+    box-shadow:inset 0 0 45px rgba(110,45,210,.10)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .stars{opacity:.08!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .pulseLabel{display:none!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .pulse{
+    width:230px!important;height:230px!important;top:50%!important;opacity:.42!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .stage{
+    top:34px!important;width:220px!important;height:270px!important;
+    filter:drop-shadow(0 0 22px rgba(100,46,225,.42))!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .hero:after{
+    bottom:33px!important;width:205px!important;height:46px!important;
+  }
+
+  /* Gênero sempre visível, sem tela extra. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .modelSwitch{
+    left:12px!important;right:auto!important;top:12px!important;
+    border-radius:12px!important;background:rgba(7,10,23,.92)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .modelSwitch button{
+    min-width:76px!important;padding:7px 10px!important;font-size:10px!important;
+  }
+
+  /* Ferramentas de visualização discretas. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .viewTools{
+    left:10px!important;right:10px!important;bottom:9px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .toolGroup{gap:5px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tool{
+    height:30px!important;padding:0 9px!important;font-size:9px!important;border-radius:10px!important;
+    background:rgba(8,12,27,.92)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .mode{
+    padding:2px!important;border-radius:10px!important;background:rgba(8,12,27,.92)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .mode button{
+    padding:6px 7px!important;font-size:8px!important;
+  }
+
+  /* Retira textos que não ajudam na edição principal. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .identity,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .mix,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .saved,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .hint{
+    display:none!important;
+  }
+
+  /* Categorias: uma única faixa rolável. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tabs{
+    gap:7px!important;padding:11px 0 9px!important;margin:0!important;
+    scroll-snap-type:x proximity!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tab{
+    min-width:64px!important;height:50px!important;border-radius:14px!important;
+    padding:4px 7px!important;gap:3px!important;scroll-snap-align:start!important;
+    background:#0a0f20!important;border:1px solid rgba(128,137,184,.15)!important;
+    color:#8792aa!important;font-size:8px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tab .ico{font-size:16px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tab.on{
+    color:#fff!important;border-color:#8547ff!important;
+    background:linear-gradient(145deg,#241441,#0c1830)!important;
+    box-shadow:0 0 18px rgba(117,55,255,.18)!important;
+  }
+
+  /* Painel único de edição. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .panel{
+    padding:12px!important;border-radius:18px!important;
+    border:1px solid rgba(128,137,184,.16)!important;
+    background:#080d1bdd!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .panelHead{
+    margin-bottom:9px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .panelHead strong{
+    font-size:15px!important;font-weight:900!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .panelHead small{
+    font-size:9px!important;color:#758198!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .options{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .option{
+    min-height:72px!important;border-radius:13px!important;padding:7px 4px 6px!important;
+    background:linear-gradient(145deg,#12192c,#080d18)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .option.on{
+    border-color:#5bdcff!important;
+    box-shadow:inset 0 0 0 1px #8b48ff,0 0 13px rgba(90,214,255,.12)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .thumb{
+    width:38px!important;height:38px!important;border-radius:11px!important;font-size:17px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .label{font-size:8px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .controls{
+    margin-top:11px!important;gap:9px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .color{
+    width:25px!important;height:25px!important;
+  }
+
+  /* Um único CTA visual forte. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .save{
+    position:sticky!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;z-index:40!important;
+    height:52px!important;margin-top:11px!important;border-radius:16px!important;
+    background:linear-gradient(105deg,#7437ff,#b83ee9 52%,#22cfe8)!important;
+    box-shadow:0 10px 28px rgba(94,37,212,.34)!important;
+    font-size:13px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .status{
+    margin-top:8px!important;font-size:9px!important;
+  }
+}
+
+@media (max-width:390px){
+  html[data-zuno-interface="current"] body.zuno-official-avatar .hero{height:315px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .stage{width:205px!important;height:254px!important;top:31px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tab{min-width:60px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .options{gap:6px!important}
+}
