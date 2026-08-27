@@ -1,21 +1,52 @@
 (()=>{
 if(window.__ZUNO_GAME_PROGRESSION__)return;window.__ZUNO_GAME_PROGRESSION__=true;
-const page=(location.pathname.split('/').pop()||'').toLowerCase(),$=(s,r=document)=>r?.querySelector?.(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const ACH={first_game:['🎮','Primeira partida','Conclua sua primeira partida'],first_win:['🏆','Primeira vitória','Vença um desafio'],knowledge_100:['🧠','100 acertos','Some 100 respostas corretas'],veteran_25:['⚔️','Veterano','Complete 25 partidas'],perfect_score:['💯','Perfeito','Alcance 1000 pontos'],multiplayer_debut:['👥','Estreia multiplayer','Jogue sua primeira Partida Zuno'],multiplayer_champion:['👑','Campeão da sala','Vença uma Partida Zuno'],game_level_5:['✨','Nível de Jogos 5','Alcance o nível 5'],game_level_10:['🌟','Nível de Jogos 10','Alcance o nível 10']};
-let sb=null,user=null,baselineAchievements=new Set(),lastProgress=null,multiSubmitted=false;
-async function waitClient(){for(let i=0;i<70;i++){if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;if(window.supabase?.createClient){const URL='https://rliymfbbhqoejgfvsbuu.supabase.co',KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';window.ZunoSupabaseClient=window.ZunoSupabaseClient||window.supabase.createClient(URL,KEY);return window.ZunoSupabaseClient}await sleep(100)}return null}
-function levelFloor(level){return Math.pow(Math.max(0,level-1),2)*250}function levelCeil(level){return Math.pow(level,2)*250}function xpPct(xp,level){const a=levelFloor(level),b=levelCeil(level);return Math.max(0,Math.min(100,(xp-a)/(b-a)*100))}
-async function loadData(){const [{data:p},{data:a}]=await Promise.all([sb.from('game_progress').select('*').eq('user_id',user.id).maybeSingle(),sb.from('game_achievements').select('achievement_id,unlocked_at').eq('user_id',user.id).order('unlocked_at',{ascending:false})]);lastProgress=p||{xp:0,game_level:1,total_games:0,total_wins:0,total_correct:0,best_score:0,solo_games:0,multiplayer_games:0,multiplayer_wins:0};const achievements=a||[];return{progress:lastProgress,achievements}}
-function cardHTML(progress,achievements=[]){const level=Number(progress.game_level)||1,xp=Number(progress.xp)||0,next=levelCeil(level),pct=xpPct(xp,level),wins=Number(progress.total_wins)||0,games=Number(progress.total_games)||0,correct=Number(progress.total_correct)||0,best=Number(progress.best_score)||0;return '<div class="zuno-game-progress-card"><div class="zuno-game-progress-head"><div class="zuno-game-level-orb">'+level+'</div><div class="zuno-game-progress-copy"><b>Nível de Jogos '+level+'</b><small>Progressão geral em todos os jogos Zuno</small></div><div class="zuno-game-xp">'+xp+' XP</div></div><div class="zuno-game-xpbar"><i style="width:'+pct+'%"></i></div><div class="zuno-game-progress-stats"><div class="zuno-game-progress-stat"><small>Partidas</small><b>'+games+'</b></div><div class="zuno-game-progress-stat"><small>Vitórias</small><b>'+wins+'</b></div><div class="zuno-game-progress-stat"><small>Acertos</small><b>'+correct+'</b></div><div class="zuno-game-progress-stat"><small>Recorde</small><b>'+best+'</b></div></div>'+(achievements.length?'<div class="zuno-achievement-strip">'+achievements.slice(0,6).map(a=>{const m=ACH[a.achievement_id]||['🏅',a.achievement_id,'Conquista Zuno'];return '<div class="zuno-achievement"><span>'+m[0]+'</span><b>'+m[1]+'</b><small>'+m[2]+'</small></div>'}).join('')+'</div>':'')+'</div>'}
-function mountHub(data){const anchor=$('.hub-hero')||$('.hero')||$('main');if(!anchor||$('#zunoGameProgressHub'))return;const box=document.createElement('section');box.id='zunoGameProgressHub';box.innerHTML=cardHTML(data.progress,data.achievements);anchor.insertAdjacentElement('afterend',box)}
-function mountHistory(data){const anchor=$('.card .subtitle')||$('.subtitle');if(!anchor||$('#zunoGameProgressHistory'))return;const box=document.createElement('div');box.id='zunoGameProgressHistory';box.innerHTML=cardHTML(data.progress,data.achievements);anchor.insertAdjacentElement('afterend',box)}
-function ensureResultBox(){const result=$('#result');if(!result)return null;let box=$('#zunoGameProgressResult',result);if(!box){box=document.createElement('div');box.id='zunoGameProgressResult';box.className='zuno-progression-result';const saving=$('#saving',result);if(saving)saving.insertAdjacentElement('afterend',box);else result.appendChild(box)}return box}
-function achievementPopup(ids){if(!ids?.length)return;let i=0;let pop=$('#zunoAchievementPop');if(!pop){pop=document.createElement('div');pop.id='zunoAchievementPop';pop.className='zuno-achievement-pop';document.body.appendChild(pop)}const show=()=>{if(i>=ids.length)return;const m=ACH[ids[i++]]||['🏅','Nova conquista','Conquista desbloqueada'];pop.innerHTML='<b>'+m[0]+' '+m[1]+'</b><small>'+m[2]+'</small>';pop.classList.add('show');setTimeout(()=>{pop.classList.remove('show');setTimeout(show,300)},2800)};show()}
-async function refreshResult(previousXp=0){const data=await loadData(),p=data.progress,box=ensureResultBox();if(box){const gain=Math.max(0,(Number(p.xp)||0)-previousXp);box.innerHTML='<strong>+'+gain+' XP de Jogos</strong> · Nível '+(p.game_level||1)+'<br>Recorde '+(p.best_score||0)+' · '+(p.total_games||0)+' partidas · '+(p.total_wins||0)+' vitórias'}const fresh=data.achievements.filter(a=>!baselineAchievements.has(a.achievement_id)).map(a=>a.achievement_id);fresh.forEach(id=>baselineAchievements.add(id));achievementPopup(fresh)}
-function watchSolo(){const saving=$('#saving');if(!saving)return;let active=false,prevXp=Number(lastProgress?.xp)||0;const obs=new MutationObserver(async()=>{const text=saving.textContent||'';if(text.includes('Salvando')){active=true;prevXp=Number(lastProgress?.xp)||0;return}if(active&&(text.includes('Resultado salvo')||text.includes('✓'))){active=false;await sleep(250);refreshResult(prevXp)}});obs.observe(saving,{childList:true,subtree:true,characterData:true})}
-function parseMultiplayerResult(){const list=$('#finalPlayers');if(!list||!user)return null;const rows=[...list.querySelectorAll('.player')];if(rows.length<2)return null;const username=(window.__zunoProgressUsername||'').toLowerCase();let idx=-1,row=null;rows.forEach((r,i)=>{const name=($('.player-copy b',r)?.textContent||'').replace('ANFITRIÃO','').replace('@','').trim().toLowerCase();if(name===username){idx=i;row=r}});if(idx<0||!row)return null;const score=parseInt($('.player-score b',row)?.textContent||'0',10)||0,small=$('.player-score small',row)?.textContent||'0',correct=parseInt(small,10)||0;return{score,correct,placement:idx+1,playerCount:rows.length}}
-async function submitMultiplayer(){if(multiSubmitted)return;const results=$('#results');if(!results?.classList.contains('show'))return;const parsed=parseMultiplayerResult();if(!parsed)return;const q=new URLSearchParams(location.search),room=q.get('room')||sessionStorage.getItem('zunoplay_room_id'),match=q.get('invite')||q.get('match');if(!room||!match)return;multiSubmitted=true;const prevXp=Number(lastProgress?.xp)||0;const{data,error}=await sb.rpc('submit_partida_zuno_result',{p_room_id:room,p_match_id:match,p_score:parsed.score,p_correct:parsed.correct,p_placement:parsed.placement,p_player_count:parsed.playerCount});if(error){console.warn('Progressão multiplayer',error);multiSubmitted=false;return}const box=document.createElement('div');box.className='zuno-progression-result';const r=data?.[0]||{};box.innerHTML='<strong>'+(r.recorded?'Partida registrada':'Partida já registrada')+'</strong> · '+(r.game_xp||0)+' XP total · Nível '+(r.game_level||1);const btn=$('#returnButton');btn?.insertAdjacentElement('beforebegin',box);await refreshResult(prevXp)}
-async function watchMultiplayer(){const{data:p}=await sb.from('profiles').select('username').eq('id',user.id).maybeSingle();window.__zunoProgressUsername=p?.username||'';const results=$('#results');if(!results)return;const obs=new MutationObserver(()=>submitMultiplayer());obs.observe(results,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});submitMultiplayer()}
-async function init(){sb=await waitClient();if(!sb)return;const{data}=await sb.auth.getSession();user=data?.session?.user||null;if(!user)return;const initial=await loadData();baselineAchievements=new Set(initial.achievements.map(a=>a.achievement_id));if(page==='jogos.html')mountHub(initial);if(page==='historico.html')mountHistory(initial);if(page==='desafio.html'){ensureResultBox();watchSolo()}if(page==='partida.html')watchMultiplayer()}
+const page=(location.pathname.split('/').pop()||'').toLowerCase();
+const $=(s,r=document)=>r?.querySelector?.(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let sb=null,user=null;
+async function waitClient(){
+  for(let i=0;i<70;i++){
+    if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;
+    await sleep(100);
+  }
+  return null;
+}
+function levelFloor(level){return Math.pow(Math.max(0,level-1),2)*250}
+function levelCeil(level){return Math.pow(level,2)*250}
+function xpPct(xp,level){const a=levelFloor(level),b=levelCeil(level);return Math.max(0,Math.min(100,(xp-a)/(b-a)*100))}
+async function loadProgress(){
+  const{data}=await sb.from('game_progress').select('*').eq('user_id',user.id).maybeSingle();
+  return data||{xp:0,game_level:1,total_games:0,total_wins:0,best_score:0};
+}
+function cardHTML(p){
+  const level=Number(p.game_level)||1,xp=Number(p.xp)||0,pct=xpPct(xp,level),wins=Number(p.total_wins)||0,games=Number(p.total_games)||0,best=Number(p.best_score)||0;
+  return '<div class="zuno-game-progress-card"><div class="zuno-game-progress-head"><div class="zuno-game-level-orb">'+level+'</div><div class="zuno-game-progress-copy"><b>Nível de Jogos '+level+'</b><small>Zuno Stack é o único jogo ativo neste ciclo</small></div><div class="zuno-game-xp">'+xp+' XP</div></div><div class="zuno-game-xpbar"><i style="width:'+pct+'%"></i></div><div class="zuno-game-progress-stats"><div class="zuno-game-progress-stat"><small>Partidas</small><b>'+games+'</b></div><div class="zuno-game-progress-stat"><small>Vitórias</small><b>'+wins+'</b></div><div class="zuno-game-progress-stat"><small>Recorde</small><b>'+best+'</b></div><div class="zuno-game-progress-stat"><small>Status</small><b>STACK</b></div></div></div>';
+}
+function mountHub(p){
+  const anchor=$('.hero')||$('main');
+  if(!anchor||$('#zunoGameProgressHub'))return;
+  const box=document.createElement('section');
+  box.id='zunoGameProgressHub';
+  box.innerHTML=cardHTML(p);
+  anchor.insertAdjacentElement('afterend',box);
+}
+function mountHistory(p){
+  const anchor=$('.card .subtitle')||$('.subtitle')||$('main');
+  if(!anchor||$('#zunoGameProgressHistory'))return;
+  const box=document.createElement('div');
+  box.id='zunoGameProgressHistory';
+  box.innerHTML=cardHTML(p);
+  anchor.insertAdjacentElement('afterend',box);
+}
+async function init(){
+  sb=await waitClient();
+  if(!sb)return;
+  const{data}=await sb.auth.getSession();
+  user=data?.session?.user||null;
+  if(!user)return;
+  const progress=await loadProgress();
+  if(page==='jogos.html')mountHub(progress);
+  if(page==='historico.html')mountHistory(progress);
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>init().catch(console.warn),{once:true});else init().catch(console.warn);
 })();
