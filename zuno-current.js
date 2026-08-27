@@ -73,6 +73,15 @@
     if(document.getElementById(id))return;
     const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script);
   }
+  function installV151Refresh(){
+    if(!('serviceWorker' in navigator))return;
+    const key='zuno-sw-v151-reloaded';
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(sessionStorage.getItem(key)==='1')return;
+      sessionStorage.setItem(key,'1');
+      location.reload();
+    });
+  }
   function loadCurrentModules(){
     injectStyle('zunoplay-current-stage-style','./zuno-current-stage.css');
     if(page==='index.html'){
@@ -90,6 +99,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
+    installV151Refresh();
     loadCurrentModules();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
