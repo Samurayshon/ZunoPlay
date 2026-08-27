@@ -57,7 +57,14 @@
   function defaultConfig(){
     const defaults=window.ZunoAvatarRenderer?.defaults;
     if(!defaults)return null;
-    return normalize(defaults)||defaults;
+    const reference=JSON.parse(JSON.stringify(defaults));
+    reference.model='masculino';
+    reference.mode='Corpo inteiro';
+    reference.selections={...(reference.selections||{}),Base:0,Rosto:0,Cabelo:1,Roupas:0,Calçados:1,Acessórios:2,Mascote:1,Efeitos:1};
+    reference.colors={...(reference.colors||{}),pele:2,cabelo:5,roupa:1};
+    reference.rotation=0;
+    reference.zoom=1.04;
+    return normalize(reference)||reference;
   }
 
   async function readConfig(){
