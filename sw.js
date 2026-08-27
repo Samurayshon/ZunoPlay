@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v146";
+const CACHE_NAME = "zunoplay-v147";
 const STATIC_FILES = [
   "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./partida.html","./reflexo.html","./precisao.html","./arena.html","./zuno-caos.html","./zuno-rush.html","./zuno-pulse.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js",
   "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js",
@@ -14,6 +14,7 @@ function fetchWithTimeout(input, init = {}, timeoutMs = 6000) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
+
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
@@ -26,6 +27,7 @@ self.addEventListener("install", event => {
     await self.skipWaiting();
   })());
 });
+
 self.addEventListener("activate", event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -33,34 +35,26 @@ self.addEventListener("activate", event => {
     await self.clients.claim();
   })());
 });
+
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
   if (request.mode === "navigate") {
     event.respondWith((async () => {
-      const cached = await caches.match(request, { ignoreSearch: true });
-      if (cached) {
-        event.waitUntil((async () => {
-          try {
-            const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
-            if (fresh && fresh.ok) {
-              const cache = await caches.open(CACHE_NAME);
-              await cache.put(request, fresh.clone());
-            }
-          } catch (_) {}
-        })());
-        return cached;
-      }
       try {
-        const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
+        const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 2500);
         if (fresh && fresh.ok) {
           const cache = await caches.open(CACHE_NAME);
           event.waitUntil(cache.put(request, fresh.clone()));
+          return fresh;
         }
-        return fresh;
+        throw new Error("navigation_not_ok");
       } catch (_) {
+        const cached = await caches.match(request, { ignoreSearch: true });
+        if (cached) return cached;
         const fallback = await caches.match("./index.html");
         if (fallback) return fallback;
         return new Response("ZunoPlay temporariamente indisponível. Tente novamente.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
@@ -68,9 +62,10 @@ self.addEventListener("fetch", event => {
     })());
     return;
   }
+
   event.respondWith((async () => {
-    const cached = await caches.match(request, { ignoreSearch: true });
-    if (cached) {
+    const exactCached = await caches.match(request);
+    if (exactCached) {
       event.waitUntil((async () => {
         try {
           const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
@@ -80,8 +75,9 @@ self.addEventListener("fetch", event => {
           }
         } catch (_) {}
       })());
-      return cached;
+      return exactCached;
     }
+
     try {
       const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
       if (fresh && fresh.ok) {
@@ -90,6 +86,8 @@ self.addEventListener("fetch", event => {
       }
       return fresh;
     } catch (_) {
+      const offlineFallback = await caches.match(request, { ignoreSearch: true });
+      if (offlineFallback) return offlineFallback;
       return new Response("Recurso indisponível offline.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
     }
   })());
