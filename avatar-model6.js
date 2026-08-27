@@ -5,45 +5,14 @@
   const SB_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
   const sb=window.ZunoSupabaseClient||window.supabase.createClient(SB_URL,SB_KEY);
   const $=id=>document.getElementById(id);
-  const MODULES=[
-    ['Corpo','Aguardando malha Model 6 GLB'],['Pele','Aguardando materiais editáveis'],['Rosto','Aguardando morphs faciais'],['Olhos','Aguardando malha/material de olhos'],['Cabelo','Aguardando peças GLB de cabelo'],['Parte de cima','Aguardando roupas GLB'],['Parte de baixo','Aguardando roupas GLB'],['Calçados','Aguardando calçados GLB'],['Acessórios','Aguardando acessórios GLB']
-  ];
-  const state={version:12,style:'zuno-model6-reference',modelId:'model6',sex:'masculino',renderMode:'reference-2d',editable3d:false,wardrobeReady:false,source:'user-approved-model6-reference'};
-
-  function normalizeUi(){
-    const tag=document.querySelector('.tag');if(tag)tag.textContent='MODEL 6 · v60';
-    const desc=document.querySelector('.title p');if(desc)desc.textContent='Referência visual oficial do Model 6. A edição 3D será ativada somente quando a malha Model 6 GLB estiver disponível.';
-    const btn=$('save');if(btn)btn.textContent='Usar Model 6';
-  }
-  function mountModules(){
-    const root=$('modules');if(!root)return;root.innerHTML='';
-    for(const [name,desc] of MODULES){const row=document.createElement('div');row.className='module-row';const left=document.createElement('div');const title=document.createElement('b');title.textContent=name;const small=document.createElement('small');small.textContent=desc;left.append(title,small);const badge=document.createElement('span');badge.textContent='Pendente GLB';row.append(left,badge);root.appendChild(row)}
-  }
-  function safeReference(src){
-    const value=String(src||'').trim();
-    if(!/^data:image\/(?:png|jpeg|webp);base64,/i.test(value))return null;
-    if(value.length>1900000)return null;
-    return value;
-  }
-  async function restore(){
-    try{
-      const {data:{user},error:userError}=await sb.auth.getUser();if(userError||!user)return;
-      const {data,error}=await sb.from('profiles').select('avatar_config').eq('id',user.id).maybeSingle();if(error)return;
-      const cfg=data?.avatar_config;if(cfg?.style==='zuno-model6-reference'&&cfg?.modelId==='model6'){Object.assign(state,cfg);state.version=12;state.renderMode='reference-2d';state.editable3d=false;state.wardrobeReady=false;}
-    }catch(error){console.warn('ZunoPlay Model 6 restore',error)}
-  }
-  async function save(){
-    const btn=$('save'),msg=$('msg'),img=$('model6');if(!btn||!msg)return;
-    btn.disabled=true;msg.className='msg';msg.textContent='Salvando Model 6...';
-    try{
-      const {data:{user},error:userError}=await sb.auth.getUser();if(userError||!user)throw new Error('Sessão inválida');
-      const avatarUrl=safeReference(img?.src);if(!avatarUrl)throw new Error('Referência do Model 6 inválida ou grande demais');
-      const cfg={...state,version:12,renderMode:'reference-2d',editable3d:false,wardrobeReady:false,updatedAt:new Date().toISOString()};
-      const {error}=await sb.from('profiles').update({avatar_url:avatarUrl,avatar_config:cfg,sex:cfg.sex}).eq('id',user.id);if(error)throw error;
-      msg.textContent='Model 6 definido como personagem atual. ✅';
-      window.dispatchEvent(new CustomEvent('zuno:avatar-saved',{detail:{avatar_url:avatarUrl,avatar_config:cfg}}));
-    }catch(error){msg.className='msg err';msg.textContent='Erro: '+(error.message||'não foi possível salvar')}finally{btn.disabled=false}
-  }
-  normalizeUi();mountModules();restore();$('save')?.addEventListener('click',save);
-  window.ZunoModel6={version:'60',mode:'reference-2d',editable3d:false};
+  const MODULES=[['Corpo','Aguardando malha Model 6 GLB'],['Pele','Aguardando materiais editáveis'],['Rosto','Aguardando morphs faciais'],['Olhos','Aguardando malha/material de olhos'],['Cabelo','Aguardando peças GLB de cabelo'],['Parte de cima','Aguardando roupas GLB'],['Parte de baixo','Aguardando roupas GLB'],['Calçados','Aguardando calçados GLB'],['Acessórios','Aguardando acessórios GLB']];
+  const state={version:13,style:'zuno-model6-reference',modelId:'model6',sex:'masculino',renderMode:'reference-2d',editable3d:false,wardrobeReady:false,source:'user-approved-model6-reference'};
+  let validPreview=null;
+  function validImageData(v){v=String(v||'').trim();return /^data:image\/(?:png|jpeg|webp);base64,/i.test(v)&&v.length>1000&&v.length<1900000?v:null}
+  function showFallback(){const viewer=document.querySelector('.viewer');const img=$('model6');if(img)img.style.display='none';if(!viewer||$('model6Fallback'))return;const f=document.createElement('div');f.id='model6Fallback';f.style.cssText='position:relative;z-index:2;text-align:center;padding:28px;color:#c4b5fd';f.innerHTML='<div style="width:120px;height:120px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;font-size:58px;font-weight:950;background:radial-gradient(circle,#6d28d9,#171126 70%);border:2px solid #8b5cf6;box-shadow:0 0 45px #7c3aed66">Z</div><b style="font-size:18px;color:#fff">Model 6</b><div style="margin-top:8px;font-size:12px;line-height:1.5">Prévia sendo restaurada. O editor não ficará com imagem quebrada.</div>';viewer.appendChild(f)}
+  function installImageGuard(){const img=$('model6');if(!img)return;img.addEventListener('load',()=>{if(img.naturalWidth>0&&img.naturalHeight>0){validPreview=validImageData(img.src);img.style.display='block';$('model6Fallback')?.remove()} });img.addEventListener('error',showFallback);if(img.complete&&(!img.naturalWidth||!img.naturalHeight))showFallback()}
+  function mountModules(){const root=$('modules');if(!root)return;root.innerHTML='';for(const [name,desc] of MODULES){const row=document.createElement('div');row.className='module-row';row.innerHTML='<div><b></b><small></small></div><span>Pendente GLB</span>';row.querySelector('b').textContent=name;row.querySelector('small').textContent=desc;root.appendChild(row)}}
+  async function restore(){try{const {data:{user}}=await sb.auth.getUser();if(!user)return;const {data,error}=await sb.from('profiles').select('avatar_url,avatar_config').eq('id',user.id).maybeSingle();if(error)return;const cfg=data?.avatar_config;if(cfg?.style==='zuno-model6-reference')Object.assign(state,cfg,{version:13,renderMode:'reference-2d',editable3d:false,wardrobeReady:false});const saved=validImageData(data?.avatar_url);if(saved){const test=new Image();test.onload=()=>{if(test.naturalWidth>0){const img=$('model6');validPreview=saved;if(img){img.src=saved;img.style.display='block'}$('model6Fallback')?.remove()}};test.onerror=()=>showFallback();test.src=saved}else showFallback()}catch(e){console.warn('Model 6 restore',e);showFallback()}}
+  async function save(){const btn=$('save'),msg=$('msg');if(!btn||!msg)return;btn.disabled=true;msg.className='msg';msg.textContent='Salvando Model 6...';try{const {data:{user},error:u}=await sb.auth.getUser();if(u||!user)throw new Error('Sessão inválida');if(!validPreview)throw new Error('A prévia visual ainda não está disponível; nenhum dado corrompido será salvo');const cfg={...state,version:13,updatedAt:new Date().toISOString()};const {error}=await sb.from('profiles').update({avatar_url:validPreview,avatar_config:cfg,sex:cfg.sex}).eq('id',user.id);if(error)throw error;msg.textContent='Model 6 salvo. ✅'}catch(e){msg.className='msg err';msg.textContent='Erro: '+(e.message||'não foi possível salvar')}finally{btn.disabled=false}}
+  document.querySelector('.tag')?.replaceChildren(document.createTextNode('MODEL 6 · v61'));mountModules();installImageGuard();restore();$('save')?.addEventListener('click',save);window.ZunoModel6={version:'61',mode:'reference-2d',editable3d:false};
 })();
