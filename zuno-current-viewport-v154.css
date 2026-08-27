@@ -1,0 +1,89 @@
+/* ZunoPlay viewport fit v154 — compacta a Home até a navegação fixa */
+@media (max-width:620px){
+  html[data-zuno-interface="current"],
+  html[data-zuno-interface="current"] body.zuno-official-home{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home .app{
+    width:100%!important;
+    max-width:100%!important;
+    min-height:100dvh!important;
+    padding-bottom:calc(76px + env(safe-area-inset-bottom))!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen{
+    width:100%!important;
+    max-width:100%!important;
+    min-height:calc(100dvh - 76px - env(safe-area-inset-bottom))!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:visible!important;
+  }
+
+  /* mantém o topo e o hero dentro da largura útil */
+  html[data-zuno-interface="current"] body.zuno-official-home .topbar,
+  html[data-zuno-interface="current"] body.zuno-official-home .hero,
+  html[data-zuno-interface="current"] body.zuno-official-home .z33-stat-row,
+  html[data-zuno-interface="current"] body.zuno-official-home .menu-grid,
+  html[data-zuno-interface="current"] body.zuno-official-home .section{
+    width:100%!important;
+    max-width:100%!important;
+    flex:0 0 auto!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home .hero,
+  html[data-zuno-interface="current"] body.zuno-official-home .hero-grid,
+  html[data-zuno-interface="current"] body.zuno-official-home .hero-avatar-zone{
+    overflow:hidden!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home .z33-mascot{
+    right:2px!important;
+  }
+
+  /* logo igual à referência: Zuno branco + Play em gradiente */
+  html[data-zuno-interface="current"] body.zuno-official-home .zuno-official-logo-word{
+    color:#f7f7ff!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .zuno-official-logo-word b{
+    background:linear-gradient(120deg,#62dfff 0%,#8a66ff 42%,#c63af1 78%,#f047cd 100%)!important;
+    -webkit-background-clip:text!important;
+    background-clip:text!important;
+    color:transparent!important;
+  }
+
+  /* ocupa o espaço vazio final com a própria área social */
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen > .section:first-of-type{
+    flex:1 1 auto!important;
+    min-height:176px!important;
+    max-height:226px!important;
+    margin-bottom:8px!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen > .section:first-of-type .friends-strip{
+    flex:1 1 auto!important;
+    min-height:92px!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home #bottomNav{
+    width:calc(100% - 20px)!important;
+    max-width:680px!important;
+    left:50%!important;
+    right:auto!important;
+    transform:translateX(-50%)!important;
+    bottom:max(4px,env(safe-area-inset-bottom))!important;
+  }
+}
+
+@media (max-width:620px) and (max-height:760px){
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen > .section:first-of-type{
+    min-height:138px!important;
+    max-height:168px!important;
+  }
+}
