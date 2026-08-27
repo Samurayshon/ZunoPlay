@@ -1,10 +1,12 @@
-/* Zuno Stack premium pieces — generated from the approved official concept art. */
+/* Zuno Stack premium pieces — performance build v161.
+   Raster sprite + no per-tile blur/filter effects. */
 .zsp-art{
-  --zsp-x:0%;--zsp-y:0%;
+  --zsp-x:0%;
+  --zsp-y:0%;
   display:block!important;
   width:100%;
   aspect-ratio:1/1;
-  background-image:url('./zuno-stack-pieces.svg?v=160')!important;
+  background-image:url('./zuno-stack-pieces.webp?v=161');
   background-size:600% 200%;
   background-position:var(--zsp-x) var(--zsp-y);
   background-repeat:no-repeat;
@@ -12,33 +14,78 @@
   color:transparent!important;
   font-size:0!important;
   line-height:0!important;
-  transform:translateZ(0);
+  contain:paint;
 }
+
 .tile{
   padding:3px!important;
   border-color:transparent!important;
   background:transparent!important;
   box-shadow:none!important;
   overflow:visible!important;
+  isolation:isolate;
 }
-.tile>span{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
-.tile .zsp-art{width:min(100%,70px);filter:drop-shadow(0 7px 7px rgba(0,0,0,.5));transition:filter .16s ease,transform .16s ease,opacity .16s ease}
-.tile .label{position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);z-index:3;padding:2px 4px;border-radius:999px;background:rgba(5,6,15,.78);border:1px solid rgba(129,94,196,.24);font-size:5.5px!important;line-height:1;color:#d8daf0!important;letter-spacing:.02em;white-space:nowrap;box-shadow:0 3px 9px rgba(0,0,0,.35)}
+.tile>.piece-shell,
+.tile>span{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+}
+.tile .zsp-art{
+  width:min(100%,70px);
+  position:relative;
+  z-index:1;
+  transition:transform .12s ease,opacity .12s ease;
+}
+.tile .label{
+  position:absolute;
+  left:50%;
+  bottom:-5px;
+  transform:translateX(-50%);
+  z-index:4;
+  padding:2px 4px;
+  border-radius:999px;
+  background:rgba(5,6,15,.82);
+  border:1px solid rgba(129,94,196,.24);
+  font-size:5.5px!important;
+  line-height:1;
+  color:#d8daf0!important;
+  letter-spacing:.02em;
+  white-space:nowrap;
+}
 .tile:not(.active){filter:none!important;opacity:1!important}
-.tile:not(.active) .zsp-art{filter:grayscale(.82) saturate(.38) brightness(.42) drop-shadow(0 5px 5px rgba(0,0,0,.48));opacity:.72}
-.tile:not(.active) .label{color:#777c91!important;background:rgba(5,6,13,.86)}
-.tile.active .zsp-art{filter:brightness(1.08) saturate(1.08) drop-shadow(0 8px 8px rgba(0,0,0,.55)) drop-shadow(0 0 7px rgba(155,77,255,.32));transform:translateY(-1px) scale(1.035)}
-.tile.active:before{content:"";position:absolute;inset:1px;border-radius:17%;border:1px solid rgba(199,156,255,.38);box-shadow:0 0 13px rgba(156,78,255,.18);pointer-events:none}
-.tile.active:active .zsp-art{transform:scale(.91)}
+.tile:not(.active)::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  z-index:2;
+  border-radius:17%;
+  background:rgba(4,6,14,.55);
+  pointer-events:none;
+}
+.tile:not(.active) .zsp-art{opacity:.62}
+.tile:not(.active) .label{color:#81869a!important;background:rgba(5,6,13,.9)}
+.tile.active{box-shadow:0 5px 12px rgba(0,0,0,.38),0 0 0 1px rgba(189,142,255,.28)!important}
+.tile.active .zsp-art{transform:translateY(-1px) scale(1.02)}
+.tile.active:active .zsp-art{transform:scale(.93)}
+.tile.removed{display:none!important}
+
 .slot{overflow:visible!important}
-.slot.filled{background:linear-gradient(145deg,#121426,#0a0d18)!important;border-color:#3d4564!important;box-shadow:inset 0 0 18px rgba(76,46,129,.10)}
+.slot.filled{background:linear-gradient(145deg,#121426,#0a0d18)!important;border-color:#3d4564!important}
+.slot button>.piece-shell,
 .slot button>span{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
-.slot .zsp-art{width:min(82%,48px);filter:drop-shadow(0 4px 6px rgba(0,0,0,.48))}
+.slot .zsp-art{width:min(82%,48px)}
 .slot .tiny{font-size:5.5px!important;margin-top:-1px;color:#d3d5e5!important;font-weight:900!important;letter-spacing:.02em}
+
 .relay-slot.filled{height:58px!important;padding:3px!important;background:linear-gradient(145deg,#15172a,#0c0f1c)!important;border:1px solid #514b72!important}
 .zsp-relay-piece{height:100%;display:flex;align-items:center;justify-content:center;gap:5px}
-.zsp-relay-piece .zsp-art{width:39px;flex:0 0 39px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.52))}
+.zsp-relay-piece .zsp-art{width:39px;flex:0 0 39px}
 .zsp-relay-piece small{font-size:7px;font-weight:900;color:#d5d5e7}
+
 @media(max-width:430px){
   .tile{padding:2px!important}
   .tile .label{bottom:-4px;font-size:4.7px!important;padding:1px 3px}
@@ -47,3 +94,5 @@
   .zsp-relay-piece .zsp-art{width:34px;flex-basis:34px}
   .zsp-relay-piece small{font-size:6px}
 }
+
+@media(prefers-reduced-motion:reduce){.tile .zsp-art{transition:none}}
