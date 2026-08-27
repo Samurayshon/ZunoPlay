@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='101';
+  const ASSET_VERSION='102';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const homeUrl=new URL('./index.html',location.href).href;
   const skipNavigation=['index.html','sala.html','desafio.html','login.html','cadastro.html'].includes(page);
@@ -29,6 +29,7 @@
   function loadScript(id,file,errorText,onload){if(document.getElementById(id)){onload?.();return}const s=document.createElement('script');s.id=id;s.src=new URL(versioned(file),location.href).href;s.async=true;if(onload)s.onload=onload;s.onerror=()=>console.error(errorText);document.head.appendChild(s)}
   function loadStyle(id,file){if(document.getElementById(id))return;const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=new URL(versioned(file),location.href).href;document.head.appendChild(link)}
   function loadDesignSystem(){loadStyle('zunoplay-design-system','./zuno-design-system.css')}
+  function loadStage3Navigation(){loadStyle('zunoplay-navigation-style','./zuno-navigation.css');loadScript('zunoplay-navigation-stage3','./zuno-navigation.js','ZunoPlay: não foi possível carregar a navegação global')}
   function loadRealtimeCore(){if(window.ZunoRealtime){window.ZunoRealtime.start?.().catch?.(console.error);return}loadScript('zunoplay-realtime-global','./realtime-global.js','ZunoPlay: não foi possível carregar realtime-global.js')}
   function loadRoomVoice(){if(page==='sala.html')loadScript('zunoplay-room-voice','./voz-sala.js','ZunoPlay: não foi possível carregar voz-sala.js')}
   function loadRoomSessionGuard(){loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: não foi possível carregar room-session-guard.js')}
@@ -41,7 +42,7 @@
   function mountOfficialLogo(){installOfficialLogoStyle();document.querySelectorAll('.brand,.welcome-logo,.logo').forEach(el=>{if(el.dataset.zunoOfficialLogo==='1')return;const text=(el.textContent||'').replace(/\s+/g,'').toLowerCase();if(!text.includes('zunoplay')&&!el.classList.contains('brand')&&!el.classList.contains('welcome-logo'))return;el.dataset.zunoOfficialLogo='1';el.classList.add('zuno-official-logo');el.innerHTML=officialLogoMarkup();el.setAttribute('aria-label','ZunoPlay')})}
   function bootstrapRealtime(){if(patchSupabaseFactory()){loadRealtimeCore();loadAvatarRenderer();return}if(document.getElementById('zunoplay-supabase-sdk'))return;const sdk=document.createElement('script');sdk.id='zunoplay-supabase-sdk';sdk.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';sdk.async=true;sdk.onload=()=>{if(patchSupabaseFactory()){loadRealtimeCore();loadAvatarRenderer()}};sdk.onerror=()=>console.error('ZunoPlay: não foi possível carregar Supabase');document.head.appendChild(sdk)}
 
-  loadDesignSystem();bootstrapRealtime();loadRoomVoice();loadRoomSessionGuard();loadOfficialHome();
+  loadDesignSystem();loadStage3Navigation();bootstrapRealtime();loadRoomVoice();loadRoomSessionGuard();loadOfficialHome();
   const brandReady=()=>{mountOfficialLogo();setTimeout(mountOfficialLogo,250)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',brandReady,{once:true});else brandReady();
   if(skipNavigation)return;
