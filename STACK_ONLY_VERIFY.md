@@ -1,1 +1,0 @@
-Stack-only cleanup verification marker. Remove before merge.
