@@ -65,7 +65,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if grep -RIn --exclude-dir=.git --exclude='*.md' -E 'service_role|sb_secret_' .; then
+          if grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='core-smoke.yml' -E 'service_role|sb_secret_' .; then
             echo 'Potential server secret found in repository.'
             exit 1
           fi
