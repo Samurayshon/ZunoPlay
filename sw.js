@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v72";
+const CACHE_NAME = "zunoplay-v73";
 const STATIC_FILES = [
   "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js","./official-avatars.js","./zuno-avatar-studio.js","./zuno-wardrobe.js","./zuno-garment-runtime.js","./avatar-glb-v58.js","./home-v29.css","./home-v29.js","./realtime-global.js","./presenca-sala.js","./voz-sala.js","./room-session-guard.js"
 ];
