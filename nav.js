@@ -4,10 +4,10 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='147';
+  const ASSET_VERSION='158';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
-  const gamePages=['jogos.html','desafio.html','partida.html','historico.html','reflexo.html','precisao.html','arena.html','zuno-caos.html','zuno-rush.html','zuno-pulse.html'];
+  const gamePages=['jogos.html','desafio.html','partida.html','historico.html','reflexo.html','precisao.html','arena.html','zuno-caos.html','zuno-rush.html','zuno-pulse.html','zuno-stack.html'];
 
   function installHomeBootGuard(){
     if(page!=='index.html')return;
@@ -87,6 +87,10 @@
     loadStyle('zunoplay-game-social-style','./zuno-game-social.css');
     loadScript('zunoplay-game-social','./zuno-game-social.js','ZunoPlay: integração social dos jogos indisponível');
   }
+  function loadZunoStackCatalog(){
+    if(page!=='jogos.html')return;
+    loadScript('zunoplay-zuno-stack-catalog','./zuno-stack-catalog.js','ZunoPlay: catálogo do Zuno Stack indisponível');
+  }
   function loadRoomExperience(){
     if(page!=='sala.html')return;
     [
@@ -163,6 +167,7 @@
   loadSocialSystem();
   loadGameProgression();
   loadGameSocial();
+  loadZunoStackCatalog();
   loadRoomExperience();
   loadRoomGameReturn();
   bootstrapRealtime();
