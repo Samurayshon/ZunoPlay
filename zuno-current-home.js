@@ -1,16 +1,8 @@
 (()=>{
-  if(window.__ZUNOPLAY_OFFICIAL_V33__)return;
-  window.__ZUNOPLAY_OFFICIAL_V33__=true;
+  if(window.__ZUNOPLAY_CURRENT_HOME__)return;
+  window.__ZUNOPLAY_CURRENT_HOME__=true;
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   if(page!=='index.html')return;
-
-  if(!document.getElementById('zunoplay-official-v34-style')){
-    const fidelity=document.createElement('link');
-    fidelity.id='zunoplay-official-v34-style';
-    fidelity.rel='stylesheet';
-    fidelity.href='./zuno-official-v34.css?v=140';
-    document.head.appendChild(fidelity);
-  }
 
   const svg=(body,color='currentColor')=>`<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" style="color:${color}">${body}</svg>`;
   const icons={
@@ -23,15 +15,14 @@
   };
 
   let friendMiniSync=null;
-
   function syncFriendMini(){
-    try{friendMiniSync?.()}catch(error){console.warn('ZunoPlay v33 friend sync',error)}
+    try{friendMiniSync?.()}catch(error){console.warn('ZunoPlay current friend sync',error)}
   }
 
   function mount(){
     if(!document.body)return;
     document.body.classList.add('zuno-official-v33');
-    document.documentElement.dataset.zunoInterface='official-v34';
+    document.documentElement.dataset.zunoInterface='current';
 
     const topbar=document.querySelector('#homeScreen .topbar');
     topbar?.querySelector('.brand')?.classList.remove('z32-brand-hidden');
