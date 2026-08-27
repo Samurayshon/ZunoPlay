@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='149';
+  const VERSION='150';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -14,7 +14,7 @@
   function node(tag,className,html){const el=document.createElement(tag);if(className)el.className=className;if(html!=null)el.innerHTML=html;return el}
   function applyBodyIdentity(){
     if(!document.body)return;
-    document.body.classList.add('zuno-official-v31','zuno-official-v32');
+    document.body.classList.add('zuno-official-v31','zuno-official-v32','zuno-official-v33');
     if(pageClass)document.body.classList.add(pageClass);
     if(page==='index.html')document.body.classList.add('zuno-home-official');
     document.documentElement.dataset.zunoInterface='current';
