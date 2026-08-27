@@ -162,6 +162,52 @@
     display:block!important;
     overflow:visible!important;
   }
+
+  /* Separacao definitiva entre Aura e avatar: o painel fica restrito à coluna esquerda. */
+  html[data-zuno-interface="current"] body.zuno-official-home .hero-left{
+    position:relative!important;
+    z-index:6!important;
+    min-width:0!important;
+    overflow:visible!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .aura-row{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow:visible!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .aura-row:before{
+    left:-6px!important;
+    right:auto!important;
+    width:calc(100% + 8px)!important;
+    max-width:calc(100% + 8px)!important;
+    height:108px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .aura-info{
+    min-width:0!important;
+    max-width:112px!important;
+    overflow:hidden!important;
+    position:relative!important;
+    z-index:7!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .aura-title{
+    max-width:112px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .progress,
+  html[data-zuno-interface="current"] body.zuno-official-home .progress-text{
+    max-width:112px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .hero-avatar-zone{
+    z-index:9!important;
+    isolation:isolate!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home .profile-avatar-wrap{
+    position:relative!important;
+    z-index:10!important;
+  }
 }
 
 @media (max-width:620px) and (max-height:760px){
