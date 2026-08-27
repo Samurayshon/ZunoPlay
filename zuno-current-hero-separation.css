@@ -1,4 +1,4 @@
-/* ZunoPlay Home — equilíbrio final mobile v159 */
+/* ZunoPlay Home — equilíbrio final mobile v160 */
 @media (max-width:620px){
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .hero{
     height:296px!important;
@@ -45,7 +45,7 @@
     max-width:118px!important;
   }
 
-  /* Avatar volta a caber inteiro no Hero. */
+  /* Avatar cabe inteiro no Hero. */
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .hero-avatar-zone{
     position:relative!important;
     z-index:12!important;
@@ -79,7 +79,7 @@
     background:radial-gradient(ellipse at 50% 52%,rgba(113,48,255,.52),rgba(39,34,145,.15) 48%,transparent 72%)!important;
   }
 
-  /* Logo: somente Play recebe gradiente. */
+  /* Logo final: Zuno branco e somente Play em gradiente. Suporta os dois DOMs existentes. */
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .topbar .brand{
     background:none!important;
     background-image:none!important;
@@ -89,7 +89,16 @@
     -webkit-text-fill-color:#f8f8ff!important;
     text-shadow:none!important;
   }
-  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .topbar .brand>span{
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .topbar .brand .zuno-official-logo-word{
+    background:none!important;
+    background-image:none!important;
+    -webkit-background-clip:border-box!important;
+    background-clip:border-box!important;
+    color:#f8f8ff!important;
+    -webkit-text-fill-color:#f8f8ff!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .topbar .brand .zuno-official-logo-word b,
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .topbar .brand>span:not(.zuno-official-logo-mark):not(.zuno-official-logo-word){
     display:inline-block!important;
     background:linear-gradient(115deg,#70e7ff 0%,#8178ff 34%,#b94dff 68%,#ee46cf 100%)!important;
     -webkit-background-clip:text!important;
@@ -98,7 +107,7 @@
     -webkit-text-fill-color:transparent!important;
   }
 
-  /* Dá mais presença ao grid para a composição ocupar a viewport como na referência. */
+  /* Mantém o grid atual, que já está equilibrado. */
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .menu-grid{
     gap:10px!important;
     margin-bottom:13px!important;
@@ -110,26 +119,28 @@
     min-height:128px!important;
   }
 
-  /* Amigos online volta a ser uma faixa compacta, não um bloco que ocupa todo o restante. */
+  /* Amigos online: termina antes da navegação fixa, sem sobreposição. */
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen>.section:has(>#friendsStrip){
-    flex:0 0 218px!important;
-    height:218px!important;
-    min-height:218px!important;
-    max-height:218px!important;
-    margin-bottom:10px!important;
+    flex:0 0 190px!important;
+    height:190px!important;
+    min-height:190px!important;
+    max-height:190px!important;
+    margin-bottom:14px!important;
+    padding-bottom:12px!important;
     display:flex!important;
     flex-direction:column!important;
+    overflow:hidden!important;
   }
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen>.section:has(>#friendsStrip) #friendsStrip{
     flex:1 1 auto!important;
-    min-height:128px!important;
-    max-height:150px!important;
+    min-height:94px!important;
+    max-height:112px!important;
     align-items:flex-start!important;
     align-content:flex-start!important;
   }
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen>.section:has(>#friendsStrip) .empty-friends{
     align-self:flex-start!important;
-    margin-top:22px!important;
+    margin-top:14px!important;
   }
 }
 
@@ -159,9 +170,9 @@
     min-height:120px!important;
   }
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen>.section:has(>#friendsStrip){
-    flex-basis:180px!important;
-    height:180px!important;
-    min-height:180px!important;
-    max-height:180px!important;
+    flex-basis:160px!important;
+    height:160px!important;
+    min-height:160px!important;
+    max-height:160px!important;
   }
 }
