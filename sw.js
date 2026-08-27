@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v164";
+const CACHE_NAME = "zunoplay-v165";
 
 // Pré-cache apenas do shell essencial. Demais recursos entram no cache sob demanda.
 // Isso evita dezenas de requisições simultâneas durante cada atualização do PWA.
@@ -24,7 +24,8 @@ const STATIC_FILES = [
   "./zuno-current.js",
   "./zuno-current-home.css",
   "./zuno-current-home.js",
-  "./zuno-current-home-polish-v164.css"
+  "./zuno-current-home-polish-v164.css",
+  "./zuno-current-avatar-studio.css"
 ];
 
 function fetchWithTimeout(input, init = {}, timeoutMs = 6000) {
@@ -43,7 +44,6 @@ async function preCacheInBatches(cache, files, batchSize = 3) {
         if (response && response.ok) await cache.put(url, response);
       } catch (_) {}
     }));
-    // Pequena pausa para não criar uma rajada contra o host estático.
     await new Promise(resolve => setTimeout(resolve, 40));
   }
 }
@@ -133,9 +133,7 @@ self.addEventListener("fetch", event => {
 
   event.respondWith((async () => {
     const exactCached = await currentCacheMatch(request);
-    if (exactCached) {
-      return exactCached;
-    }
+    if (exactCached) return exactCached;
 
     try {
       const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
