@@ -14,9 +14,36 @@
     history:svg('<path d="M13 25A22 22 0 1 1 11 40" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M13 13v12H1M32 19v15l10 6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>','#21d4d7')
   };
 
-  let friendMiniSync=null;
+  const criticalStyleIds=[
+    'zunoplay-current-base-style',
+    'zunoplay-current-stage-style',
+    'zunoplay-current-home-style',
+    'zunoplay-current-home-mobile-style',
+    'zunoplay-current-home-stats-style',
+    'zunoplay-current-interactions-style'
+  ];
+  let friendMiniSync=null,readyStartedAt=0,readySent=false;
+
   function syncFriendMini(){
     try{friendMiniSync?.()}catch(error){console.warn('ZunoPlay current friend sync',error)}
+  }
+  function markCurrentHomeReady(){
+    if(readySent)return;
+    if(!readyStartedAt)readyStartedAt=performance.now();
+    const stylesReady=criticalStyleIds.every(id=>{
+      const link=document.getElementById(id);
+      return !link||!!link.sheet;
+    });
+    if(!stylesReady&&performance.now()-readyStartedAt<1800){
+      setTimeout(markCurrentHomeReady,24);
+      return;
+    }
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      if(readySent)return;
+      readySent=true;
+      document.documentElement.dataset.zunoHomeCurrentReady='1';
+      window.dispatchEvent(new CustomEvent('zuno:home-current-ready'));
+    }));
   }
 
   function mount(){
@@ -70,8 +97,6 @@
       });
     }
 
-    // A referência oficial termina a Home mobile após "Amigos online".
-    // A seção de salas continua existindo e acessível pelo menu/nav, mas fica secundária na Home compacta.
     document.getElementById('activeRooms')?.closest('.section')?.classList.add('zuno-home-secondary-section');
 
     const friends=document.getElementById('friendsStrip');
@@ -92,6 +117,8 @@
       setTimeout(syncFriendMini,250);
       setTimeout(syncFriendMini,900);
     }
+
+    markCurrentHomeReady();
   }
 
   ['zuno:presence:sync','zuno:presence:join','zuno:presence:leave'].forEach(name=>window.addEventListener(name,()=>setTimeout(syncFriendMini,0)));
