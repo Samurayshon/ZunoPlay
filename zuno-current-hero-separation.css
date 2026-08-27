@@ -1,0 +1,55 @@
+/* ZunoPlay Home — separação final Aura / Avatar */
+@media (max-width:620px){
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .hero{
+    overflow:visible!important;
+  }
+
+  /* A moldura antiga atravessava a área do avatar. O Hero passa a ser contínuo. */
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .aura-row::before{
+    content:none!important;
+    display:none!important;
+    border:0!important;
+    background:none!important;
+    box-shadow:none!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .hero-left{
+    position:relative!important;
+    z-index:6!important;
+    min-width:0!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .aura-row{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    position:relative!important;
+    z-index:7!important;
+    background:radial-gradient(ellipse at 18% 50%,rgba(93,39,196,.13),transparent 66%)!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .aura-info{
+    min-width:0!important;
+    max-width:118px!important;
+    position:relative!important;
+    z-index:8!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .aura-title,
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .progress,
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .progress-text{
+    max-width:118px!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .hero-avatar-zone{
+    position:relative!important;
+    z-index:12!important;
+    isolation:isolate!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .profile-avatar-wrap{
+    position:relative!important;
+    z-index:13!important;
+  }
+}
