@@ -123,8 +123,8 @@ self.addEventListener("fetch", event => {
         const cached = await currentCacheMatch(request, { ignoreSearch: true });
         if (cached) return cached;
         return new Response("Recurso de interface indisponível.", {
-          status: 503,
-          headers: { "Content-Type": "text/plain; charset=utf-8" }
+          status:503,
+          headers:{"Content-Type":"text/plain; charset=utf-8"}
         });
       }
     })());
