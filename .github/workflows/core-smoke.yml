@@ -49,10 +49,12 @@ jobs:
         run: |
           set -euo pipefail
           required=(
-            index.html login.html cadastro.html perfil.html avatar.html amigos.html
+            index.html home-app.js login.html cadastro.html perfil.html avatar.html amigos.html
             conversas.html notificacoes.html comunidades.html salas.html sala.html
             jogos.html desafio.html partida.html reflexo.html precisao.html arena.html zuno-caos.html zuno-rush.html zuno-pulse.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
+            avatar-renderer.js avatar-home-sync.js
+            zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
             zuno-game-progression.js zuno-game-progression.css zuno-game-social.js zuno-game-social.css
             zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-rush.js zuno-pulse.js
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
@@ -61,6 +63,23 @@ jobs:
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }
           done
+      - name: Guard current Home boot
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'data-zuno-home-boot="current-only"' index.html
+          grep -q 'data-zuno-avatar-system="studio"' index.html
+          grep -q 'home-app.js?v=148' index.html
+          grep -q 'zuno-current-home.css?v=148' index.html
+          grep -q 'zuno-current-home.js?v=148' index.html
+          if grep -q 'profile-avatar profile-fallback' index.html; then
+            echo 'Legacy main-avatar fallback returned to index.html.'
+            exit 1
+          fi
+          if grep -q "wrap.innerHTML=.*profile-fallback" home-app.js; then
+            echo 'Legacy avatar renderer returned to home-app.js.'
+            exit 1
+          fi
       - name: Guard against accidental service-role secrets
         shell: bash
         run: |
