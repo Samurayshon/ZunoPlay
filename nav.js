@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='105';
+  const ASSET_VERSION='106';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
 
@@ -27,6 +27,7 @@
   function loadScript(id,file,errorText,onload){if(document.getElementById(id)){onload?.();return}const s=document.createElement('script');s.id=id;s.src=new URL(versioned(file),location.href).href;s.async=true;if(onload)s.onload=onload;s.onerror=()=>console.error(errorText);document.head.appendChild(s)}
   function loadStyle(id,file){if(document.getElementById(id))return;const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=new URL(versioned(file),location.href).href;document.head.appendChild(link)}
   function loadDesignSystem(){loadStyle('zunoplay-design-system','./zuno-design-system.css')}
+  function loadUnifiedIdentity(){loadStyle('zunoplay-unified-style','./zuno-unified.css');loadScript('zunoplay-unified-script','./zuno-unified.js','ZunoPlay: não foi possível ativar a identidade visual unificada')}
   function loadStage3Navigation(){loadStyle('zunoplay-navigation-style','./zuno-navigation.css');loadScript('zunoplay-navigation-stage3','./zuno-navigation.js','ZunoPlay: não foi possível carregar a navegação global')}
   function loadSocialSystem(){if(!socialPages.includes(page))return;loadStyle('zunoplay-social-style','./zuno-social.css');loadScript('zunoplay-social-stage4','./zuno-social.js','ZunoPlay: não foi possível carregar o sistema social')}
   function loadRealtimeCore(){if(window.ZunoRealtime){window.ZunoRealtime.start?.().catch?.(console.error);return}loadScript('zunoplay-realtime-global','./realtime-global.js','ZunoPlay: não foi possível carregar realtime-global.js')}
@@ -42,6 +43,7 @@
   function bootstrapRealtime(){if(patchSupabaseFactory()){loadRealtimeCore();loadAvatarRenderer();return}if(document.getElementById('zunoplay-supabase-sdk'))return;const sdk=document.createElement('script');sdk.id='zunoplay-supabase-sdk';sdk.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';sdk.async=true;sdk.onload=()=>{if(patchSupabaseFactory()){loadRealtimeCore();loadAvatarRenderer()}};sdk.onerror=()=>console.error('ZunoPlay: não foi possível carregar Supabase');document.head.appendChild(sdk)}
 
   loadDesignSystem();
+  loadUnifiedIdentity();
   loadStage3Navigation();
   loadSocialSystem();
   bootstrapRealtime();
