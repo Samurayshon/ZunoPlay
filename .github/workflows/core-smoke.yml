@@ -28,7 +28,7 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import pathlib,re,subprocess,tempfile,sys
-          files=['index.html','login.html','cadastro.html','jogos.html','zuno-stack.html','historico.html']
+          files=['index.html','login.html','cadastro.html','jogos.html','zuno-core.html','zuno-stack.html','historico.html']
           failed=False
           for name in files:
               text=pathlib.Path(name).read_text(encoding='utf-8')
@@ -51,7 +51,7 @@ jobs:
           required=(
             index.html home-app.js login.html cadastro.html perfil.html avatar.html amigos.html
             conversas.html notificacoes.html comunidades.html salas.html sala.html
-            jogos.html zuno-stack.html historico.html manifest.json sw.js nav.js
+            jogos.html zuno-core.html zuno-core.js zuno-stack.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
             avatar-renderer.js avatar-home-sync.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
@@ -63,7 +63,7 @@ jobs:
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }
           done
-      - name: Guard Stack-only catalog
+      - name: Guard active game catalog
         shell: bash
         run: |
           set -euo pipefail
@@ -74,6 +74,7 @@ jobs:
               exit 1
             fi
           done
+          grep -q 'Zuno Core' jogos.html
           grep -q 'Zuno Stack' jogos.html
           if grep -Eq 'Zuno Pulse|Zuno Rush|Zuno Caos|Desafio Zuno|Reflexo Zuno|Precisão Zuno|Arena Zuno|Partida Zuno' jogos.html; then
             echo 'Legacy game returned to catalog.'
