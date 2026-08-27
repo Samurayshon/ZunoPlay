@@ -70,6 +70,10 @@
       });
     }
 
+    // A referência oficial termina a Home mobile após "Amigos online".
+    // A seção de salas continua existindo e acessível pelo menu/nav, mas fica secundária na Home compacta.
+    document.getElementById('activeRooms')?.closest('.section')?.classList.add('zuno-home-secondary-section');
+
     const friends=document.getElementById('friendsStrip');
     const onlinePill=document.getElementById('onlineCount')?.closest('.stat-pill');
     if(friends&&onlinePill){

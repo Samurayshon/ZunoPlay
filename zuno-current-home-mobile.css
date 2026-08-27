@@ -1,98 +1,179 @@
-/* ZunoPlay Home v34 — proportion/fidelity correction against approved mobile reference */
+/* ZunoPlay — Home mobile atual, alinhada à referência oficial */
 @media (max-width:620px){
-  body.zuno-official-home.zuno-official-v33 .app{padding:4px 14px 92px!important}
-  body.zuno-official-home.zuno-official-v33 .topbar{min-height:60px!important;margin:0 0 4px!important;padding:0!important}
-  body.zuno-official-home.zuno-official-v33 .brand{font-size:28px!important}
-  body.zuno-official-home.zuno-official-v33 .top-actions{gap:2px!important}
+  body.zuno-official-home.zuno-official-v33{overflow-x:hidden!important}
+  body.zuno-official-home.zuno-official-v33 .app{
+    width:100%!important;max-width:none!important;
+    padding:6px 14px 88px!important;
+  }
+
+  /* topo */
+  body.zuno-official-home.zuno-official-v33 .topbar{
+    min-height:58px!important;height:58px!important;
+    margin:0 0 4px!important;padding:0 2px!important;
+    align-items:center!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .brand{font-size:29px!important;gap:7px!important}
+  body.zuno-official-home.zuno-official-v33 .zuno-official-logo-mark{width:.94em!important;height:.88em!important}
+  body.zuno-official-home.zuno-official-v33 .top-actions{gap:3px!important}
   body.zuno-official-home.zuno-official-v33 .icon-button{width:38px!important;height:38px!important}
-  body.zuno-official-home.zuno-official-v33 .mini-profile{width:42px!important;height:42px!important}
+  body.zuno-official-home.zuno-official-v33 .search-icon{width:21px!important;height:21px!important;border-width:2.5px!important}
+  body.zuno-official-home.zuno-official-v33 .mini-profile{width:41px!important;height:41px!important}
+  .z33-bell{width:23px!important;height:23px!important}
 
-  body.zuno-official-home.zuno-official-v33 .hero{min-height:292px!important;margin:0 0 5px!important;overflow:visible!important}
-  body.zuno-official-home.zuno-official-v33 .hero:before{inset:-4px -6px 0!important}
-  body.zuno-official-home.zuno-official-v33 .hero:after{width:205px!important;height:205px!important;right:0!important;top:4px!important}
-  body.zuno-official-home.zuno-official-v33 .hero-grid{min-height:292px!important;grid-template-columns:minmax(0,1.08fr) minmax(145px,.92fr)!important;gap:0!important;padding:0!important;align-items:start!important}
-  body.zuno-official-home.zuno-official-v33 .hero-left{align-self:start!important;padding:18px 0 0!important;justify-self:stretch!important}
-  body.zuno-official-home.zuno-official-v33 .eyebrow{font-size:13px!important;margin:0 0 4px!important}
-  body.zuno-official-home.zuno-official-v33 .hero-name{font-size:36px!important;margin:0 0 20px!important;letter-spacing:-1.7px!important}
-  body.zuno-official-home.zuno-official-v33 .zuno-mark{min-width:26px!important;height:26px!important;margin-left:5px!important;vertical-align:5px!important}
+  /* herói — composição idêntica à referência: identidade à esquerda, avatar à direita */
+  body.zuno-official-home.zuno-official-v33 .hero{
+    min-height:232px!important;height:232px!important;
+    margin:0 0 7px!important;overflow:visible!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .hero:before{
+    inset:-2px -12px 0!important;
+    background:radial-gradient(circle at 70% 38%,rgba(86,46,235,.34),transparent 29%),radial-gradient(circle at 73% 74%,rgba(25,83,217,.15),transparent 32%)!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .hero:after{
+    width:190px!important;height:190px!important;
+    right:-2px!important;top:10px!important;opacity:.92!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .hero-grid{
+    min-height:232px!important;height:232px!important;
+    grid-template-columns:minmax(0,1.06fr) minmax(148px,.94fr)!important;
+    grid-template-areas:"identity avatar"!important;
+    gap:0!important;padding:0!important;align-items:start!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .hero-left{
+    grid-area:identity!important;align-self:start!important;justify-self:stretch!important;
+    padding:15px 0 0 2px!important;margin:0!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .eyebrow{font-size:12.5px!important;margin:0 0 3px!important;line-height:1.2!important}
+  body.zuno-official-home.zuno-official-v33 .hero-name{
+    font-size:35px!important;line-height:1!important;letter-spacing:-1.8px!important;
+    margin:0 0 31px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .zuno-mark{
+    min-width:25px!important;height:25px!important;padding:0 6px!important;
+    margin-left:5px!important;border-radius:7px!important;vertical-align:5px!important;font-size:10px!important;
+  }
 
-  body.zuno-official-home.zuno-official-v33 .aura-row{grid-template-columns:72px minmax(0,1fr)!important;gap:10px!important;align-items:center!important}
-  body.zuno-official-home.zuno-official-v33 .aura-emblem{width:66px!important;height:66px!important;box-shadow:0 0 0 5px rgba(101,41,212,.10),0 0 25px rgba(132,46,255,.42)!important}
-  body.zuno-official-home.zuno-official-v33 .aura-emblem:before{inset:10px!important;border-radius:13px!important}
-  body.zuno-official-home.zuno-official-v33 .aura-emblem:after{font-size:12px!important;min-width:39px!important;height:24px!important;bottom:-9px!important;padding:2px 7px!important}
-  body.zuno-official-home.zuno-official-v33 .aura-flame{font-size:28px!important}
-  body.zuno-official-home.zuno-official-v33 .aura-label{font-size:11px!important}
-  body.zuno-official-home.zuno-official-v33 .aura-title{font-size:17px!important;margin:2px 0 6px!important}
-  body.zuno-official-home.zuno-official-v33 .progress{height:6px!important}
-  body.zuno-official-home.zuno-official-v33 .progress-text{font-size:9px!important;margin-top:5px!important;white-space:nowrap!important}
+  body.zuno-official-home.zuno-official-v33 .aura-row{
+    grid-template-columns:67px minmax(0,1fr)!important;gap:10px!important;align-items:center!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .aura-emblem{
+    width:62px!important;height:62px!important;
+    box-shadow:0 0 0 5px rgba(101,41,212,.10),0 0 24px rgba(132,46,255,.46)!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .aura-emblem:before{inset:9px!important;border-radius:12px!important}
+  body.zuno-official-home.zuno-official-v33 .aura-emblem:after{
+    font-size:11px!important;min-width:38px!important;height:22px!important;
+    bottom:-8px!important;padding:2px 7px!important;border-radius:11px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .aura-flame{font-size:26px!important}
+  body.zuno-official-home.zuno-official-v33 .aura-label{font-size:10.5px!important;line-height:1.1!important}
+  body.zuno-official-home.zuno-official-v33 .aura-title{font-size:16.5px!important;margin:2px 0 5px!important;line-height:1.05!important}
+  body.zuno-official-home.zuno-official-v33 .progress{height:5px!important}
+  body.zuno-official-home.zuno-official-v33 .progress-text{font-size:8.5px!important;margin-top:4px!important;white-space:nowrap!important}
 
-  body.zuno-official-home.zuno-official-v33 .hero-avatar-zone{align-self:start!important;min-height:282px!important;height:282px!important}
-  body.zuno-official-home.zuno-official-v33 .profile-avatar-wrap{width:168px!important;height:278px!important}
-  body.zuno-official-home.zuno-official-v33 .profile-avatar{width:166px!important;height:270px!important;object-position:center bottom!important}
-  body.zuno-official-home.zuno-official-v33 .profile-fallback{width:130px!important;height:230px!important;margin-bottom:18px!important;border-radius:42% 42% 34% 34%!important;font-size:48px!important}
-  body.zuno-official-home.zuno-official-v33 .hero-avatar-zone:before{width:172px!important;height:43px!important;bottom:3px!important}
-  body.zuno-official-home.zuno-official-v33 .hero-avatar-zone:after{width:163px!important;height:29px!important;bottom:10px!important}
-  .z33-mascot{right:-1px!important;top:102px!important;width:52px!important;height:47px!important;border-radius:22px!important}
-  .z33-mascot:before,.z33-mascot:after{width:19px!important;height:22px!important;top:-12px!important}
-  .z33-mascot-face i{top:20px!important;width:8px!important;height:6px!important}
-  .z33-mascot-face i:first-child{left:13px!important}.z33-mascot-face i:last-child{right:13px!important}
-  .z33-mascot-mouth{top:29px!important;width:11px!important}
+  body.zuno-official-home.zuno-official-v33 .hero-avatar-zone{
+    grid-area:avatar!important;align-self:start!important;
+    min-height:228px!important;height:228px!important;margin:0!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .profile-avatar-wrap{width:164px!important;height:226px!important}
+  body.zuno-official-home.zuno-official-v33 .profile-avatar{
+    width:160px!important;height:219px!important;object-position:center bottom!important;
+    filter:drop-shadow(0 0 20px rgba(113,48,255,.52)) drop-shadow(0 7px 14px rgba(0,0,0,.52))!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .profile-fallback{
+    width:116px!important;height:190px!important;margin-bottom:12px!important;
+    border-radius:42% 42% 34% 34%!important;font-size:42px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .hero-avatar-zone:before{width:168px!important;height:38px!important;bottom:0!important}
+  body.zuno-official-home.zuno-official-v33 .hero-avatar-zone:after{width:158px!important;height:26px!important;bottom:6px!important}
+  .z33-mascot{right:-1px!important;top:83px!important;width:49px!important;height:43px!important;border-radius:21px!important}
+  .z33-mascot:before,.z33-mascot:after{width:18px!important;height:20px!important;top:-11px!important}
+  .z33-mascot-face i{top:18px!important;width:7px!important;height:5px!important}
+  .z33-mascot-face i:first-child{left:12px!important}.z33-mascot-face i:last-child{right:12px!important}
+  .z33-mascot-mouth{top:27px!important;width:10px!important}
+  .z33-orbit{bottom:-12px!important;height:17px!important}
 
-  .z33-stat-row{gap:9px!important;margin:0 0 12px!important}
-  .z33-stat-row .stat-pill{min-height:62px!important;padding:8px 11px!important;border-radius:16px!important;gap:9px!important}
-  .z33-stat-row .stat-icon{width:39px!important;height:39px!important;flex-basis:39px!important;font-size:18px!important}
-  .z33-stat-row .stat-label{font-size:10px!important;line-height:1.12!important}
-  .z33-stat-row .stat-value{font-size:18px!important;line-height:1!important}
-  .z33-friend-mini span{width:24px!important;height:24px!important;font-size:8px!important}
+  /* status logo abaixo do herói */
+  .z33-stat-row{grid-template-columns:1fr 1fr!important;gap:9px!important;margin:0 0 12px!important}
+  .z33-stat-row .stat-pill{
+    min-height:58px!important;height:58px!important;padding:7px 10px!important;
+    border-radius:15px!important;gap:8px!important;
+  }
+  .z33-stat-row .stat-icon{width:38px!important;height:38px!important;flex:0 0 38px!important;font-size:17px!important}
+  .z33-stat-row .stat-label{font-size:9.5px!important;line-height:1.06!important}
+  .z33-stat-row .stat-value{font-size:17px!important;line-height:1!important;margin-top:2px!important}
+  .z33-friend-mini{margin-left:auto!important;transform:scale(.88);transform-origin:right center}
+  .z33-friend-mini span{width:23px!important;height:23px!important;font-size:8px!important}
 
-  body.zuno-official-home.zuno-official-v33 .menu-grid{gap:8px!important;margin:0 0 12px!important}
+  /* grade 3x2 visível inteira */
+  body.zuno-official-home.zuno-official-v33 .menu-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;margin:0 0 10px!important;
+  }
   body.zuno-official-home.zuno-official-v33 .menu-card,
   body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(5),
-  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6){height:116px!important;padding:10px 10px!important;border-radius:17px!important;justify-content:flex-end!important}
+  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6){
+    height:101px!important;min-height:101px!important;
+    padding:9px 9px!important;border-radius:15px!important;
+    justify-content:flex-end!important;align-items:flex-start!important;text-align:left!important;
+  }
   body.zuno-official-home.zuno-official-v33 .menu-icon,
   body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(5) .menu-icon,
-  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6) .menu-icon{width:39px!important;height:39px!important;margin:0 0 5px!important}
-  body.zuno-official-home.zuno-official-v33 .menu-icon svg{width:37px!important;height:37px!important}
+  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6) .menu-icon{
+    width:34px!important;height:34px!important;margin:0 0 4px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .menu-icon svg{width:33px!important;height:33px!important}
   body.zuno-official-home.zuno-official-v33 .menu-card h2,
   body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(5) h2,
-  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6) h2{font-size:13px!important;margin:0 0 3px!important;line-height:1.05!important}
-  body.zuno-official-home.zuno-official-v33 .menu-card p{font-size:9px!important;line-height:1.14!important}
-  body.zuno-official-home.zuno-official-v33 .card-badge{right:7px!important;top:7px!important;min-width:23px!important;height:23px!important;padding:0 6px!important;font-size:9px!important}
+  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6) h2{
+    font-size:12px!important;margin:0 0 2px!important;line-height:1.02!important;letter-spacing:-.2px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .menu-card p{font-size:8px!important;line-height:1.1!important;max-width:95%!important}
+  body.zuno-official-home.zuno-official-v33 .card-badge{right:6px!important;top:6px!important;min-width:21px!important;height:21px!important;padding:0 5px!important;font-size:8px!important}
 
-  body.zuno-official-home.zuno-official-v33 .section{margin:0 0 9px!important;padding:10px 11px 9px!important;border-radius:17px!important}
-  body.zuno-official-home.zuno-official-v33 .section-head{margin-bottom:8px!important}
-  body.zuno-official-home.zuno-official-v33 .section-title{font-size:14px!important}
-  body.zuno-official-home.zuno-official-v33 .section-link{font-size:10px!important}
-  body.zuno-official-home.zuno-official-v33 .friends-strip{gap:8px!important;padding-bottom:0!important}
-  body.zuno-official-home.zuno-official-v33 .friend{width:50px!important;flex-basis:50px!important}
+  /* amigos online — último bloco da Home de referência */
+  body.zuno-official-home.zuno-official-v33 .section:not(.zuno-home-secondary-section){
+    margin:0 0 7px!important;padding:9px 10px 8px!important;border-radius:15px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 .section:not(.zuno-home-secondary-section) .section-head{margin-bottom:7px!important}
+  body.zuno-official-home.zuno-official-v33 .section-title{font-size:13px!important}
+  body.zuno-official-home.zuno-official-v33 .section-link{font-size:9.5px!important}
+  body.zuno-official-home.zuno-official-v33 .friends-strip{gap:7px!important;padding:0!important}
+  body.zuno-official-home.zuno-official-v33 .friend{width:48px!important;flex:0 0 48px!important}
   body.zuno-official-home.zuno-official-v33 .friend-avatar-wrap,
-  body.zuno-official-home.zuno-official-v33 .friend-avatar{width:46px!important;height:46px!important}
-  body.zuno-official-home.zuno-official-v33 .friend-name{font-size:9px!important;margin-top:4px!important}
+  body.zuno-official-home.zuno-official-v33 .friend-avatar{width:43px!important;height:43px!important}
+  body.zuno-official-home.zuno-official-v33 .friend-status{width:10px!important;height:10px!important;border-width:2px!important}
+  body.zuno-official-home.zuno-official-v33 .friend-name{font-size:8.5px!important;margin-top:3px!important}
+  body.zuno-official-home.zuno-official-v33 .zuno-home-secondary-section,
+  body.zuno-official-home.zuno-official-v33 .logout,
+  body.zuno-official-home.zuno-official-v33 .footer{display:none!important}
 
-  body.zuno-official-home.zuno-official-v33 #bottomNav{width:calc(100% - 16px)!important;min-height:64px!important;padding:5px 6px calc(5px + env(safe-area-inset-bottom))!important;border-radius:20px 20px 0 0!important}
-  body.zuno-official-home.zuno-official-v33 #bottomNav .nav-item{min-height:50px!important;font-size:9px!important;border-radius:16px!important;gap:2px!important}
-  body.zuno-official-home.zuno-official-v33 #bottomNav .nav-item b{font-size:19px!important}
-  body.zuno-official-home.zuno-official-v33 #bottomNav .nav-main{width:57px!important;height:57px!important;min-width:57px!important;min-height:57px!important;margin:-10px auto 0!important;font-size:28px!important;border-width:2px!important;box-shadow:0 0 0 4px rgba(70,34,143,.60),0 0 22px rgba(144,48,255,.58),0 0 26px rgba(33,207,255,.28)!important}
+  /* navegação inferior como na referência */
+  body.zuno-official-home.zuno-official-v33 #bottomNav{
+    width:calc(100% - 18px)!important;height:62px!important;min-height:62px!important;
+    bottom:max(4px,env(safe-area-inset-bottom))!important;
+    padding:5px 7px!important;border-radius:18px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 #bottomNav .nav-item{
+    height:49px!important;min-height:49px!important;font-size:8.5px!important;border-radius:14px!important;gap:1px!important;
+  }
+  body.zuno-official-home.zuno-official-v33 #bottomNav .nav-item b{font-size:18px!important;line-height:1!important}
+  body.zuno-official-home.zuno-official-v33 #bottomNav .nav-main{
+    width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;
+    margin:-9px auto 0!important;font-size:29px!important;border-width:2px!important;
+    box-shadow:0 0 0 4px rgba(70,34,143,.58),0 0 22px rgba(144,48,255,.62),0 0 25px rgba(33,207,255,.30)!important;
+  }
 }
 
 @media (max-width:390px){
   body.zuno-official-home.zuno-official-v33 .app{padding-left:11px!important;padding-right:11px!important}
-  body.zuno-official-home.zuno-official-v33 .hero{min-height:278px!important}
-  body.zuno-official-home.zuno-official-v33 .hero-grid{min-height:278px!important;grid-template-columns:minmax(0,1.1fr) minmax(137px,.9fr)!important}
-  body.zuno-official-home.zuno-official-v33 .hero-left{padding-top:13px!important}
-  body.zuno-official-home.zuno-official-v33 .hero-name{font-size:34px!important;margin-bottom:17px!important}
-  body.zuno-official-home.zuno-official-v33 .aura-row{grid-template-columns:66px minmax(0,1fr)!important;gap:8px!important}
-  body.zuno-official-home.zuno-official-v33 .aura-emblem{width:60px!important;height:60px!important}
-  body.zuno-official-home.zuno-official-v33 .hero-avatar-zone{min-height:268px!important;height:268px!important}
-  body.zuno-official-home.zuno-official-v33 .profile-avatar-wrap{width:155px!important;height:266px!important}
-  body.zuno-official-home.zuno-official-v33 .profile-avatar{width:153px!important;height:258px!important}
-  .z33-mascot{right:-4px!important;top:96px!important;width:48px!important;height:44px!important}
-  body.zuno-official-home.zuno-official-v33 .menu-grid{gap:7px!important}
+  body.zuno-official-home.zuno-official-v33 .brand{font-size:27px!important}
+  body.zuno-official-home.zuno-official-v33 .hero-grid{grid-template-columns:minmax(0,1.08fr) minmax(138px,.92fr)!important}
+  body.zuno-official-home.zuno-official-v33 .hero-name{font-size:33px!important;margin-bottom:29px!important}
+  body.zuno-official-home.zuno-official-v33 .profile-avatar-wrap{width:150px!important}
+  body.zuno-official-home.zuno-official-v33 .profile-avatar{width:147px!important}
   body.zuno-official-home.zuno-official-v33 .menu-card,
   body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(5),
-  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6){height:110px!important;padding:9px 8px!important}
-  body.zuno-official-home.zuno-official-v33 .menu-card h2,
-  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(5) h2,
-  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6) h2{font-size:12px!important}
-  body.zuno-official-home.zuno-official-v33 .menu-card p{font-size:8.5px!important}
+  body.zuno-official-home.zuno-official-v33 .menu-card:nth-child(6){height:98px!important;min-height:98px!important;padding:8px!important}
+  body.zuno-official-home.zuno-official-v33 .menu-card h2{font-size:11.4px!important}
 }
