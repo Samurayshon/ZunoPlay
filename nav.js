@@ -49,6 +49,10 @@
     loadScript('zunoplay-realtime-global','./realtime-global.js','ZunoPlay: não foi possível carregar realtime-global.js');
   }
 
+  function loadOfficialAvatars(){
+    loadScript('zunoplay-official-avatars','./official-avatars.js?v=31','ZunoPlay: não foi possível carregar os avatares oficiais');
+  }
+
   function loadRoomVoice(){
     if(page==='sala.html')loadScript('zunoplay-room-voice','./voz-sala.js','ZunoPlay: não foi possível carregar voz-sala.js');
   }
@@ -59,18 +63,18 @@
 
   function loadOfficialHome(){
     if(page!=='index.html')return;
-    loadStyle('zunoplay-home-v30-style','./home-v29.css?v=30');
-    loadScript('zunoplay-home-v30-script','./home-v29.js?v=30','ZunoPlay: não foi possível carregar a Home oficial');
+    loadStyle('zunoplay-home-v30-style','./home-v29.css?v=31');
+    loadScript('zunoplay-home-v30-script','./home-v29.js?v=31','ZunoPlay: não foi possível carregar a Home oficial');
   }
 
   function bootstrapRealtime() {
-    if (patchSupabaseFactory()) { loadRealtimeCore(); return; }
+    if (patchSupabaseFactory()) { loadRealtimeCore(); loadOfficialAvatars(); return; }
     if (document.getElementById('zunoplay-supabase-sdk')) return;
     const sdk = document.createElement('script');
     sdk.id = 'zunoplay-supabase-sdk';
     sdk.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     sdk.async = true;
-    sdk.onload = () => { if (patchSupabaseFactory()) loadRealtimeCore(); };
+    sdk.onload = () => { if (patchSupabaseFactory()) { loadRealtimeCore(); loadOfficialAvatars(); } };
     sdk.onerror = () => console.error('ZunoPlay: não foi possível carregar Supabase');
     document.head.appendChild(sdk);
   }
