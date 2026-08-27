@@ -1,18 +1,50 @@
-const CACHE_NAME = "zunoplay-v161";
+const CACHE_NAME = "zunoplay-v163";
+
+// Pré-cache apenas do shell essencial. Demais recursos entram no cache sob demanda.
+// Isso evita dezenas de requisições simultâneas durante cada atualização do PWA.
 const STATIC_FILES = [
-  "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./partida.html","./reflexo.html","./precisao.html","./arena.html","./zuno-caos.html","./zuno-rush.html","./zuno-pulse.html","./zuno-stack.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js","./home-app.js",
-  "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js",
-  "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-game-social.css","./zuno-game-social.js","./zuno-mini-games.css","./zuno-mini-games.js","./zuno-caos.js","./zuno-rush.js","./zuno-pulse.js","./zuno-stack.js","./zuno-stack-catalog.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg",
-  "./zuno-room-experience.css","./zuno-room-experience.js","./zuno-room-fit.css","./zuno-room-extras.css","./zuno-voice-feedback.css","./zuno-voice-feedback.js","./zuno-room-profile-card.css","./zuno-room-profile-card.js","./zuno-directed-gifts.css","./zuno-directed-gifts.js","./zuno-room-games.css","./zuno-room-games.js","./zuno-room-game-return.js","./zuno-room-moderation.css","./zuno-room-moderation.js",
-  "./avatar-asset-registry.js","./avatar-renderer.js","./avatar-preview-sync.js","./avatar-stage-controls.js","./avatar-home-sync.js",
-  "./zuno-current-base.css","./zuno-current.js","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-current-viewport.css","./zuno-current-viewport-v154.css","./zuno-current-hero-separation.css","./zuno-home-reference-v152.css",
-  "./realtime-global.js","./presenca-sala.js","./voz-sala.js","./room-session-guard.js"
+  "./",
+  "./index.html",
+  "./login.html",
+  "./cadastro.html",
+  "./perfil.html",
+  "./avatar.html",
+  "./salas.html",
+  "./sala.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./nav.js",
+  "./home-app.js",
+  "./realtime-global.js",
+  "./avatar-renderer.js",
+  "./avatar-home-sync.js",
+  "./zuno-design-system.css",
+  "./zuno-current-base.css",
+  "./zuno-current.js",
+  "./zuno-current-home.css",
+  "./zuno-current-home.js"
 ];
 
 function fetchWithTimeout(input, init = {}, timeoutMs = 6000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
+  return fetch(input, { ...init, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
+async function preCacheInBatches(cache, files, batchSize = 3) {
+  for (let i = 0; i < files.length; i += batchSize) {
+    const batch = files.slice(i, i + batchSize);
+    await Promise.allSettled(batch.map(async url => {
+      try {
+        const response = await fetchWithTimeout(url, { cache: "no-cache" }, 7000);
+        if (response && response.ok) await cache.put(url, response);
+      } catch (_) {}
+    }));
+    // Pequena pausa para não criar uma rajada contra o host estático.
+    await new Promise(resolve => setTimeout(resolve, 40));
+  }
 }
 
 function isCurrentUiAsset(url) {
@@ -28,12 +60,7 @@ function isCurrentUiAsset(url) {
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    await Promise.allSettled(STATIC_FILES.map(async url => {
-      try {
-        const response = await fetchWithTimeout(url, { cache: "reload" }, 7000);
-        if (response && response.ok) await cache.put(url, response);
-      } catch (_) {}
-    }));
+    await preCacheInBatches(cache, STATIC_FILES, 3);
     await self.skipWaiting();
   })());
 });
@@ -72,7 +99,10 @@ self.addEventListener("fetch", event => {
         if (cached) return cached;
         const fallback = await currentCacheMatch("./index.html");
         if (fallback) return fallback;
-        return new Response("ZunoPlay temporariamente indisponível. Tente novamente.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
+        return new Response("ZunoPlay temporariamente indisponível. Tente novamente.", {
+          status: 503,
+          headers: { "Content-Type": "text/plain; charset=utf-8" }
+        });
       }
     })());
     return;
@@ -91,7 +121,10 @@ self.addEventListener("fetch", event => {
       } catch (_) {
         const cached = await currentCacheMatch(request, { ignoreSearch: true });
         if (cached) return cached;
-        return new Response("Recurso de interface indisponível.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
+        return new Response("Recurso de interface indisponível.", {
+          status: 503,
+          headers: { "Content-Type": "text/plain; charset=utf-8" }
+        });
       }
     })());
     return;
@@ -100,15 +133,6 @@ self.addEventListener("fetch", event => {
   event.respondWith((async () => {
     const exactCached = await currentCacheMatch(request);
     if (exactCached) {
-      event.waitUntil((async () => {
-        try {
-          const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
-          if (fresh && fresh.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            await cache.put(request, fresh.clone());
-          }
-        } catch (_) {}
-      })());
       return exactCached;
     }
 
@@ -122,7 +146,10 @@ self.addEventListener("fetch", event => {
     } catch (_) {
       const offlineFallback = await currentCacheMatch(request, { ignoreSearch: true });
       if (offlineFallback) return offlineFallback;
-      return new Response("Recurso indisponível offline.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
+      return new Response("Recurso indisponível offline.", {
+        status: 503,
+        headers: { "Content-Type": "text/plain; charset=utf-8" }
+      });
     }
   })());
 });
