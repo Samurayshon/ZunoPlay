@@ -7,14 +7,15 @@ body.zuno-official-home.zuno-official-v33 .hero-avatar-zone:after,
 body.zuno-official-home.zuno-official-v33 .profile-glow,
 body.zuno-official-home.zuno-official-v33 .z33-mascot,
 body.zuno-official-home.zuno-official-v33 .menu-card:before{pointer-events:none!important}
+
 body.zuno-official-home.zuno-official-v33 .topbar,
 body.zuno-official-home.zuno-official-v33 .menu-grid,
 body.zuno-official-home.zuno-official-v33 .z33-stat-row,
 body.zuno-official-home.zuno-official-v33 .section,
 body.zuno-official-home.zuno-official-v33 #bottomNav{position:relative;z-index:20;pointer-events:auto!important}
+
 body.zuno-official-home.zuno-official-v33 button,
-body.zuno-official-home.zuno-official-v33 a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body.zuno-official-home.zuno-official-v33 a{touch-action:manipulation;-webkit-tap-highlight-color:transparent;pointer-events:auto}
+
 body.zuno-official-home.zuno-official-v33 .search-backdrop:not(.open){pointer-events:none!important}
 body.zuno-official-home.zuno-official-v33 .search-backdrop.open{pointer-events:auto!important}
-html[data-zuno-navigating="1"] body.zuno-official-home.zuno-official-v33 button,
-html[data-zuno-navigating="1"] body.zuno-official-home.zuno-official-v33 a{pointer-events:none!important}
