@@ -2,7 +2,7 @@
   if(window.__ZUNOPLAY_OFFICIAL_AVATARS__)return;
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
 
-  const VERSION='37';
+  const VERSION='38';
   const ASSETS={
     masculino:'./assets/avatars/avatar-masculino-oficial.webp?v='+VERSION,
     feminino:'./assets/avatars/avatar-feminino-oficial.webp?v='+VERSION
@@ -11,12 +11,14 @@
 
   function normalizeSex(value){return String(value||'').toLowerCase()==='feminino'?'feminino':'masculino'}
   function isOfficial(value){return /assets\/avatars\/avatar-(?:masculino|feminino)-oficial\.webp/i.test(String(value||''))}
+  function isLegacyAvatar(value){
+    const v=String(value||'').trim();
+    return !v || isOfficial(v) || v.startsWith('data:image/svg+xml');
+  }
   function isCustomAvatar(value){
     const v=String(value||'').trim();
-    if(!v||isOfficial(v))return false;
-    if(v.startsWith('data:image/svg+xml'))return true;
-    if(/^https:\/\//i.test(v))return true;
-    return false;
+    if(isLegacyAvatar(v))return false;
+    return v.startsWith('data:image/') || /^https:\/\//i.test(v);
   }
   async function loadBase(sex){
     sex=normalizeSex(sex);
@@ -24,7 +26,7 @@
     const src=new URL(ASSETS[sex],location.href).href;
     await new Promise((resolve,reject)=>{
       const img=new Image();
-      img.onload=()=>resolve();
+      img.onload=resolve;
       img.onerror=()=>reject(new Error('official_avatar_image_failed'));
       img.src=src;
     });
@@ -44,7 +46,7 @@
     const mini=document.getElementById('profileButton');
     if(mini)mini.innerHTML='<img src="'+src+'" alt="Perfil">';
     const preview=document.getElementById('avatarPreview');
-    if(preview && (location.pathname.split('/').pop()||'').toLowerCase()==='avatar.html') preview.src=src;
+    if(preview && (location.pathname.split('/').pop()||'').toLowerCase()==='avatar.html')preview.src=src;
   }
   async function ensureForCurrentUser(){
     const sb=await waitClient();
