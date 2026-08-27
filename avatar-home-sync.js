@@ -8,11 +8,27 @@
 
   function normalize(v){return window.ZunoAvatarRenderer?.normalize?window.ZunoAvatarRenderer.normalize(v):null}
   function valid(v){return !!v&&v.style===STYLE}
+  function clone(v){return v?JSON.parse(JSON.stringify(v)):v}
   function markReady(source='studio'){
     document.documentElement.dataset.zunoAvatarHomeReady='1';
     if(readySent)return;
     readySent=true;
     window.dispatchEvent(new CustomEvent('zuno:avatar-home-ready',{detail:{source}}));
+  }
+
+  function homeDisplayConfig(){
+    const display=clone(cfg);
+    if(!display)return null;
+    display.mode='Corpo inteiro';
+    display.selections={...(display.selections||{}),Mascote:1,Efeitos:1};
+    return normalize(display)||display;
+  }
+  function miniDisplayConfig(){
+    const display=clone(cfg);
+    if(!display)return null;
+    display.mode='Perfil';
+    display.selections={...(display.selections||{}),Mascote:0,Efeitos:0};
+    return normalize(display)||display;
   }
 
   function mount(source='studio'){
@@ -26,7 +42,8 @@
         if(!glow){glow=document.createElement('div');glow.className='profile-glow'}
         let img=wrap.querySelector('img[data-zuno-studio-avatar="1"]');
         if(!img){img=document.createElement('img');img.className='profile-avatar';img.dataset.zunoStudioAvatar='1'}
-        if(window.ZunoAvatarRenderer.mount(img,cfg)!==false){
+        const display=homeDisplayConfig();
+        if(display&&window.ZunoAvatarRenderer.mount(img,display)!==false){
           if(wrap.children.length!==2||wrap.firstElementChild!==glow||wrap.lastElementChild!==img)wrap.replaceChildren(glow,img);
           mounted=true;
         }
@@ -35,7 +52,8 @@
       if(p){
         let mini=p.querySelector('img[data-zuno-studio-avatar="1"]');
         if(!mini){mini=document.createElement('img');mini.dataset.zunoStudioAvatar='1'}
-        if(window.ZunoAvatarRenderer.mount(mini,cfg)!==false){
+        const display=miniDisplayConfig();
+        if(display&&window.ZunoAvatarRenderer.mount(mini,display)!==false){
           if(p.children.length!==1||p.firstElementChild!==mini)p.replaceChildren(mini);
           mounted=true;
         }
