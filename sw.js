@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v43";
+const CACHE_NAME = "zunoplay-v44";
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -21,12 +21,14 @@ const STATIC_FILES = [
   "./nav.js",
   "./official-avatars.js",
   "./avatar-customizer.js",
-  "./assets/avatars/v37/male-1.txt",
-  "./assets/avatars/v37/male-2.txt",
-  "./assets/avatars/v37/male-3.txt",
-  "./assets/avatars/v37/female-1.txt",
-  "./assets/avatars/v37/female-2.txt",
-  "./assets/avatars/v37/female-3.txt",
+  "./assets/avatars/v39/male-1.txt",
+  "./assets/avatars/v39/male-2.txt",
+  "./assets/avatars/v39/male-3.txt",
+  "./assets/avatars/v39/male-4.txt",
+  "./assets/avatars/v39/female-1.txt",
+  "./assets/avatars/v39/female-2.txt",
+  "./assets/avatars/v39/female-3.txt",
+  "./assets/avatars/v39/female-4.txt",
   "./home-v29.css",
   "./home-v29.js",
   "./realtime-global.js",
