@@ -1,6 +1,6 @@
-const CACHE_NAME = "zunoplay-v67";
+const CACHE_NAME = "zunoplay-v68";
 const STATIC_FILES = [
-  "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js","./official-avatars.js","./avatar-glb-v58.js","./home-v29.css","./home-v29.js","./realtime-global.js","./presenca-sala.js","./voz-sala.js","./room-session-guard.js"
+  "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js","./official-avatars.js","./zuno-avatar-studio.js","./avatar-glb-v58.js","./home-v29.css","./home-v29.js","./realtime-global.js","./presenca-sala.js","./voz-sala.js","./room-session-guard.js"
 ];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(STATIC_FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
