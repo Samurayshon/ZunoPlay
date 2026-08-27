@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v150";
+const CACHE_NAME = "zunoplay-v151";
 const STATIC_FILES = [
   "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./partida.html","./reflexo.html","./precisao.html","./arena.html","./zuno-caos.html","./zuno-rush.html","./zuno-pulse.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js","./home-app.js",
   "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js",
@@ -13,6 +13,15 @@ function fetchWithTimeout(input, init = {}, timeoutMs = 6000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+function isCurrentUiAsset(url) {
+  const path = url.pathname.toLowerCase();
+  return path.includes('/zuno-current') ||
+    path.endsWith('/avatar-home-sync.js') ||
+    path.endsWith('/avatar-renderer.js') ||
+    path.endsWith('/nav.js') ||
+    path.endsWith('/home-app.js');
 }
 
 self.addEventListener("install", event => {
@@ -63,6 +72,25 @@ self.addEventListener("fetch", event => {
         const fallback = await currentCacheMatch("./index.html");
         if (fallback) return fallback;
         return new Response("ZunoPlay temporariamente indisponível. Tente novamente.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
+      }
+    })());
+    return;
+  }
+
+  if (isCurrentUiAsset(url)) {
+    event.respondWith((async () => {
+      try {
+        const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
+        if (fresh && fresh.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          event.waitUntil(cache.put(request, fresh.clone()));
+          return fresh;
+        }
+        throw new Error("ui_asset_not_ok");
+      } catch (_) {
+        const cached = await currentCacheMatch(request, { ignoreSearch: true });
+        if (cached) return cached;
+        return new Response("Recurso de interface indisponível.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
       }
     })());
     return;
