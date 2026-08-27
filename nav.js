@@ -67,15 +67,50 @@
     loadScript('zunoplay-home-v34-script','./home-v29.js?v=34','ZunoPlay: não foi possível carregar a Home oficial');
   }
 
+  function installOfficialLogoStyle(){
+    if(document.getElementById('zunoplay-official-logo-style'))return;
+    const style=document.createElement('style');
+    style.id='zunoplay-official-logo-style';
+    style.textContent=`
+      .zuno-official-logo{display:inline-flex!important;align-items:center!important;gap:.26em!important;line-height:1!important;white-space:nowrap!important;letter-spacing:-.045em!important}
+      .zuno-official-logo-mark{width:1.16em;height:1.06em;flex:0 0 auto;display:block;filter:drop-shadow(0 0 .26em rgba(145,70,255,.52))}
+      .zuno-official-logo-word{font-weight:950;letter-spacing:-.055em;color:#f7f7ff;line-height:1}
+      .zuno-official-logo-word b{font-weight:950;background:linear-gradient(135deg,#ca58ff 0%,#9a39ff 48%,#ef3bc8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .welcome-logo.zuno-official-logo{justify-content:center;font-size:48px}
+      .brand.zuno-official-logo{font-size:38px}
+      .logo.zuno-official-logo{font-size:inherit}
+      @media(max-width:520px){.brand.zuno-official-logo{font-size:30px}.welcome-logo.zuno-official-logo{font-size:42px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function officialLogoMarkup(){
+    return `<svg class="zuno-official-logo-mark" viewBox="0 0 76 68" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="zlg" x1="8" y1="4" x2="68" y2="64" gradientUnits="userSpaceOnUse"><stop stop-color="#4fd6ff"/><stop offset=".28" stop-color="#7b4dff"/><stop offset=".64" stop-color="#b62cff"/><stop offset="1" stop-color="#f23ed0"/></linearGradient><filter id="zgl" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="6" y="5" width="64" height="58" rx="15" fill="url(#zlg)" opacity=".98" transform="rotate(-6 38 34)"/><path d="M22 20h38L37 35h18L27 52H15l25-18H22z" fill="#fff" filter="url(#zgl)"/></svg><span class="zuno-official-logo-word">Zuno<b>Play</b></span>`;
+  }
+
+  function mountOfficialLogo(){
+    installOfficialLogoStyle();
+    const selectors=['.brand','.welcome-logo','.logo'];
+    document.querySelectorAll(selectors.join(',')).forEach(el=>{
+      if(el.dataset.zunoOfficialLogo==='1')return;
+      const text=(el.textContent||'').replace(/\s+/g,'').toLowerCase();
+      if(!text.includes('zunoplay') && !el.classList.contains('brand') && !el.classList.contains('welcome-logo'))return;
+      el.dataset.zunoOfficialLogo='1';
+      el.classList.add('zuno-official-logo');
+      el.innerHTML=officialLogoMarkup();
+      el.setAttribute('aria-label','ZunoPlay');
+    });
+  }
+
   function bootstrapRealtime() {
     if (patchSupabaseFactory()) { loadRealtimeCore(); loadOfficialAvatars(); return; }
     if (document.getElementById('zunoplay-supabase-sdk')) return;
     const sdk = document.createElement('script');
-    sdk.id = 'zunoplay-supabase-sdk';
-    sdk.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-    sdk.async = true;
-    sdk.onload = () => { if (patchSupabaseFactory()) { loadRealtimeCore(); loadOfficialAvatars(); } };
-    sdk.onerror = () => console.error('ZunoPlay: não foi possível carregar Supabase');
+    sdk.id='zunoplay-supabase-sdk';
+    sdk.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    sdk.async=true;
+    sdk.onload=()=>{if(patchSupabaseFactory()){loadRealtimeCore();loadOfficialAvatars();}};
+    sdk.onerror=()=>console.error('ZunoPlay: não foi possível carregar Supabase');
     document.head.appendChild(sdk);
   }
 
@@ -83,6 +118,9 @@
   loadRoomVoice();
   loadRoomSessionGuard();
   loadOfficialHome();
+
+  const brandReady=()=>{mountOfficialLogo();setTimeout(mountOfficialLogo,250);};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',brandReady,{once:true});else brandReady();
 
   if (skipNavigation) return;
 
@@ -95,7 +133,7 @@
     if(!(el instanceof Element))return false;
     if(el.classList.contains('zunoplay-global-home'))return true;
     if(el.classList.contains('home-button')||el.classList.contains('zunoplay-home-button')||el.classList.contains('home'))return true;
-    if(el.tagName==='A'&&/(^|\\/)index\\.html(?:$|[?#])/.test(el.getAttribute('href')||''))return true;
+    if(el.tagName==='A'&&/(^|\/)index\.html(?:$|[?#])/.test(el.getAttribute('href')||''))return true;
     const text=(el.textContent||'').trim().toLowerCase();
     return(el.tagName==='BUTTON'||el.tagName==='A')&&(text==='⌂'||text==='🏠'||text==='home');
   }
@@ -104,6 +142,7 @@
     if(running)return;
     running=true;
     try{
+      mountOfficialLogo();
       const all=[...document.querySelectorAll('button,a,[role="button"]')];
       const candidates=all.filter(isCandidate);
       const headers=[...document.querySelectorAll('.header,.chat-header,.header-left')];
