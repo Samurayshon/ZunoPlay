@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='91';
+  const ASSET_VERSION='100';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const homeUrl=new URL('./index.html',location.href).href;
   const skipNavigation=['index.html','sala.html','desafio.html','login.html','cadastro.html'].includes(page);
@@ -28,6 +28,7 @@
   function versioned(file){return file+(file.includes('?')?'&':'?')+'v='+ASSET_VERSION}
   function loadScript(id,file,errorText,onload){if(document.getElementById(id)){onload?.();return}const s=document.createElement('script');s.id=id;s.src=new URL(versioned(file),location.href).href;s.async=true;if(onload)s.onload=onload;s.onerror=()=>console.error(errorText);document.head.appendChild(s)}
   function loadStyle(id,file){if(document.getElementById(id))return;const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=new URL(versioned(file),location.href).href;document.head.appendChild(link)}
+  function loadDesignSystem(){loadStyle('zunoplay-design-system','./zuno-design-system.css')}
   function loadRealtimeCore(){if(window.ZunoRealtime){window.ZunoRealtime.start?.().catch?.(console.error);return}loadScript('zunoplay-realtime-global','./realtime-global.js','ZunoPlay: não foi possível carregar realtime-global.js')}
   function loadRoomVoice(){if(page==='sala.html')loadScript('zunoplay-room-voice','./voz-sala.js','ZunoPlay: não foi possível carregar voz-sala.js')}
   function loadRoomSessionGuard(){loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: não foi possível carregar room-session-guard.js')}
@@ -40,11 +41,11 @@
   function mountOfficialLogo(){installOfficialLogoStyle();document.querySelectorAll('.brand,.welcome-logo,.logo').forEach(el=>{if(el.dataset.zunoOfficialLogo==='1')return;const text=(el.textContent||'').replace(/\s+/g,'').toLowerCase();if(!text.includes('zunoplay')&&!el.classList.contains('brand')&&!el.classList.contains('welcome-logo'))return;el.dataset.zunoOfficialLogo='1';el.classList.add('zuno-official-logo');el.innerHTML=officialLogoMarkup();el.setAttribute('aria-label','ZunoPlay')})}
   function bootstrapRealtime(){if(patchSupabaseFactory()){loadRealtimeCore();loadAvatarRenderer();return}if(document.getElementById('zunoplay-supabase-sdk'))return;const sdk=document.createElement('script');sdk.id='zunoplay-supabase-sdk';sdk.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';sdk.async=true;sdk.onload=()=>{if(patchSupabaseFactory()){loadRealtimeCore();loadAvatarRenderer()}};sdk.onerror=()=>console.error('ZunoPlay: não foi possível carregar Supabase');document.head.appendChild(sdk)}
 
-  bootstrapRealtime();loadRoomVoice();loadRoomSessionGuard();loadOfficialHome();
+  loadDesignSystem();bootstrapRealtime();loadRoomVoice();loadRoomSessionGuard();loadOfficialHome();
   const brandReady=()=>{mountOfficialLogo();setTimeout(mountOfficialLogo,250)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',brandReady,{once:true});else brandReady();
   if(skipNavigation)return;
-  const style=document.createElement('style');style.textContent=`.zunoplay-global-home{width:42px;height:42px;min-width:42px;flex:0 0 42px;box-sizing:border-box;border:1px solid #303145;border-radius:12px;background:#1b1c2b;color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;font:20px Arial,sans-serif;line-height:1;cursor:pointer;text-decoration:none;position:relative;z-index:10000}`;document.head.appendChild(style);
+  const style=document.createElement('style');style.textContent=`.zunoplay-global-home{width:42px;height:42px;min-width:42px;flex:0 0 42px;box-sizing:border-box;border:1px solid var(--z-border,#303145);border-radius:var(--z-radius-sm,12px);background:var(--z-surface-2,#1b1c2b);color:var(--z-text,#fff);display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0;font:20px Arial,sans-serif;line-height:1;cursor:pointer;text-decoration:none;position:relative;z-index:10000;box-shadow:var(--z-glow-purple,none)}`;document.head.appendChild(style);
   function goHome(event){event.preventDefault();location.href=homeUrl}
   function isCandidate(el){if(!(el instanceof Element))return false;if(el.classList.contains('zunoplay-global-home')||el.classList.contains('home-button')||el.classList.contains('zunoplay-home-button')||el.classList.contains('home'))return true;if(el.tagName==='A'&&/(^|\/)index\.html(?:$|[?#])/.test(el.getAttribute('href')||''))return true;const text=(el.textContent||'').trim().toLowerCase();return(el.tagName==='BUTTON'||el.tagName==='A')&&(text==='⌂'||text==='🏠'||text==='home')}
   function mount(){if(running)return;running=true;try{mountOfficialLogo();const all=[...document.querySelectorAll('button,a,[role="button"]')],candidates=all.filter(isCandidate),headers=[...document.querySelectorAll('.header,.chat-header,.header-left')];let home=document.querySelector('.zunoplay-global-home');if(!home&&candidates.length)home=candidates[0];if(!home&&headers.length){home=document.createElement('button');headers[0].insertBefore(home,headers[0].firstChild)}if(!home)return;if(!home.classList.contains('zunoplay-global-home')){home.className='zunoplay-global-home';home.removeAttribute('href');home.removeAttribute('onclick');home.removeAttribute('data-action');home.setAttribute('type','button');home.setAttribute('aria-label','Voltar para a tela inicial');home.setAttribute('title','Tela inicial');home.textContent='⌂';home.onclick=goHome}const duplicates=[...document.querySelectorAll('.zunoplay-global-home')].filter(el=>el!==home);candidates.slice(1).forEach(el=>{if(el!==home)el.remove()});duplicates.forEach(el=>el.remove())}finally{running=false}}
