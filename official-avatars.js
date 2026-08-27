@@ -2,7 +2,7 @@
   if(window.__ZUNOPLAY_OFFICIAL_AVATARS__)return;
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
 
-  const VERSION='42';
+  const VERSION='43';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const PARTS={
     masculino:['./assets/avatars/v37/male-1.txt','./assets/avatars/v37/male-2.txt','./assets/avatars/v37/male-3.txt'],
@@ -18,7 +18,7 @@
   function isCustomAvatar(value){
     const v=String(value||'').trim();
     if(!v||isLegacyOfficial(v))return false;
-    return v.startsWith('data:image/')||/^https:\/\//i.test(v);
+    return v.startsWith('data:image/svg+xml')||(/^https:\/\//i.test(v)&&!isLegacyOfficial(v));
   }
   async function validateImage(src){
     await new Promise((resolve,reject)=>{const img=new Image();img.onload=resolve;img.onerror=()=>reject(new Error('official_avatar_image_failed'));img.src=src});
@@ -47,7 +47,7 @@
     if(isCustomAvatar(profile.avatar_url))return profile.avatar_url;
     return loadBase(normalizeSex(profile.sex));
   }
-  function setImage(node,src,alt='Avatar oficial ZunoPlay'){
+  function setImage(node,src,alt='Avatar ZunoPlay'){
     if(!node||!src)return;
     if(node.tagName==='IMG'){if(node.src!==src)node.src=src;return}
     const old=node.querySelector(':scope > img.zuno-official-avatar');
@@ -55,20 +55,19 @@
     node.textContent='';
     const img=document.createElement('img');img.className='zuno-official-avatar';img.src=src;img.alt=alt;img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block';node.appendChild(img);
   }
-  function renderEverywhere(src,sex){
+  function renderApp(src,sex){
     const wrap=document.getElementById('profileAvatarWrap');
     if(wrap){
       const current=wrap.querySelector('img.zuno-official-starter');
-      if(!current||current.src!==src)wrap.innerHTML='<div class="profile-glow"></div><img class="profile-avatar zuno-official-starter" src="'+src+'" alt="Avatar oficial '+sex+' ZunoPlay">';
+      if(!current||current.src!==src)wrap.innerHTML='<div class="profile-glow"></div><img class="profile-avatar zuno-official-starter" src="'+src+'" alt="Avatar '+sex+' ZunoPlay">';
     }
     setImage(document.getElementById('profileButton'),src,'Perfil');
-    const preview=document.getElementById('avatarPreview');
-    if(preview&&page==='avatar.html'){preview.src=src;preview.dataset.officialStarter=sex;preview.alt=sex==='feminino'?'Modelo oficial feminino do ZunoPlay':'Modelo oficial masculino do ZunoPlay'}
   }
   function installProfileGuards(src,sex){
+    if(page==='avatar.html')return;
     const roots=[document.getElementById('profileAvatarWrap'),document.getElementById('profileButton')].filter(Boolean);
     const observers=[];let scheduled=false;
-    const protect=()=>{scheduled=false;renderEverywhere(src,sex)};
+    const protect=()=>{scheduled=false;renderApp(src,sex)};
     const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(protect)};
     roots.forEach(root=>{const observer=new MutationObserver(schedule);observer.observe(root,{childList:true,subtree:false});observers.push(observer)});
     [100,350,900,1800].forEach(ms=>setTimeout(protect,ms));
@@ -77,11 +76,10 @@
   async function ensureForCurrentUser(){
     const sb=await waitClient();if(!sb)return null;
     const{data:{session}}=await sb.auth.getSession();const user=session?.user;if(!user)return null;
-    const{data:profile,error}=await sb.from('profiles').select('id,sex,avatar_url').eq('id',user.id).maybeSingle();if(error||!profile)return null;
+    const{data:profile,error}=await sb.from('profiles').select('id,sex,avatar_url,avatar_config').eq('id',user.id).maybeSingle();if(error||!profile)return null;
     const sex=normalizeSex(profile.sex),src=await resolveProfile(profile);if(!src)return null;
-    renderEverywhere(src,sex);
-    installProfileGuards(src,sex);
-    window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src,version:VERSION}}));
+    if(page!=='avatar.html'){renderApp(src,sex);installProfileGuards(src,sex)}
+    window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src,version:VERSION,custom:!!profile.avatar_config||isCustomAvatar(profile.avatar_url)}}));
     return src;
   }
   async function hydrateRoom(){
@@ -92,7 +90,7 @@
     const room=params.get('room')||params.get('room_id')||params.get('id')||sessionStorage.getItem('zunoplay_room_id');if(!room)return;
     const{data:members,error}=await sb.from('room_members').select('user_id,seat_index').eq('room_id',room).order('seat_index',{ascending:true});if(error||!members?.length)return;
     const ids=[...new Set(members.map(x=>x.user_id).filter(Boolean))];
-    const{data:profiles,error:pe}=await sb.from('profiles').select('id,username,avatar_url,sex').in('id',ids);if(pe)return;
+    const{data:profiles,error:pe}=await sb.from('profiles').select('id,username,avatar_url,sex,avatar_config').in('id',ids);if(pe)return;
     await Promise.all((profiles||[]).map(async p=>{p.resolved_avatar=await resolveProfile(p)}));
     const byId=new Map((profiles||[]).map(p=>[String(p.id),p]));
     const byName=new Map((profiles||[]).filter(p=>p.username).map(p=>[p.username.trim().toLowerCase(),p]));
@@ -111,37 +109,9 @@
     const observer=new MutationObserver(schedule);roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));
     window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
   }
-  function installAvatarEditorBridge(){
-    if(page!=='avatar.html')return;
-    let starterMode=true;
-    const showStarter=async sex=>{
-      const preview=document.getElementById('avatarPreview');if(!preview)return;
-      const normalized=normalizeSex(sex),src=await loadBase(normalized);
-      preview.src=src;preview.dataset.officialStarter=normalized;
-      preview.alt=normalized==='feminino'?'Modelo oficial feminino do ZunoPlay':'Modelo oficial masculino do ZunoPlay';
-      const badge=document.querySelector('.preview-badge');if(badge)badge.innerHTML='Modelo inicial <b>'+(normalized==='feminino'?'Feminino':'Masculino')+'</b> · ZunoPlay';
-    };
-    document.addEventListener('click',event=>{
-      const sexButton=event.target.closest?.('#sex .opt');
-      if(sexButton){starterMode=true;const female=/feminino/i.test(sexButton.textContent||'');setTimeout(()=>showStarter(female?'feminino':'masculino').catch(console.warn),0);return}
-      if(event.target.closest?.('#skin .opt,#hairStyle .opt,#hair .opt,#eyes .opt,#outfit .opt,#accent .opt,#aura .opt'))starterMode=false;
-    });
-    document.addEventListener('click',async event=>{
-      const save=event.target.closest?.('#save');if(!save||!starterMode)return;
-      event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-      const sb=await waitClient();if(!sb)return;
-      const{data:{session}}=await sb.auth.getSession();if(!session?.user)return;
-      const active=[...document.querySelectorAll('#sex .opt')].find(b=>b.classList.contains('active'));
-      const sex=/feminino/i.test(active?.textContent||'')?'feminino':'masculino';
-      save.disabled=true;save.textContent='Salvando...';const msg=document.getElementById('msg');if(msg){msg.className='msg';msg.textContent=''}
-      try{const{error}=await sb.from('profiles').update({avatar_url:null,sex}).eq('id',session.user.id);if(error)throw error;await showStarter(sex);if(msg)msg.textContent='Modelo oficial ZunoPlay salvo ✓'}
-      catch(error){console.error(error);if(msg){msg.classList.add('muted-msg');msg.textContent='Não foi possível salvar o modelo oficial.'}}
-      finally{save.disabled=false;save.textContent='Salvar novo avatar'}
-    },true);
-  }
 
   window.ZunoOfficialAvatars={get:loadBase,resolve:resolveProfile,ensure:ensureForCurrentUser,isCustom:isCustomAvatar,normalizeSex,version:VERSION};
-  const start=()=>{installAvatarEditorBridge();ensureForCurrentUser().catch(console.warn);hydrateRoom().catch(console.warn)};
+  const start=()=>{ensureForCurrentUser().catch(console.warn);hydrateRoom().catch(console.warn)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.addEventListener('zuno:realtime-installed',()=>ensureForCurrentUser().catch(console.warn),{once:true});
 })();
