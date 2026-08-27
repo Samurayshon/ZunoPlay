@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v165";
+const CACHE_NAME = "zunoplay-v166";
 
 // Pré-cache apenas do shell essencial. Demais recursos entram no cache sob demanda.
 // Isso evita dezenas de requisições simultâneas durante cada atualização do PWA.
@@ -123,8 +123,8 @@ self.addEventListener("fetch", event => {
         const cached = await currentCacheMatch(request, { ignoreSearch: true });
         if (cached) return cached;
         return new Response("Recurso de interface indisponível.", {
-          status: 503,
-          headers: { "Content-Type": "text/plain; charset=utf-8" }
+          status:503,
+          headers:{"Content-Type":"text/plain; charset=utf-8"}
         });
       }
     })());
@@ -146,8 +146,8 @@ self.addEventListener("fetch", event => {
       const offlineFallback = await currentCacheMatch(request, { ignoreSearch: true });
       if (offlineFallback) return offlineFallback;
       return new Response("Recurso indisponível offline.", {
-        status: 503,
-        headers: { "Content-Type": "text/plain; charset=utf-8" }
+        status:503,
+        headers:{"Content-Type":"text/plain; charset=utf-8"}
       });
     }
   })());
