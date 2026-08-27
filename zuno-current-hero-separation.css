@@ -47,9 +47,75 @@
     position:relative!important;
     z-index:12!important;
     isolation:isolate!important;
+    overflow:visible!important;
+    margin:-20px -10px 0 0!important;
   }
   html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .profile-avatar-wrap{
     position:relative!important;
     z-index:13!important;
+    width:198px!important;
+    height:256px!important;
+    transform:translate3d(5px,-1px,0) scale(1.04)!important;
+    transform-origin:center bottom!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .profile-avatar{
+    width:198px!important;
+    height:254px!important;
+    max-width:none!important;
+    max-height:none!important;
+    object-fit:contain!important;
+    object-position:center bottom!important;
+    filter:drop-shadow(0 0 24px rgba(116,53,255,.62)) drop-shadow(0 10px 20px rgba(0,0,0,.54)) saturate(1.12) contrast(1.03)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .profile-glow{
+    inset:16px -10px 3px!important;
+    filter:blur(9px)!important;
+    background:radial-gradient(ellipse at 50% 52%,rgba(113,48,255,.58),rgba(39,34,145,.18) 48%,transparent 72%)!important;
+  }
+
+  /* Logo oficial: Zuno branco e Play em gradiente. */
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .topbar .brand{
+    color:#f7f7ff!important;
+    -webkit-text-fill-color:#f7f7ff!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .topbar .brand>span{
+    display:inline-block!important;
+    background:linear-gradient(115deg,#6ee7ff 0%,#7b72ff 34%,#b54cff 67%,#ee46cf 100%)!important;
+    -webkit-background-clip:text!important;
+    background-clip:text!important;
+    color:transparent!important;
+    -webkit-text-fill-color:transparent!important;
+  }
+
+  /* O seletor antigo :first-of-type atingia o Hero. Aqui miramos a seção que contém #friendsStrip. */
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen>.section:has(>#friendsStrip){
+    flex:1 1 auto!important;
+    min-height:160px!important;
+    max-height:none!important;
+    margin-bottom:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen>.section:has(>#friendsStrip) #friendsStrip{
+    flex:1 1 auto!important;
+    min-height:100px!important;
+    align-items:flex-start!important;
+    align-content:flex-start!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen>.section:has(>#friendsStrip) .empty-friends{
+    align-self:flex-start!important;
+    margin-top:20px!important;
+  }
+}
+
+@media (max-width:390px){
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .profile-avatar-wrap{
+    width:190px!important;
+    height:250px!important;
+    transform:translate3d(7px,0,0) scale(1.03)!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-home #homeScreen .profile-avatar{
+    width:190px!important;
+    height:248px!important;
   }
 }
