@@ -2,23 +2,23 @@
   if(window.__ZUNOPLAY_OFFICIAL_AVATARS__)return;
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
 
-  const VERSION='43';
+  const VERSION='44';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const PARTS={
-    masculino:['./assets/avatars/v37/male-1.txt','./assets/avatars/v37/male-2.txt','./assets/avatars/v37/male-3.txt'],
-    feminino:['./assets/avatars/v37/female-1.txt','./assets/avatars/v37/female-2.txt','./assets/avatars/v37/female-3.txt']
+    masculino:['./assets/avatars/v39/male-1.txt','./assets/avatars/v39/male-2.txt','./assets/avatars/v39/male-3.txt','./assets/avatars/v39/male-4.txt'],
+    feminino:['./assets/avatars/v39/female-1.txt','./assets/avatars/v39/female-2.txt','./assets/avatars/v39/female-3.txt','./assets/avatars/v39/female-4.txt']
   };
   const cache={};
 
-  function normalizeSex(value){return String(value||'').toLowerCase()==='feminino'?'feminino':'masculino'}
+  function normalizeSex(value){return String(value||'').trim().toLowerCase()==='feminino'?'feminino':'masculino'}
   function isLegacyOfficial(value){
-    const v=String(value||'');
-    return /assets\/avatars\/(?:avatar-(?:masculino|feminino)-oficial\.webp|male-v38\.part\d+\.b64)/i.test(v)||v.startsWith('data:image/webp;base64,UklGR');
+    const v=String(value||'').trim();
+    return /assets\/avatars\/(?:v(?:35|37|38|39)\/|avatar-(?:masculino|feminino)-oficial\.webp|male-v38\.part\d+\.b64)/i.test(v)||v.startsWith('data:image/webp;base64,UklGR');
   }
   function isCustomAvatar(value){
     const v=String(value||'').trim();
     if(!v||isLegacyOfficial(v))return false;
-    return v.startsWith('data:image/svg+xml')||(/^https:\/\//i.test(v)&&!isLegacyOfficial(v));
+    return v.startsWith('data:image/')||/^https:\/\//i.test(v);
   }
   async function validateImage(src){
     await new Promise((resolve,reject)=>{const img=new Image();img.onload=resolve;img.onerror=()=>reject(new Error('official_avatar_image_failed'));img.src=src});
@@ -49,19 +49,26 @@
   }
   function setImage(node,src,alt='Avatar ZunoPlay'){
     if(!node||!src)return;
-    if(node.tagName==='IMG'){if(node.src!==src)node.src=src;return}
-    const old=node.querySelector(':scope > img.zuno-official-avatar');
-    if(old){if(old.src!==src)old.src=src;return}
-    node.textContent='';
-    const img=document.createElement('img');img.className='zuno-official-avatar';img.src=src;img.alt=alt;img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block';node.appendChild(img);
+    if(node.tagName==='IMG'){if(node.src!==src)node.src=src;node.alt=alt;return}
+    let img=node.querySelector(':scope > img.zuno-official-avatar');
+    if(!img){node.textContent='';img=document.createElement('img');img.className='zuno-official-avatar';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block';node.appendChild(img)}
+    if(img.src!==src)img.src=src;
+    img.alt=alt;
   }
   function renderApp(src,sex){
     const wrap=document.getElementById('profileAvatarWrap');
-    if(wrap){
-      const current=wrap.querySelector('img.zuno-official-starter');
-      if(!current||current.src!==src)wrap.innerHTML='<div class="profile-glow"></div><img class="profile-avatar zuno-official-starter" src="'+src+'" alt="Avatar '+sex+' ZunoPlay">';
-    }
+    if(wrap){const current=wrap.querySelector('img.zuno-official-starter');if(!current||current.src!==src)wrap.innerHTML='<div class="profile-glow"></div><img class="profile-avatar zuno-official-starter" src="'+src+'" alt="Avatar '+sex+' ZunoPlay">'}
     setImage(document.getElementById('profileButton'),src,'Perfil');
+  }
+  function renderEditorStarter(src,sex){
+    if(page!=='avatar.html')return;
+    const preview=document.getElementById('avatarPreview');
+    if(!preview)return;
+    preview.src=src;
+    preview.dataset.officialStarter=sex;
+    preview.alt=sex==='feminino'?'Modelo oficial feminino do ZunoPlay':'Modelo oficial masculino do ZunoPlay';
+    const badge=document.querySelector('.preview-badge');
+    if(badge)badge.innerHTML='Modelo inicial <b>'+(sex==='feminino'?'Feminino':'Masculino')+'</b> · ZunoPlay';
   }
   function installProfileGuards(src,sex){
     if(page==='avatar.html')return;
@@ -78,7 +85,12 @@
     const{data:{session}}=await sb.auth.getSession();const user=session?.user;if(!user)return null;
     const{data:profile,error}=await sb.from('profiles').select('id,sex,avatar_url,avatar_config').eq('id',user.id).maybeSingle();if(error||!profile)return null;
     const sex=normalizeSex(profile.sex),src=await resolveProfile(profile);if(!src)return null;
-    if(page!=='avatar.html'){renderApp(src,sex);installProfileGuards(src,sex)}
+    if(profile.avatar_url&&isLegacyOfficial(profile.avatar_url)){
+      const{error:clearError}=await sb.from('profiles').update({avatar_url:null}).eq('id',user.id);
+      if(clearError)console.warn('ZunoPlay: não foi possível limpar avatar-base legado.',clearError);
+    }
+    if(page==='avatar.html'&&!profile.avatar_config&&!isCustomAvatar(profile.avatar_url))renderEditorStarter(src,sex);
+    else if(page!=='avatar.html'){renderApp(src,sex);installProfileGuards(src,sex)}
     window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src,version:VERSION,custom:!!profile.avatar_config||isCustomAvatar(profile.avatar_url)}}));
     return src;
   }
