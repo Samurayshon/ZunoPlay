@@ -58,13 +58,17 @@
   }
 
   function loadOfficialAvatars(){
-    loadScript('zunoplay-official-avatars-v42','./official-avatars.js?v=42','ZunoPlay: não foi possível carregar os avatares oficiais');
+    loadScript('zunoplay-official-avatars-v43','./official-avatars.js?v=43','ZunoPlay: não foi possível carregar os avatares oficiais');
+  }
+
+  function loadAvatarCustomizer(){
+    if(page==='avatar.html')loadScript('zunoplay-avatar-customizer-v43','./avatar-customizer.js?v=43','ZunoPlay: não foi possível carregar o sistema de personalização');
   }
 
   function loadOfficialHome(){
     if(page!=='index.html')return;
-    loadStyle('zunoplay-home-v42-style','./home-v29.css?v=42');
-    loadScript('zunoplay-home-v42-script','./home-v29.js?v=42','ZunoPlay: não foi possível carregar a Home oficial');
+    loadStyle('zunoplay-home-v43-style','./home-v29.css?v=43');
+    loadScript('zunoplay-home-v43-script','./home-v29.js?v=43','ZunoPlay: não foi possível carregar a Home oficial');
   }
 
   function installOfficialLogoStyle(){
@@ -103,13 +107,13 @@
   }
 
   function bootstrapRealtime() {
-    if (patchSupabaseFactory()) { loadRealtimeCore(); loadOfficialAvatars(); return; }
+    if (patchSupabaseFactory()) { loadRealtimeCore(); loadOfficialAvatars(); loadAvatarCustomizer(); return; }
     if (document.getElementById('zunoplay-supabase-sdk')) return;
     const sdk = document.createElement('script');
     sdk.id='zunoplay-supabase-sdk';
     sdk.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     sdk.async=true;
-    sdk.onload=()=>{if(patchSupabaseFactory()){loadRealtimeCore();loadOfficialAvatars();}};
+    sdk.onload=()=>{if(patchSupabaseFactory()){loadRealtimeCore();loadOfficialAvatars();loadAvatarCustomizer();}};
     sdk.onerror=()=>console.error('ZunoPlay: não foi possível carregar Supabase');
     document.head.appendChild(sdk);
   }
