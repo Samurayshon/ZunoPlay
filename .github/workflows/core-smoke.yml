@@ -22,13 +22,13 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done
-      - name: Validate inline game scripts
+      - name: Validate inline application scripts
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import pathlib,re,subprocess,tempfile,sys
-          files=['jogos.html','desafio.html','partida.html','reflexo.html','precisao.html','arena.html','zuno-caos.html','zuno-pulse.html','historico.html']
+          files=['index.html','login.html','cadastro.html','jogos.html','desafio.html','partida.html','reflexo.html','precisao.html','arena.html','zuno-caos.html','zuno-rush.html','zuno-pulse.html','historico.html']
           failed=False
           for name in files:
               text=pathlib.Path(name).read_text(encoding='utf-8')
@@ -51,10 +51,10 @@ jobs:
           required=(
             index.html login.html cadastro.html perfil.html avatar.html amigos.html
             conversas.html notificacoes.html comunidades.html salas.html sala.html
-            jogos.html desafio.html partida.html reflexo.html precisao.html arena.html zuno-caos.html zuno-pulse.html historico.html manifest.json sw.js nav.js
+            jogos.html desafio.html partida.html reflexo.html precisao.html arena.html zuno-caos.html zuno-rush.html zuno-pulse.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
             zuno-game-progression.js zuno-game-progression.css zuno-game-social.js zuno-game-social.css
-            zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-pulse.js
+            zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-rush.js zuno-pulse.js
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
             zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
           )
