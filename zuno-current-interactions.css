@@ -11,11 +11,109 @@ body.zuno-official-home.zuno-official-v33 .menu-card:before{pointer-events:none!
 body.zuno-official-home.zuno-official-v33 .topbar,
 body.zuno-official-home.zuno-official-v33 .menu-grid,
 body.zuno-official-home.zuno-official-v33 .z33-stat-row,
-body.zuno-official-home.zuno-official-v33 .section,
-body.zuno-official-home.zuno-official-v33 #bottomNav{position:relative;z-index:20;pointer-events:auto!important}
+body.zuno-official-home.zuno-official-v33 .section{position:relative;z-index:20;pointer-events:auto!important}
 
 body.zuno-official-home.zuno-official-v33 button,
 body.zuno-official-home.zuno-official-v33 a{touch-action:manipulation;-webkit-tap-highlight-color:transparent;pointer-events:auto}
 
 body.zuno-official-home.zuno-official-v33 .search-backdrop:not(.open){pointer-events:none!important}
 body.zuno-official-home.zuno-official-v33 .search-backdrop.open{pointer-events:auto!important}
+
+/* Home bottom navigation is a fixed shell, never part of document flow. */
+html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav{
+  position:fixed!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  align-items:center!important;
+  gap:3px!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  bottom:max(5px,env(safe-area-inset-bottom))!important;
+  width:calc(100% - 18px)!important;
+  max-width:672px!important;
+  height:64px!important;
+  min-height:64px!important;
+  margin:0!important;
+  padding:5px 7px!important;
+  box-sizing:border-box!important;
+  border:1px solid #29305a!important;
+  border-radius:19px!important;
+  background:rgba(9,12,28,.98)!important;
+  box-shadow:0 14px 42px rgba(0,0,0,.48),0 0 24px rgba(139,69,255,.11)!important;
+  backdrop-filter:blur(22px)!important;
+  -webkit-backdrop-filter:blur(22px)!important;
+  overflow:visible!important;
+  z-index:180!important;
+  pointer-events:auto!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav .nav-item{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  width:auto!important;
+  min-width:0!important;
+  height:50px!important;
+  min-height:50px!important;
+  margin:0!important;
+  padding:4px 2px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:transparent!important;
+  color:#d7d9e7!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:2px!important;
+  font-size:8.6px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  text-align:center!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav .nav-item b{
+  display:block!important;
+  margin:0!important;
+  font-size:18px!important;
+  line-height:1!important;
+  font-weight:600!important;
+  color:inherit!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav .nav-item.active{
+  border:1px solid #7e2cff!important;
+  background:linear-gradient(145deg,#2d144b,#17142d)!important;
+  color:#fff!important;
+  box-shadow:inset 0 0 18px rgba(155,61,255,.10),0 0 15px rgba(155,61,255,.13)!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav .nav-main{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  min-height:58px!important;
+  margin:-9px auto 0!important;
+  padding:0!important;
+  border:2px solid #8f68ff!important;
+  border-radius:50%!important;
+  background:linear-gradient(135deg,#843bff,#c33fff 58%,#31d3ff)!important;
+  color:#fff!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:29px!important;
+  font-weight:300!important;
+  line-height:1!important;
+  box-shadow:0 0 0 4px rgba(70,34,143,.56),0 0 22px rgba(144,48,255,.64),0 0 24px rgba(33,207,255,.30)!important;
+  transform:none!important;
+}
+
+@media(max-width:370px){
+  html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav{width:calc(100% - 12px)!important;padding-left:5px!important;padding-right:5px!important;gap:1px!important}
+  html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav .nav-item{font-size:8.2px!important}
+  html[data-zuno-interface="current"] body.zuno-official-home.zuno-official-v33 #bottomNav.bottom-nav .nav-main{width:55px!important;height:55px!important;min-width:55px!important;min-height:55px!important}
+}
