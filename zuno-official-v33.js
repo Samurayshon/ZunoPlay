@@ -14,6 +14,12 @@
     history:svg('<path d="M13 25A22 22 0 1 1 11 40" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M13 13v12H1M32 19v15l10 6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>','#21d4d7')
   };
 
+  let friendMiniSync=null;
+
+  function syncFriendMini(){
+    try{friendMiniSync?.()}catch(error){console.warn('ZunoPlay v33 friend sync',error)}
+  }
+
   function mount(){
     if(!document.body)return;
     document.body.classList.add('zuno-official-v33');
@@ -70,19 +76,21 @@
     if(friends&&onlinePill){
       let mini=onlinePill.querySelector('.z33-friend-mini');
       if(!mini){mini=document.createElement('div');mini.className='z33-friend-mini';onlinePill.appendChild(mini)}
-      const sync=()=>{
+      friendMiniSync=()=>{
         const candidates=[...friends.querySelectorAll('.friend:not(.invite)')].slice(0,3);
-        mini.innerHTML=candidates.map((friend,i)=>{
+        mini.innerHTML=candidates.map(friend=>{
           const img=friend.querySelector('img');
           const name=(friend.querySelector('.friend-name')?.textContent||'Z').trim();
           if(img?.src)return `<span style="background-image:url('${img.src.replace(/'/g,'%27')}');background-size:cover;background-position:center" title="${name.replace(/"/g,'&quot;')}"></span>`;
           return `<span title="${name.replace(/"/g,'&quot;')}">${(name[0]||'Z').toUpperCase()}</span>`;
         }).join('');
       };
-      sync();
-      new MutationObserver(sync).observe(friends,{childList:true,subtree:true,attributes:true,attributeFilter:['src']});
+      syncFriendMini();
+      setTimeout(syncFriendMini,250);
+      setTimeout(syncFriendMini,900);
     }
   }
 
+  ['zuno:presence:sync','zuno:presence:join','zuno:presence:leave'].forEach(name=>window.addEventListener(name,()=>setTimeout(syncFriendMini,0)));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
