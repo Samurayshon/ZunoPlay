@@ -3,6 +3,7 @@
   window.__ZUNO_ROOM_SESSION_GUARD__=true;
 
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  const PUBLIC_PAGES=new Set(['index.html','login.html','cadastro.html']);
   const q=new URLSearchParams(location.search);
   const roomId=q.get('room')||q.get('room_id')||q.get('id')||sessionStorage.getItem('zunoplay_room_id');
   let sb=null;
@@ -21,10 +22,32 @@
     return null;
   }
 
-  async function getUser(){
+  function loginUrl(){
+    const next=page==='index.html'?'index.html':page+location.search+location.hash;
+    return 'login.html?next='+encodeURIComponent(next);
+  }
+
+  async function validateUser(){
     if(!sb)return null;
-    const{data}=await sb.auth.getSession();
-    return data?.session?.user||null;
+    try{
+      const {data:{session},error:sessionError}=await sb.auth.getSession();
+      if(sessionError||!session?.user)return null;
+      const {data,error}=await sb.auth.getUser();
+      if(error||!data?.user){
+        await sb.auth.signOut({scope:'local'}).catch(()=>{});
+        return null;
+      }
+      return data.user;
+    }catch(_){
+      return null;
+    }
+  }
+
+  function redirectToLogin(){
+    if(PUBLIC_PAGES.has(page))return;
+    const target=loginUrl();
+    if(location.pathname.endsWith('/login.html')&&location.search.includes('next='))return;
+    location.replace(target);
   }
 
   async function leaveEveryRoom(){
@@ -37,10 +60,7 @@
   async function touchCurrentRoom(){
     if(stopped||!sb||!user||!roomId)return false;
     const{data,error}=await sb.rpc('touch_room_session',{p_room_id:roomId});
-    if(error){
-      console.warn('ZunoPlay: heartbeat da sala falhou.',error);
-      return false;
-    }
+    if(error){console.warn('ZunoPlay: heartbeat da sala falhou.',error);return false}
     if(data!==true){
       stopped=true;
       if(heartbeat)clearInterval(heartbeat);
@@ -65,15 +85,24 @@
 
   async function start(){
     sb=await waitClient();
-    if(!sb)return;
-    user=await getUser();
-    if(!user)return;
+    if(!sb){
+      if(!PUBLIC_PAGES.has(page))redirectToLogin();
+      return;
+    }
+
+    user=await validateUser();
+    if(!user){
+      sessionStorage.removeItem('zunoplay_room_id');
+      if(!PUBLIC_PAGES.has(page))redirectToLogin();
+      return;
+    }
+
+    window.dispatchEvent(new CustomEvent('zuno:auth-validated',{detail:{user_id:user.id}}));
 
     if(page!=='sala.html'){
       await leaveEveryRoom();
       return;
     }
-
     await startRoomHeartbeat();
   }
 
@@ -82,5 +111,14 @@
     if(heartbeat)clearInterval(heartbeat);
   });
 
-  start().catch(error=>console.error('Zuno room session guard',error));
+  (async()=>{
+    sb=await waitClient();
+    if(sb){
+      sb.auth.onAuthStateChange((event,session)=>{
+        if(event==='SIGNED_OUT'&&!PUBLIC_PAGES.has(page))redirectToLogin();
+        if(event==='TOKEN_REFRESHED'&&!session&&!PUBLIC_PAGES.has(page))redirectToLogin();
+      });
+    }
+    await start();
+  })().catch(error=>console.error('Zuno auth/session guard',error));
 })();
