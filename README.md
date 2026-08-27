@@ -14,7 +14,7 @@ A base do aplicativo está funcional e a preparação para produção está em a
 - Conversas e mensagens de sala via Broadcast privado
 - Salas de voz WebRTC P2P
 - Reconexão de ICE, reconexão de canal Realtime e recuperação após queda de rede
-- Cadastro com sexo Masculino/Feminino e avatares correspondentes
+- Cadastro de usuários
 - PWA com manifest, shortcuts e cache das telas essenciais
 
 ### Bloqueadores antes do lançamento público
@@ -38,7 +38,6 @@ Defina uma função antes de ativar a voz:
 
 ```js
 window.ZunoVoiceICEProvider = async ({ roomId, userId, supabase }) => {
-  // Buscar credenciais TURN temporárias em um backend autenticado.
   return {
     iceServers: [
       {
