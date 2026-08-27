@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v42";
+const CACHE_NAME = "zunoplay-v43";
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -20,6 +20,7 @@ const STATIC_FILES = [
   "./icon-512.png",
   "./nav.js",
   "./official-avatars.js",
+  "./avatar-customizer.js",
   "./assets/avatars/v37/male-1.txt",
   "./assets/avatars/v37/male-2.txt",
   "./assets/avatars/v37/male-3.txt",
