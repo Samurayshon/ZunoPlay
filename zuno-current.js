@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='150';
+  const VERSION='151';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -23,11 +23,7 @@
     const hero=document.querySelector('#homeScreen .hero');
     if(!hero||hero.dataset.zunoCurrent==='1')return;
     hero.dataset.zunoCurrent='1';
-    const kicker=node('div','zuno-v31-kicker','<i></i><span>Universo Zuno · conectado</span>');
-    hero.prepend(kicker);
-    const companion=node('div','zuno-v31-companion','<span class="zuno-v31-face"><i></i><i></i></span>');
-    companion.setAttribute('aria-hidden','true');
-    hero.appendChild(companion);
+    hero.querySelectorAll('.zuno-v31-kicker,.zuno-v31-companion').forEach(el=>el.remove());
     const menu=document.querySelector('#homeScreen .menu-grid');
     if(menu){
       menu.setAttribute('aria-label','Atalhos principais do ZunoPlay');
@@ -63,17 +59,20 @@
     chip.style.cssText='display:inline-flex;margin-bottom:8px;padding:6px 9px;border:1px solid rgba(126,141,193,.18);border-radius:999px;background:rgba(10,15,31,.62);color:#8c9bb6;font-size:8px;font-weight:900;letter-spacing:.12em';
     intro.prepend(chip);
   }
-  function syncLiveHomeLabel(){
-    if(page!=='index.html')return;
-    const label=document.querySelector('.zuno-v31-kicker span'),online=document.getElementById('onlineCount');
-    if(!label||!online)return;
-    const update=()=>{const count=Number((online.textContent||'').replace(/\D/g,''))||0;label.textContent=count>0?`Universo Zuno · ${count} amigo${count===1?'':'s'} online`:'Universo Zuno · conectado'};
-    update();
-    new MutationObserver(update).observe(online,{childList:true,characterData:true,subtree:true});
-  }
   function asset(file){return file+(file.includes('?')?'&':'?')+'v='+VERSION}
-  function injectStyle(id,file){if(document.getElementById(id))return;const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=asset(file);document.head.appendChild(link)}
-  function injectScript(id,file,errorText){if(document.getElementById(id))return;const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script)}
+  function injectStyle(id,file){
+    const href=asset(file),existing=document.getElementById(id);
+    if(existing){
+      const current=existing.getAttribute('href')||'';
+      if(!current.includes('v='+VERSION))existing.setAttribute('href',href);
+      return;
+    }
+    const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);
+  }
+  function injectScript(id,file,errorText){
+    if(document.getElementById(id))return;
+    const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script);
+  }
   function loadCurrentModules(){
     injectStyle('zunoplay-current-stage-style','./zuno-current-stage.css');
     if(page==='index.html'){
@@ -86,7 +85,7 @@
   }
   function mount(){
     applyBodyIdentity();
-    if(page==='index.html'){decorateHome();syncLiveHomeLabel()}
+    if(page==='index.html')decorateHome();
     if(page==='sala.html')decorateRoom();
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
