@@ -4,10 +4,32 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='145';
+  const ASSET_VERSION='147';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   const gamePages=['jogos.html','desafio.html','partida.html','historico.html','reflexo.html','precisao.html','arena.html','zuno-caos.html','zuno-rush.html','zuno-pulse.html'];
+
+  function installHomeBootGuard(){
+    if(page!=='index.html')return;
+    document.documentElement.dataset.zunoHomeBoot='current-only';
+    document.documentElement.dataset.zunoAvatarSystem='studio';
+    if(document.getElementById('zunoplay-home-boot-guard'))return;
+    const style=document.createElement('style');
+    style.id='zunoplay-home-boot-guard';
+    style.textContent=`
+      html[data-zuno-home-boot="current-only"]:not([data-zuno-home-current-ready="1"]) #homeScreen,
+      html[data-zuno-home-boot="current-only"]:not([data-zuno-home-current-ready="1"]) #bottomNav{
+        visibility:hidden!important;pointer-events:none!important
+      }
+      html[data-zuno-avatar-system="studio"] #profileAvatarWrap>:not(.profile-glow):not([data-zuno-studio-avatar="1"]){display:none!important}
+      html[data-zuno-avatar-system="studio"] #profileButton>:not([data-zuno-studio-avatar="1"]){display:none!important}
+      html[data-zuno-avatar-system="studio"]:not([data-zuno-avatar-home-ready="1"]) #profileAvatarWrap,
+      html[data-zuno-avatar-system="studio"]:not([data-zuno-avatar-home-ready="1"]) #profileButton{
+        visibility:hidden!important
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   function patchSupabaseFactory(){
     if(!window.supabase?.createClient)return false;
@@ -134,6 +156,7 @@
     document.head.appendChild(sdk);
   }
 
+  installHomeBootGuard();
   loadDesignSystem();
   loadUnifiedIdentity();
   loadNavigation();
