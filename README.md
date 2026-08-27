@@ -13,7 +13,7 @@ A base do aplicativo está funcional e passa por estabilização para produção
 - Usernames case-insensitive protegidos por índice único; não há duplicados legados no banco atual
 - Não há perfis órfãos no banco atual
 - Realtime global com Presence, Broadcast e Postgres Changes separados por finalidade
-- Tópicos privados de sala autorizados para mensagens, voz, reações/Pulse, presentes e convites de jogo
+- Tópicos privados de sala autorizados para mensagens, voz, reações/Pulse e presentes
 - Presence reservado para presença/entrada/saída; estados rápidos de voz (`speaking`, `listening`, `muted`) usam Broadcast
 - Conversas e mensagens de sala via canais privados
 - Integridade de mensagens e notificações protegida: o cliente só pode alterar estado de leitura
@@ -23,6 +23,7 @@ A base do aplicativo está funcional e passa por estabilização para produção
 - Limpeza de assentos abandonados integrada ao fluxo de entrada
 - Cadastro de usuários
 - PWA com manifest, shortcuts e cache das telas essenciais
+- Catálogo de Jogos reiniciado: **Zuno Stack é o único jogo ativo atualmente**
 
 ### Bloqueadores externos antes do lançamento público
 
@@ -33,7 +34,8 @@ A base do aplicativo está funcional e passa por estabilização para produção
 
 ### Trabalho de produto ainda pendente
 
-- Multiplayer sincronizado de verdade (estado da partida, perguntas, cronômetro e placar compartilhados)
+- Definir e construir o novo **jogo carro-chefe do ZunoPlay**
+- Evoluir o Zuno Stack de Alpha para cooperativo multiplayer real
 - Loja/Zuno Coins com operações econômicas exclusivamente server-side
 - Conquistas e eventos
 - Consolidação dos módulos da sala e cobertura automatizada de regressão
