@@ -29,14 +29,11 @@
     const hero=document.querySelector('#homeScreen .hero');
     if(!hero||hero.dataset.zunoV31==='1')return;
     hero.dataset.zunoV31='1';
-
     const kicker=node('div','zuno-v31-kicker','<i></i><span>Universo Zuno · conectado</span>');
     hero.prepend(kicker);
-
     const companion=node('div','zuno-v31-companion','<span class="zuno-v31-face"><i></i><i></i></span>');
     companion.setAttribute('aria-hidden','true');
     hero.appendChild(companion);
-
     const menu=document.querySelector('#homeScreen .menu-grid');
     if(menu){
       menu.setAttribute('aria-label','Atalhos principais do ZunoPlay');
@@ -45,7 +42,6 @@
         card.setAttribute('aria-label',(card.querySelector('h2')?.textContent||'Atalho')+' · abrir');
       });
     }
-
     const aura=document.getElementById('auraEmblem');
     if(aura)aura.setAttribute('aria-label','Aura de Zuno');
     const avatar=document.getElementById('profileAvatarWrap');
@@ -100,6 +96,20 @@
     new MutationObserver(update).observe(online,{childList:true,characterData:true,subtree:true});
   }
 
+  function loadV32(){
+    if(!document.getElementById('zunoplay-official-v32-style')){
+      const link=document.createElement('link');
+      link.id='zunoplay-official-v32-style';link.rel='stylesheet';link.href='./zuno-official-v32.css?v=137';
+      document.head.appendChild(link);
+    }
+    if(!document.getElementById('zunoplay-official-v32-script')){
+      const script=document.createElement('script');
+      script.id='zunoplay-official-v32-script';script.src='./zuno-official-v32.js?v=137';script.async=true;
+      script.onerror=()=>console.error('ZunoPlay: interface oficial v32 indisponível');
+      document.head.appendChild(script);
+    }
+  }
+
   function mount(){
     applyBodyIdentity();
     if(page==='index.html'){decorateHome();syncLiveHomeLabel()}
@@ -107,6 +117,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
+    loadV32();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
