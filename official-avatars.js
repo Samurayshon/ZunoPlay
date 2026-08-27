@@ -38,6 +38,18 @@
     const mini=document.getElementById('profileButton');
     if(mini)mini.innerHTML='<img src="'+src+'" alt="Perfil">';
   }
+  function renderEditorStarter(src,sex){
+    if((location.pathname.split('/').pop()||'').toLowerCase()!=='avatar.html')return;
+    const preview=document.getElementById('avatarPreview');
+    if(!preview)return;
+    preview.src=src;
+    preview.dataset.officialStarter=sex;
+    preview.alt=sex==='feminino'?'Modelo inicial feminino do ZunoPlay':'Modelo inicial masculino do ZunoPlay';
+    const badge=document.querySelector('.preview-badge');
+    if(badge)badge.innerHTML='Modelo inicial <b>'+(sex==='feminino'?'Feminino':'Masculino')+'</b> · ZunoPlay';
+    const legacy=document.getElementById('legacyNote');
+    if(legacy)legacy.style.display='none';
+  }
   async function ensureForCurrentUser(){
     const sb=await waitClient();
     if(!sb)return null;
@@ -54,6 +66,7 @@
       if(updateError)console.warn('ZunoPlay: não foi possível definir avatar inicial oficial.',updateError);
     }
     renderHome(base);
+    setTimeout(()=>renderEditorStarter(base,sex),350);
     window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src:base}}));
     return base;
   }
