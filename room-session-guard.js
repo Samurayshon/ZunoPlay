@@ -3,7 +3,7 @@
   window.__ZUNO_ROOM_SESSION_GUARD__=true;
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const PUBLIC_PAGES=new Set(['index.html','login.html','cadastro.html']);
-  const ROOM_GAME_PAGES=new Set(['jogos.html','desafio.html','partida.html']);
+  const ROOM_GAME_PAGES=new Set(['jogos.html','desafio.html','partida.html','reflexo.html','precisao.html','arena.html']);
   const q=new URLSearchParams(location.search);
   const fromRoom=q.get('from')==='sala';
   const roomId=q.get('room')||q.get('room_id')||q.get('id')||sessionStorage.getItem('zuno_return_room_id')||sessionStorage.getItem('zunoplay_room_id');
