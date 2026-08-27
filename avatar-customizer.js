@@ -1,10 +1,11 @@
 (()=>{
   if(window.__ZUNOPLAY_AVATAR_CUSTOMIZER__)return;
   window.__ZUNOPLAY_AVATAR_CUSTOMIZER__=true;
-  const VERSION='46';
+  const VERSION='51';
   if((location.pathname.split('/').pop()||'').toLowerCase()!=='avatar.html')return;
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const q=s=>document.querySelector(s);
+  let restoring=false;
 
   function decodeSvg(src){const value=String(src||'');if(!value.startsWith('data:image/svg+xml'))return '';try{return decodeURIComponent(value.split(',').slice(1).join(','))}catch(_){return ''}}
   function getAttr(svg,key){return svg.match(new RegExp(`data-zuno-${key}="([^"]+)"`))?.[1]||null}
@@ -32,30 +33,35 @@
     if(cfg.eyes&&validColor('eyes',cfg.eyes))state.eyes=cfg.eyes;
     if(cfg.accent&&validColor('accent',cfg.accent))state.accent=cfg.accent;
     if(cfg.hairStyle&&typeof hairStyles!=='undefined'&&hairStyles[state.sex]?.some(x=>x[0]===cfg.hairStyle))state.hairStyle=cfg.hairStyle;
+    else if(typeof hairStyles!=='undefined')state.hairStyle=hairStyles[state.sex]?.[0]?.[0]||state.hairStyle;
     if(cfg.outfit&&typeof outfits!=='undefined'&&outfits.some(x=>x[0]===cfg.outfit))state.outfit=cfg.outfit;
     if(cfg.aura&&typeof auras!=='undefined'&&auras.some(x=>x[0]===cfg.aura))state.aura=cfg.aura;
     if(typeof renderAll==='function')renderAll();
     return true;
   }
   async function restoreConfig(){
-    const sb=await client();if(!sb)return false;
-    const {data:{session}}=await sb.auth.getSession();if(!session?.user)return false;
-    const {data,error}=await sb.from('profiles').select('avatar_config').eq('id',session.user.id).maybeSingle();
-    if(error||!data?.avatar_config)return false;
-    return applyConfig(data.avatar_config);
+    if(restoring)return false;restoring=true;
+    try{
+      const sb=await client();if(!sb)return false;
+      const {data:{user},error:userError}=await sb.auth.getUser();if(userError||!user)return false;
+      const {data,error}=await sb.from('profiles').select('avatar_config').eq('id',user.id).maybeSingle();
+      if(error||!data?.avatar_config)return false;
+      return applyConfig(data.avatar_config);
+    }finally{restoring=false}
   }
   async function persistConfig(){
-    await sleep(80);
-    const cfg=configFromPreview();if(!cfg)return;
-    const sb=await client();if(!sb)return;
-    const {data:{session}}=await sb.auth.getSession();if(!session?.user)return;
-    const {error}=await sb.from('profiles').update({avatar_config:cfg}).eq('id',session.user.id);
-    if(error)console.warn('ZunoPlay avatar_config',error);else window.dispatchEvent(new CustomEvent('zuno:avatar-config-saved',{detail:cfg}));
+    const cfg=configFromPreview();if(!cfg)throw new Error('Configuração do avatar inválida.');
+    const sb=await client();if(!sb)throw new Error('Conexão indisponível.');
+    const {data:{user},error:userError}=await sb.auth.getUser();if(userError||!user)throw new Error('Sessão inválida.');
+    const {error}=await sb.from('profiles').update({avatar_config:cfg}).eq('id',user.id);
+    if(error)throw error;
+    window.dispatchEvent(new CustomEvent('zuno:avatar-config-saved',{detail:cfg}));
+    return cfg;
   }
   function boot(){
     installInfo();
-    [250,600,1200].forEach(ms=>setTimeout(()=>restoreConfig().catch(console.warn),ms));
-    const save=document.getElementById('save');if(save)save.addEventListener('click',()=>persistConfig().catch(console.warn));
+    restoreConfig().catch(console.warn);
+    window.addEventListener('zuno:avatar-saved',()=>persistConfig().catch(error=>console.error('ZunoPlay avatar_config',error)));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   window.ZunoAvatarCustomizer={version:VERSION,configFromPreview,persistConfig,restoreConfig,applyConfig};
