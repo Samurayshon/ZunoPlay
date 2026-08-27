@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='142';
+  const VERSION='145';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -61,6 +61,7 @@
       injectStyle('zunoplay-current-home-style','./zuno-current-home.css');
       injectScript('zunoplay-current-home-script','./zuno-current-home.js','ZunoPlay: Home atual indisponível');
       injectStyle('zunoplay-current-home-mobile-style','./zuno-current-home-mobile.css');
+      injectStyle('zunoplay-current-home-stats-style','./zuno-current-home-stats.css');
       injectStyle('zunoplay-current-interactions-style','./zuno-current-interactions.css');
       injectScript('zunoplay-current-interactions-script','./zuno-current-interactions.js','ZunoPlay: interações da Home indisponíveis');
     }

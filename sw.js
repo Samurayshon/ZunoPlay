@@ -1,11 +1,11 @@
-const CACHE_NAME = "zunoplay-v144";
+const CACHE_NAME = "zunoplay-v145";
 const STATIC_FILES = [
   "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./partida.html","./reflexo.html","./precisao.html","./arena.html","./zuno-caos.html","./zuno-rush.html","./zuno-pulse.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js",
   "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js",
   "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-game-social.css","./zuno-game-social.js","./zuno-mini-games.css","./zuno-mini-games.js","./zuno-caos.js","./zuno-rush.js","./zuno-pulse.js",
   "./zuno-room-experience.css","./zuno-room-experience.js","./zuno-room-fit.css","./zuno-room-extras.css","./zuno-voice-feedback.css","./zuno-voice-feedback.js","./zuno-room-profile-card.css","./zuno-room-profile-card.js","./zuno-directed-gifts.css","./zuno-directed-gifts.js","./zuno-room-games.css","./zuno-room-games.js","./zuno-room-game-return.js","./zuno-room-moderation.css","./zuno-room-moderation.js",
   "./avatar-asset-registry.js","./avatar-renderer.js","./avatar-preview-sync.js","./avatar-stage-controls.js","./avatar-home-sync.js","./avatar-surface-sync.js",
-  "./zuno-current-home-base.css","./zuno-current-home-layout.css","./zuno-current-base.css","./zuno-current.js","./zuno-current-stage.css","./zuno-current-stage.js","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-interactions.css","./zuno-current-interactions.js",
+  "./zuno-current-home-base.css","./zuno-current-home-layout.css","./zuno-current-base.css","./zuno-current.js","./zuno-current-stage.css","./zuno-current-stage.js","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-current-interactions.js",
   "./realtime-global.js","./presenca-sala.js","./voz-sala.js","./room-session-guard.js"
 ];
 
