@@ -1,0 +1,63 @@
+import * as THREE from 'https://esm.sh/three@0.180.0';
+import {GLTFLoader} from 'https://esm.sh/three@0.180.0/examples/jsm/loaders/GLTFLoader.js';
+
+const sb=window.supabase.createClient('https://rliymfbbhqoejgfvsbuu.supabase.co','sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0');
+const MODEL='https://raw.githubusercontent.com/nirholas/three.ws/main/public/avatars/parametric-base.glb';
+const $=id=>document.getElementById(id);
+const COLORS={skin:['#f4d1b8','#e7b18b','#cb8b63','#a76849','#79503a','#4d3226'],accent:['#9b5cff','#6366f1','#38bdf8','#22d3ee','#ec4899','#f59e0b']};
+const OPT={body:[['male','Masculino'],['female','Feminino'],['slim','Slim'],['athletic','Atlético']],top:[['tee','Camiseta'],['hoodie','Hoodie'],['jacket','Jaqueta']],bottom:[['shorts','Short'],['jeans','Jeans'],['cargo','Cargo']],shoes:[['sneaker','Tênis'],['high','Cano alto'],['boot','Bota']],head:[['none','Nenhum'],['cap','Boné'],['headphones','Fones']],face:[['none','Nenhum'],['glasses','Óculos'],['mask','Máscara']],neck:[['none','Nenhum'],['chain','Corrente']],back:[['none','Nenhum'],['backpack','Mochila']]};
+const state={version:9,style:'zuno-glb-parametric',body:'male',skin:'#e7b18b',accent:'#9b5cff',top:'tee',bottom:'shorts',shoes:'sneaker',head:'none',face:'none',neck:'none',back:'none',morphs:{}};
+let renderer,scene,camera,pivot,wardrobe,model,morphs=[],drag=false,lastX=0,targetRot=0,currentRot=0;
+let metrics={h:3.45,minY:0,maxY:3.45};
+
+function init(){
+  const v=$('viewer');scene=new THREE.Scene();scene.background=new THREE.Color(0xdce8f7);
+  camera=new THREE.PerspectiveCamera(30,v.clientWidth/v.clientHeight,.01,100);camera.position.set(0,1.72,5.65);camera.lookAt(0,1.72,0);
+  renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(v.clientWidth,v.clientHeight);renderer.shadowMap.enabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;v.replaceChildren(renderer.domElement);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x64748b,2.15));const k=new THREE.DirectionalLight(0xffffff,3.1);k.position.set(3,5,4);k.castShadow=true;scene.add(k);const rim=new THREE.DirectionalLight(0x9b5cff,1.65);rim.position.set(-4,3,-2);scene.add(rim);
+  const g=new THREE.Mesh(new THREE.CircleGeometry(2.15,64),new THREE.MeshStandardMaterial({color:0xd7e4f5,roughness:1}));g.rotation.x=-Math.PI/2;g.receiveShadow=true;scene.add(g);
+  pivot=new THREE.Group();wardrobe=new THREE.Group();pivot.add(wardrobe);scene.add(pivot);
+  v.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;v.setPointerCapture?.(e.pointerId)});v.addEventListener('pointermove',e=>{if(!drag)return;targetRot+=(e.clientX-lastX)*.012;lastX=e.clientX});v.addEventListener('pointerup',()=>drag=false);v.addEventListener('pointercancel',()=>drag=false);
+  addEventListener('resize',()=>{camera.aspect=v.clientWidth/v.clientHeight;camera.updateProjectionMatrix();renderer.setSize(v.clientWidth,v.clientHeight)});loop();
+}
+function loop(){requestAnimationFrame(loop);currentRot+=(targetRot-currentRot)*.12;pivot.rotation.y=currentRot;renderer.render(scene,camera)}
+function fit(root){
+  const b=new THREE.Box3().setFromObject(root),s=new THREE.Vector3(),c=new THREE.Vector3();b.getSize(s);const sc=3.45/Math.max(s.y,.001);root.scale.setScalar(sc);root.updateMatrixWorld(true);
+  let b2=new THREE.Box3().setFromObject(root);root.position.y-=b2.min.y;root.updateMatrixWorld(true);b2=new THREE.Box3().setFromObject(root);b2.getCenter(c);root.position.x-=c.x;root.position.z-=c.z;root.updateMatrixWorld(true);
+  const bf=new THREE.Box3().setFromObject(root),sz=new THREE.Vector3();bf.getSize(sz);metrics={h:sz.y,minY:bf.min.y,maxY:bf.max.y};
+}
+function scanMorphs(){morphs=[];model.traverse(o=>{if(!o.isMesh||!o.morphTargetDictionary||!o.morphTargetInfluences)return;for(const name of Object.keys(o.morphTargetDictionary)){let m=morphs.find(x=>x.name===name);if(!m){m={name,targets:[]};morphs.push(m)}m.targets.push({mesh:o,index:o.morphTargetDictionary[name]});}})}
+function setMorphs(){for(const m of morphs){const v=Number(state.morphs[m.name]||0);m.targets.forEach(t=>t.mesh.morphTargetInfluences[t.index]=v)}}
+function bodyPreset(){if(!model)return;let sx=1,sz=1;if(state.body==='athletic'){sx=1.06;sz=1.035}else if(state.body==='slim'){sx=.95;sz=.97}else if(state.body==='female'){sx=.98;sz=1}pivot.scale.set(sx,1,sz);const keys={female:['female','gender'],male:['male','gender'],slim:['thin','weight'],athletic:['muscle','athletic']};for(const m of morphs){const n=m.name.toLowerCase();state.morphs[m.name]=(keys[state.body]||[]).some(k=>n.includes(k))?.65:0}setMorphs();clothes();}
+function recolorSkin(){if(!model)return;model.traverse(o=>{if(!o.isMesh)return;const arr=Array.isArray(o.material)?o.material:[o.material];arr.forEach((mat,i)=>{if(!mat?.color)return;const n=(mat.name||o.name||'').toLowerCase();if(!/skin|body|human|base/.test(n))return;const c=mat.clone();c.color.set(state.skin);c.needsUpdate=true;if(Array.isArray(o.material)){const a=[...o.material];a[i]=c;o.material=a}else o.material=c;});});}
+function add(geo,color,pos,scale=[1,1,1],rot=[0,0,0],metal=.05){const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,roughness:.68,metalness:metal}));m.position.set(...pos);m.scale.set(...scale);m.rotation.set(...rot);m.castShadow=true;wardrobe.add(m);return m}
+function clearWardrobe(){while(wardrobe.children.length){const o=wardrobe.children[0];wardrobe.remove(o);o.geometry?.dispose?.();if(Array.isArray(o.material))o.material.forEach(m=>m.dispose?.());else o.material?.dispose?.();}}
+function clothes(){
+  clearWardrobe();if(!model)return;const H=metrics.h||3.45,a=state.accent;
+  const torsoY=metrics.minY+H*.665, torsoH=H*.235, topR=H*.112, botR=H*.098, torsoDepth=.54;
+  const waistY=metrics.minY+H*.455, bottomH=state.bottom==='shorts'?H*.16:H*.27, bottomR=H*.095;
+  const footY=metrics.minY+H*.045, footX=H*.073;
+  if(state.top==='tee')add(new THREE.CylinderGeometry(topR,botR,torsoH,48),0xf6f6f6,[0,torsoY,0],[1,1,torsoDepth]);
+  if(state.top==='hoodie'){add(new THREE.CylinderGeometry(topR*1.06,botR*1.05,torsoH*1.07,48),0x20232c,[0,torsoY,0],[1,1,torsoDepth*1.05]);add(new THREE.TorusGeometry(H*.066,H*.014,12,36,Math.PI),a,[0,torsoY+torsoH*.49,-H*.052],[1,1,1],[0,0,Math.PI]);}
+  if(state.top==='jacket'){add(new THREE.CylinderGeometry(topR*1.08,botR*1.06,torsoH*1.06,48),0x161a22,[0,torsoY,0],[1,1,torsoDepth*1.06]);add(new THREE.BoxGeometry(H*.012,torsoH*.82,H*.012),a,[0,torsoY,H*.055]);}
+  const bottomColor=state.bottom==='jeans'?0x283544:state.bottom==='cargo'?0x1b2028:0x282b32;
+  add(new THREE.CylinderGeometry(bottomR,bottomR*.97,bottomH,48),bottomColor,[0,waistY,0],[1,1,.66]);
+  const shoeH=state.shoes==='boot'?H*.105:H*.072,shoeW=H*.105,shoeD=H*.17,shoeColor=state.shoes==='high'?0x171922:0xf0f1f2;const shoeGeo=new THREE.BoxGeometry(shoeW,shoeH,shoeD);add(shoeGeo,shoeColor,[-footX,footY+shoeH*.5,H*.035]);add(shoeGeo,shoeColor,[footX,footY+shoeH*.5,H*.035]);
+  const headY=metrics.minY+H*.91;
+  if(state.head==='cap'){add(new THREE.SphereGeometry(H*.105,32,16,0,Math.PI*2,0,Math.PI/2),0x171a22,[0,headY,0],[1,1,.88]);add(new THREE.BoxGeometry(H*.12,H*.012,H*.085),0x20232c,[0,headY-H*.018,H*.085]);}
+  if(state.head==='headphones')add(new THREE.TorusGeometry(H*.118,H*.018,16,48,Math.PI),0x191d27,[0,headY-H*.035,0],[1,1,1],[0,0,Math.PI],.3);
+  const faceY=metrics.minY+H*.86, faceZ=H*.085;
+  if(state.face==='glasses'){add(new THREE.TorusGeometry(H*.038,H*.0045,10,24),0xd8dbe2,[-H*.042,faceY,faceZ],[1,.72,1]);add(new THREE.TorusGeometry(H*.038,H*.0045,10,24),0xd8dbe2,[H*.042,faceY,faceZ],[1,.72,1]);add(new THREE.BoxGeometry(H*.028,H*.004,H*.006),0xd8dbe2,[0,faceY,faceZ]);}
+  if(state.face==='mask')add(new THREE.BoxGeometry(H*.13,H*.065,H*.035),0x151922,[0,metrics.minY+H*.815,faceZ]);
+  if(state.neck==='chain')add(new THREE.TorusGeometry(H*.057,H*.004,10,40),0xcfd3da,[0,metrics.minY+H*.77,H*.06],[1,.75,1],[Math.PI/2,0,0],.8);
+  if(state.back==='backpack')add(new THREE.BoxGeometry(H*.18,H*.245,H*.08),0x191d26,[0,metrics.minY+H*.63,-H*.12]);
+}
+function buttonGroup(title,key,list){const d=document.createElement('div');d.className='group';d.innerHTML=`<h3>${title}</h3><div class="options"></div>`;const box=d.lastElementChild;for(const [v,l] of list){const b=document.createElement('button');b.className='opt'+(state[key]===v?' active':'');b.textContent=l;b.onclick=()=>{state[key]=v;ui();key==='body'?bodyPreset():clothes()};box.appendChild(b)}return d}
+function colorGroup(title,key,list){const d=document.createElement('div');d.className='group';d.innerHTML=`<h3>${title}</h3><div class="options colors"></div>`;const box=d.lastElementChild;for(const c of list){const b=document.createElement('button');b.className='color'+(state[key]===c?' active':'');b.innerHTML=`<i style="background:${c}"></i>`;b.onclick=()=>{state[key]=c;ui();key==='skin'?recolorSkin():clothes()};box.appendChild(b)}return d}
+function ui(){const p=$('panels');p.innerHTML='';p.append(buttonGroup('Tipo de corpo','body',OPT.body),colorGroup('Tom de pele','skin',COLORS.skin),buttonGroup('Parte de cima','top',OPT.top),buttonGroup('Parte de baixo','bottom',OPT.bottom),buttonGroup('Calçados','shoes',OPT.shoes),buttonGroup('Cabeça','head',OPT.head),buttonGroup('Rosto','face',OPT.face),buttonGroup('Pescoço','neck',OPT.neck),buttonGroup('Costas','back',OPT.back),colorGroup('Cor Zuno','accent',COLORS.accent));}
+function morphUI(){const r=$('morphPanel');r.innerHTML='';const list=morphs.filter(m=>/height|weight|muscle|waist|hip|head|face|nose|mouth|eye|chin|cheek/i.test(m.name)).slice(0,12);if(!list.length){r.innerHTML='<span style="font-size:10px;color:#8795aa">A base não expôs controles adicionais.</span>';return}for(const m of list){const row=document.createElement('label');row.className='sliderRow';row.innerHTML=`<span>${m.name}</span><input type="range" min="-1" max="1" step="0.05" value="${state.morphs[m.name]||0}">`;row.querySelector('input').oninput=e=>{state.morphs[m.name]=Number(e.target.value);setMorphs();clothes()};r.appendChild(row)}}
+async function load(){const s=$('modelStatus');try{const gltf=await new GLTFLoader().loadAsync(MODEL);model=gltf.scene;model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});fit(model);pivot.add(model);scanMorphs();recolorSkin();bodyPreset();morphUI();s.textContent=`Base humana GLB carregada · ${morphs.length} morph targets · roupas ajustadas ao corpo`;s.className='status ok';}catch(e){console.error(e);s.textContent='Base GLB indisponível. Abra novamente com internet para carregar o modelo profissional.';s.className='status err';}}
+async function restore(){const {data:{user}}=await sb.auth.getUser();if(!user)return;const {data}=await sb.from('profiles').select('avatar_config').eq('id',user.id).maybeSingle();if(data?.avatar_config?.style==='zuno-glb-parametric'){Object.assign(state,data.avatar_config);state.version=9;ui();if(model){recolorSkin();bodyPreset();setMorphs();morphUI()}}}
+async function save(){const b=$('save'),msg=$('msg');b.disabled=true;msg.className='msg';msg.textContent='Salvando...';try{const {data:{user},error:u}=await sb.auth.getUser();if(u||!user)throw new Error('Sessão inválida');renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png',.92);const cfg={...state,updatedAt:new Date().toISOString(),modelSource:'MakeHuman MPFB2 CC0 via three.ws'};const {error}=await sb.from('profiles').update({avatar_config:cfg,avatar_url:png,sex:state.body==='female'?'feminino':'masculino'}).eq('id',user.id);if(error)throw error;msg.textContent='Personagem 3D salvo! ✅';}catch(e){msg.className='msg err';msg.textContent='Erro: '+(e.message||'não foi possível salvar')}finally{b.disabled=false}}
+
+init();ui();restore().catch(console.warn);load().then(()=>restore()).catch(console.warn);$('save').onclick=save;
