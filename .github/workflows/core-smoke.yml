@@ -31,6 +31,7 @@ jobs:
             conversas.html notificacoes.html comunidades.html salas.html sala.html
             jogos.html desafio.html partida.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
+            zuno-game-progression.js zuno-game-progression.css
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
             zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
           )
