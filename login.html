@@ -1,1 +1,116 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Entrar - ZunoPlay</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}body{min-height:100vh;background:radial-gradient(circle at 20% 20%,#25145c 0%,transparent 35%),radial-gradient(circle at 80% 80%,#102d59 0%,transparent 35%),#070811;color:#fff}.container{width:100%;max-width:480px;min-height:100vh;margin:auto;padding:25px;display:flex;flex-direction:column;justify-content:center}.logo{text-align:center;margin-bottom:30px;font-size:38px;font-weight:800}.logo span{color:#8b5cf6}.card{background:rgba(20,21,35,.9);border:1px solid rgba(139,92,246,.2);border-radius:24px;padding:25px}h1{font-size:25px;margin-bottom:8px}.description{color:#9293a3;font-size:14px;margin-bottom:25px}label{display:block;margin-top:16px;margin-bottom:7px;font-size:13px;color:#c9c9d4}input{width:100%;padding:15px;border-radius:12px;border:1px solid #303145;background:#11121e;color:#fff;outline:none;font-size:15px}input:focus{border-color:#8b5cf6}form button{width:100%;padding:16px;margin-top:25px;border:none;border-radius:14px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:16px;font-weight:bold;cursor:pointer}form button:disabled{opacity:.6;cursor:not-allowed}.link{display:block;text-align:center;margin-top:18px;color:#999aaa;text-decoration:none;font-size:14px}.message{display:none;margin-top:18px;padding:12px;border-radius:10px;font-size:13px;text-align:center}.success{display:block;background:rgba(34,197,94,.12);color:#86efac}.error{display:block;background:rgba(239,68,68,.12);color:#fca5a5}</style></head><body><div class="container"><div class="logo">Zuno<span>Play</span></div><div class="card"><h1>Bem-vindo de volta</h1><p class="description">Entre na sua conta para continuar.</p><form id="loginForm"><label for="email">E-mail</label><input type="email" id="email" placeholder="seu@email.com" autocomplete="email" required><label for="password">Senha</label><input type="password" id="password" placeholder="Sua senha" autocomplete="current-password" required><button type="submit" id="loginButton">Entrar</button></form><div id="message" class="message"></div><a href="cadastro.html" class="link">Ainda não tenho uma conta</a><a href="index.html" class="link">← Voltar</a></div></div><script>const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co',SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0',supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),form=document.getElementById('loginForm'),button=document.getElementById('loginButton'),message=document.getElementById('message');function safeNext(){const raw=new URLSearchParams(location.search).get('next')||'index.html';return /^[a-z0-9_-]+\.html(?:[?#].*)?$/i.test(raw)?raw:'index.html'}function show(type,text){message.className='message '+type;message.textContent=text}async function validExistingSession(){try{const{data:{session}}=await supabaseClient.auth.getSession();if(!session)return false;const{data,error}=await supabaseClient.auth.getUser();return !error&&!!data?.user}catch(_){return false}}(async()=>{if(await validExistingSession())location.replace(safeNext())})();form.addEventListener('submit',async event=>{event.preventDefault();const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value;message.className='message';message.textContent='';button.disabled=true;button.textContent='Entrando...';try{const{data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;if(!data.session?.user)throw new Error('Não foi possível iniciar a sessão.');const{data:verified,error:verifyError}=await supabaseClient.auth.getUser();if(verifyError||!verified?.user)throw new Error('A sessão não pôde ser validada.');show('success','Login realizado! Entrando no ZunoPlay...');location.replace(safeNext())}catch(error){console.error('Erro no login:',error);const raw=String(error?.message||'');show('error',/Invalid login credentials/i.test(raw)?'E-mail ou senha incorretos.':/Email not confirmed/i.test(raw)?'Confirme seu e-mail antes de entrar.':'Não foi possível entrar. Tente novamente.');button.disabled=false;button.textContent='Entrar'}});</script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Entrar - ZunoPlay</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{min-height:100vh;background:radial-gradient(circle at 20% 20%,#25145c 0%,transparent 35%),radial-gradient(circle at 80% 80%,#102d59 0%,transparent 35%),#070811;color:#fff}
+    .container{width:100%;max-width:480px;min-height:100vh;margin:auto;padding:25px;display:flex;flex-direction:column;justify-content:center}
+    .logo{text-align:center;margin-bottom:30px;font-size:38px;font-weight:800}
+    .logo span{color:#8b5cf6}
+    .card{background:rgba(20,21,35,.9);border:1px solid rgba(139,92,246,.2);border-radius:24px;padding:25px}
+    h1{font-size:25px;margin-bottom:8px}
+    .description{color:#9293a3;font-size:14px;margin-bottom:25px}
+    label{display:block;margin-top:16px;margin-bottom:7px;font-size:13px;color:#c9c9d4}
+    input{width:100%;padding:15px;border-radius:12px;border:1px solid #303145;background:#11121e;color:#fff;outline:none;font-size:15px}
+    input:focus{border-color:#8b5cf6}
+    form button{width:100%;padding:16px;margin-top:25px;border:none;border-radius:14px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
+    form button:disabled{opacity:.6;cursor:not-allowed}
+    .link{display:block;text-align:center;margin-top:18px;color:#999aaa;text-decoration:none;font-size:14px}
+    .message{display:none;margin-top:18px;padding:12px;border-radius:10px;font-size:13px;text-align:center}
+    .success{display:block;background:rgba(34,197,94,.12);color:#86efac}
+    .error{display:block;background:rgba(239,68,68,.12);color:#fca5a5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Zuno<span>Play</span></div>
+    <div class="card">
+      <h1>Bem-vindo de volta</h1>
+      <p class="description">Entre na sua conta para continuar.</p>
+      <form id="loginForm">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" required>
+        <label for="password">Senha</label>
+        <input type="password" id="password" placeholder="Sua senha" autocomplete="current-password" required>
+        <button type="submit" id="loginButton">Entrar</button>
+      </form>
+      <div id="message" class="message"></div>
+      <a href="cadastro.html" class="link">Ainda não tenho uma conta</a>
+      <a href="index.html" class="link">← Voltar</a>
+    </div>
+  </div>
+  <script>
+    const form=document.getElementById('loginForm');
+    const button=document.getElementById('loginButton');
+    const message=document.getElementById('message');
+
+    function safeNext(){
+      const raw=new URLSearchParams(location.search).get('next')||'index.html';
+      return /^[a-z0-9_-]+\.html(?:[?#].*)?$/i.test(raw)?raw:'index.html';
+    }
+
+    function show(type,text){
+      message.className='message '+type;
+      message.textContent=text;
+    }
+
+    if(!window.supabase?.createClient){
+      show('error','O serviço de login não carregou. Verifique sua conexão e recarregue a página.');
+      button.disabled=true;
+    }else{
+      const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
+      const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
+      const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+      // Para navegação do próprio cliente, a sessão persistida é suficiente.
+      // A autorização real continua sendo aplicada pelo Supabase/RLS nas consultas.
+      (async()=>{
+        try{
+          const {data,error}=await supabaseClient.auth.getSession();
+          if(!error&&data?.session?.user) location.replace(safeNext());
+        }catch(error){
+          console.warn('Não foi possível restaurar a sessão:',error);
+        }
+      })();
+
+      form.addEventListener('submit',async event=>{
+        event.preventDefault();
+        const email=document.getElementById('email').value.trim();
+        const password=document.getElementById('password').value;
+        message.className='message';
+        message.textContent='';
+        button.disabled=true;
+        button.textContent='Entrando...';
+
+        try{
+          const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+          if(error) throw error;
+          if(!data?.session?.user) throw new Error('Não foi possível iniciar a sessão.');
+
+          // signInWithPassword já devolveu uma sessão válida.
+          // Não bloquear a entrada aguardando uma segunda chamada /user.
+          show('success','Login realizado! Entrando no ZunoPlay...');
+          location.replace(safeNext());
+        }catch(error){
+          console.error('Erro no login:',error);
+          const raw=String(error?.message||'');
+          show(
+            'error',
+            /Invalid login credentials/i.test(raw)
+              ? 'E-mail ou senha incorretos.'
+              : /Email not confirmed/i.test(raw)
+                ? 'Confirme seu e-mail antes de entrar.'
+                : 'Não foi possível entrar. Tente novamente.'
+          );
+          button.disabled=false;
+          button.textContent='Entrar';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
