@@ -1,38 +1,17 @@
-const CACHE_NAME = "zunoplay-v166";
+const CACHE_NAME = "zunoplay-v167";
 
-// Pré-cache apenas do shell essencial. Demais recursos entram no cache sob demanda.
-// Isso evita dezenas de requisições simultâneas durante cada atualização do PWA.
 const STATIC_FILES = [
-  "./",
-  "./index.html",
-  "./login.html",
-  "./cadastro.html",
-  "./perfil.html",
-  "./avatar.html",
-  "./salas.html",
-  "./sala.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./nav.js",
-  "./home-app.js",
-  "./realtime-global.js",
-  "./avatar-renderer.js",
-  "./avatar-home-sync.js",
-  "./zuno-design-system.css",
-  "./zuno-current-base.css",
-  "./zuno-current.js",
-  "./zuno-current-home.css",
-  "./zuno-current-home.js",
-  "./zuno-current-home-polish-v164.css",
-  "./zuno-current-avatar-studio.css"
+  "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./salas.html","./sala.html",
+  "./manifest.json","./icon-192.png","./icon-512.png","./nav.js","./home-app.js","./realtime-global.js",
+  "./avatar-renderer.js","./avatar-home-sync.js","./zuno-design-system.css","./zuno-current-base.css","./zuno-current.js",
+  "./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-polish-v164.css","./zuno-current-avatar-studio.css",
+  "./zuno-avatar-studio-reference-v167.js"
 ];
 
 function fetchWithTimeout(input, init = {}, timeoutMs = 6000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(input, { ...init, signal: controller.signal })
-    .finally(() => clearTimeout(timer));
+  return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
 async function preCacheInBatches(cache, files, batchSize = 3) {
@@ -51,6 +30,7 @@ async function preCacheInBatches(cache, files, batchSize = 3) {
 function isCurrentUiAsset(url) {
   const path = url.pathname.toLowerCase();
   return path.includes('/zuno-current') ||
+    path.endsWith('/zuno-avatar-studio-reference-v167.js') ||
     path.endsWith('/zuno-home-reference-v152.css') ||
     path.endsWith('/avatar-home-sync.js') ||
     path.endsWith('/avatar-renderer.js') ||
@@ -100,10 +80,7 @@ self.addEventListener("fetch", event => {
         if (cached) return cached;
         const fallback = await currentCacheMatch("./index.html");
         if (fallback) return fallback;
-        return new Response("ZunoPlay temporariamente indisponível. Tente novamente.", {
-          status: 503,
-          headers: { "Content-Type": "text/plain; charset=utf-8" }
-        });
+        return new Response("ZunoPlay temporariamente indisponível. Tente novamente.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
       }
     })());
     return;
@@ -122,10 +99,7 @@ self.addEventListener("fetch", event => {
       } catch (_) {
         const cached = await currentCacheMatch(request, { ignoreSearch: true });
         if (cached) return cached;
-        return new Response("Recurso de interface indisponível.", {
-          status:503,
-          headers:{"Content-Type":"text/plain; charset=utf-8"}
-        });
+        return new Response("Recurso de interface indisponível.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
       }
     })());
     return;
@@ -134,7 +108,6 @@ self.addEventListener("fetch", event => {
   event.respondWith((async () => {
     const exactCached = await currentCacheMatch(request);
     if (exactCached) return exactCached;
-
     try {
       const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 5000);
       if (fresh && fresh.ok) {
@@ -145,10 +118,7 @@ self.addEventListener("fetch", event => {
     } catch (_) {
       const offlineFallback = await currentCacheMatch(request, { ignoreSearch: true });
       if (offlineFallback) return offlineFallback;
-      return new Response("Recurso indisponível offline.", {
-        status:503,
-        headers:{"Content-Type":"text/plain; charset=utf-8"}
-      });
+      return new Response("Recurso indisponível offline.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
     }
   })());
 });
