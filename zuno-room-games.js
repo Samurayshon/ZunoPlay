@@ -2,12 +2,12 @@
 if(window.__ZUNO_ROOM_GAMES__)return;window.__ZUNO_ROOM_GAMES__=true;
 const params=new URLSearchParams(location.search);
 const roomId=params.get('room')||params.get('room_id')||params.get('id')||sessionStorage.getItem('zunoplay_room_id')||'';
-function openStack(){
+function openCore(){
   if(roomId){
     sessionStorage.setItem('zuno_return_room_id',roomId);
     sessionStorage.setItem('zuno_return_room_url','sala.html?room='+encodeURIComponent(roomId));
   }
-  const target=new URL('zuno-stack.html',location.href);
+  const target=new URL('zuno-core.html',location.href);
   if(roomId)target.searchParams.set('room',roomId);
   target.searchParams.set('from','sala');
   location.href=target.href;
@@ -19,7 +19,7 @@ function installPlayIntercept(){
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
-    openStack();
+    openCore();
   },{capture:true});
 }
 function init(){
