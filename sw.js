@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v163";
+const CACHE_NAME = "zunoplay-v164";
 
 // Pré-cache apenas do shell essencial. Demais recursos entram no cache sob demanda.
 // Isso evita dezenas de requisições simultâneas durante cada atualização do PWA.
@@ -23,7 +23,8 @@ const STATIC_FILES = [
   "./zuno-current-base.css",
   "./zuno-current.js",
   "./zuno-current-home.css",
-  "./zuno-current-home.js"
+  "./zuno-current-home.js",
+  "./zuno-current-home-polish-v164.css"
 ];
 
 function fetchWithTimeout(input, init = {}, timeoutMs = 6000) {
