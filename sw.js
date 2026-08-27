@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v48";
+const CACHE_NAME = "zunoplay-v49";
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -30,50 +30,23 @@ const STATIC_FILES = [
 ];
 
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(STATIC_FILES))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_FILES)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
-
   const isNavigation = request.mode === "navigate";
-
-  event.respondWith(
-    fetch(request, { cache: "no-store" })
-      .then(response => {
-        if (response && response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, clone)).catch(() => {});
-        }
-        return response;
-      })
-      .catch(async () => {
-        const exact = await caches.match(request);
-        if (exact) return exact;
-
-        const ignoreVersionQuery = await caches.match(request, { ignoreSearch: true });
-        if (ignoreVersionQuery) return ignoreVersionQuery;
-
-        if (isNavigation) return caches.match("./index.html");
-
-        return new Response("Recurso indisponível offline.", {
-          status: 503,
-          statusText: "Offline",
-          headers: { "Content-Type": "text/plain; charset=utf-8" }
-        });
-      })
-  );
+  event.respondWith(fetch(request,{cache:"no-store"}).then(response=>{
+    if(response&&response.ok){const clone=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(request,clone)).catch(()=>{});}return response;
+  }).catch(async()=>{
+    const exact=await caches.match(request);if(exact)return exact;
+    const ignoreVersionQuery=await caches.match(request,{ignoreSearch:true});if(ignoreVersionQuery)return ignoreVersionQuery;
+    if(isNavigation)return caches.match("./index.html");
+    return new Response("Recurso indisponível offline.",{status:503,statusText:"Offline",headers:{"Content-Type":"text/plain; charset=utf-8"}});
+  }));
 });
