@@ -31,7 +31,10 @@
     if(wrap){
       const wrong=wrap.querySelector('img.zuno-official-fallback');
       if(wrong||[...wrap.querySelectorAll('img')].some(img=>isRemovedHomeFallback(img.src))){
-        wrap.innerHTML='<div class="profile-glow"></div><div class="profile-avatar zuno-character-empty" style="width:180px;height:180px;margin-bottom:55px;border-radius:50%;display:grid;place-items:center;font-size:70px;font-weight:950;color:#fff;background:radial-gradient(circle,#47237b,#16152c 68%);border:2px solid #7448c6">'+emptyInitial()+'</div>';
+        wrap.textContent='';
+        const glow=document.createElement('div');glow.className='profile-glow';
+        const empty=document.createElement('div');empty.className='profile-avatar zuno-character-empty';empty.textContent=emptyInitial();empty.style.cssText='width:180px;height:180px;margin-bottom:55px;border-radius:50%;display:grid;place-items:center;font-size:70px;font-weight:950;color:#fff;background:radial-gradient(circle,#47237b,#16152c 68%);border:2px solid #7448c6';
+        wrap.append(glow,empty);
       }
     }
     const mini=document.getElementById('profileButton');
@@ -57,8 +60,10 @@
   async function waitClient(){for(let i=0;i<60;i++){if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;await new Promise(r=>setTimeout(r,100))}return null}
   function setRoundAvatar(el,src,initial='?'){
     if(!el)return;
-    if(src){el.innerHTML='<img src="'+src+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block">'}
-    else el.textContent=(initial||'?').charAt(0).toUpperCase();
+    el.textContent='';
+    if(src){
+      const img=document.createElement('img');img.src=src;img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block';el.appendChild(img);
+    }else el.textContent=(initial||'?').charAt(0).toUpperCase();
   }
   async function hydrateConversations(){
     if(page!=='conversas.html')return;
