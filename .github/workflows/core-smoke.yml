@@ -1,0 +1,47 @@
+name: ZunoPlay Core Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -maxdepth 1 -name '*.js' -print0 | while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done
+      - name: Validate critical application files
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            index.html login.html cadastro.html perfil.html avatar.html amigos.html
+            conversas.html notificacoes.html comunidades.html salas.html sala.html
+            jogos.html desafio.html historico.html manifest.json sw.js nav.js
+            realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
+            zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
+            zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
+          )
+          for file in "${required[@]}"; do
+            test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }
+          done
+      - name: Guard against accidental service-role secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RIn --exclude-dir=.git --exclude='*.md' -E 'service_role|sb_secret_' .; then
+            echo 'Potential server secret found in repository.'
+            exit 1
+          fi
