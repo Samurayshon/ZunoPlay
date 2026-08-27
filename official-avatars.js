@@ -2,13 +2,14 @@
   if(window.__ZUNOPLAY_OFFICIAL_AVATARS__)return;
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
 
-  const VERSION='40';
+  const VERSION='41';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const PARTS={
     masculino:['./assets/avatars/v37/male-1.txt','./assets/avatars/v37/male-2.txt','./assets/avatars/v37/male-3.txt'],
     feminino:['./assets/avatars/v37/female-1.txt','./assets/avatars/v37/female-2.txt','./assets/avatars/v37/female-3.txt']
   };
   const cache={};
+  const guards=[];
 
   function normalizeSex(value){return String(value||'').toLowerCase()==='feminino'?'feminino':'masculino'}
   function isLegacyOfficial(value){
@@ -57,17 +58,42 @@
   }
   function renderEverywhere(src,sex){
     const wrap=document.getElementById('profileAvatarWrap');
-    if(wrap)wrap.innerHTML='<div class="profile-glow"></div><img class="profile-avatar zuno-official-starter" src="'+src+'" alt="Avatar oficial '+sex+' ZunoPlay">';
+    if(wrap){
+      const current=wrap.querySelector('img.zuno-official-starter');
+      if(!current||current.src!==src)wrap.innerHTML='<div class="profile-glow"></div><img class="profile-avatar zuno-official-starter" src="'+src+'" alt="Avatar oficial '+sex+' ZunoPlay">';
+    }
     setImage(document.getElementById('profileButton'),src,'Perfil');
     const preview=document.getElementById('avatarPreview');
     if(preview&&page==='avatar.html'){preview.src=src;preview.dataset.officialStarter=sex;preview.alt=sex==='feminino'?'Modelo oficial feminino do ZunoPlay':'Modelo oficial masculino do ZunoPlay'}
+  }
+  function installProfileGuards(src,sex){
+    guards.splice(0).forEach(o=>o.disconnect());
+    const protect=()=>renderEverywhere(src,sex);
+    const wrap=document.getElementById('profileAvatarWrap');
+    const mini=document.getElementById('profileButton');
+    [wrap,mini].filter(Boolean).forEach(root=>{
+      let queued=false;
+      const observer=new MutationObserver(()=>{
+        if(queued)return;queued=true;
+        requestAnimationFrame(()=>{queued=false;protect()});
+      });
+      observer.observe(root,{childList:true,subtree:false});
+      guards.push(observer);
+    });
+    [100,350,900,1800,3500].forEach(ms=>setTimeout(protect,ms));
+    window.addEventListener('pagehide',()=>guards.splice(0).forEach(o=>o.disconnect()),{once:true});
   }
   async function ensureForCurrentUser(){
     const sb=await waitClient();if(!sb)return null;
     const{data:{session}}=await sb.auth.getSession();const user=session?.user;if(!user)return null;
     const{data:profile,error}=await sb.from('profiles').select('id,sex,avatar_url').eq('id',user.id).maybeSingle();if(error||!profile)return null;
     const sex=normalizeSex(profile.sex),src=await resolveProfile(profile);if(!src)return null;
+    if(!isCustomAvatar(profile.avatar_url)&&profile.avatar_url!==src){
+      const{error:updateError}=await sb.from('profiles').update({avatar_url:src}).eq('id',user.id);
+      if(updateError)console.warn('ZunoPlay: não foi possível persistir o avatar oficial.',updateError);
+    }
     renderEverywhere(src,sex);
+    installProfileGuards(src,sex);
     window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src,version:VERSION}}));
     return src;
   }
