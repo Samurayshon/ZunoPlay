@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='89';
+  const ASSET_VERSION='91';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const homeUrl=new URL('./index.html',location.href).href;
   const skipNavigation=['index.html','sala.html','desafio.html','login.html','cadastro.html'].includes(page);
