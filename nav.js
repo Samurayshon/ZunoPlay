@@ -58,13 +58,13 @@
   }
 
   function loadOfficialAvatars(){
-    loadScript('zunoplay-official-avatars-v34','./official-avatars.js?v=34','ZunoPlay: não foi possível carregar os avatares oficiais');
+    loadScript('zunoplay-official-avatars-v36','./official-avatars.js?v=36','ZunoPlay: não foi possível carregar os avatares oficiais');
   }
 
   function loadOfficialHome(){
     if(page!=='index.html')return;
-    loadStyle('zunoplay-home-v34-style','./home-v29.css?v=34');
-    loadScript('zunoplay-home-v34-script','./home-v29.js?v=34','ZunoPlay: não foi possível carregar a Home oficial');
+    loadStyle('zunoplay-home-v36-style','./home-v29.css?v=36');
+    loadScript('zunoplay-home-v36-script','./home-v29.js?v=36','ZunoPlay: não foi possível carregar a Home oficial');
   }
 
   function installOfficialLogoStyle(){
