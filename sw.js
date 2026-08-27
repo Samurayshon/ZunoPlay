@@ -1,6 +1,6 @@
-const CACHE_NAME = "zunoplay-v147";
+const CACHE_NAME = "zunoplay-v148";
 const STATIC_FILES = [
-  "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./partida.html","./reflexo.html","./precisao.html","./arena.html","./zuno-caos.html","./zuno-rush.html","./zuno-pulse.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js",
+  "./","./index.html","./cadastro.html","./login.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./desafio.html","./partida.html","./reflexo.html","./precisao.html","./arena.html","./zuno-caos.html","./zuno-rush.html","./zuno-pulse.html","./historico.html","./manifest.json","./icon-192.png","./icon-512.png","./nav.js","./home-app.js",
   "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js",
   "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-game-social.css","./zuno-game-social.js","./zuno-mini-games.css","./zuno-mini-games.js","./zuno-caos.js","./zuno-rush.js","./zuno-pulse.js",
   "./zuno-room-experience.css","./zuno-room-experience.js","./zuno-room-fit.css","./zuno-room-extras.css","./zuno-voice-feedback.css","./zuno-voice-feedback.js","./zuno-room-profile-card.css","./zuno-room-profile-card.js","./zuno-directed-gifts.css","./zuno-directed-gifts.js","./zuno-room-games.css","./zuno-room-games.js","./zuno-room-game-return.js","./zuno-room-moderation.css","./zuno-room-moderation.js",
@@ -36,6 +36,11 @@ self.addEventListener("activate", event => {
   })());
 });
 
+async function currentCacheMatch(request, options) {
+  const cache = await caches.open(CACHE_NAME);
+  return cache.match(request, options);
+}
+
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
@@ -45,7 +50,7 @@ self.addEventListener("fetch", event => {
   if (request.mode === "navigate") {
     event.respondWith((async () => {
       try {
-        const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 2500);
+        const fresh = await fetchWithTimeout(request, { cache: "no-store" }, 4000);
         if (fresh && fresh.ok) {
           const cache = await caches.open(CACHE_NAME);
           event.waitUntil(cache.put(request, fresh.clone()));
@@ -53,9 +58,9 @@ self.addEventListener("fetch", event => {
         }
         throw new Error("navigation_not_ok");
       } catch (_) {
-        const cached = await caches.match(request, { ignoreSearch: true });
+        const cached = await currentCacheMatch(request, { ignoreSearch: true });
         if (cached) return cached;
-        const fallback = await caches.match("./index.html");
+        const fallback = await currentCacheMatch("./index.html");
         if (fallback) return fallback;
         return new Response("ZunoPlay temporariamente indisponível. Tente novamente.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
       }
@@ -64,7 +69,7 @@ self.addEventListener("fetch", event => {
   }
 
   event.respondWith((async () => {
-    const exactCached = await caches.match(request);
+    const exactCached = await currentCacheMatch(request);
     if (exactCached) {
       event.waitUntil((async () => {
         try {
@@ -86,7 +91,7 @@ self.addEventListener("fetch", event => {
       }
       return fresh;
     } catch (_) {
-      const offlineFallback = await caches.match(request, { ignoreSearch: true });
+      const offlineFallback = await currentCacheMatch(request, { ignoreSearch: true });
       if (offlineFallback) return offlineFallback;
       return new Response("Recurso indisponível offline.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});
     }
