@@ -22,6 +22,28 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done
+      - name: Validate inline game scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,subprocess,tempfile,sys
+          files=['jogos.html','desafio.html','partida.html','reflexo.html','precisao.html','arena.html','historico.html']
+          failed=False
+          for name in files:
+              text=pathlib.Path(name).read_text(encoding='utf-8')
+              blocks=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>',text,re.I|re.S)
+              for i,code in enumerate(blocks,1):
+                  with tempfile.NamedTemporaryFile('w',suffix='.js',encoding='utf-8',delete=False) as f:
+                      f.write(code)
+                      tmp=f.name
+                  result=subprocess.run(['node','--check',tmp],capture_output=True,text=True)
+                  if result.returncode:
+                      failed=True
+                      print(f'Inline JS error: {name} block {i}')
+                      print(result.stderr)
+          if failed: sys.exit(1)
+          PY
       - name: Validate critical application files
         shell: bash
         run: |
