@@ -95,6 +95,10 @@
       injectStyle('zunoplay-current-viewport-v154-style','./zuno-current-viewport-v154.css');
       injectStyle('zunoplay-current-hero-separation-style','./zuno-current-hero-separation.css');
     }
+    if(page==='zuno-stack.html'){
+      injectStyle('zunoplay-stack-premium-pieces-style','./zuno-stack-pieces.css');
+      injectScript('zunoplay-stack-premium-pieces-script','./zuno-stack-pieces.js','ZunoPlay: peças premium do Zuno Stack indisponíveis');
+    }
   }
   function mount(){
     applyBodyIdentity();

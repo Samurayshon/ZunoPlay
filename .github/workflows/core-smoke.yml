@@ -56,7 +56,7 @@ jobs:
             avatar-renderer.js avatar-home-sync.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
             zuno-game-progression.js zuno-game-progression.css zuno-game-social.js zuno-game-social.css
-            zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-rush.js zuno-pulse.js zuno-stack.js zuno-stack-catalog.js
+            zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-rush.js zuno-pulse.js zuno-stack.js zuno-stack-catalog.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.webp
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
             zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
           )
