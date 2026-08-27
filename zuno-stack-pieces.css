@@ -4,7 +4,7 @@
   display:block!important;
   width:100%;
   aspect-ratio:1/1;
-  background-image:url('./zuno-stack-pieces.webp');
+  background-image:url('./zuno-stack-pieces.svg?v=160')!important;
   background-size:600% 200%;
   background-position:var(--zsp-x) var(--zsp-y);
   background-repeat:no-repeat;
