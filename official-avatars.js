@@ -15,10 +15,11 @@
     const v=String(value||'').trim();
     return /assets\/avatars\/(?:v(?:35|37|38|39)\/|avatar-(?:masculino|feminino)-oficial\.webp|male-v38\.part\d+\.b64)/i.test(v)||v.startsWith('data:image/webp;base64,UklGR');
   }
-  function isCustomAvatar(value){
+  function isCustomAvatar(value,avatarConfig){
     const v=String(value||'').trim();
     if(!v||isLegacyOfficial(v))return false;
-    return v.startsWith('data:image/')||/^https:\/\//i.test(v);
+    if(v.startsWith('data:image/'))return !!avatarConfig;
+    return /^https:\/\//i.test(v);
   }
   async function validateImage(src){
     await new Promise((resolve,reject)=>{const img=new Image();img.onload=resolve;img.onerror=()=>reject(new Error('official_avatar_image_failed'));img.src=src});
@@ -44,7 +45,7 @@
   }
   async function resolveProfile(profile){
     if(!profile)return null;
-    if(isCustomAvatar(profile.avatar_url))return profile.avatar_url;
+    if(isCustomAvatar(profile.avatar_url,profile.avatar_config))return profile.avatar_url;
     return loadBase(normalizeSex(profile.sex));
   }
   function setImage(node,src,alt='Avatar ZunoPlay'){
@@ -85,13 +86,14 @@
     const{data:{session}}=await sb.auth.getSession();const user=session?.user;if(!user)return null;
     const{data:profile,error}=await sb.from('profiles').select('id,sex,avatar_url,avatar_config').eq('id',user.id).maybeSingle();if(error||!profile)return null;
     const sex=normalizeSex(profile.sex),src=await resolveProfile(profile);if(!src)return null;
-    if(profile.avatar_url&&isLegacyOfficial(profile.avatar_url)){
+    const staleDataAvatar=String(profile.avatar_url||'').startsWith('data:image/')&&!profile.avatar_config;
+    if(profile.avatar_url&&(isLegacyOfficial(profile.avatar_url)||staleDataAvatar)){
       const{error:clearError}=await sb.from('profiles').update({avatar_url:null}).eq('id',user.id);
       if(clearError)console.warn('ZunoPlay: não foi possível limpar avatar-base legado.',clearError);
     }
-    if(page==='avatar.html'&&!profile.avatar_config&&!isCustomAvatar(profile.avatar_url))renderEditorStarter(src,sex);
+    if(page==='avatar.html'&&!profile.avatar_config&&!isCustomAvatar(profile.avatar_url,profile.avatar_config))renderEditorStarter(src,sex);
     else if(page!=='avatar.html'){renderApp(src,sex);installProfileGuards(src,sex)}
-    window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src,version:VERSION,custom:!!profile.avatar_config||isCustomAvatar(profile.avatar_url)}}));
+    window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src,version:VERSION,custom:isCustomAvatar(profile.avatar_url,profile.avatar_config)}}));
     return src;
   }
   async function hydrateRoom(){
