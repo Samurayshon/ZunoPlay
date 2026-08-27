@@ -41,6 +41,12 @@
     observerInstalled=true;
   }
 
+  function defaultConfig(){
+    const defaults=window.ZunoAvatarRenderer?.defaults;
+    if(!defaults)return null;
+    return normalize(defaults)||defaults;
+  }
+
   async function readConfig(){
     let found=null;
     try{
@@ -61,12 +67,13 @@
         }
       }
     }catch(e){console.warn('Zuno avatar config:',e)}
-    if(found){cfg=found;installScopedObservers();mount()}
+    cfg=found||defaultConfig();
+    if(cfg){installScopedObservers();mount()}
   }
 
   function scheduleRead(delay=0){clearTimeout(readTimer);readTimer=setTimeout(()=>readConfig().catch(()=>{}),delay)}
 
-  window.addEventListener('zuno-avatar-renderer-ready',()=>{scheduleRead(0);setTimeout(()=>{installScopedObservers();mount()},50)});
+  window.addEventListener('zuno-avatar-renderer-ready',()=>{if(!cfg)cfg=defaultConfig();scheduleRead(0);setTimeout(()=>{installScopedObservers();mount()},50)});
   window.addEventListener('zuno-avatar-saved',e=>{if(!valid(e.detail))return;const next=normalize(e.detail);if(!next)return;cfg=next;localStorage.setItem('zunoAvatarPreset',JSON.stringify(next));installScopedObservers();mount()});
   window.addEventListener('storage',e=>{if(e.key!=='zunoAvatarPreset'||!e.newValue)return;try{const raw=JSON.parse(e.newValue);if(!valid(raw))return;const next=normalize(raw);if(next){cfg=next;installScopedObservers();mount()}}catch(_){}});
   window.addEventListener('focus',()=>scheduleRead(120));
@@ -75,5 +82,5 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installScopedObservers();scheduleRead(0)},{once:true});
   else{installScopedObservers();scheduleRead(0)}
-  [180,700,1800].forEach(ms=>setTimeout(()=>{installScopedObservers();mount()},ms));
+  [180,700,1800].forEach(ms=>setTimeout(()=>{if(!cfg)cfg=defaultConfig();installScopedObservers();mount()},ms));
 })();
