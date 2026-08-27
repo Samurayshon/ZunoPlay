@@ -29,9 +29,9 @@ jobs:
           required=(
             index.html login.html cadastro.html perfil.html avatar.html amigos.html
             conversas.html notificacoes.html comunidades.html salas.html sala.html
-            jogos.html desafio.html partida.html historico.html manifest.json sw.js nav.js
+            jogos.html desafio.html partida.html reflexo.html precisao.html arena.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
-            zuno-game-progression.js zuno-game-progression.css
+            zuno-game-progression.js zuno-game-progression.css zuno-mini-games.js zuno-mini-games.css
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
             zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
           )
