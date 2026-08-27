@@ -1,0 +1,51 @@
+import * as THREE from 'https://esm.sh/three@0.180.0';
+import {GLTFLoader} from 'https://esm.sh/three@0.180.0/examples/jsm/loaders/GLTFLoader.js';
+
+export const CATALOG_URL='https://storage.googleapis.com/three-ws-garments/garments/catalog.json';
+const loader=new GLTFLoader();
+const active=new Map();
+let catalogCache=null;
+
+const ALIAS={
+ hips:'Hips',pelvis:'Hips',root:'Hips',spine:'Spine',spine1:'Spine1',spine2:'Spine2',chest:'Spine1',upperchest:'Spine2',neck:'Neck',head:'Head',
+ leftshoulder:'LeftShoulder',rightshoulder:'RightShoulder',leftarm:'LeftArm',rightarm:'RightArm',leftforearm:'LeftForeArm',rightforearm:'RightForeArm',lefthand:'LeftHand',righthand:'RightHand',
+ leftupleg:'LeftUpLeg',rightupleg:'RightUpLeg',leftleg:'LeftLeg',rightleg:'RightLeg',leftfoot:'LeftFoot',rightfoot:'RightFoot',lefttoebase:'LeftToeBase',righttoebase:'RightToeBase',
+ upperarml:'LeftArm',upperarmr:'RightArm',forearml:'LeftForeArm',forearmr:'RightForeArm',thighl:'LeftUpLeg',thighr:'RightUpLeg',shinl:'LeftLeg',shinr:'RightLeg',footl:'LeftFoot',footr:'RightFoot',claviclel:'LeftShoulder',clavicler:'RightShoulder'
+};
+function canonical(name=''){
+ let n=String(name).replace(/^mixamorig\d*:?/i,'').replace(/^(armature|def|org|mch)[_:\/-]*/i,'').trim();
+ const side=n.match(/\.([LR])$/i);if(side)n=(side[1].toUpperCase()==='L'?'left':'right')+n.replace(/\.[LR]$/i,'');
+ const k=n.replace(/[^a-z0-9]/gi,'').toLowerCase();
+ if(ALIAS[k])return ALIAS[k];
+ const exact=['Hips','Spine','Spine1','Spine2','Neck','Head','LeftShoulder','RightShoulder','LeftArm','RightArm','LeftForeArm','RightForeArm','LeftHand','RightHand','LeftUpLeg','RightUpLeg','LeftLeg','RightLeg','LeftFoot','RightFoot','LeftToeBase','RightToeBase'];
+ return exact.find(x=>x.toLowerCase()===k)||name;
+}
+function resolveUrl(uri){if(!uri)return null;try{return new URL(uri,CATALOG_URL).href}catch{return uri}}
+export async function loadGarmentCatalog(force=false){
+ if(catalogCache&&!force)return catalogCache;
+ const res=await fetch(CATALOG_URL,{cache:'no-store'});if(!res.ok)throw new Error(`Catálogo GLB indisponível (${res.status})`);
+ const raw=await res.json();const arr=Array.isArray(raw)?raw:(raw.garments||raw.items||[]);
+ catalogCache=arr.map(m=>({id:m.id||m.garment_id,name:m.name||m.id||'Roupa 3D',slot:m.slot||'top',version:m.version||1,glbUrl:resolveUrl(m.model?.uri||m.glb_url||m.glbUrl),thumbnail:resolveUrl(m.preview?.thumbnail||m.thumbnail||m.thumb_url),occludes:Array.isArray(m.occludes)?m.occludes:[],license:m.license||''})).filter(x=>x.id&&x.glbUrl);
+ return catalogCache;
+}
+function findSkeleton(root){let best=null;root?.traverse?.(o=>{if(!o.isSkinnedMesh||!o.skeleton?.bones?.length||o.userData?.zunoGarment)return;const count=o.geometry?.attributes?.position?.count||0;if(!best||count>best.count)best={mesh:o,skeleton:o.skeleton,count}});return best}
+function boneMap(skeleton){const m=new Map();skeleton.bones.forEach((b,i)=>{const c=canonical(b.name);if(c&&!m.has(c))m.set(c,i)});return m}
+function remapSkeleton(srcSkel,dstSkel){const dst=boneMap(dstSkel),srcSet=new Set(srcSkel.bones),map=new Int32Array(srcSkel.bones.length).fill(-1);srcSkel.bones.forEach((b,i)=>{for(let n=b;n&&srcSet.has(n);n=n.parent){const c=canonical(n.name);if(dst.has(c)){map[i]=dst.get(c);break}}});return map}
+function coverage(geo,map){const si=geo.attributes.skinIndex,sw=geo.attributes.skinWeight;if(!si||!sw)return 0;let total=0,kept=0;for(let i=0;i<si.count;i++)for(let c=0;c<4;c++){const w=sw.getComponent(i,c);if(w<=0)continue;total+=w;if(map[si.getComponent(i,c)]>=0)kept+=w}return total?kept/total:0}
+function remapGeometry(geo,map){const g=geo.clone(),si=g.attributes.skinIndex,sw=g.attributes.skinWeight;if(!si||!sw)return g;const inds=new Uint16Array(si.count*4),weights=new Float32Array(si.count*4);for(let i=0;i<si.count;i++){let sum=0;for(let c=0;c<4;c++){const old=si.getComponent(i,c),w=sw.getComponent(i,c),nw=map[old];if(nw>=0&&w>0){inds[i*4+c]=nw;weights[i*4+c]=w;sum+=w}}if(sum>0)for(let c=0;c<4;c++)weights[i*4+c]/=sum}g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(inds,4));g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));return g}
+function reindexInverses(src,dst,map){const out=dst.boneInverses.map(m=>m.clone()),claimed=new Set();for(let i=0;i<map.length;i++){const j=map[i];if(j<0||claimed.has(j))continue;claimed.add(j);if(src.boneInverses[i])out[j]=src.boneInverses[i].clone()}return out}
+function clearSlot(slot){const old=active.get(slot);if(old){old.forEach(o=>{o.parent?.remove(o);o.geometry?.dispose?.();const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>m?.dispose?.())});active.delete(slot)}}
+export function detachGarment(slot){clearSlot(slot)}
+export function detachAllGarments(){for(const slot of [...active.keys()])clearSlot(slot)}
+export async function attachCatalogGarment(avatarRoot,item){
+ if(!avatarRoot||!item?.glbUrl)throw new Error('Roupa GLB inválida');
+ clearSlot(item.slot);
+ const found=findSkeleton(avatarRoot);if(!found)throw new Error('Avatar sem esqueleto compatível');
+ const gltf=await loader.loadAsync(item.glbUrl),root=gltf.scene;
+ const meshes=[];root.traverse(o=>{if(o.isSkinnedMesh&&o.geometry?.attributes?.skinIndex)meshes.push(o)});
+ if(!meshes.length)throw new Error('A roupa não contém malha rigada');
+ const added=[];
+ for(const src of meshes){const map=remapSkeleton(src.skeleton,found.skeleton),cov=coverage(src.geometry,map);if(cov<.6){added.forEach(x=>x.parent?.remove(x));throw new Error(`Roupa incompatível: ${(cov*100).toFixed(0)}% de rig compatível`)}const geo=remapGeometry(src.geometry,map),materials=(Array.isArray(src.material)?src.material:[src.material]).map(m=>m?.clone?m.clone():m);const mesh=new THREE.SkinnedMesh(geo,Array.isArray(src.material)?materials:materials[0]);mesh.name=`ZunoGarment:${item.slot}:${item.id}`;mesh.userData.zunoGarment=true;mesh.userData.garmentSlot=item.slot;mesh.userData.garmentId=item.id;mesh.castShadow=true;mesh.receiveShadow=true;const inv=reindexInverses(src.skeleton,found.skeleton,map);const skel=new THREE.Skeleton(found.skeleton.bones,inv);mesh.bind(skel,src.bindMatrix?.clone?.()||new THREE.Matrix4());mesh.bindMatrixInverse.copy(src.bindMatrixInverse||new THREE.Matrix4());mesh.position.copy(src.position);mesh.quaternion.copy(src.quaternion);mesh.scale.copy(src.scale);(found.mesh.parent||avatarRoot).add(mesh);added.push(mesh)}
+ active.set(item.slot,added);return{ok:true,slot:item.slot,id:item.id,count:added.length};
+}
+window.ZunoGarmentRuntime={loadGarmentCatalog,attachCatalogGarment,detachGarment,detachAllGarments};
