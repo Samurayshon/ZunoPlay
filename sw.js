@@ -20,8 +20,12 @@ const STATIC_FILES = [
   "./icon-512.png",
   "./nav.js",
   "./official-avatars.js",
-  "./assets/avatars/avatar-masculino-oficial.webp",
   "./assets/avatars/avatar-feminino-oficial.webp",
+  "./assets/avatars/male-v38.part1.b64",
+  "./assets/avatars/male-v38.part2.b64",
+  "./assets/avatars/male-v38.part3.b64",
+  "./assets/avatars/male-v38.part4.b64",
+  "./assets/avatars/male-v38.part5.b64",
   "./home-v29.css",
   "./home-v29.js",
   "./realtime-global.js",
@@ -48,7 +52,6 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
-
   event.respondWith(
     fetch(event.request, { cache: "no-store" })
       .then(response => {

@@ -3,33 +3,50 @@
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
 
   const VERSION='38';
-  const ASSETS={
-    masculino:'./assets/avatars/avatar-masculino-oficial.webp?v='+VERSION,
-    feminino:'./assets/avatars/avatar-feminino-oficial.webp?v='+VERSION
-  };
+  const MALE_PARTS=[
+    './assets/avatars/male-v38.part1.b64',
+    './assets/avatars/male-v38.part2.b64',
+    './assets/avatars/male-v38.part3.b64',
+    './assets/avatars/male-v38.part4.b64',
+    './assets/avatars/male-v38.part5.b64'
+  ];
+  const FEMALE='./assets/avatars/avatar-feminino-oficial.webp?v='+VERSION;
   const cache={};
 
   function normalizeSex(value){return String(value||'').toLowerCase()==='feminino'?'feminino':'masculino'}
-  function isOfficial(value){return /assets\/avatars\/avatar-(?:masculino|feminino)-oficial\.webp/i.test(String(value||''))}
-  function isLegacyAvatar(value){
-    const v=String(value||'').trim();
-    return !v || isOfficial(v) || v.startsWith('data:image/svg+xml');
-  }
+  function isOfficialUrl(value){return /assets\/avatars\/avatar-(?:masculino|feminino)-oficial\.webp/i.test(String(value||''))}
   function isCustomAvatar(value){
     const v=String(value||'').trim();
-    if(isLegacyAvatar(v))return false;
-    return v.startsWith('data:image/') || /^https:\/\//i.test(v);
+    if(!v||isOfficialUrl(v))return false;
+    if(v.startsWith('data:image/webp;base64,UklGR'))return false;
+    if(v.startsWith('data:image/'))return true;
+    if(/^https:\/\//i.test(v))return true;
+    return false;
   }
-  async function loadBase(sex){
-    sex=normalizeSex(sex);
-    if(cache[sex])return cache[sex];
-    const src=new URL(ASSETS[sex],location.href).href;
+  async function validateImage(src){
     await new Promise((resolve,reject)=>{
       const img=new Image();
       img.onload=resolve;
       img.onerror=()=>reject(new Error('official_avatar_image_failed'));
       img.src=src;
     });
+    return src;
+  }
+  async function loadBase(sex){
+    sex=normalizeSex(sex);
+    if(cache[sex])return cache[sex];
+    let src;
+    if(sex==='masculino'){
+      const chunks=await Promise.all(MALE_PARTS.map(async file=>{
+        const r=await fetch(new URL(file+'?v='+VERSION,location.href),{cache:'no-store'});
+        if(!r.ok)throw new Error('official_avatar_part_'+r.status);
+        return (await r.text()).trim();
+      }));
+      src='data:image/webp;base64,'+chunks.join('');
+    }else{
+      src=new URL(FEMALE,location.href).href;
+    }
+    await validateImage(src);
     cache[sex]=src;
     return src;
   }
@@ -46,7 +63,7 @@
     const mini=document.getElementById('profileButton');
     if(mini)mini.innerHTML='<img src="'+src+'" alt="Perfil">';
     const preview=document.getElementById('avatarPreview');
-    if(preview && (location.pathname.split('/').pop()||'').toLowerCase()==='avatar.html')preview.src=src;
+    if(preview&&(location.pathname.split('/').pop()||'').toLowerCase()==='avatar.html')preview.src=src;
   }
   async function ensureForCurrentUser(){
     const sb=await waitClient();
@@ -64,11 +81,11 @@
       if(updateError)console.warn('ZunoPlay: não foi possível definir avatar inicial oficial.',updateError);
     }
     renderEverywhere(base);
-    window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src:base}}));
+    window.dispatchEvent(new CustomEvent('zuno:official-avatar-ready',{detail:{sex,src:base,version:VERSION}}));
     return base;
   }
 
-  window.ZunoOfficialAvatars={get:loadBase,ensure:ensureForCurrentUser,isCustom:isCustomAvatar,normalizeSex};
+  window.ZunoOfficialAvatars={get:loadBase,ensure:ensureForCurrentUser,isCustom:isCustomAvatar,normalizeSex,version:VERSION};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>ensureForCurrentUser().catch(console.warn),{once:true});
   else ensureForCurrentUser().catch(console.warn);
   window.addEventListener('zuno:realtime-installed',()=>ensureForCurrentUser().catch(console.warn),{once:true});
