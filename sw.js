@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v32";
+const CACHE_NAME = "zunoplay-v33";
 const STATIC_FILES = [
   "./",
   "./index.html",
@@ -20,8 +20,8 @@ const STATIC_FILES = [
   "./icon-512.png",
   "./nav.js",
   "./official-avatars.js",
-  "./assets/avatars/avatar-masculino-oficial.webp.b64",
-  "./assets/avatars/avatar-feminino-oficial.webp.b64",
+  "./assets/avatars/avatar-masculino-oficial.webp",
+  "./assets/avatars/avatar-feminino-oficial.webp",
   "./home-v29.css",
   "./home-v29.js",
   "./realtime-global.js",
@@ -48,7 +48,6 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
-
   event.respondWith(
     fetch(event.request, { cache: "no-store" })
       .then(response => {
