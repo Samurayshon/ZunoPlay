@@ -4,8 +4,9 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='103';
+  const ASSET_VERSION='104';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
 
   function patchSupabaseFactory(){
     if(!window.supabase?.createClient)return false;
@@ -27,6 +28,7 @@
   function loadStyle(id,file){if(document.getElementById(id))return;const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=new URL(versioned(file),location.href).href;document.head.appendChild(link)}
   function loadDesignSystem(){loadStyle('zunoplay-design-system','./zuno-design-system.css')}
   function loadStage3Navigation(){loadStyle('zunoplay-navigation-style','./zuno-navigation.css');loadScript('zunoplay-navigation-stage3','./zuno-navigation.js','ZunoPlay: não foi possível carregar a navegação global')}
+  function loadSocialSystem(){if(!socialPages.includes(page))return;loadStyle('zunoplay-social-style','./zuno-social.css');loadScript('zunoplay-social-stage4','./zuno-social.js','ZunoPlay: não foi possível carregar o sistema social')}
   function loadRealtimeCore(){if(window.ZunoRealtime){window.ZunoRealtime.start?.().catch?.(console.error);return}loadScript('zunoplay-realtime-global','./realtime-global.js','ZunoPlay: não foi possível carregar realtime-global.js')}
   function loadRoomVoice(){if(page==='sala.html')loadScript('zunoplay-room-voice','./voz-sala.js','ZunoPlay: não foi possível carregar voz-sala.js')}
   function loadRoomSessionGuard(){loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: não foi possível carregar room-session-guard.js')}
@@ -41,6 +43,7 @@
 
   loadDesignSystem();
   loadStage3Navigation();
+  loadSocialSystem();
   bootstrapRealtime();
   loadRoomVoice();
   loadRoomSessionGuard();
@@ -48,6 +51,4 @@
 
   const brandReady=()=>{mountOfficialLogo();setTimeout(mountOfficialLogo,250)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',brandReady,{once:true});else brandReady();
-
-  /* A navegação legada foi removida. A partir da Etapa 3, zuno-navigation.js é o único controlador de cabeçalho e barra global. */
 })();
