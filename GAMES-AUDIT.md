@@ -1,50 +1,55 @@
-# ZunoPlay Games — Auditoria final (Módulo 7/7)
+# ZunoPlay Games — Reset do catálogo
 
-Status: concluído para beta social.
+Status: **Zuno Stack é o único jogo ativo**.
 
-## Sistemas auditados
+## Decisão de produto
 
-- Hub oficial de Jogos
-- Desafio Zuno 2.0
-- Partida Zuno multiplayer
+O catálogo anterior foi removido para concentrar desenvolvimento e qualidade em duas frentes:
+
+1. evoluir o **Zuno Stack**;
+2. criar um novo **jogo carro-chefe exclusivo do ZunoPlay**.
+
+## Jogo ativo
+
+- **Zuno Stack** — puzzle de trios com 54 peças em camadas, bandeja de 7, Zuno Relay, Pulse Shift, progressão e retorno para salas.
+
+## Jogos removidos do produto
+
+- Zuno Pulse
+- Zuno Rush
+- Zuno Caos
+- Desafio Zuno
 - Reflexo Zuno
 - Precisão Zuno
 - Arena Zuno
-- XP e Nível de Jogos
-- Conquistas
-- Histórico
-- Desafios entre amigos
-- Ranking global e de amigos
-- Compartilhamento de resultados
-- Retorno/preservação de sala
-- Realtime de partidas
+- Partida Zuno multiplayer
+
+As páginas e scripts desses jogos não devem existir no catálogo nem voltar como dependências críticas no CI.
+
+## Infraestrutura preservada
+
+- Hub de Jogos (`jogos.html`)
+- Zuno Stack
+- Histórico de resultados
+- Progressão geral de Jogos
+- Retorno para a sala
+- Supabase/Auth/Realtime compartilhados pelo restante do ZunoPlay
 - PWA/cache
 - CI/smoke checks
 
-## Correções do Módulo 7
+O botão **Jogar** dentro de uma sala passa a abrir diretamente o Zuno Stack enquanto o novo carro-chefe não é definido.
 
-- RPCs de Jogos não são mais executáveis pelo papel anônimo.
-- Índice adicionado para `game_match_results.room_id`.
-- RLS de `game_challenges` otimizada para não reavaliar `auth.uid()` por linha.
-- CI agora valida também JavaScript inline das páginas de Jogos.
-- Correção visual do CSS do logo oficial no bootstrap global.
-- Cache/asset version atualizado para v130.
+## Dados legados
 
-## Segurança
+Nenhum dado histórico do banco foi apagado nesta limpeza. Resultados antigos podem permanecer no histórico para testes e rastreabilidade. Qualquer exclusão destrutiva de dados deve acontecer somente por decisão explícita separada.
 
-As RPCs `SECURITY DEFINER` usadas pelo frontend permanecem executáveis somente por usuários autenticados quando isso é intencional. Todas validam identidade/participação dentro da função e não devem ser expostas ao papel `anon`.
+## Próximo marco
 
-## Limitação conhecida — anti-cheat
+Definir o conceito do novo jogo carro-chefe antes de iniciar implementação. A escolha deve priorizar:
 
-Os jogos atuais executam a mecânica no cliente. As RPCs validam autenticação, faixa de valores, jogo permitido, progressão e duplicidade quando aplicável, mas um cliente deliberadamente modificado ainda pode tentar enviar resultados falsos dentro das faixas aceitas.
-
-Por isso, o sistema atual é adequado para beta social, XP casual, desafios e rankings sem recompensa econômica. Antes de ligar Zuno Coins, prêmios, torneios oficiais ou qualquer recompensa de valor ao resultado dos jogos, migrar a validação competitiva para uma arquitetura server-authoritative (sessão de partida emitida pelo servidor, estado/seed controlado pelo servidor e validação de eventos/resultados).
-
-## Bloqueadores externos ao módulo Jogos
-
-- Ativar Leaked Password Protection no Supabase Auth antes de lançamento público.
-- TURN continua sendo requisito de produção da experiência de voz, mas não bloqueia o módulo Jogos isoladamente.
-
-## Resultado
-
-Módulos de Jogos 1–7 concluídos para beta social. Próxima expansão deve acontecer somente após testes reais em múltiplos dispositivos e, se houver economia/prêmios, implementação do anti-cheat server-authoritative.
+- identidade própria do ZunoPlay;
+- multiplayer/social como parte central da mecânica;
+- partidas curtas e alta rejogabilidade;
+- mobile-first;
+- visual forte e reconhecível;
+- potencial para temporadas, progressão e cosméticos sem pay-to-win.

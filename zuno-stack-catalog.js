@@ -1,6 +1,0 @@
-(()=>{
-if(window.__ZUNO_STACK_CATALOG__)return;window.__ZUNO_STACK_CATALOG__=true;
-function openStack(){const q=new URLSearchParams(location.search),room=q.get('room')||sessionStorage.getItem('zunoplay_room_id')||'',from=q.get('from')==='sala';const u=new URL('zuno-stack.html',location.href);if(room){u.searchParams.set('room',room);if(from)u.searchParams.set('from','sala')}location.href=u.href}
-function mount(){const games=document.querySelector('.games');if(!games||document.getElementById('zunoStackCatalogCard'))return;const card=document.createElement('button');card.id='zunoStackCatalogCard';card.className='game';card.type='button';card.innerHTML='<div class="icon">🧩⚡</div><h3>Zuno Stack</h3><p>Puzzle cooperativo de trios com bandeja de 7, Zuno Relay, poderes e eventos Pulse.</p><span class="available">NOVO · ALPHA</span>';card.onclick=openStack;const featured=games.querySelector('.featured');if(featured)featured.insertAdjacentElement('afterend',card);else games.prepend(card);const section=games.closest('.section'),sub=section?.querySelector('.sub');if(sub)sub.textContent='8 experiências Zuno disponíveis';const footer=document.querySelector('.footer');if(footer)footer.textContent='ZunoPlay Games · 8 jogos oficiais'}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
-})();

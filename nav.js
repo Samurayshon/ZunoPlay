@@ -4,10 +4,10 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='162';
+  const ASSET_VERSION='166';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
-  const gamePages=['jogos.html','desafio.html','partida.html','historico.html','reflexo.html','precisao.html','arena.html','zuno-caos.html','zuno-rush.html','zuno-pulse.html','zuno-stack.html'];
+  const gamePages=['jogos.html','historico.html','zuno-stack.html'];
 
   function installHomeBootGuard(){
     if(page!=='index.html')return;
@@ -82,15 +82,6 @@
     loadStyle('zunoplay-game-progression-style','./zuno-game-progression.css');
     loadScript('zunoplay-game-progression','./zuno-game-progression.js','ZunoPlay: progressão de jogos indisponível');
   }
-  function loadGameSocial(){
-    if(!gamePages.includes(page))return;
-    loadStyle('zunoplay-game-social-style','./zuno-game-social.css');
-    loadScript('zunoplay-game-social','./zuno-game-social.js','ZunoPlay: integração social dos jogos indisponível');
-  }
-  function loadZunoStackCatalog(){
-    if(page!=='jogos.html')return;
-    loadScript('zunoplay-zuno-stack-catalog','./zuno-stack-catalog.js','ZunoPlay: catálogo do Zuno Stack indisponível');
-  }
   function loadRoomExperience(){
     if(page!=='sala.html')return;
     [
@@ -100,7 +91,6 @@
       ['zunoplay-voice-feedback-style','./zuno-voice-feedback.css'],
       ['zunoplay-room-profile-card-style','./zuno-room-profile-card.css'],
       ['zunoplay-directed-gifts-style','./zuno-directed-gifts.css'],
-      ['zunoplay-room-games-style','./zuno-room-games.css'],
       ['zunoplay-room-moderation-style','./zuno-room-moderation.css']
     ].forEach(([id,file])=>loadStyle(id,file));
     [
@@ -108,7 +98,7 @@
       ['zunoplay-voice-feedback','./zuno-voice-feedback.js','ZunoPlay: feedback de voz indisponível'],
       ['zunoplay-room-profile-card','./zuno-room-profile-card.js','ZunoPlay: perfil rápido indisponível'],
       ['zunoplay-directed-gifts','./zuno-directed-gifts.js','ZunoPlay: presentes direcionados indisponíveis'],
-      ['zunoplay-room-games','./zuno-room-games.js','ZunoPlay: convites de jogo indisponíveis'],
+      ['zunoplay-room-games','./zuno-room-games.js','ZunoPlay: Zuno Stack da sala indisponível'],
       ['zunoplay-room-moderation','./zuno-room-moderation.js','ZunoPlay: moderação da sala indisponível']
     ].forEach(([id,file,error])=>loadScript(id,file,error));
   }
@@ -166,8 +156,6 @@
   loadNavigation();
   loadSocialSystem();
   loadGameProgression();
-  loadGameSocial();
-  loadZunoStackCatalog();
   loadRoomExperience();
   loadRoomGameReturn();
   bootstrapRealtime();

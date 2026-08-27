@@ -28,7 +28,7 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import pathlib,re,subprocess,tempfile,sys
-          files=['index.html','login.html','cadastro.html','jogos.html','desafio.html','partida.html','reflexo.html','precisao.html','arena.html','zuno-caos.html','zuno-rush.html','zuno-pulse.html','zuno-stack.html','historico.html']
+          files=['index.html','login.html','cadastro.html','jogos.html','zuno-stack.html','historico.html']
           failed=False
           for name in files:
               text=pathlib.Path(name).read_text(encoding='utf-8')
@@ -51,19 +51,35 @@ jobs:
           required=(
             index.html home-app.js login.html cadastro.html perfil.html avatar.html amigos.html
             conversas.html notificacoes.html comunidades.html salas.html sala.html
-            jogos.html desafio.html partida.html reflexo.html precisao.html arena.html zuno-caos.html zuno-rush.html zuno-pulse.html zuno-stack.html historico.html manifest.json sw.js nav.js
+            jogos.html zuno-stack.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
             avatar-renderer.js avatar-home-sync.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
-            zuno-game-progression.js zuno-game-progression.css zuno-game-social.js zuno-game-social.css
-            zuno-mini-games.js zuno-mini-games.css zuno-caos.js zuno-rush.js zuno-pulse.js zuno-stack.js zuno-stack-catalog.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg
+            zuno-game-progression.js zuno-game-progression.css
+            zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
             zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
           )
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }
           done
-      - name: Validate Zuno Stack premium sprite
+      - name: Guard Stack-only catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          removed=(desafio.html partida.html reflexo.html precisao.html arena.html zuno-caos.html zuno-rush.html zuno-pulse.html zuno-caos.js zuno-rush.js zuno-pulse.js zuno-mini-games.js zuno-mini-games.css zuno-game-social.js zuno-game-social.css zuno-stack-catalog.js)
+          for file in "${removed[@]}"; do
+            if test -e "$file"; then
+              echo "Legacy game file returned: $file"
+              exit 1
+            fi
+          done
+          grep -q 'Zuno Stack' jogos.html
+          if grep -Eq 'Zuno Pulse|Zuno Rush|Zuno Caos|Desafio Zuno|Reflexo Zuno|Precisão Zuno|Arena Zuno|Partida Zuno' jogos.html; then
+            echo 'Legacy game returned to catalog.'
+            exit 1
+          fi
+      - name: Validate Zuno Stack premium pieces
         shell: bash
         run: |
           set -euo pipefail
@@ -76,7 +92,7 @@ jobs:
           missing=expected-ids
           if missing:
               raise SystemExit('Missing premium pieces: '+', '.join(sorted(missing)))
-          print('Zuno Stack SVG sprite OK: 12 pieces')
+          print('Zuno Stack premium set OK: 12 pieces')
           PY
       - name: Guard current Home boot
         shell: bash
