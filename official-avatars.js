@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_OFFICIAL_AVATARS__)return;
   window.__ZUNOPLAY_OFFICIAL_AVATARS__=true;
-  const VERSION='46';
+  const VERSION='47';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
 
   function normalizeSex(value){return String(value||'').toLowerCase()==='feminino'?'feminino':'masculino'}
@@ -38,7 +38,7 @@
     const miniImg=mini?.querySelector('img');
     if(miniImg&&isRemovedHomeFallback(miniImg.src))mini.textContent='👤';
   }
-  function installIntegrityGuard(){
+  function installHomeIntegrityGuard(){
     if(page!=='index.html')return;
     const run=()=>repairHomeFallback();
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
@@ -54,6 +54,42 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   }
 
-  installIntegrityGuard();
-  window.ZunoOfficialAvatars={get:async()=>null,resolve:resolveProfile,ensure:ensureForCurrentUser,isCustom:isCustomAvatar,normalizeSex,version:VERSION,removed:true,repair:repairHomeFallback};
+  async function waitClient(){for(let i=0;i<60;i++){if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;await new Promise(r=>setTimeout(r,100))}return null}
+  function setRoundAvatar(el,src,initial='?'){
+    if(!el)return;
+    if(src){el.innerHTML='<img src="'+src+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block">'}
+    else el.textContent=(initial||'?').charAt(0).toUpperCase();
+  }
+  async function hydrateConversations(){
+    if(page!=='conversas.html')return;
+    const sb=await waitClient();if(!sb)return;
+    const ids=[...new Set([...document.querySelectorAll('.conversation[data-user-id]')].map(el=>el.dataset.userId).filter(Boolean))];
+    const friendId=new URLSearchParams(location.search).get('user');if(friendId)ids.push(friendId);
+    const unique=[...new Set(ids)];if(!unique.length)return;
+    const {data,error}=await sb.from('profiles').select('id,username,avatar_url').in('id',unique);if(error)return;
+    const map=new Map((data||[]).map(p=>[String(p.id),p]));
+    document.querySelectorAll('.conversation[data-user-id]').forEach(row=>{const p=map.get(String(row.dataset.userId));if(p)setRoundAvatar(row.querySelector('.avatar'),safeAvatar(p.avatar_url),p.username)});
+    if(friendId){const p=map.get(String(friendId));if(p)setRoundAvatar(document.querySelector('.chat-avatar'),safeAvatar(p.avatar_url),p.username)}
+  }
+  function installConversationGuard(){
+    if(page!=='conversas.html')return;
+    let scheduled=false;
+    const schedule=()=>{if(scheduled)return;scheduled=true;setTimeout(()=>{scheduled=false;hydrateConversations().catch(console.warn)},60)};
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+    const observer=new MutationObserver(schedule);observer.observe(document.documentElement,{childList:true,subtree:true});
+    window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
+  }
+
+  document.addEventListener('error',event=>{
+    const img=event.target;
+    if(!(img instanceof HTMLImageElement))return;
+    if(!img.matches('.profile-avatar,.friend-avatar,.search-result-avatar,.avatar img,.chat-avatar img,.member-avatar img,.top-avatar img,.mini-profile img'))return;
+    const parent=img.parentElement;if(!parent)return;
+    const initial=(img.alt||'?').replace(/^Avatar de\s*@?/i,'').trim().charAt(0)||'?';
+    parent.textContent=initial.toUpperCase();
+  },true);
+
+  installHomeIntegrityGuard();
+  installConversationGuard();
+  window.ZunoOfficialAvatars={get:async()=>null,resolve:resolveProfile,ensure:ensureForCurrentUser,isCustom:isCustomAvatar,normalizeSex,version:VERSION,removed:true,repair:repairHomeFallback,hydrateConversations};
 })();
