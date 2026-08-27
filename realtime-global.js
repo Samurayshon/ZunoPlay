@@ -141,6 +141,10 @@
       },
       async send(event,payload={}){
         if(!subscribed)await api.subscribe();
+        if(event&&typeof event==='object'){
+          const packet=event;
+          return channel.send({type:'broadcast',event:packet.event,payload:packet.payload||{}});
+        }
         return channel.send({type:'broadcast',event,payload});
       },
       close(){subscribed=false;return removeScope(id,channel)}
