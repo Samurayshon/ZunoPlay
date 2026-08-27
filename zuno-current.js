@@ -91,6 +91,7 @@
       injectStyle('zunoplay-current-home-stats-style','./zuno-current-home-stats.css');
       injectStyle('zunoplay-current-interactions-style','./zuno-current-interactions.css');
       injectStyle('zunoplay-home-reference-v152-style','./zuno-home-reference-v152.css');
+      injectStyle('zunoplay-current-viewport-style','./zuno-current-viewport.css');
     }
   }
   function mount(){
