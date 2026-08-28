@@ -1,11 +1,11 @@
-const CACHE_NAME = "zunoplay-v179";
+const CACHE_NAME = "zunoplay-v180";
 
 // Um único shell coerente por geração. Nunca misturar assets de caches antigos.
 const STATIC_FILES = [
   "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./historico.html","./zuno-core.html","./zuno-stack.html",
   "./manifest.json","./nav.js","./home-app.js","./realtime-global.js","./room-session-guard.js",
   "./avatar-renderer.js","./avatar-home-sync.js","./avatar-asset-registry.js",
-  "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js","./zuno-current-shell-v173.css","./zuno-reference-fixes-v177.css","./zuno-reference-fixes-v178.css","./zuno-shell-runtime-v178.js","./zuno-home-shell-v179.css","./zuno-current.js","./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-home-reference-v152.css","./zuno-current-viewport.css","./zuno-current-viewport-v154.css","./zuno-current-hero-separation.css","./zuno-current-home-polish-v164.css",
+  "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js","./zuno-current-shell-v173.css","./zuno-reference-fixes-v177.css","./zuno-reference-fixes-v178.css","./zuno-shell-runtime-v178.js","./zuno-home-shell-v179.css","./zuno-home-shell-v180.css","./zuno-shell-runtime-v180.js","./zuno-current.js","./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-home-reference-v152.css","./zuno-current-viewport.css","./zuno-current-viewport-v154.css","./zuno-current-hero-separation.css","./zuno-current-home-polish-v164.css",
   "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-core.js","./zuno-stack.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg","./zuno-stack-pieces.webp",
   "./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-reference-v170.css","./zuno-avatar-studio-fixes-v170.js","./zuno-avatar-studio-mobile-v171.css","./zuno-avatar-studio-command-hierarchy-v172.js","./zuno-current-avatar-finish-v174.css"
 ];
@@ -32,6 +32,8 @@ function isCurrentUiAsset(url){
     path.endsWith('/zuno-avatar-studio-command-hierarchy-v172.js')||
     path.endsWith('/zuno-home-reference-v152.css')||
     path.endsWith('/zuno-home-shell-v179.css')||
+    path.endsWith('/zuno-home-shell-v180.css')||
+    path.endsWith('/zuno-shell-runtime-v180.js')||
     path.endsWith('/zuno-navigation.css')||
     path.endsWith('/zuno-navigation.js')||
     path.endsWith('/zuno-social.css')||
