@@ -5,101 +5,89 @@
   const pages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   if(!pages.includes(page))return;
 
-  function addClass(){
+  const meta={
+    'amigos.html':{title:'Amigos',sub:'Encontre pessoas e conecte-se no ZunoPlay.'},
+    'conversas.html':{title:'Conversas',sub:'Mensagens e conexões do seu universo social.'},
+    'comunidades.html':{title:'Comunidades',sub:'Descubra grupos, interesses e pessoas.'},
+    'notificacoes.html':{title:'Notificações',sub:'Acompanhe atividades, convites e atualizações.'},
+    'perfil.html':{title:'Perfil',sub:'Sua identidade dentro do ZunoPlay.'}
+  };
+
+  function cleanText(el){
+    if(!el||el.dataset.zunoClean==='1')return;
+    el.textContent=(el.textContent||'').replace(/^[\s🔎🔍🔔👥👤💬🌐⚡]+/u,'').trim();
+    el.dataset.zunoClean='1';
+  }
+
+  function addBaseClasses(){
     if(!document.body)return;
     document.body.classList.add('zuno-social-page','zuno-social-'+page.replace('.html',''));
     const app=document.querySelector('.app,#app');
     if(app)app.classList.add('zuno-social-shell');
-    const card=document.querySelector('.card');
-    if(page==='perfil.html'&&card)card.classList.add('profile-social-card');
-    const firstContent=document.querySelector('.card,.page,#content');
-    if(firstContent&&!document.querySelector('.social-stage4-mark')){
-      const badge=document.createElement('div');
-      badge.className='social-stage4-mark';
-      badge.innerHTML='<i></i><span>Conectado ao universo social Zuno</span>';
-      firstContent.prepend(badge);
+  }
+
+  function mountHeading(){
+    if(page==='perfil.html')return;
+    const root=document.querySelector('.page,.app,#app');
+    if(!root||root.querySelector(':scope > .z-social-heading'))return;
+    const info=meta[page];if(!info)return;
+    const heading=document.createElement('section');heading.className='z-social-heading';
+    heading.innerHTML=`<div class="z-social-kicker">Universo social Zuno</div><h1>${info.title}</h1><p>${info.sub}</p>`;
+    const first=root.firstElementChild;
+    if(first)root.insertBefore(heading,first);else root.appendChild(heading);
+  }
+
+  function normalizeHeaders(){
+    document.querySelectorAll('.title,.section-title').forEach(cleanText);
+    document.querySelectorAll('.status').forEach(el=>{if((el.textContent||'').trim().startsWith('●'))el.textContent=el.textContent.replace(/^●\s*/,'')});
+    if(page==='conversas.html'){
+      const legacy=document.querySelector('.page>.title');if(legacy)legacy.style.display='none';
+      const legacySub=document.querySelector('.page>.subtitle');if(legacySub)legacySub.style.display='none';
+    }
+    if(page==='notificacoes.html'){
+      const mark=document.getElementById('markAllButton');if(mark)mark.classList.add('zuno-mark-all');
     }
   }
 
-  function cleanSectionTitle(el){
-    if(!el||el.dataset.zunoTitleClean==='1')return;
-    const raw=(el.textContent||'').trim();
-    const text=raw.replace(/^[\s🔎🔍🔔👥👤]+/u,'').trim();
-    el.textContent=text;
-    el.dataset.zunoTitleClean='1';
-    const lower=text.toLowerCase();
-    if(lower.includes('resultado'))el.classList.add('zuno-icon-results');
-    else if(lower.includes('solicita'))el.classList.add('zuno-icon-requests');
-    else if(lower.includes('amigos'))el.classList.add('zuno-icon-friends');
+  function decorateItems(root=document){
+    root.querySelectorAll?.('.row,.conversation,.community,.notification').forEach(el=>el.classList.add('zuno-social-item'));
+    root.querySelectorAll?.('.btn,.button,.action').forEach(el=>el.classList.add('zuno-social-action'));
   }
 
   function profileAvatarConfig(){
-    const renderer=window.ZunoAvatarRenderer;
-    if(!renderer)return null;
-    let raw=null;
-    try{raw=JSON.parse(localStorage.getItem('zunoAvatarPreset')||'null')}catch(_){}
-    const base=renderer.normalize?.(raw)||renderer.defaults||null;
-    if(!base)return null;
-    const cfg=JSON.parse(JSON.stringify(base));
-    cfg.mode='Perfil';
-    cfg.selections={...(cfg.selections||{}),Mascote:0,Efeitos:0};
+    const renderer=window.ZunoAvatarRenderer;if(!renderer)return null;
+    let raw=null;try{raw=JSON.parse(localStorage.getItem('zunoAvatarPreset')||'null')}catch(_){}
+    const base=renderer.normalize?.(raw)||renderer.defaults||null;if(!base)return null;
+    const cfg=JSON.parse(JSON.stringify(base));cfg.mode='Perfil';cfg.selections={...(cfg.selections||{}),Mascote:0,Efeitos:0};
     return renderer.normalize?.(cfg)||cfg;
   }
 
   function mountProfileAvatar(){
     if(page!=='perfil.html')return;
-    const card=document.querySelector('.profile-social-card');
-    const name=card?.querySelector('.name');
-    if(!card||!name||card.classList.contains('loading'))return;
+    const card=document.querySelector('.card:not(.loading)');const name=card?.querySelector('.name');if(!card||!name)return;
+    card.classList.add('profile-social-card');
     let wrap=card.querySelector('.zuno-profile-avatar-official');
-    if(!wrap){
-      wrap=document.createElement('div');
-      wrap.className='zuno-profile-avatar-official';
-      const img=document.createElement('img');
-      img.alt='Avatar ZunoPlay';
-      img.dataset.zunoProfileAvatar='1';
-      wrap.appendChild(img);
-      name.before(wrap);
-    }
-    const img=wrap.querySelector('img');
-    const cfg=profileAvatarConfig();
-    if(cfg&&window.ZunoAvatarRenderer?.mount)window.ZunoAvatarRenderer.mount(img,cfg);
+    if(!wrap){wrap=document.createElement('div');wrap.className='zuno-profile-avatar-official';wrap.style.cssText='width:86px;height:86px;margin:0 auto 12px;border-radius:50%;overflow:hidden;border:2px solid #8b3dff;background:#11152d;box-shadow:0 0 24px rgba(139,61,255,.28)';const img=document.createElement('img');img.alt='Avatar ZunoPlay';img.dataset.zunoProfileAvatar='1';img.style.cssText='width:100%;height:100%;object-fit:cover;object-position:50% 10%';wrap.appendChild(img);name.before(wrap)}
+    const cfg=profileAvatarConfig();if(cfg&&window.ZunoAvatarRenderer?.mount)try{window.ZunoAvatarRenderer.mount(wrap.querySelector('img'),cfg)}catch(_){}
   }
 
-  function decorate(root=document){
-    addClass();
-    root.querySelectorAll?.('.status').forEach(el=>{
-      if(el.textContent.trim().startsWith('●'))el.textContent=el.textContent.replace(/^●\s*/,'');
-    });
-    root.querySelectorAll?.('.row,.conversation,.community').forEach(el=>el.classList.add('zuno-social-item'));
-    root.querySelectorAll?.('.section-title').forEach(cleanSectionTitle);
-    if(page==='perfil.html'){
-      document.querySelectorAll('.card').forEach((card,i)=>{if(i===0)card.classList.add('profile-social-card')});
-      mountProfileAvatar();
-    }
+  function ensureProfileHeading(){
+    if(page!=='perfil.html')return;
+    const app=document.querySelector('.app');if(!app||app.querySelector(':scope > .z-social-heading'))return;
+    const heading=document.createElement('section');heading.className='z-social-heading';heading.innerHTML='<div class="z-social-kicker">Identidade Zuno</div><h1>Perfil</h1><p>Sua identidade dentro do ZunoPlay.</p>';
+    const content=document.getElementById('content');if(content)app.insertBefore(heading,content);else app.prepend(heading);
   }
 
-  function mount(){
+  function decorate(root=document){addBaseClasses();mountHeading();ensureProfileHeading();normalizeHeaders();decorateItems(root);mountProfileAvatar()}
+
+  function start(){
     decorate();
-    const root=document.querySelector('.app,#app,main')||document.body;
-    if(!root)return;
-    let scheduled=false;
-    const observer=new MutationObserver(records=>{
-      if(scheduled)return;
-      scheduled=true;
-      requestAnimationFrame(()=>{
-        scheduled=false;
-        records.forEach(record=>record.addedNodes.forEach(node=>{
-          if(node.nodeType===1)decorate(node);
-        }));
-        decorate(root);
-      });
-    });
+    const root=document.querySelector('.app,#app,main')||document.body;if(!root)return;
+    let queued=false;
+    const observer=new MutationObserver(records=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1)decorateItems(n)}));decorate()})});
     observer.observe(root,{childList:true,subtree:true});
   }
 
-  window.addEventListener('zuno-avatar-renderer-ready',()=>setTimeout(()=>decorate(),0));
-  window.addEventListener('zuno:avatar-home-ready',()=>setTimeout(()=>decorate(),0));
-  window.addEventListener('zuno-avatar-saved',()=>setTimeout(()=>decorate(),0));
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+  ['zuno-avatar-renderer-ready','zuno:avatar-home-ready','zuno-avatar-saved'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(decorate,0)));
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
