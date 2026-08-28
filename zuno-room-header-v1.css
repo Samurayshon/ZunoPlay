@@ -1,0 +1,22 @@
+/* ZunoPlay Room Header v1 — compact social-room identity */
+body.zuno-page-sala .header{height:78px!important;flex:0 0 78px!important;padding:8px 14px 8px 12px!important;gap:10px!important;align-items:center!important;background:linear-gradient(180deg,rgba(5,8,20,.99),rgba(5,8,20,.82))!important}
+body.zuno-page-sala .header>.icon-btn:first-child{width:34px!important;height:34px!important;min-width:34px!important;border-radius:12px!important;border-color:transparent!important;background:transparent!important;box-shadow:none!important;font-size:27px!important;color:#edf1ff!important}
+body.zuno-page-sala .header>.icon-btn:first-child:active{background:rgba(255,255,255,.055)!important;transform:scale(.94)}
+body.zuno-page-sala .header-info{display:flex!important;flex-direction:column!important;justify-content:center!important;min-width:0!important;gap:0!important}
+body.zuno-page-sala .room-title{font-size:16.5px!important;line-height:1.12!important;font-weight:900!important;letter-spacing:-.025em!important;max-width:100%!important}
+body.zuno-page-sala .room-meta{display:flex!important;align-items:center!important;gap:5px!important;margin-top:4px!important;min-height:13px!important;font-size:8.7px!important;line-height:1!important;color:#8d96ae!important;white-space:nowrap!important;overflow:hidden!important}
+body.zuno-page-sala .room-status{font-size:8.7px!important;color:#5ae99d!important;font-weight:850!important;flex:0 0 auto!important}
+body.zuno-page-sala .zuno-room-category{color:#adb5cb!important;font-weight:700!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:88px!important}
+body.zuno-page-sala .zuno-room-id{color:#68728d!important;font-variant-numeric:tabular-nums!important;flex:0 0 auto!important}
+body.zuno-page-sala .zuno-room-owner-line{display:flex;align-items:center;gap:5px;margin-top:4px;min-height:12px;max-width:100%;font-size:8px;line-height:1;color:#737e9a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.zuno-page-sala .zuno-room-owner-line .owner-badge{display:inline-grid;place-items:center;width:13px;height:13px;min-width:13px;border-radius:50%;background:rgba(255,196,87,.1);color:#ffc857;font-size:7px;border:1px solid rgba(255,196,87,.2)}
+body.zuno-page-sala .zuno-room-owner-name{overflow:hidden;text-overflow:ellipsis;color:#929cb7;font-weight:700}
+body.zuno-page-sala .zuno-room-owner-role{color:#626d88}
+body.zuno-page-sala #topPeople{margin-left:auto!important;flex:0 0 auto!important;display:flex!important;align-items:center!important;gap:0!important}
+body.zuno-page-sala #topPeople .top-avatar{width:30px!important;height:30px!important;min-width:30px!important;margin-left:-6px!important;border:1px solid rgba(100,116,180,.34)!important;background:#11172d!important;box-shadow:0 0 0 2px #060a18!important}
+body.zuno-page-sala #topPeople .people-count{height:28px!important;min-width:28px!important;padding:0 7px!important;margin-left:5px!important;border-radius:999px!important;background:rgba(18,24,47,.86)!important;border:1px solid rgba(94,108,171,.28)!important;color:#d5daea!important;font-size:9px!important;font-weight:800!important}
+body.zuno-page-sala #peopleButton{width:36px!important;height:36px!important;min-width:36px!important;border-radius:12px!important;background:rgba(12,17,37,.58)!important;border-color:rgba(91,106,166,.2)!important;box-shadow:none!important;font-size:16px!important;letter-spacing:1px!important}
+body.zuno-page-sala #peopleButton:active{transform:scale(.94);background:rgba(24,30,58,.86)!important}
+body.zuno-page-sala .header:after{left:12px!important;right:12px!important;background:linear-gradient(90deg,transparent,rgba(131,72,255,.28),rgba(51,204,255,.08),transparent)!important}
+@media(max-width:430px){body.zuno-page-sala .header{height:76px!important;flex-basis:76px!important;padding-left:10px!important;padding-right:10px!important;gap:7px!important}body.zuno-page-sala .header>.icon-btn:first-child{width:32px!important;height:32px!important;min-width:32px!important}.zuno-page-sala .room-title{font-size:16px!important}.zuno-page-sala .zuno-room-category{max-width:72px!important}.zuno-page-sala #topPeople .top-avatar{width:28px!important;height:28px!important;min-width:28px!important}.zuno-page-sala #peopleButton{width:34px!important;height:34px!important;min-width:34px!important}}
+@media(max-width:360px){body.zuno-page-sala #topPeople .top-avatar{display:none!important}.zuno-page-sala .zuno-room-owner-role{display:none!important}.zuno-page-sala .zuno-room-category{max-width:58px!important}}
