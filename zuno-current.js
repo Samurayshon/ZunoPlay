@@ -62,11 +62,7 @@
   function asset(file){return file+(file.includes('?')?'&':'?')+'v='+VERSION}
   function injectStyle(id,file){
     const href=asset(file),existing=document.getElementById(id);
-    if(existing){
-      const current=existing.getAttribute('href')||'';
-      if(!current.includes('v='+VERSION))existing.setAttribute('href',href);
-      return;
-    }
+    if(existing){const current=existing.getAttribute('href')||'';if(!current.includes('v='+VERSION))existing.setAttribute('href',href);return}
     const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);
   }
   function injectScript(id,file,errorText){
@@ -78,8 +74,7 @@
     const key='zuno-sw-v180-reloaded';
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(sessionStorage.getItem(key)==='1')return;
-      sessionStorage.setItem(key,'1');
-      location.reload();
+      sessionStorage.setItem(key,'1');location.reload();
     });
   }
   function loadCurrentModules(){
@@ -114,7 +109,6 @@
     if(page!=='index.html'){
       injectStyle('zunoplay-reference-fixes-v177','./zuno-reference-fixes-v177.css');
       injectStyle('zunoplay-reference-fixes-v178','./zuno-reference-fixes-v178.css');
-      injectScript('zunoplay-shell-runtime-v178','./zuno-shell-runtime-v178.js','ZunoPlay: runtime visual v178 indisponível');
       injectStyle('zunoplay-home-shell-v180','./zuno-home-shell-v180.css');
       injectScript('zunoplay-shell-runtime-v180','./zuno-shell-runtime-v180.js','ZunoPlay: runtime visual v180 indisponível');
     }
@@ -126,8 +120,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
-    installV180Refresh();
-    loadCurrentModules();
+    installV180Refresh();loadCurrentModules();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
