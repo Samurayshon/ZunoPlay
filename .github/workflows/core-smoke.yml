@@ -53,12 +53,12 @@ jobs:
             conversas.html notificacoes.html comunidades.html salas.html sala.html
             jogos.html zuno-core.html zuno-core.js zuno-stack.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
-            avatar-renderer.js avatar-home-sync.js
+            avatar-renderer.js avatar-home-sync.js avatar-asset-registry.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
             zuno-game-progression.js zuno-game-progression.css
-            zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg
+            zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg zuno-stack-pieces.webp
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
-            zuno-directed-gifts.js zuno-room-games.js zuno-room-moderation.js
+            zuno-directed-gifts.js zuno-room-games.js zuno-room-game-return.js zuno-room-moderation.js
           )
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }
@@ -76,10 +76,63 @@ jobs:
           done
           grep -q 'Zuno Core' jogos.html
           grep -q 'Zuno Stack' jogos.html
-          if grep -Eq 'Zuno Pulse|Zuno Rush|Zuno Caos|Desafio Zuno|Reflexo Zuno|Precisão Zuno|Arena Zuno|Partida Zuno' jogos.html; then
+          if grep -Eq 'Zuno Pulse|Zuno Rush|Zuno Caos|Reflexo Zuno|Precisão Zuno|Arena Zuno|Partida Zuno' jogos.html; then
             echo 'Legacy game returned to catalog.'
             exit 1
           fi
+      - name: Validate local navigation targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,sys
+          patterns=[
+              re.compile(r'href\s*=\s*["\']([^"\']+)',re.I),
+              re.compile(r'location\.href\s*=\s*["\']([^"\']+)',re.I),
+              re.compile(r'location\.replace\(\s*["\']([^"\']+)',re.I),
+              re.compile(r'new\s+URL\(\s*["\']([^"\']+)',re.I),
+          ]
+          missing=[]
+          for path in list(pathlib.Path('.').glob('*.html'))+list(pathlib.Path('.').glob('*.js')):
+              text=path.read_text(encoding='utf-8')
+              for pattern in patterns:
+                  for raw in pattern.findall(text):
+                      target=raw.split('#',1)[0].split('?',1)[0].strip()
+                      if not target or target.startswith(('http:','https:','mailto:','javascript:','#','data:')):
+                          continue
+                      if target.endswith('.html') and not pathlib.Path(target).exists():
+                          missing.append(f'{path}: {target}')
+          if missing:
+              print('Broken local navigation targets:')
+              print('\n'.join(sorted(set(missing))))
+              sys.exit(1)
+          PY
+      - name: Validate frontend generation consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,sys
+          index=pathlib.Path('index.html').read_text(encoding='utf-8')
+          nav=pathlib.Path('nav.js').read_text(encoding='utf-8')
+          current=pathlib.Path('zuno-current.js').read_text(encoding='utf-8')
+          sw=pathlib.Path('sw.js').read_text(encoding='utf-8')
+          def one(pattern,text,label):
+              m=re.search(pattern,text)
+              if not m: raise SystemExit(f'Missing version marker: {label}')
+              return m.group(1)
+          nav_v=one(r"ASSET_VERSION='(\d+)'",nav,'nav.js')
+          current_v=one(r"const VERSION='(\d+)'",current,'zuno-current.js')
+          sw_v=one(r'CACHE_NAME\s*=\s*"zunoplay-v(\d+)"',sw,'sw.js')
+          index_versions=set(re.findall(r'[?&]v=(\d+)',index))
+          expected={nav_v}
+          if current_v!=nav_v or sw_v!=nav_v or index_versions!=expected:
+              raise SystemExit(f'Frontend generation mismatch: index={sorted(index_versions)} nav={nav_v} current={current_v} sw={sw_v}')
+          reload_key=f'zuno-sw-v{nav_v}-reloaded'
+          if reload_key not in current:
+              raise SystemExit('Missing current service-worker reload key: '+reload_key)
+          print('Frontend generation consistent: v'+nav_v)
+          PY
       - name: Validate Zuno Stack premium pieces
         shell: bash
         run: |
@@ -101,15 +154,22 @@ jobs:
           set -euo pipefail
           grep -q 'data-zuno-home-boot="current-only"' index.html
           grep -q 'data-zuno-avatar-system="studio"' index.html
-          grep -q 'home-app.js?v=148' index.html
-          grep -q 'zuno-current-home.css?v=148' index.html
-          grep -q 'zuno-current-home.js?v=148' index.html
           if grep -q 'profile-avatar profile-fallback' index.html; then
             echo 'Legacy main-avatar fallback returned to index.html.'
             exit 1
           fi
           if grep -q "wrap.innerHTML=.*profile-fallback" home-app.js; then
             echo 'Legacy avatar renderer returned to home-app.js.'
+            exit 1
+          fi
+      - name: Guard room-game session integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "'zuno-core.html','zuno-stack.html'" room-session-guard.js
+          grep -q "const roomGamePages=\['zuno-core.html','zuno-stack.html'\]" nav.js
+          if grep -Eq "desafio\.html|partida\.html|reflexo\.html|precisao\.html|arena\.html|zuno-caos\.html" room-session-guard.js; then
+            echo 'Legacy room-game page returned to session guard.'
             exit 1
           fi
       - name: Guard against accidental service-role secrets
