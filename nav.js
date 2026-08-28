@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='181';
+  const ASSET_VERSION='183';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
@@ -58,7 +58,9 @@
     if(page==='index.html')return;
     loadStyle('zunoplay-navigation-style','./zuno-navigation.css');
     loadStyle('zunoplay-home-nav-v181','./zuno-home-nav-v181.css');
+    loadStyle('zunoplay-global-bottom-nav-v182-style','./zuno-global-bottom-nav-v182.css');
     loadScript('zunoplay-navigation-stage3','./zuno-navigation.js','ZunoPlay: navegação global indisponível');
+    loadScript('zunoplay-global-bottom-nav-v182-script','./zuno-global-bottom-nav-v182.js','ZunoPlay: barra inferior global indisponível');
   }
   function loadSocialSystem(){if(!socialPages.includes(page))return;loadStyle('zunoplay-social-style','./zuno-social.css');loadScript('zunoplay-social-stage4','./zuno-social.js','ZunoPlay: sistema social indisponível')}
   function loadGameProgression(){if(!gamePages.includes(page))return;loadStyle('zunoplay-game-progression-style','./zuno-game-progression.css');loadScript('zunoplay-game-progression','./zuno-game-progression.js','ZunoPlay: progressão de jogos indisponível')}
