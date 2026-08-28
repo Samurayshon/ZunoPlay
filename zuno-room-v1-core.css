@@ -36,3 +36,23 @@ body.zuno-page-sala .zuno-room-toast{position:fixed;left:50%;bottom:calc(76px + 
 body.zuno-page-sala .zuno-room-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 body.zuno-page-sala .zuno-room-toast.error{border-color:rgba(222,77,111,.5);color:#ffb3c4}
 body.zuno-page-sala .zuno-seat-busy{pointer-events:none;opacity:.65}
+
+/* Sala v1.1 — mobile composition cleanup. This file is loaded last and owns these values. */
+body.zuno-page-sala .stage-shell{height:296px!important;padding-top:6px!important}
+body.zuno-page-sala .stage-head{height:26px!important;min-height:26px!important}
+body.zuno-page-sala .room-stage{grid-template-rows:repeat(2,100px)!important;gap:0 2px!important;padding-top:4px!important;padding-bottom:2px!important}
+body.zuno-page-sala .avatar-slot,body.zuno-page-sala .seat-empty{min-height:96px!important}
+body.zuno-page-sala .room-stage:before{width:130px!important;height:130px!important;top:45%!important}
+body.zuno-page-sala .room-stage:after{top:45%!important}
+body.zuno-page-sala .chat-section{top:284px!important;background:linear-gradient(180deg,rgba(3,6,16,.12),rgba(3,6,16,.72) 28%,rgba(3,6,16,.94) 100%)!important}
+body.zuno-page-sala .chat-head{height:30px!important;min-height:30px!important;flex-basis:30px!important;padding:0 16px!important}
+body.zuno-page-sala .chat-title{font-size:10px!important;color:#a3abc0!important}
+body.zuno-page-sala .messages{justify-content:flex-end!important;padding-top:8px!important;padding-bottom:12px!important}
+body.zuno-page-sala .messages>.empty{margin:12px 0 auto!important;align-self:flex-start!important;max-width:76%!important;padding:10px 12px!important;background:rgba(10,15,32,.5)!important;border:1px solid rgba(122,137,194,.12)!important;color:#8f98b0!important}
+body.zuno-page-sala #emojiButton:after{display:none!important}
+body.zuno-page-sala #emojiButton.mic-active:after,body.zuno-page-sala #emojiButton.mic-muted:after{display:block!important;content:''!important;position:absolute!important;right:5px!important;bottom:5px!important;width:5px!important;height:5px!important;border-radius:50%!important}
+body.zuno-page-sala #emojiButton.mic-active:after{background:#36e996!important;box-shadow:0 0 8px rgba(54,233,150,.8),0 0 0 2px rgba(3,6,17,.9)!important}
+body.zuno-page-sala #emojiButton.mic-muted:after{background:#ff809e!important;box-shadow:0 0 7px rgba(255,128,158,.65),0 0 0 2px rgba(3,6,17,.9)!important}
+body.zuno-page-sala #emojiButton:not(.mic-active):not(.mic-muted){color:#aeb6cf!important;background:rgba(12,17,37,.82)!important;border-color:rgba(91,106,166,.28)!important;box-shadow:none!important}
+body.zuno-page-sala .composer-wrap{box-shadow:0 -10px 30px rgba(0,0,0,.2)!important}
+@media(max-width:430px){body.zuno-page-sala .stage-shell{height:286px!important}.zuno-page-sala .room-stage{grid-template-rows:repeat(2,96px)!important}.zuno-page-sala .chat-section{top:274px!important}.zuno-page-sala .room-stage:before{width:124px!important;height:124px!important}.zuno-page-sala .empty-circle{width:47px!important;height:47px!important}.zuno-page-sala .avatar-wrap{width:57px!important;height:57px!important}.zuno-page-sala .avatar{width:52px!important;height:52px!important}}
