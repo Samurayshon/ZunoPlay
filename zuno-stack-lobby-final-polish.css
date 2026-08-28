@@ -1,0 +1,39 @@
+/* Zuno Stack lobby final polish — compact controls, mode-reactive arena, loading and richer panels */
+body.zstack-lobby-v2 #zstackUtilityBar{max-width:760px!important;width:calc(100% - 36px)!important;align-self:center!important;grid-template-columns:auto minmax(0,1fr) auto!important;gap:10px!important;padding:4px 5px!important;border:1px solid rgba(108,87,171,.16)!important;border-radius:15px!important;background:linear-gradient(90deg,rgba(10,13,27,.62),rgba(18,12,38,.42))!important;box-shadow:inset 0 1px rgba(255,255,255,.025)!important}
+body.zstack-lobby-v2 .zmode-switch{height:30px!important;padding:2px!important;border-radius:10px!important;background:#0b0d1c!important}
+body.zstack-lobby-v2 .zmode-btn{height:26px!important;min-width:42px!important;font-size:6.5px!important;letter-spacing:.55px!important;transition:.18s ease!important}
+body.zstack-lobby-v2 .zmode-btn.active{background:linear-gradient(135deg,#8d42f2,#4c43c8)!important;box-shadow:0 5px 16px rgba(117,61,228,.28)!important}
+body.zstack-lobby-v2 .zstack-mini-stats{gap:10px!important;overflow:hidden!important}
+body.zstack-lobby-v2 .zstack-mini-stats span{font-size:6.4px!important;font-weight:750!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.zstack-lobby-v2 #zstackFriends.is-empty{color:#737b91!important}
+body.zstack-lobby-v2 #zstackFriends.is-online{color:#5ce4ae!important}
+body.zstack-lobby-v2 .zstack-actions button{width:30px!important;height:30px!important;border-radius:10px!important;background:rgba(13,16,32,.78)!important;transition:.18s ease!important}
+body.zstack-lobby-v2 .zstack-actions button:active{transform:scale(.92)!important}
+body.zstack-lobby-v2 #zstackGift:not(.claimed){border-color:rgba(255,126,82,.3)!important;box-shadow:0 0 17px rgba(255,99,93,.08)!important}
+body.zstack-lobby-v2 #zstackGift:not(.claimed) i{animation:zGiftPulse 1.6s ease-in-out infinite!important}
+body.zstack-lobby-v2 #zstackGift.claimed{filter:saturate(.35)!important;opacity:.55!important}
+body.zstack-lobby-v2 #zstackSettings{font-family:system-ui,sans-serif!important}
+body.zstack-lobby-v2 #zstackPartySlots .zsl-party-slot.empty{transition:.2s ease!important}
+body.zstack-lobby-v2 #zstackPartySlots .zsl-party-slot.empty:active{transform:scale(.97)!important;border-color:rgba(174,124,255,.55)!important;background:rgba(55,31,95,.4)!important}
+body.zstack-lobby-v2 #zstackPartySlots .zsl-party-slot.empty[data-suggest='1']{border-color:rgba(77,210,176,.32)!important;box-shadow:inset 0 0 22px rgba(56,190,158,.035)!important}
+body.zstack-lobby-v2 #zunoStackContent{position:relative!important;overflow:hidden!important}
+body.zstack-lobby-v2 #zunoStackContent:after{content:'';position:absolute;inset:auto -8% -120% 28%;height:190%;background:radial-gradient(circle,rgba(153,69,255,.16),transparent 62%);pointer-events:none;animation:zSeasonDrift 7s ease-in-out infinite alternate}
+body.zstack-lobby-v2 #zstackRankingBtn{min-width:164px!important;transition:.18s ease!important}
+body.zstack-lobby-v2 #zstackRankingBtn:active{transform:scale(.97)!important}
+body.zstack-lobby-v2 #zstackRankingBtn .zrank-self{display:flex!important;gap:8px!important;margin-left:10px!important;padding-left:10px!important;border-left:1px solid rgba(255,255,255,.08)!important;color:#c7cbe0!important;font-size:5.8px!important;white-space:nowrap!important}
+body.zstack-lobby-v2 #zstackRankingBtn .zrank-self b{font-size:6.2px!important;color:#ffe07b!important}
+body.zstack-lobby-v2[data-stack-mode='solo'] #zstackArenaScene{filter:hue-rotate(-8deg) saturate(1.06)!important}
+body.zstack-lobby-v2[data-stack-mode='solo'] .za-o2{opacity:.36!important}
+body.zstack-lobby-v2[data-stack-mode='coop'] #zstackArenaScene{filter:hue-rotate(10deg) saturate(1.12)!important}
+body.zstack-lobby-v2[data-stack-mode='coop'] #zstackArenaScene:after{content:'ZUNO PULSE ARENA · COOP'!important;color:rgba(113,211,235,.42)!important}
+body.zstack-lobby-v2[data-stack-mode='coop'] .za-o1{border-color:rgba(67,208,232,.24)!important}
+body.zstack-lobby-v2 #start.is-loading{pointer-events:none!important;filter:saturate(.85) brightness(.88)!important}
+body.zstack-lobby-v2 #start.is-loading .zsl-v2-cta:before{content:'';display:inline-block;width:10px;height:10px;margin-right:7px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;vertical-align:-2px;animation:zStackSpin .7s linear infinite}
+body.zstack-lobby-v2 #start.is-loading:before{content:''!important}
+body.zstack-lobby-v2 #start.is-loading:after{content:'PREPARANDO PARTIDA…'!important}
+.zrank-summary{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important;margin:13px 0 4px!important}.zrank-summary>div{padding:10px 5px!important;border:1px solid rgba(255,255,255,.06)!important;border-radius:13px!important;background:rgba(255,255,255,.035)!important;text-align:center!important}.zrank-summary small{display:block!important;color:#798198!important;font-size:6.5px!important;text-transform:uppercase!important;letter-spacing:.6px!important}.zrank-summary b{display:block!important;margin-top:3px!important;font-size:12px!important;color:#fff!important}.zrank-summary>div:nth-child(1) b{color:#ffd76e!important}.zrank-summary>div:nth-child(2) b{color:#c48cff!important}.zrank-summary>div:nth-child(3) b{color:#5bd6ee!important}
+.zmini-status{margin:10px 0 0!important;padding:9px!important;border-radius:12px!important;background:rgba(255,255,255,.035)!important;color:#8d95aa!important;font-size:8px!important}
+@keyframes zGiftPulse{50%{transform:scale(1.35);opacity:.45}}@keyframes zSeasonDrift{to{transform:translateX(-14%)}}@keyframes zStackSpin{to{transform:rotate(360deg)}}
+@media(max-width:390px){body.zstack-lobby-v2 #zstackUtilityBar{width:calc(100% - 28px)!important;gap:5px!important}body.zstack-lobby-v2 .zstack-mini-stats{gap:5px!important}body.zstack-lobby-v2 .zstack-mini-stats span{font-size:5.4px!important}body.zstack-lobby-v2 #zstackRankingBtn .zrank-self{display:none!important}}
+@media(max-height:760px){body.zstack-lobby-v2 #zstackUtilityBar{padding:2px 3px!important;margin-bottom:3px!important}body.zstack-lobby-v2 .zmode-switch{height:26px!important}body.zstack-lobby-v2 .zmode-btn{height:22px!important}.zrank-summary{margin-top:8px!important}}
+@media(prefers-reduced-motion:reduce){body.zstack-lobby-v2 #zstackGift i,body.zstack-lobby-v2 #zunoStackContent:after,body.zstack-lobby-v2 #start.is-loading .zsl-v2-cta:before{animation:none!important}}
