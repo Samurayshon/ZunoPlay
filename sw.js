@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v186";
+const CACHE_NAME = "zunoplay-v187";
 
 const STATIC_FILES = [
   "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./historico.html","./zuno-core.html","./zuno-stack.html",
