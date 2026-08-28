@@ -69,6 +69,19 @@ jobs:
             grep -q "$asset" sw.js
           done
 
+      - name: Validate social lobby and contextual invites
+        run: |
+          set -euo pipefail
+          test -s zuno-stack-lobby.css
+          grep -q 'zuno-stack-lobby.css' nav.js
+          grep -q 'zuno-stack-lobby.css' sw.js
+          grep -q 'zstackLobby' zuno-stack-social.js
+          grep -q 'zslInviteSheet' zuno-stack-social.js
+          grep -q "from('messages')" zuno-stack-social.js
+          grep -q 'stack_party_accept' zuno-stack-social.js
+          grep -q "type:'game_invite'" zuno-stack-social.js
+          grep -q 'prefers-reduced-motion' zuno-stack-lobby.css
+
       - name: Validate visual finish assets
         run: |
           set -euo pipefail
@@ -82,8 +95,6 @@ jobs:
           grep -q 'prefers-reduced-motion' zuno-stack-visual-final.css
           grep -q 'zuno-stack-lite' zuno-stack-visual.css
           grep -q 'zuno-stack-lite' zuno-stack-visual-final.css
-          grep -q 'zuno-stack-visual.css' sw.js
-          grep -q 'zuno-stack-visual-final.css' sw.js
 
       - name: Validate strategic board generation
         run: |
