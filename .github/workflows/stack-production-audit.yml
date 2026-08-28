@@ -39,8 +39,8 @@ jobs:
       - name: Validate Stack gameplay invariants
         run: |
           set -euo pipefail
-          grep -q 'TRAY_LIMIT=6' zuno-stack.js
-          grep -q 'RISK_AT=5' zuno-stack.js
+          grep -q 'TRAY_LIMIT=7' zuno-stack.js
+          grep -q 'RISK_AT=6' zuno-stack.js
           grep -q 'TOTAL_TILES=90' zuno-stack.js
           grep -q 'COMBO_WINDOW_MS=12000' zuno-stack.js
           grep -q "roomGames=\['zuno-stack.html'\]" nav.js
