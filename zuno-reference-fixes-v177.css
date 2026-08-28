@@ -1,0 +1,151 @@
+/* ZunoPlay — correções visuais v177
+   Referência mestre: Home oficial enviada pelo usuário. */
+:root{
+  --zref-bg:#03050f;
+  --zref-panel:#090d20;
+  --zref-panel2:#0e1430;
+  --zref-line:#30345f;
+  --zref-text:#f7f7ff;
+  --zref-muted:#a5a8bd;
+  --zref-purple:#8e2cff;
+  --zref-magenta:#d245f4;
+  --zref-cyan:#24d9ff;
+  --zref-green:#37e481;
+  --zref-grad:linear-gradient(135deg,#7335ff 0%,#c43ef0 52%,#24d9ff 100%);
+}
+
+/* Cabeçalho: mesma leitura visual da Home */
+body .zuno-global-header{
+  width:min(100%,720px)!important;
+  min-height:82px!important;
+  margin:0 auto 20px!important;
+  padding:18px 28px 14px!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body .zuno-global-header:after{left:28px!important;right:28px!important;opacity:.6!important}
+body .zuno-global-brand{gap:10px!important}
+body .zuno-global-brand-mark{width:32px!important;height:30px!important;flex-basis:32px!important}
+body .zuno-global-brand-word{font-size:35px!important;letter-spacing:-1.8px!important}
+body .zuno-global-page-title{display:none!important}
+body .zuno-global-actions{gap:10px!important}
+body .zuno-global-action{width:46px!important;height:46px!important}
+body .zuno-global-action.is-profile{width:48px!important;height:48px!important;padding:2px!important;border:2px solid #8b3cff!important;background:#0d1021!important;overflow:hidden!important;box-shadow:0 0 22px rgba(145,54,255,.35)!important}
+/* Mantém o ícone de perfil como fallback por baixo do avatar enquanto a imagem carrega. */
+body .zuno-global-action.is-profile:before{display:block!important;position:absolute!important;z-index:0!important}
+body .zuno-global-action.is-profile img[data-zuno-studio-avatar="1"]{position:relative!important;z-index:1!important;width:100%!important;height:100%!important;border-radius:50%!important;object-fit:cover!important;object-position:50% 10%!important;background:transparent!important}
+
+/* Barra inferior: mantém a referência e impede sobreposição do conteúdo. */
+body .zuno-global-nav{width:min(calc(100% - 28px),692px)!important;height:88px!important;bottom:max(9px,env(safe-area-inset-bottom))!important}
+body.zuno-global-nav-mounted .app,body.zuno-global-nav-mounted #app{padding-bottom:190px!important}
+
+/* Superfícies e botões coerentes com a Home */
+body.zuno-social-page .card,
+body.zuno-page-salas .room,
+body.zuno-page-comunidades .card,
+body.zuno-page-jogos .hero,
+body.zuno-page-jogos .game,
+body.zuno-page-historico .card,
+body.zuno-page-notificacoes .card{
+  border:1px solid rgba(80,87,145,.45)!important;
+  background:linear-gradient(155deg,rgba(17,21,52,.96),rgba(7,11,30,.99))!important;
+  box-shadow:inset 0 0 44px rgba(64,68,175,.06)!important;
+}
+body.zuno-social-page .btn,
+body.zuno-social-page .button,
+body.zuno-social-page .send,
+body.zuno-page-salas .enter-button,
+body.zuno-page-comunidades .button,
+body.zuno-page-jogos .primary{
+  background:var(--zref-grad)!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow:0 0 20px rgba(142,44,255,.18)!important;
+}
+
+/* ===== Social ===== */
+body.zuno-social-amigos .app,body.zuno-social-amigos #app{padding-bottom:205px!important}
+body.zuno-social-amigos .card{border-radius:24px!important}
+body.zuno-social-amigos .social-stage4-mark{margin-bottom:22px!important}
+body.zuno-social-amigos .title{font-size:34px!important;line-height:1.05!important;margin-bottom:12px!important}
+body.zuno-social-amigos .sub{font-size:15px!important;line-height:1.45!important;margin-bottom:22px!important}
+body.zuno-social-amigos input{min-height:54px!important;border-radius:17px!important;background:#0b1024!important;border:1px solid rgba(90,98,157,.34)!important}
+body.zuno-social-amigos .button,body.zuno-social-amigos .btn{min-height:54px!important;border-radius:17px!important;font-size:16px!important}
+body.zuno-social-amigos .section-title{font-size:20px!important;margin-bottom:8px!important}
+body.zuno-social-amigos .empty{min-height:118px!important;display:grid!important;place-items:center!important;padding:24px 12px!important}
+
+/* ===== Salas ===== */
+body.zuno-page-salas .app{padding-bottom:190px!important}
+body.zuno-page-salas .page{padding:12px 28px 190px!important}
+body.zuno-page-salas .title.zuno-room-page-title{font-size:34px!important;line-height:1.05!important;margin:6px 0 10px!important}
+body.zuno-page-salas .subtitle{font-size:15px!important;line-height:1.52!important;margin-bottom:22px!important;color:var(--zref-muted)!important}
+body.zuno-page-salas .status{min-height:58px!important;border-radius:18px!important;padding:15px 18px!important;background:rgba(8,38,34,.50)!important;border:1px solid rgba(55,228,129,.24)!important;color:#75ecaa!important}
+body.zuno-page-salas .room{padding:22px!important;border-radius:26px!important;border-color:rgba(142,44,255,.56)!important;background:radial-gradient(circle at 16% 50%,rgba(92,43,214,.18),transparent 31%),linear-gradient(155deg,rgba(17,21,52,.98),rgba(7,11,30,.99))!important}
+/* Remove a dupla de círculos que apareceu no print. */
+body.zuno-page-salas .room-top:before,
+body.zuno-page-salas .room-top:after{display:none!important;content:none!important}
+body.zuno-page-salas .room-top{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:18px!important;min-height:112px!important;padding:0!important}
+body.zuno-page-salas .room-top>div:first-child{position:relative!important;min-width:0!important;padding-left:94px!important}
+body.zuno-page-salas .room-top>div:first-child:before{content:""!important;position:absolute!important;left:0!important;top:50%!important;transform:translateY(-50%)!important;width:72px!important;height:72px!important;border-radius:50%!important;background:radial-gradient(circle,#7448eb 0 18%,#24165b 45%,#090d1f 70%)!important;border:2px solid #7c3cff!important;box-shadow:0 0 0 7px rgba(124,60,255,.08),0 0 24px rgba(124,60,255,.42)!important}
+body.zuno-page-salas .room-top>div:first-child:after{content:""!important;position:absolute!important;left:24px!important;top:50%!important;transform:translateY(-50%)!important;width:25px!important;height:34px!important;background:linear-gradient(180deg,#8b7cff,#30d7ff)!important;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 32'%3E%3Crect x='6' y='1' width='12' height='20' rx='6' fill='black'/%3E%3Cpath d='M2 16a10 10 0 0 0 20 0M12 26v5M7 31h10' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 32'%3E%3Crect x='6' y='1' width='12' height='20' rx='6' fill='black'/%3E%3Cpath d='M2 16a10 10 0 0 0 20 0M12 26v5M7 31h10' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important}
+body.zuno-page-salas .room-name{font-size:22px!important;line-height:1.12!important;margin-bottom:7px!important;color:#fff!important}
+body.zuno-page-salas .room-info{font-size:14px!important;line-height:1.35!important;color:#9a9eb2!important}
+body.zuno-page-salas .room-current-label{display:inline-flex!important;align-items:center!important;margin-top:9px!important;padding:7px 11px!important;border-radius:999px!important;background:rgba(18,65,48,.52)!important;border:1px solid rgba(55,228,129,.26)!important;color:#78edaf!important;font-size:11px!important}
+body.zuno-page-salas .enter-button{min-width:108px!important;min-height:56px!important;border-radius:17px!important;padding:12px 18px!important;font-size:16px!important;align-self:center!important}
+
+/* ===== Perfil ===== */
+body.zuno-social-perfil .app,body.zuno-social-perfil #app{padding-bottom:215px!important}
+body.zuno-social-perfil .profile-social-card{padding:24px!important;margin-bottom:42px!important;border-radius:26px!important;overflow:visible!important}
+/* Corrige o avatar gigante do print: volta a ser um elemento de identidade, não um banner. */
+body.zuno-social-perfil .profile-social-card .zuno-profile-avatar-official{
+  width:104px!important;height:104px!important;max-width:104px!important;max-height:104px!important;
+  margin:0 auto 15px!important;padding:3px!important;border-radius:50%!important;overflow:hidden!important;
+  background:linear-gradient(135deg,#6d39ff,#b93ef1,#29d9fa)!important;
+  box-shadow:0 0 0 6px rgba(111,52,240,.07),0 0 28px rgba(142,44,255,.24)!important;
+}
+body.zuno-social-perfil .profile-social-card .zuno-profile-avatar-official img{
+  display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+  border-radius:50%!important;object-fit:cover!important;object-position:50% 10%!important;background:#0d1021!important;
+}
+body.zuno-social-perfil .name{font-size:31px!important;line-height:1.05!important;margin-top:0!important}
+body.zuno-social-perfil .email{font-size:15px!important;margin:7px 0 24px!important;color:var(--zref-muted)!important}
+body.zuno-social-perfil .stats{gap:10px!important;margin-bottom:20px!important}
+body.zuno-social-perfil .stat{min-height:104px!important;border-radius:18px!important;background:linear-gradient(155deg,#111631,#0a0e23)!important;border:1px solid rgba(80,87,145,.42)!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+body.zuno-social-perfil .stat b{font-size:21px!important}
+body.zuno-social-perfil .stat small{margin-top:8px!important;color:#8f94ab!important}
+body.zuno-social-perfil .field input,body.zuno-social-perfil .field textarea{border-radius:17px!important;background:#0b1024!important;border:1px solid rgba(90,98,157,.34)!important}
+body.zuno-social-perfil .field textarea{min-height:126px!important}
+body.zuno-social-perfil .btn{min-height:58px!important;border-radius:17px!important;font-size:16px!important}
+
+@media(max-width:520px){
+  body .zuno-global-header{padding:16px 20px 13px!important}
+  body .zuno-global-header:after{left:20px!important;right:20px!important}
+  body .zuno-global-brand-word{font-size:31px!important}
+  body .zuno-global-brand-mark{width:29px!important;height:27px!important;flex-basis:29px!important}
+  body .zuno-global-actions{gap:6px!important}
+  body .zuno-global-action{width:42px!important;height:42px!important}
+  body .zuno-global-action.is-profile{width:46px!important;height:46px!important}
+  body.zuno-social-page .app,body.zuno-social-page #app,body[class*="zuno-page-"] .app,body[class*="zuno-page-"] #app{padding-left:20px!important;padding-right:20px!important}
+  body.zuno-page-salas .page{padding-left:20px!important;padding-right:20px!important;padding-bottom:190px!important}
+  body.zuno-page-salas .room{padding:19px 17px!important}
+  body.zuno-page-salas .room-top{gap:12px!important}
+  body.zuno-page-salas .room-top>div:first-child{padding-left:78px!important}
+  body.zuno-page-salas .room-top>div:first-child:before{width:62px!important;height:62px!important}
+  body.zuno-page-salas .room-top>div:first-child:after{left:20px!important;width:22px!important;height:30px!important}
+  body.zuno-page-salas .room-name{font-size:20px!important}
+  body.zuno-page-salas .room-info{font-size:13px!important}
+  body.zuno-page-salas .enter-button{min-width:100px!important;min-height:54px!important;padding:10px 14px!important}
+}
+
+@media(max-width:390px){
+  body .zuno-global-header{padding-left:16px!important;padding-right:16px!important}
+  body .zuno-global-header:after{left:16px!important;right:16px!important}
+  body .zuno-global-brand-word{font-size:29px!important}
+  body .zuno-global-actions{gap:3px!important}
+  body.zuno-page-salas .room-top{grid-template-columns:1fr!important;gap:14px!important}
+  body.zuno-page-salas .enter-button{width:100%!important}
+  body.zuno-social-perfil .stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  body.zuno-social-perfil .stat{padding:10px 6px!important}
+  body.zuno-social-perfil .stat b{font-size:18px!important}
+}
