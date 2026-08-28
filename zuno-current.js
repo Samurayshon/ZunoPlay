@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='178';
+  const VERSION='180';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -73,9 +73,9 @@
     if(document.getElementById(id))return;
     const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script);
   }
-  function installV178Refresh(){
+  function installV180Refresh(){
     if(!('serviceWorker' in navigator))return;
-    const key='zuno-sw-v178-reloaded';
+    const key='zuno-sw-v180-reloaded';
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(sessionStorage.getItem(key)==='1')return;
       sessionStorage.setItem(key,'1');
@@ -115,6 +115,8 @@
       injectStyle('zunoplay-reference-fixes-v177','./zuno-reference-fixes-v177.css');
       injectStyle('zunoplay-reference-fixes-v178','./zuno-reference-fixes-v178.css');
       injectScript('zunoplay-shell-runtime-v178','./zuno-shell-runtime-v178.js','ZunoPlay: runtime visual v178 indisponível');
+      injectStyle('zunoplay-home-shell-v180','./zuno-home-shell-v180.css');
+      injectScript('zunoplay-shell-runtime-v180','./zuno-shell-runtime-v180.js','ZunoPlay: runtime visual v180 indisponível');
     }
   }
   function mount(){
@@ -124,7 +126,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
-    installV178Refresh();
+    installV180Refresh();
     loadCurrentModules();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
