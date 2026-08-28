@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='242';
+  const VERSION='246';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -67,7 +67,7 @@
   }
   function installRefresh(){
     if(!('serviceWorker' in navigator))return;
-    const key='zuno-sw-v242-reloaded';
+    const key='zuno-sw-v246-reloaded';
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(sessionStorage.getItem(key)==='1')return;
       sessionStorage.setItem(key,'1');location.reload();
@@ -75,7 +75,6 @@
   }
   function loadHomeRefinements(){
     if(page!=='index.html')return;
-    // Os módulos-base da Home já estão declarados no index.html. Aqui ficam apenas refinamentos exclusivos.
     injectStyle('zunoplay-home-reference-v152-style','./zuno-home-reference-v152.css');
     injectStyle('zunoplay-current-viewport-style','./zuno-current-viewport.css');
     injectStyle('zunoplay-current-viewport-v154-style','./zuno-current-viewport-v154.css');
