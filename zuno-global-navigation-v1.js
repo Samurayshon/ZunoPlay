@@ -1,7 +1,7 @@
 (()=>{
 if(window.__ZUNO_CANONICAL_NAV_V1__)return;window.__ZUNO_CANONICAL_NAV_V1__=true;
 const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-const excluded=new Set(['login.html','cadastro.html','sala.html','sala-v200.html','zuno-stack.html']);
+const excluded=new Set(['login.html','cadastro.html','sala.html','zuno-stack.html']);
 if(excluded.has(page))return;
 const groups={games:new Set(['jogos.html','historico.html']),rooms:new Set(['salas.html']),social:new Set(['amigos.html','conversas.html','comunidades.html','notificacoes.html']),profile:new Set(['perfil.html','avatar.html'])};
 const active=groups.games.has(page)?'games':groups.rooms.has(page)?'rooms':groups.social.has(page)?'social':groups.profile.has(page)?'profile':'';
