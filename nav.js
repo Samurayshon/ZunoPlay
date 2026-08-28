@@ -1,13 +1,13 @@
 (()=>{
-  if(window.__ZUNOPLAY_GLOBAL_BOOT_V190__)return;
-  window.__ZUNOPLAY_GLOBAL_BOOT_V190__=true;
+  if(window.__ZUNOPLAY_GLOBAL_BOOT_V191__)return;
+  window.__ZUNOPLAY_GLOBAL_BOOT_V191__=true;
 
   /*
-   * ZunoPlay UI — Etapa 7/8
+   * ZunoPlay UI — Etapa 8/8
    * Home aprovada permanece intacta.
-   * Jogos, Histórico, Desafio Zuno e Progressão recebem acabamento dedicado.
+   * Auditoria final fecha consistência, responsividade, acessibilidade e limpeza de legado.
    */
-  const V='190';
+  const V='191';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const isHome=page==='index.html';
   const publicPages=new Set(['login.html','cadastro.html']);
@@ -43,10 +43,15 @@
     loadScript('zunoplay-rooms-stage6-script','./zuno-rooms-stage6.js');
   }
 
-  /* Etapa 7 carrega por último nas experiências de Jogos. */
   if(gamePages.includes(page)){
     loadStyle('zunoplay-games-stage7-style','./zuno-games-stage7.css');
     loadScript('zunoplay-games-stage7-script','./zuno-games-stage7.js');
+  }
+
+  /* Etapa 8: camada final e única de auditoria, sempre por último fora das telas públicas. */
+  if(!publicPages.has(page)){
+    loadStyle('zunoplay-final-audit-style','./zuno-final-audit.css');
+    loadScript('zunoplay-final-audit-script','./zuno-final-audit.js');
   }
 
   loadScript('zunoplay-realtime-global','./realtime-global.js');
