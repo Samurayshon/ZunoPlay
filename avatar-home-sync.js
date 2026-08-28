@@ -9,6 +9,14 @@
   function normalize(v){return window.ZunoAvatarRenderer?.normalize?window.ZunoAvatarRenderer.normalize(v):null}
   function valid(v){return !!v&&v.style===STYLE}
   function clone(v){return v?JSON.parse(JSON.stringify(v)):v}
+  function stamp(v){const t=Date.parse(v?.updatedAt||'');return Number.isFinite(t)?t:0}
+  function newest(a,b){
+    if(!a)return b||null;if(!b)return a;
+    const at=stamp(a),bt=stamp(b);
+    if(at!==bt)return at>bt?a:b;
+    // Sem timestamp confiável, preserve o visual já salvo neste aparelho.
+    return a;
+  }
   function markReady(source='studio'){
     document.documentElement.dataset.zunoAvatarHomeReady='1';
     if(readySent)return;
@@ -130,10 +138,13 @@
 
     const cloud=await readCloudConfig();
     if(cloud){
-      cfg=cloud;
-      localStorage.setItem('zunoAvatarPreset',JSON.stringify(cloud));
-      installScopedObservers();
-      mount('cloud');
+      const chosen=newest(localFound||cfg,cloud);
+      if(chosen){
+        cfg=chosen;
+        localStorage.setItem('zunoAvatarPreset',JSON.stringify(chosen));
+        installScopedObservers();
+        mount(chosen===cloud?'cloud-newer':'local-newer');
+      }
       return;
     }
 
@@ -147,7 +158,7 @@
 
   window.addEventListener('zuno-avatar-renderer-ready',()=>{scheduleRead(0);setTimeout(()=>{installScopedObservers();mount('renderer')},50)});
   window.addEventListener('zuno-avatar-saved',e=>{if(!valid(e.detail))return;const next=normalize(e.detail);if(!next)return;cfg=next;localStorage.setItem('zunoAvatarPreset',JSON.stringify(next));installScopedObservers();mount('saved')});
-  window.addEventListener('storage',e=>{if(e.key!=='zunoAvatarPreset'||!e.newValue)return;try{const raw=JSON.parse(e.newValue);if(!valid(raw))return;const next=normalize(raw);if(next){cfg=next;installScopedObservers();mount('storage')}}catch(_){}});
+  window.addEventListener('storage',e=>{if(e.key!=='zunoAvatarPreset'||!e.newValue)return;try{const raw=JSON.parse(e.newValue);if(!valid(raw))return;const next=normalize(raw);if(next&&newest(cfg,next)===next){cfg=next;installScopedObservers();mount('storage')}}catch(_){}});
   window.addEventListener('focus',()=>scheduleRead(700));
   window.addEventListener('pageshow',()=>scheduleRead(500));
   window.addEventListener('zuno:shell-mounted',()=>{setTimeout(()=>{installScopedObservers();mount('shell')},0);setTimeout(()=>mount('shell-late'),350)});
