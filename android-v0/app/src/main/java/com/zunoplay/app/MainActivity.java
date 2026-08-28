@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
@@ -26,6 +27,7 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(4, 4, 11));
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -39,7 +41,13 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.0");
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.1");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -68,7 +76,12 @@ public class MainActivity extends Activity {
         });
 
         requestMediaPermissions();
-        webView.loadUrl(START_URL);
+
+        if (savedInstanceState == null) {
+            webView.loadUrl(START_URL);
+        } else {
+            webView.restoreState(savedInstanceState);
+        }
     }
 
     private boolean hasMediaPermissions() {
@@ -79,6 +92,32 @@ public class MainActivity extends Activity {
     private void requestMediaPermissions() {
         if (!hasMediaPermissions()) {
             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA}, PERMISSION_REQUEST);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (webView != null) {
+            webView.saveState(outState);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onPause() {
+        if (webView != null) {
+            webView.onPause();
+            webView.pauseTimers();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) {
+            webView.onResume();
+            webView.resumeTimers();
         }
     }
 
@@ -94,7 +133,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (webView != null) {
+            webView.loadUrl("about:blank");
+            webView.stopLoading();
+            webView.clearHistory();
+            webView.removeAllViews();
             webView.destroy();
+            webView = null;
         }
         super.onDestroy();
     }
