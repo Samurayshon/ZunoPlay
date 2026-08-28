@@ -1,0 +1,51 @@
+name: Zuno Stack Production Audit
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Stack runtime modules
+        run: |
+          set -euo pipefail
+          modules=(zuno-stack.js zuno-stack-performance.js zuno-stack-premium.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js)
+          for file in "${modules[@]}"; do test -s "$file"; node --check "$file"; done
+      - name: Validate Stack gameplay invariants
+        run: |
+          set -euo pipefail
+          grep -q 'TRAY_LIMIT=6' zuno-stack.js
+          grep -q 'RISK_AT=5' zuno-stack.js
+          grep -q 'TOTAL_TILES=90' zuno-stack.js
+          grep -q 'COMBO_WINDOW_MS=12000' zuno-stack.js
+          grep -q "roomGames=\['zuno-stack.html'\]" nav.js
+      - name: Validate stage 1-7 assets are booted and cached
+        run: |
+          set -euo pipefail
+          for asset in zuno-stack-performance.js zuno-stack-premium.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js; do
+            grep -q "$asset" nav.js
+            grep -q "$asset" sw.js
+          done
+      - name: Validate frontend generation
+        run: |
+          python3 - <<'PY'
+          import pathlib,re
+          nav=pathlib.Path('nav.js').read_text(); sw=pathlib.Path('sw.js').read_text()
+          n=re.search(r"const V='(\d+)'",nav); s=re.search(r'zunoplay-v(\d+)',sw)
+          if not n or not s or n.group(1)!=s.group(1): raise SystemExit('generation mismatch')
+          print('generation v'+n.group(1))
+          PY
+      - name: Guard removed games and secrets
+        run: |
+          set -euo pipefail
+          secret_pat='sb''_secret_'
+          role_pat='service''_role'
+          ! grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='*.yml' -E "zuno-core\\.html|zuno-core\\.js|${secret_pat}|${role_pat}" .
