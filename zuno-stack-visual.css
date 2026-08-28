@@ -1,0 +1,21 @@
+/* Zuno Stack — acabamento visual contínuo. Fase 2: tabuleiro e peças */
+:root{--zstack-cyan:#42d9ff;--zstack-purple:#9b4dff;--zstack-pink:#ed5fc8;--zstack-line:rgba(118,126,174,.28)}
+.board{isolation:isolate!important;border-color:rgba(121,102,190,.38)!important;background:radial-gradient(ellipse at 50% 48%,rgba(126,70,255,.16),transparent 38%),radial-gradient(circle at 18% 32%,rgba(65,213,255,.06),transparent 24%),radial-gradient(circle at 84% 66%,rgba(237,95,200,.05),transparent 23%),linear-gradient(160deg,#0d1329,#060914 72%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),inset 0 -32px 70px rgba(0,0,0,.32),0 12px 34px rgba(0,0,0,.28)!important}
+.board::before{content:""!important;position:absolute!important;inset:7%!important;border-radius:28%!important;background:radial-gradient(ellipse at center,rgba(130,88,255,.06),transparent 66%)!important;border:1px solid rgba(150,120,255,.045)!important;pointer-events:none!important}
+.tile{will-change:auto!important;filter:none!important;transition:transform .14s ease,opacity .14s ease!important}
+.tile.active{z-index:calc(20 + var(--layer))!important;filter:none!important}
+.tile.active .zsp-art{transform:translateY(-2px) scale(1.035)!important;border-color:color-mix(in srgb,var(--piece-border) 88%,white)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -10px 16px rgba(0,0,0,.18),0 7px 15px rgba(0,0,0,.36),0 0 0 1px color-mix(in srgb,var(--piece-a) 42%,transparent),0 0 15px color-mix(in srgb,var(--piece-a) 18%,transparent)!important}
+.tile.active .zsp-art::before{inset:7%!important;border-color:rgba(255,255,255,.36)!important}
+.tile.active .label{color:#fff!important;border-color:rgba(188,151,255,.30)!important;background:rgba(4,6,15,.9)!important;box-shadow:0 3px 9px rgba(0,0,0,.36)!important}
+.tile:not(.active):not(.removed){opacity:.42!important;transform:translateY(2px) scale(.965)!important}
+.tile:not(.active):not(.removed) .zsp-art{opacity:.74!important;filter:saturate(.65) brightness(.68)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 3px 8px rgba(0,0,0,.3)!important}
+.tile:not(.active):not(.removed) .label{opacity:.45!important}
+.tile.zstack-covered{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+.tile.active:active .zsp-art{transform:translateY(0) scale(.91)!important}
+.zsp-art{border-radius:22%!important;background:radial-gradient(circle at 26% 18%,rgba(255,255,255,.42),transparent 24%),radial-gradient(circle at 68% 72%,rgba(255,255,255,.08),transparent 32%),linear-gradient(145deg,var(--piece-a),var(--piece-b))!important}
+.zsp-art::after{text-shadow:0 1px 0 rgba(0,0,0,.28),0 0 7px rgba(255,255,255,.34)!important}
+.tray .slot{transition:border-color .16s ease,background .16s ease,box-shadow .16s ease!important}.tray .slot.filled{border-color:rgba(120,129,177,.42)!important;background:linear-gradient(160deg,#14192a,#080b15)!important}.tray .slot.filled .zsp-art{box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 5px 12px rgba(0,0,0,.32)!important}.tray .slot.danger{border-color:rgba(255,86,116,.64)!important;background:linear-gradient(160deg,rgba(58,15,29,.86),rgba(20,8,16,.96))!important;box-shadow:0 0 16px rgba(255,69,108,.12)!important}
+.board[data-open-pieces]::after{right:9px!important;bottom:7px!important;padding:5px 8px!important;border-radius:999px!important;border-color:rgba(129,102,207,.2)!important;background:rgba(6,8,18,.76)!important;color:#969cb6!important;letter-spacing:.09em!important}
+@media(max-width:430px){.tile.active .zsp-art{transform:translateY(-1px) scale(1.025)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 5px 11px rgba(0,0,0,.34),0 0 11px color-mix(in srgb,var(--piece-a) 14%,transparent)!important}.tile:not(.active):not(.removed){transform:translateY(1px) scale(.97)!important}.board{box-shadow:inset 0 -24px 50px rgba(0,0,0,.26)!important}}
+@media(prefers-reduced-motion:reduce){.tile,.tray .slot{transition:none!important}}
+body.zuno-stack-lite .tile.active .zsp-art{box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 4px 8px rgba(0,0,0,.3)!important}body.zuno-stack-lite .board{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important}
