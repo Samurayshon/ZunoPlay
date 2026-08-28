@@ -1,0 +1,38 @@
+/* ZunoPlay Sala v1 — functional core */
+body.zuno-page-sala .chat-row.zuno-grouped{margin-top:3px}
+body.zuno-page-sala .chat-row.zuno-grouped .chat-avatar{visibility:hidden}
+body.zuno-page-sala .chat-row.zuno-grouped .message-user{display:none}
+body.zuno-page-sala .message-status{font-size:8px;line-height:1;margin-top:5px;text-align:right;color:#858da8;display:flex;align-items:center;justify-content:flex-end;gap:5px}
+body.zuno-page-sala .message-status.is-sending{color:#9aa3bd}
+body.zuno-page-sala .message-status.is-sent{color:#67d79a}
+body.zuno-page-sala .message-status.is-error{color:#ff8ca7}
+body.zuno-page-sala .message-retry{border:0;background:transparent;color:#ffadc0;font-size:9px;font-weight:800;padding:1px 0;text-decoration:underline}
+body.zuno-page-sala .chat-row.is-pending{opacity:.82}
+body.zuno-page-sala .room-stage .seat-empty{cursor:pointer;transition:transform .12s ease,filter .12s ease}
+body.zuno-page-sala .room-stage .seat-empty:active{transform:scale(.96);filter:brightness(1.2)}
+body.zuno-page-sala .room-stage .avatar-slot.me{cursor:pointer}
+body.zuno-page-sala .member{position:relative;padding-right:48px}
+body.zuno-page-sala .zuno-member-more{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:12px;border:1px solid rgba(79,89,139,.34);background:#0d1224;color:#aeb6cf;font-size:19px;display:grid;place-items:center}
+body.zuno-page-sala .zuno-v1-overlay{position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;padding:12px;backdrop-filter:blur(5px)}
+body.zuno-page-sala .zuno-v1-sheet{width:min(520px,100%);max-height:min(72dvh,620px);overflow:auto;border:1px solid rgba(83,94,151,.42);border-radius:24px;background:linear-gradient(180deg,#10152b,#080c1b);box-shadow:0 24px 80px rgba(0,0,0,.55);padding:14px}
+body.zuno-page-sala .zuno-v1-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+body.zuno-page-sala .zuno-v1-sheet-head b{font-size:15px}.zuno-page-sala .zuno-v1-sheet-head small{display:block;color:#8991a9;font-size:10px;margin-top:3px}
+body.zuno-page-sala .zuno-v1-close{width:34px;height:34px;border-radius:11px;border:1px solid #30375d;background:#11162a;color:#fff;font-size:18px}
+body.zuno-page-sala .zuno-v1-actions{display:grid;gap:8px}
+body.zuno-page-sala .zuno-v1-action{width:100%;min-height:48px;border-radius:15px;border:1px solid rgba(76,87,137,.36);background:#0d1224;color:#fff;display:flex;align-items:center;gap:11px;padding:10px 12px;text-align:left}
+body.zuno-page-sala .zuno-v1-action span{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(139,61,255,.1);color:#c8b8ff}
+body.zuno-page-sala .zuno-v1-action b{font-size:12px}.zuno-page-sala .zuno-v1-action small{display:block;color:#8991aa;font-size:9px;margin-top:2px}
+body.zuno-page-sala .zuno-v1-action.danger{border-color:rgba(222,77,111,.32);color:#ffb0c2}.zuno-page-sala .zuno-v1-action.danger span{background:rgba(222,77,111,.1);color:#ff9ab2}
+body.zuno-page-sala .zuno-v1-field{width:100%;min-height:92px;resize:none;border-radius:15px;border:1px solid #30375d;background:#0a0f20;color:#fff;padding:12px;font:inherit;font-size:12px;outline:none}
+body.zuno-page-sala .zuno-v1-field:focus{border-color:#7f46e9;box-shadow:0 0 0 3px rgba(127,70,233,.08)}
+body.zuno-page-sala .zuno-v1-primary{width:100%;height:44px;border:0;border-radius:14px;background:linear-gradient(135deg,#7734e8,#b03cf1);color:#fff;font-weight:900;margin-top:9px}
+body.zuno-page-sala .zuno-v1-muted{font-size:10px;line-height:1.45;color:#8f97ad}
+body.zuno-page-sala .zuno-reward-card{border:1px solid rgba(135,86,238,.32);border-radius:18px;padding:13px;background:linear-gradient(135deg,rgba(119,52,232,.12),rgba(49,211,255,.04));margin-top:8px}
+body.zuno-page-sala .zuno-reward-card strong{font-size:14px}.zuno-page-sala .zuno-reward-card p{margin:5px 0 10px;color:#8f97ad;font-size:10px;line-height:1.4}
+body.zuno-page-sala .zuno-reward-ready{color:#62e89f;font-size:10px;font-weight:800}.zuno-page-sala .zuno-reward-wait{color:#aeb5ca;font-size:10px}
+body.zuno-page-sala .zuno-game-card{display:flex;align-items:center;gap:12px;border:1px solid rgba(74,85,136,.4);border-radius:17px;background:#0c1123;padding:12px}
+body.zuno-page-sala .zuno-game-icon{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,rgba(129,55,243,.28),rgba(49,211,255,.12));display:grid;place-items:center;font-size:21px}.zuno-page-sala .zuno-game-card b{font-size:13px}.zuno-page-sala .zuno-game-card small{display:block;font-size:9px;color:#8e96ae;margin-top:3px}
+body.zuno-page-sala .zuno-room-toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(12px);z-index:2147483600;max-width:calc(100vw - 32px);padding:10px 13px;border-radius:13px;border:1px solid rgba(80,91,145,.45);background:#10152a;color:#fff;font-size:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s ease;box-shadow:0 16px 40px rgba(0,0,0,.4)}
+body.zuno-page-sala .zuno-room-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+body.zuno-page-sala .zuno-room-toast.error{border-color:rgba(222,77,111,.5);color:#ffb3c4}
+body.zuno-page-sala .zuno-seat-busy{pointer-events:none;opacity:.65}
