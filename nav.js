@@ -4,10 +4,11 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='169';
+  const ASSET_VERSION='170';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
+  const roomGamePages=['zuno-core.html','zuno-stack.html'];
 
   function installHomeBootGuard(){
     if(page!=='index.html')return;
@@ -48,7 +49,8 @@
 
   function versioned(file){return file+(file.includes('?')?'&':'?')+'v='+ASSET_VERSION}
   function loadScript(id,file,errorText,onload){
-    if(document.getElementById(id)){onload?.();return}
+    const existing=document.getElementById(id);
+    if(existing){onload?.();return}
     const s=document.createElement('script');
     s.id=id;s.src=new URL(versioned(file),location.href).href;s.async=true;
     if(onload)s.onload=onload;
@@ -103,7 +105,7 @@
     ].forEach(([id,file,error])=>loadScript(id,file,error));
   }
   function loadRoomGameReturn(){
-    if(!gamePages.includes(page)||page==='historico.html')return;
+    if(!roomGamePages.includes(page))return;
     loadScript('zunoplay-room-game-return','./zuno-room-game-return.js','ZunoPlay: retorno para sala indisponível');
   }
   function loadRealtimeCore(){
@@ -112,8 +114,15 @@
   }
   function loadRoomVoice(){if(page==='sala.html')loadScript('zunoplay-room-voice','./voz-sala.js','ZunoPlay: voz da sala indisponível')}
   function loadRoomSessionGuard(){
-    if(page!=='sala.html'&&!gamePages.includes(page))return;
-    loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: sessão de sala indisponível');
+    if(page==='sala.html'){
+      loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: sessão de sala indisponível');
+      return;
+    }
+    if(!roomGamePages.includes(page))return;
+    const q=new URLSearchParams(location.search);
+    const fromRoom=q.get('from')==='sala';
+    const roomId=q.get('room')||q.get('room_id')||sessionStorage.getItem('zuno_return_room_id')||sessionStorage.getItem('zunoplay_room_id');
+    if(fromRoom&&roomId)loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: sessão de sala indisponível');
   }
   function loadAvatarHomeSync(){if(page==='index.html')loadScript('zunoplay-avatar-home-sync','./avatar-home-sync.js','ZunoPlay: avatar da Home indisponível')}
   function loadAvatarRenderer(){
