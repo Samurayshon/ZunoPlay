@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05050d">
-<title>Momentos • ZunoPlay</title>
+<title>Pulso • ZunoPlay</title>
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="zuno-design-system.css?v=268">
-<link rel="stylesheet" href="zuno-moments.css?v=268">
+<link rel="stylesheet" href="zuno-design-system.css?v=269">
+<link rel="stylesheet" href="zuno-moments.css?v=269">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="nav.js?v=268"></script>
-<script defer src="zuno-moments.js?v=268"></script>
+<script defer src="nav.js?v=269"></script>
+<script defer src="zuno-moments.js?v=269"></script>
 </head>
 <body class="zuno-moments-page">
 <main id="momentsApp" class="zm-app">
   <header class="zm-header">
     <div class="zm-brand-row">
       <button class="zm-back" type="button" onclick="location.href='index.html?home=1'" aria-label="Voltar">‹</button>
-      <div><div class="zm-eyebrow">Universo social Zuno</div><h1>Momentos</h1></div>
+      <div><div class="zm-eyebrow">Universo social Zuno</div><h1>Pulso</h1></div>
       <button class="zm-profile" type="button" onclick="location.href='perfil.html'" aria-label="Perfil"><span id="myAvatarMini">Z</span></button>
     </div>
-    <nav class="zm-tabs" aria-label="Momentos e Praça">
-      <button class="zm-tab active" data-view="moments" type="button">Momentos</button>
-      <button class="zm-tab" data-view="plaza" type="button">Praça</button>
+    <nav class="zm-tabs" aria-label="Pulso de Amigos e Pulso Geral">
+      <button class="zm-tab active" data-view="moments" type="button">Amigos</button>
+      <button class="zm-tab" data-view="plaza" type="button">Geral</button>
     </nav>
   </header>
 
@@ -31,22 +31,22 @@
   <section id="composer" class="zm-composer">
     <div class="zm-composer-top">
       <div id="composerAvatar" class="zm-avatar">Z</div>
-      <textarea id="postText" maxlength="2000" rows="2" placeholder="Compartilhe um momento..."></textarea>
+      <textarea id="postText" maxlength="2000" rows="2" placeholder="Compartilhe no Pulso..."></textarea>
     </div>
     <div id="mediaPreview" class="zm-media-preview" hidden></div>
     <div class="zm-composer-actions">
       <label class="zm-media-button" for="postMedia" aria-label="Adicionar foto ou vídeo">＋ Mídia</label>
       <input id="postMedia" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" hidden>
-      <span id="composerHint" class="zm-hint">Use #assuntos para aparecer na Praça</span>
+      <span id="composerHint" class="zm-hint">Use #assuntos para aparecer no Pulso Geral</span>
       <button id="publishButton" class="zm-publish" type="button">Publicar</button>
     </div>
   </section>
 
   <section id="plazaIntro" class="zm-plaza-intro" hidden>
-    <div class="zm-plaza-orb">#</div><div><strong>Praça Zuno</strong><span>Descubra conversas, tendências e pessoas.</span></div>
+    <div class="zm-plaza-orb">#</div><div><strong>Pulso Geral</strong><span>Descubra conversas, tendências e pessoas.</span></div>
   </section>
 
-  <section id="feed" class="zm-feed" aria-live="polite"><div class="zm-loading">Carregando momentos...</div></section>
+  <section id="feed" class="zm-feed" aria-live="polite"><div class="zm-loading">Carregando o Pulso...</div></section>
 </main>
 <div id="toast" class="zm-toast" role="status" aria-live="polite"></div>
 </body>
