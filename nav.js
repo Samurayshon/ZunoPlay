@@ -4,10 +4,10 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='166';
+  const ASSET_VERSION='168';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
-  const gamePages=['jogos.html','historico.html','zuno-stack.html'];
+  const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
 
   function installHomeBootGuard(){
     if(page!=='index.html')return;
@@ -98,7 +98,7 @@
       ['zunoplay-voice-feedback','./zuno-voice-feedback.js','ZunoPlay: feedback de voz indisponível'],
       ['zunoplay-room-profile-card','./zuno-room-profile-card.js','ZunoPlay: perfil rápido indisponível'],
       ['zunoplay-directed-gifts','./zuno-directed-gifts.js','ZunoPlay: presentes direcionados indisponíveis'],
-      ['zunoplay-room-games','./zuno-room-games.js','ZunoPlay: Zuno Stack da sala indisponível'],
+      ['zunoplay-room-games','./zuno-room-games.js','ZunoPlay: Zuno Core da sala indisponível'],
       ['zunoplay-room-moderation','./zuno-room-moderation.js','ZunoPlay: moderação da sala indisponível']
     ].forEach(([id,file,error])=>loadScript(id,file,error));
   }
