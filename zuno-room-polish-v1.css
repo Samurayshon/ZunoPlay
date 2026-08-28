@@ -1,4 +1,4 @@
-/* ZunoPlay Room Polish v1 — acabamento final da sala */
+/* ZunoPlay Room Polish v2 — acabamento final da sala */
 body.zuno-page-sala .header{height:66px!important;flex-basis:66px!important;padding:9px 12px!important;gap:10px!important}
 body.zuno-page-sala .header .icon-btn{width:40px!important;height:40px!important;min-width:40px!important;border-radius:14px!important}
 body.zuno-page-sala .room-title{font-size:16.5px!important}
@@ -24,8 +24,8 @@ body.zuno-page-sala .avatar{width:57px!important;height:57px!important}
 body.zuno-page-sala .avatar-name{font-size:10px!important;margin-top:5px!important}
 body.zuno-page-sala .avatar-role{font-size:7.8px!important}
 body.zuno-page-sala .presence-status{font-size:7.6px!important}
-/* O estado da voz passa a ser comunicado pelo proprio botao de microfone. */
-body.zuno-page-sala .zuno-compact-voice{display:none!important}
+/* O motor de voz continua no DOM e funcional, mas sua UI legada nunca aparece. */
+body.zuno-page-sala #zunoVoiceControls,body.zuno-page-sala .zuno-voice,body.zuno-page-sala .zuno-compact-voice{display:none!important;visibility:hidden!important;width:0!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important}
 body.zuno-page-sala .composer-wrap{padding-top:5px!important;background:linear-gradient(180deg,rgba(3,5,13,.25),rgba(3,5,13,.995) 28%)!important;box-shadow:0 -14px 34px rgba(0,0,0,.22)!important}
 body.zuno-page-sala .composer-wrap:before{top:-14px!important;height:16px!important;opacity:.72!important}
 body.zuno-page-sala .composer{height:44px!important}
@@ -33,7 +33,7 @@ body.zuno-page-sala .chat-input{background:rgba(9,14,31,.9)!important;border-col
 body.zuno-page-sala .chat-input:focus{border-color:rgba(154,74,255,.82)!important;background:rgba(12,17,38,.98)!important;box-shadow:0 0 0 3px rgba(139,61,255,.09),0 0 18px rgba(139,61,255,.08)!important}
 body.zuno-page-sala .zuno-composer-actions button{color:#9da7c2!important;background:rgba(12,17,37,.88)!important;border-color:rgba(83,96,151,.34)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important}
 body.zuno-page-sala .zuno-composer-actions button:active{background:linear-gradient(145deg,rgba(73,31,125,.66),rgba(21,18,45,.88))!important;color:#fff!important;box-shadow:inset 0 0 0 1px rgba(139,61,255,.6)!important}
-body.zuno-page-sala #emojiButton{position:relative!important}
+body.zuno-page-sala #emojiButton{position:relative!important;pointer-events:auto!important}
 body.zuno-page-sala #emojiButton:after{content:'';position:absolute;right:5px;bottom:5px;width:5px;height:5px;border-radius:50%;background:#65708c;box-shadow:0 0 0 2px rgba(3,6,17,.9)}
 body.zuno-page-sala #emojiButton.mic-active:after{background:#36e996;box-shadow:0 0 8px rgba(54,233,150,.8),0 0 0 2px rgba(3,6,17,.9)}
 body.zuno-page-sala #emojiButton.mic-muted:after{background:#ff809e;box-shadow:0 0 7px rgba(255,128,158,.6),0 0 0 2px rgba(3,6,17,.9)}
