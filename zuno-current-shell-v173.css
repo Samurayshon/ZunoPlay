@@ -1,77 +1,231 @@
-/* ZunoPlay Official Shell Polish v173
-   Ajustes finais de consistência a partir da Home oficial. */
+/* ZunoPlay Official Shell — Home master visual v174
+   A Home oficial e a fonte de verdade para cabecalho, navegacao, cores,
+   botoes, cards, campos e espacamento das telas secundarias. */
+:root{
+  --zhome-bg:#03050f;
+  --zhome-panel:#090d20;
+  --zhome-panel-2:#0e1430;
+  --zhome-line:#30345f;
+  --zhome-line-soft:rgba(121,132,192,.22);
+  --zhome-text:#f7f7ff;
+  --zhome-muted:#a5a8bd;
+  --zhome-muted-2:#777d98;
+  --zhome-purple:#8e2cff;
+  --zhome-magenta:#d245f4;
+  --zhome-cyan:#24d9ff;
+  --zhome-green:#37e481;
+  --zhome-gold:#ffbd35;
+  --zhome-grad:linear-gradient(135deg,#7335ff 0%,#c43ef0 52%,#24d9ff 100%);
+  --zhome-card:linear-gradient(155deg,rgba(17,21,52,.96),rgba(7,11,30,.99));
+}
 
-/* Avatar real no cabeçalho global */
-.zuno-global-action.is-profile.has-zuno-avatar{padding:2px!important;overflow:hidden!important;background:#0d1021!important}
-.zuno-global-action.is-profile.has-zuno-avatar:before{display:none!important}
-.zuno-global-action.is-profile img[data-zuno-studio-avatar="1"]{display:block!important;width:100%!important;height:100%!important;border-radius:50%!important;object-fit:cover!important;object-position:50% 12%!important;transform:none!important;filter:drop-shadow(0 0 8px rgba(142,44,255,.35))!important}
+/* ===== Base compartilhada ===== */
+body[class*="zuno-page-"],body.zuno-social-page{
+  background:var(--zhome-bg)!important;
+  color:var(--zhome-text)!important;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+body[class*="zuno-page-"]:before,body.zuno-social-page:before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.52;
+  background-image:
+    radial-gradient(circle at 16% 12%,#fff 0 1px,transparent 1.2px),
+    radial-gradient(circle at 69% 14%,#4a96ff 0 1.1px,transparent 1.3px),
+    radial-gradient(circle at 82% 28%,#25d9ff 0 1px,transparent 1.3px),
+    radial-gradient(circle at 45% 46%,#9c3dff 0 .9px,transparent 1.2px),
+    radial-gradient(circle at 19% 71%,#fff 0 .8px,transparent 1px);
+  background-size:250px 250px,310px 310px,210px 210px,280px 280px,230px 230px;
+}
+body[class*="zuno-page-"]:after,body.zuno-social-page:after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle at 10% 5%,rgba(96,37,225,.12),transparent 28%),radial-gradient(circle at 92% 16%,rgba(36,217,255,.07),transparent 31%);
+}
+body[class*="zuno-page-"] .app,body[class*="zuno-page-"] #app,body.zuno-social-page .app,body.zuno-social-page #app{
+  width:min(100%,720px)!important;max-width:720px!important;margin:0 auto!important;
+  padding-left:28px!important;padding-right:28px!important;padding-bottom:132px!important;background:transparent!important;
+}
+body[class*="zuno-page-"] h1,body[class*="zuno-page-"] h2,body[class*="zuno-page-"] h3,
+body.zuno-social-page h1,body.zuno-social-page h2,body.zuno-social-page h3{
+  color:var(--zhome-text)!important;letter-spacing:-.45px!important;
+}
+body[class*="zuno-page-"] .subtitle,body[class*="zuno-page-"] .sub,body[class*="zuno-page-"] .meta,
+body.zuno-social-page .subtitle,body.zuno-social-page .sub,body.zuno-social-page .meta,body.zuno-social-page .email{
+  color:var(--zhome-muted)!important;
+}
 
-/* O shell oficial sempre vence cabeçalhos legados, inclusive os criados depois do boot. */
-body.zuno-global-header-mounted [data-zuno-legacy-header="1"]{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}
+/* ===== Cabecalho oficial: mesma proporcao da Home ===== */
+.zuno-global-header{
+  position:relative!important;z-index:100!important;box-sizing:border-box!important;
+  width:min(100%,720px)!important;min-height:82px!important;margin:0 auto 20px!important;
+  padding:18px 28px 14px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:12px!important;border:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+.zuno-global-header:after{content:"";position:absolute;left:28px;right:28px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(126,63,255,.36),rgba(36,217,255,.15),transparent);opacity:.65}
+.zuno-global-header-left{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important}
+.zuno-global-brand{display:inline-flex!important;align-items:center!important;gap:10px!important;color:#fff!important;text-decoration:none!important;white-space:nowrap!important}
+.zuno-global-brand-mark{position:relative!important;width:32px!important;height:30px!important;flex:0 0 32px!important;font-size:0!important;color:transparent!important;background:transparent!important;border-radius:0!important;box-shadow:none!important}
+.zuno-global-brand-mark:before{content:"";position:absolute;inset:1px 0;background:linear-gradient(145deg,#59ddff 0%,#7353ff 38%,#b62cff 70%,#ef3bc8 100%);clip-path:polygon(4% 14%,91% 14%,59% 45%,82% 45%,12% 92%,43% 57%,17% 57%);filter:drop-shadow(0 0 13px rgba(137,62,255,.45))}
+.zuno-global-brand-word{font-size:35px!important;line-height:1!important;font-weight:950!important;letter-spacing:-1.8px!important;color:#f7f7ff!important}
+.zuno-global-brand-word b{font-weight:950!important;background:linear-gradient(120deg,#61dfff 0%,#8b62ff 38%,#c439f3 78%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
+.zuno-global-page-title{display:none!important}
+.zuno-global-actions{margin-left:auto!important;display:flex!important;align-items:center!important;gap:10px!important}
+.zuno-global-action{position:relative!important;width:46px!important;height:46px!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#f4f5ff!important;display:grid!important;place-items:center!important;text-decoration:none!important;box-shadow:none!important;font-size:0!important;-webkit-tap-highlight-color:transparent!important}
+.zuno-global-action:active{transform:scale(.94)!important;background:rgba(142,44,255,.08)!important}
+.zuno-global-action:before{content:"";width:27px;height:27px;display:block;background:currentColor!important;opacity:1!important}
+.zuno-global-action[data-z-search]:before{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M16.2 16.2 21 21' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M16.2 16.2 21 21' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.zuno-global-action[href*="notificacoes"]:before{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.zuno-global-action[href*="notificacoes"]:after{content:"";position:absolute;right:7px;top:6px;width:8px;height:8px;border-radius:50%;background:#9b31ff;box-shadow:0 0 10px rgba(155,49,255,.9)}
+.zuno-global-action.is-profile{width:48px!important;height:48px!important;padding:2px!important;border:2px solid #8b3cff!important;background:#0d1021!important;box-shadow:0 0 22px rgba(145,54,255,.35)!important;overflow:hidden!important}
+.zuno-global-action.is-profile:before{width:26px;height:26px;background:linear-gradient(145deg,#f2eaff,#9b72ff)!important;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8' r='4' fill='black'/%3E%3Cpath d='M4 21c.6-5 3.3-7.5 8-7.5s7.4 2.5 8 7.5z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8' r='4' fill='black'/%3E%3Cpath d='M4 21c.6-5 3.3-7.5 8-7.5s7.4 2.5 8 7.5z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat}
+.zuno-global-action.is-profile.has-zuno-avatar:before,.zuno-global-action.is-profile:has(img[data-zuno-studio-avatar="1"]):before{display:none!important}
+.zuno-global-action.is-profile img[data-zuno-studio-avatar="1"]{display:block!important;width:100%!important;height:100%!important;border-radius:50%!important;object-fit:cover!important;object-position:50% 10%!important;transform:none!important}
+[data-zuno-legacy-header="1"]{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}
 
-/* ---------- Salas ---------- */
-body.zuno-page-salas{background:#03050f!important;color:#f7f7ff!important}
-body.zuno-page-salas:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 12% 8%,rgba(110,43,238,.18),transparent 28%),radial-gradient(circle at 88% 16%,rgba(20,161,222,.10),transparent 30%),#03050f}
-body.zuno-page-salas .app{width:min(100%,720px)!important;max-width:720px!important;margin:0 auto!important;padding-bottom:130px!important;background:transparent!important}
-body.zuno-page-salas .page{padding:12px 24px 128px!important}
-body.zuno-page-salas .title.zuno-room-page-title{display:flex!important;align-items:center!important;gap:14px!important;margin:4px 0 8px!important;font-size:34px!important;line-height:1.05!important;letter-spacing:-1px!important;color:#f7f7ff!important}
-body.zuno-page-salas .title.zuno-room-page-title:before{content:"";width:52px;height:52px;flex:0 0 52px;border-radius:50%;background:linear-gradient(145deg,rgba(65,35,145,.95),rgba(12,20,48,.98));border:1px solid rgba(142,44,255,.58);box-shadow:0 0 22px rgba(142,44,255,.25),inset 0 0 18px rgba(36,217,255,.07);-webkit-mask:none;mask:none}
-body.zuno-page-salas .title.zuno-room-page-title:after{content:"";position:absolute;width:25px;height:25px;margin-left:13px;background:linear-gradient(180deg,#8a78ff,#35dbff);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='8' y='2' width='8' height='13' rx='4' fill='black'/%3E%3Cpath d='M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='8' y='2' width='8' height='13' rx='4' fill='black'/%3E%3Cpath d='M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
-body.zuno-page-salas .title.zuno-room-page-title{position:relative!important}
-body.zuno-page-salas .subtitle{max-width:620px!important;font-size:15px!important;line-height:1.55!important;color:#9ea2b7!important;margin-bottom:24px!important}
-body.zuno-page-salas .status{min-height:58px!important;display:flex!important;align-items:center!important;padding:15px 18px!important;border-radius:18px!important;background:rgba(8,38,34,.52)!important;border:1px solid rgba(55,228,129,.25)!important;color:#71eba8!important;font-size:14px!important;box-shadow:inset 0 0 25px rgba(55,228,129,.025)!important}
-body.zuno-page-salas .room{position:relative!important;overflow:hidden!important;border-radius:26px!important;padding:24px!important;background:radial-gradient(circle at 18% 50%,rgba(95,42,218,.22),transparent 31%),linear-gradient(145deg,rgba(16,18,49,.97),rgba(8,11,30,.99))!important;border:1px solid rgba(142,44,255,.55)!important;box-shadow:inset 0 0 42px rgba(99,47,202,.06),0 18px 46px rgba(0,0,0,.18)!important}
-body.zuno-page-salas .room-top{min-height:150px!important;gap:18px!important;padding-left:118px!important;position:relative!important}
-body.zuno-page-salas .room-top:before{content:"";position:absolute;left:8px;top:50%;transform:translateY(-50%);width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,#6847e8 0 18%,#25165c 45%,#090d1f 70%);border:2px solid #7c3cff;box-shadow:0 0 0 8px rgba(124,60,255,.08),0 0 26px rgba(124,60,255,.45)}
-body.zuno-page-salas .room-top:after{content:"";position:absolute;left:36px;top:50%;transform:translateY(-50%);width:29px;height:38px;background:linear-gradient(180deg,#7f7cff,#30d7ff);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 32'%3E%3Crect x='6' y='1' width='12' height='20' rx='6' fill='black'/%3E%3Cpath d='M2 16a10 10 0 0 0 20 0M12 26v5M7 31h10' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 32'%3E%3Crect x='6' y='1' width='12' height='20' rx='6' fill='black'/%3E%3Cpath d='M2 16a10 10 0 0 0 20 0M12 26v5M7 31h10' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
-body.zuno-page-salas .room-name.zuno-room-name{font-size:24px!important;line-height:1.1!important;margin-bottom:8px!important;color:#fff!important;letter-spacing:-.5px!important}
-body.zuno-page-salas .room-info{font-size:14px!important;line-height:1.35!important;color:#9599ae!important}
+/* ===== Barra inferior oficial: copia visual da Home ===== */
+.zuno-global-nav{position:fixed!important;z-index:110!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;bottom:max(9px,env(safe-area-inset-bottom))!important;width:min(calc(100% - 28px),692px)!important;height:88px!important;padding:8px 9px!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important;align-items:center!important;border:1px solid rgba(91,99,160,.34)!important;border-radius:29px!important;background:linear-gradient(180deg,rgba(11,14,34,.94),rgba(5,8,23,.985))!important;backdrop-filter:blur(24px)!important;-webkit-backdrop-filter:blur(24px)!important;box-shadow:0 22px 54px rgba(0,0,0,.54),0 0 36px rgba(124,58,237,.09),inset 0 1px 0 rgba(255,255,255,.025)!important}
+.zuno-nav-item{height:64px!important;border:1px solid transparent!important;border-radius:19px!important;background:transparent!important;color:#aeb2ca!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;text-decoration:none!important;font-size:10px!important;font-weight:800!important;line-height:1!important;-webkit-tap-highlight-color:transparent!important}
+.zuno-nav-item .z-icon{width:24px!important;height:24px!important;display:block!important;font-size:0!important;background:currentColor!important}
+.zuno-nav-item:nth-child(1) .z-icon{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 10.5 12 4l8 6.5V21H5z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 10.5 12 4l8 6.5V21H5z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.zuno-nav-item:nth-child(2) .z-icon{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='9' cy='8' r='3' fill='none' stroke='black' stroke-width='2'/%3E%3Ccircle cx='17' cy='9' r='2.5' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M3 20c.5-4 2.5-6 6-6s5.6 2 6 6M14 15c3.3 0 5.4 1.7 6 5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='9' cy='8' r='3' fill='none' stroke='black' stroke-width='2'/%3E%3Ccircle cx='17' cy='9' r='2.5' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M3 20c.5-4 2.5-6 6-6s5.6 2 6 6M14 15c3.3 0 5.4 1.7 6 5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.zuno-nav-item:nth-child(4) .z-icon{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12v2M8 8v10M12 5v16M16 8v10M20 12v2' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12v2M8 8v10M12 5v16M16 8v10M20 12v2' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.zuno-nav-item:nth-child(5) .z-icon{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8' r='4' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M4 21c.6-5 3.3-7.5 8-7.5s7.4 2.5 8 7.5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='8' r='4' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M4 21c.6-5 3.3-7.5 8-7.5s7.4 2.5 8 7.5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.zuno-nav-item.is-active{color:#fff!important;border-color:rgba(142,44,255,.78)!important;background:radial-gradient(circle at 50% 10%,rgba(151,52,255,.22),transparent 62%),linear-gradient(180deg,rgba(77,31,147,.38),rgba(31,20,72,.38))!important;box-shadow:inset 0 0 24px rgba(155,61,255,.10),0 0 20px rgba(140,44,255,.18)!important}
+.zuno-nav-main{position:relative!important;width:68px!important;height:68px!important;margin:-17px auto 0!important;border-radius:50%!important;border:2px solid rgba(217,126,255,.9)!important;background:var(--zhome-grad)!important;color:#fff!important;display:grid!important;place-items:center!important;text-decoration:none!important;font-size:38px!important;font-weight:250!important;line-height:1!important;box-shadow:0 0 0 5px rgba(8,10,29,.96),0 0 30px rgba(155,61,255,.48),inset 0 0 22px rgba(255,255,255,.12)!important}
+.zuno-nav-main:active{transform:scale(.95)!important}
+body.zuno-global-nav-mounted{padding-bottom:118px!important}
+
+/* ===== Cards, inputs e botoes padrao ===== */
+body[class*="zuno-page-"] .card,body[class*="zuno-page-"] .conversation,body[class*="zuno-page-"] .community,body[class*="zuno-page-"] .game,body[class*="zuno-page-"] .recent-card,
+body.zuno-social-page .card,body.zuno-social-page .conversation,body.zuno-social-page .community,body.zuno-social-page .stat{
+  border:1px solid var(--zhome-line)!important;border-radius:24px!important;background:var(--zhome-card)!important;
+  box-shadow:inset 0 0 44px rgba(64,68,175,.055),0 15px 38px rgba(0,0,0,.12)!important;color:#fff!important;
+}
+body[class*="zuno-page-"] input,body[class*="zuno-page-"] textarea,body[class*="zuno-page-"] select,
+body.zuno-social-page input,body.zuno-social-page textarea,body.zuno-social-page select{
+  border:1px solid rgba(75,82,137,.48)!important;border-radius:17px!important;background:#0c1128!important;color:#f7f7ff!important;outline:0!important;box-shadow:inset 0 0 24px rgba(32,46,98,.08)!important;
+}
+body[class*="zuno-page-"] input:focus,body[class*="zuno-page-"] textarea:focus,body.zuno-social-page input:focus,body.zuno-social-page textarea:focus{border-color:rgba(142,44,255,.82)!important;box-shadow:0 0 0 3px rgba(142,44,255,.08),inset 0 0 24px rgba(36,217,255,.03)!important}
+body[class*="zuno-page-"] .btn,body[class*="zuno-page-"] .button,body[class*="zuno-page-"] .primary,body[class*="zuno-page-"] .enter-button,body[class*="zuno-page-"] .send,
+body.zuno-social-page .btn,body.zuno-social-page .button,body.zuno-social-page .avatarBtn,body.zuno-social-page .send{
+  border:0!important;border-radius:17px!important;background:var(--zhome-grad)!important;color:#fff!important;font-weight:850!important;box-shadow:0 0 20px rgba(142,44,255,.18)!important;-webkit-tap-highlight-color:transparent!important;
+}
+body[class*="zuno-page-"] .btn:active,body[class*="zuno-page-"] .button:active,body[class*="zuno-page-"] .primary:active,body[class*="zuno-page-"] .enter-button:active,body.zuno-social-page .btn:active{transform:scale(.985)!important}
+body[class*="zuno-page-"] .empty,body.zuno-social-page .empty{color:var(--zhome-muted-2)!important}
+body[class*="zuno-page-"] .status:not(.error):not(.warning),body.zuno-social-page .status:not(.off){border:1px solid rgba(55,228,129,.20)!important;background:rgba(9,45,35,.48)!important;color:#75ecaa!important;border-radius:16px!important}
+
+/* ===== Social ===== */
+body.zuno-social-amigos .card:first-of-type{padding:24px!important}
+body.zuno-social-amigos .title{font-size:31px!important;line-height:1!important;margin-bottom:12px!important}
+body.zuno-social-amigos .search{gap:12px!important;align-items:stretch!important}
+body.zuno-social-amigos .search input{min-height:58px!important;padding:0 18px!important;font-size:15px!important}
+body.zuno-social-amigos .search .btn{min-width:112px!important;min-height:58px!important;font-size:15px!important}
+body.zuno-social-amigos .section-title{font-size:19px!important;margin-bottom:12px!important}
+body.zuno-social-amigos .card:not(:first-of-type){min-height:175px!important;padding:22px!important}
+body.zuno-social-amigos .row{padding:14px 0!important;border-bottom:1px solid rgba(121,132,192,.12)!important}
+body.zuno-social-amigos .avatar{border:1px solid rgba(142,44,255,.52)!important;box-shadow:0 0 16px rgba(142,44,255,.12)!important}
+body.zuno-social-page .social-stage4-mark{min-height:36px!important;width:max-content!important;max-width:100%!important;padding:8px 13px!important;margin:0 0 20px!important;border:1px solid rgba(121,132,192,.25)!important;border-radius:999px!important;background:rgba(8,12,28,.72)!important;color:#b6b9cc!important;font-size:11px!important}
+body.zuno-social-page .social-stage4-mark i{width:9px!important;height:9px!important;background:#24d9ff!important;box-shadow:0 0 13px rgba(36,217,255,.8)!important}
+
+/* ===== Conversas ===== */
+body.zuno-page-conversas .page{padding:10px 0 132px!important}
+body.zuno-page-conversas .title{font-size:31px!important;margin-bottom:7px!important}
+body.zuno-page-conversas .conversation{padding:15px!important;margin-bottom:11px!important;text-align:left!important}
+body.zuno-page-conversas .message.mine{background:linear-gradient(135deg,#7335ff,#b93ee8)!important;border:1px solid rgba(183,91,255,.22)!important;box-shadow:0 10px 25px rgba(101,49,210,.13)!important}
+body.zuno-page-conversas .message.theirs{background:#11162b!important;border:1px solid rgba(121,132,192,.22)!important}
+body.zuno-page-conversas .chat-messages{padding:18px 0 190px!important}
+body.zuno-page-conversas .composer{left:50%!important;transform:translateX(-50%)!important;width:min(calc(100% - 28px),692px)!important;max-width:692px!important;bottom:106px!important;padding:10px!important;border:1px solid rgba(121,132,192,.25)!important;border-radius:20px!important;background:rgba(7,10,25,.95)!important;backdrop-filter:blur(18px)!important}
+body.zuno-page-conversas .composer input{min-height:48px!important;padding:0 14px!important}
+body.zuno-page-conversas .send{width:50px!important;height:50px!important}
+
+/* ===== Salas ===== */
+body.zuno-page-salas .app{padding-left:0!important;padding-right:0!important}
+body.zuno-page-salas .page{padding:10px 28px 132px!important}
+body.zuno-page-salas .title{font-size:34px!important;line-height:1.05!important;margin:4px 0 9px!important}
+body.zuno-page-salas .subtitle{font-size:15px!important;line-height:1.55!important;margin-bottom:24px!important}
+body.zuno-page-salas .status{min-height:58px!important;padding:15px 18px!important;margin-bottom:22px!important}
+body.zuno-page-salas .room{position:relative!important;overflow:hidden!important;padding:24px!important;border-radius:26px!important;background:radial-gradient(circle at 18% 50%,rgba(95,42,218,.20),transparent 31%),linear-gradient(145deg,rgba(16,18,49,.97),rgba(8,11,30,.99))!important;border-color:rgba(142,44,255,.54)!important}
+body.zuno-page-salas .room-top{min-height:142px!important;gap:18px!important;padding-left:112px!important;position:relative!important}
+body.zuno-page-salas .room-top:before{content:"";position:absolute;left:8px;top:50%;transform:translateY(-50%);width:82px;height:82px;border-radius:50%;background:radial-gradient(circle,#6847e8 0 18%,#25165c 45%,#090d1f 70%);border:2px solid #7c3cff;box-shadow:0 0 0 8px rgba(124,60,255,.08),0 0 26px rgba(124,60,255,.45)}
+body.zuno-page-salas .room-name{font-size:23px!important;margin-bottom:8px!important}
+body.zuno-page-salas .room-info{font-size:14px!important;color:#9599ae!important}
 body.zuno-page-salas .room-current-label{padding:7px 11px!important;border-radius:999px!important;background:rgba(20,70,52,.52)!important;border:1px solid rgba(55,228,129,.26)!important;color:#78edaf!important;font-size:11px!important}
-body.zuno-page-salas .enter-button{min-width:112px!important;min-height:58px!important;padding:14px 20px!important;border-radius:17px!important;background:linear-gradient(135deg,#7b31ff,#c13eee 55%,#2ed9f6)!important;box-shadow:0 0 20px rgba(142,44,255,.22)!important;font-size:16px!important}
-body.zuno-page-salas .enter-button.current{background:linear-gradient(135deg,#7b31ff,#c13eee 55%,#2ed9f6)!important}
+body.zuno-page-salas .enter-button{min-width:112px!important;min-height:58px!important;padding:14px 20px!important;font-size:16px!important}
 
-/* ---------- Social ---------- */
-body.zuno-social-amigos .section-title{display:flex!important;align-items:center!important;gap:12px!important;font-size:19px!important;line-height:1.1!important;margin:0 0 10px!important}
-body.zuno-social-amigos .section-title:before{content:"";width:40px;height:40px;flex:0 0 40px;border-radius:50%;display:block;background:#8e2cff;border:1px solid rgba(255,255,255,.10);box-shadow:0 0 18px rgba(142,44,255,.22)}
-body.zuno-social-amigos .section-title.zuno-icon-results:before{background:linear-gradient(145deg,#6e24d9,#23154f);-webkit-mask:none;mask:none}
-body.zuno-social-amigos .section-title.zuno-icon-results:after{content:"";position:absolute;width:20px;height:20px;margin-left:10px;background:#e5d9ff;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='m16 16 5 5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='m16 16 5 5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
-body.zuno-social-amigos .section-title.zuno-icon-requests:before{background:linear-gradient(145deg,#8d5b11,#2f210e);box-shadow:0 0 18px rgba(255,189,53,.20)}
-body.zuno-social-amigos .section-title.zuno-icon-requests:after{content:"";position:absolute;width:20px;height:20px;margin-left:10px;background:#ffd267;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4' fill='black'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4' fill='black'/%3E%3C/svg%3E") center/contain no-repeat}
-body.zuno-social-amigos .section-title.zuno-icon-friends:before{background:linear-gradient(145deg,#0e6ca5,#102044);box-shadow:0 0 18px rgba(36,217,255,.18)}
-body.zuno-social-amigos .section-title.zuno-icon-friends:after{content:"";position:absolute;width:22px;height:22px;margin-left:9px;background:#54dfff;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='9' cy='8' r='3' fill='black'/%3E%3Ccircle cx='16' cy='9' r='2.5' fill='black'/%3E%3Cpath d='M3 20c.4-4 2.4-6 6-6s5.6 2 6 6zM13 20c.2-2.8 1.5-4.5 4-4.5 2.4 0 3.7 1.6 4 4.5z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='9' cy='8' r='3' fill='black'/%3E%3Ccircle cx='16' cy='9' r='2.5' fill='black'/%3E%3Cpath d='M3 20c.4-4 2.4-6 6-6s5.6 2 6 6zM13 20c.2-2.8 1.5-4.5 4-4.5 2.4 0 3.7 1.6 4 4.5z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat}
-body.zuno-social-amigos .section-title{position:relative!important}
+/* ===== Perfil ===== */
+body.zuno-social-perfil .app{padding-bottom:190px!important}
+body.zuno-social-perfil #content{padding-bottom:16px!important}
+body.zuno-social-perfil .profile-social-card{padding:28px 24px 30px!important;margin-bottom:36px!important;border-radius:26px!important}
+body.zuno-social-perfil .name{font-size:34px!important;letter-spacing:-1.2px!important;margin-top:3px!important}
+body.zuno-social-perfil .email{font-size:15px!important;margin:7px 0 25px!important}
+body.zuno-social-perfil .stats{gap:12px!important;margin-bottom:22px!important}
+body.zuno-social-perfil .stat{min-height:112px!important;padding:20px 10px!important;border-radius:21px!important;background:linear-gradient(145deg,rgba(14,17,43,.95),rgba(8,10,27,.98))!important}
+body.zuno-social-perfil .stat b{font-size:24px!important;margin-bottom:8px!important}
+body.zuno-social-perfil .stat small{font-size:13px!important;color:#8d91a8!important}
+body.zuno-social-perfil .field{margin-top:18px!important}
+body.zuno-social-perfil .field label{font-size:14px!important;color:#c4c6d4!important;margin-bottom:9px!important}
+body.zuno-social-perfil .field input{min-height:58px!important;padding:0 18px!important}
+body.zuno-social-perfil .field textarea{min-height:150px!important;padding:16px 18px!important}
+body.zuno-social-perfil .btn{min-height:60px!important;font-size:16px!important;margin-top:18px!important}
 
-/* ---------- Perfil ---------- */
-body.zuno-social-perfil .app{padding-bottom:180px!important}
-body.zuno-social-perfil .profile-social-card{margin-bottom:54px!important;padding-top:24px!important}
-.zuno-profile-avatar-official{width:98px;height:98px;margin:2px auto 14px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#6d39ff,#b93ef1,#29d9fa);box-shadow:0 0 0 6px rgba(111,52,240,.07),0 0 28px rgba(142,44,255,.25);overflow:hidden}
-.zuno-profile-avatar-official img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 10%;background:#0d1021}
-body.zuno-social-perfil .name{font-size:31px!important;letter-spacing:-1px!important;margin-top:4px!important}
-body.zuno-social-perfil .email{font-size:15px!important;margin:6px 0 24px!important}
-body.zuno-social-perfil .field textarea{min-height:140px!important}
-body.zuno-social-perfil .btn{min-height:58px!important;border-radius:17px!important;font-size:16px!important}
+/* ===== Comunidades ===== */
+body.zuno-page-comunidades .app{padding-top:2px!important}
+body.zuno-page-comunidades .card{padding:23px!important;margin-bottom:16px!important}
+body.zuno-page-comunidades .title{font-size:31px!important;margin-bottom:8px!important}
+body.zuno-page-comunidades .input{min-height:56px!important;padding:0 17px!important;margin-top:11px!important}
+body.zuno-page-comunidades textarea.input{min-height:112px!important;padding:15px 17px!important}
+body.zuno-page-comunidades .button{min-height:56px!important;margin-top:13px!important}
+body.zuno-page-comunidades .community{padding:18px!important;margin-top:13px!important}
+body.zuno-page-comunidades .community h3{font-size:18px!important}
+body.zuno-page-comunidades .community p{font-size:12px!important;line-height:1.55!important;color:#9ba0b5!important}
+
+/* ===== Jogos / Historico / Notificacoes ===== */
+body.zuno-page-jogos .app,body.zuno-page-historico .app,body.zuno-page-notificacoes .app{padding-top:0!important}
+body.zuno-page-jogos .intro h1,body.zuno-page-historico .title,body.zuno-page-notificacoes .title{font-size:31px!important;margin-bottom:7px!important}
+body.zuno-page-jogos .hero{border:1px solid rgba(142,44,255,.55)!important;border-radius:29px!important;background:radial-gradient(circle at 84% 22%,rgba(189,76,255,.36),transparent 27%),radial-gradient(circle at 8% 100%,rgba(51,217,255,.13),transparent 35%),linear-gradient(145deg,#17112d,#090d20 72%)!important;box-shadow:0 24px 70px rgba(0,0,0,.4)!important}
+body.zuno-page-jogos .primary{min-height:50px!important;padding:0 18px!important}
+body.zuno-page-jogos .game{padding:16px!important;margin-bottom:10px!important}
+body.zuno-page-jogos .game.featured{border-color:rgba(142,44,255,.55)!important;background:radial-gradient(circle at 92% 8%,rgba(158,71,255,.18),transparent 27%),var(--zhome-card)!important}
+body.zuno-page-jogos .icon{border:1px solid rgba(121,83,176,.45)!important;border-radius:17px!important;background:#151a31!important}
+body.zuno-page-jogos .link,body.zuno-page-historico .link{color:#d04df3!important}
+body.zuno-page-notificacoes .notification,body.zuno-page-historico .item,body.zuno-page-historico .history-item{border:1px solid var(--zhome-line)!important;border-radius:20px!important;background:var(--zhome-card)!important}
+
+/* ===== Avatar Studio: preserva ferramenta, aplica moldura visual ===== */
+body.zuno-page-avatar{background:var(--zhome-bg)!important}
+body.zuno-page-avatar .app,body.zuno-page-avatar #app{width:min(100%,720px)!important;max-width:720px!important}
+
+/* Busca global */
+.zuno-search-layer{background:rgba(2,4,12,.82)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important}
+.zuno-search-card{border:1px solid rgba(121,132,192,.28)!important;border-radius:25px!important;background:linear-gradient(180deg,#10162a,#070a18)!important;box-shadow:0 28px 90px rgba(0,0,0,.65),0 0 32px rgba(142,44,255,.16)!important}
+.zuno-search-input{border-radius:15px!important;background:#080d1d!important}
 
 @media(max-width:520px){
-  .zuno-global-header{width:calc(100% - 30px)!important}
-  .zuno-global-brand-word{font-size:26px!important}
-  .zuno-global-page-title{max-width:68px!important;font-size:11px!important;padding-left:9px!important}
-  .zuno-global-actions{gap:4px!important}
-  .zuno-global-action{width:39px!important;height:39px!important}
-  .zuno-global-action.is-profile{width:44px!important;height:44px!important}
-  body.zuno-page-salas .page{padding:10px 22px 126px!important}
-  body.zuno-page-salas .title.zuno-room-page-title{font-size:30px!important}
-  body.zuno-page-salas .room{padding:20px 18px!important}
-  body.zuno-page-salas .room-top{padding-left:94px!important;min-height:135px!important;align-items:center!important}
-  body.zuno-page-salas .room-top:before{left:0;width:74px;height:74px}
-  body.zuno-page-salas .room-top:after{left:24px;width:26px;height:34px}
-  body.zuno-page-salas .room-name.zuno-room-name{font-size:20px!important}
-  body.zuno-page-salas .enter-button{min-width:104px!important;padding:12px 16px!important}
+  .zuno-global-header{padding:16px 20px 12px!important;min-height:78px!important;margin-bottom:16px!important}
+  .zuno-global-header:after{left:20px;right:20px}
+  .zuno-global-brand-mark{width:29px!important;height:27px!important;flex-basis:29px!important}
+  .zuno-global-brand-word{font-size:30px!important}
+  .zuno-global-actions{gap:7px!important}
+  .zuno-global-action{width:42px!important;height:42px!important}
+  .zuno-global-action.is-profile{width:46px!important;height:46px!important}
+  .zuno-global-nav{width:calc(100% - 28px)!important;height:88px!important}
+  body[class*="zuno-page-"] .app,body[class*="zuno-page-"] #app,body.zuno-social-page .app,body.zuno-social-page #app{padding-left:20px!important;padding-right:20px!important}
+  body.zuno-page-salas .page{padding-left:20px!important;padding-right:20px!important}
+  body.zuno-page-salas .room{padding:19px 17px!important}
+  body.zuno-page-salas .room-top{min-height:130px!important;padding-left:90px!important}
+  body.zuno-page-salas .room-top:before{left:0;width:72px;height:72px}
+  body.zuno-page-salas .room-name{font-size:20px!important}
+  body.zuno-page-salas .enter-button{min-width:102px!important;padding:12px 15px!important}
+  body.zuno-social-amigos .card:first-of-type{padding:20px!important}
+  body.zuno-social-amigos .search input{min-width:0!important}
+  body.zuno-social-amigos .search .btn{min-width:100px!important}
+  body.zuno-social-perfil .profile-social-card{padding:24px 20px 28px!important}
 }
 
 @media(max-width:390px){
-  .zuno-global-brand-word{font-size:23px!important}
-  .zuno-global-page-title{display:none!important}
-  body.zuno-page-salas .room-top{padding-left:0!important;padding-top:90px!important;display:grid!important;grid-template-columns:1fr auto!important}
-  body.zuno-page-salas .room-top:before{left:50%;top:8px;transform:translateX(-50%)!important}
-  body.zuno-page-salas .room-top:after{left:50%;top:28px;transform:translateX(-50%)!important}
+  .zuno-global-brand-word{font-size:27px!important}
+  .zuno-global-brand{gap:7px!important}
+  .zuno-global-actions{gap:3px!important}
+  .zuno-global-action{width:39px!important;height:39px!important}
+  .zuno-global-action.is-profile{width:43px!important;height:43px!important}
+  body.zuno-page-salas .room-top{padding-left:0!important;padding-top:84px!important;display:block!important}
+  body.zuno-page-salas .room-top:before{top:38px!important;left:50%!important;transform:translateX(-50%)!important}
+  body.zuno-page-salas .enter-button{margin-top:14px!important;width:100%!important}
 }
