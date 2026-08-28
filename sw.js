@@ -1,11 +1,13 @@
-const CACHE_NAME = "zunoplay-v169";
+const CACHE_NAME = "zunoplay-v170";
 
-// Shell essencial em fila única para evitar rajadas durante atualização do PWA.
+// Um único shell coerente por geração. Nunca misturar assets de caches antigos.
 const STATIC_FILES = [
-  "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./salas.html","./sala.html",
-  "./manifest.json","./nav.js","./home-app.js","./realtime-global.js","./avatar-renderer.js","./avatar-home-sync.js",
-  "./zuno-current.js","./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js",
-  "./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js"
+  "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./historico.html","./zuno-core.html","./zuno-stack.html",
+  "./manifest.json","./nav.js","./home-app.js","./realtime-global.js","./room-session-guard.js",
+  "./avatar-renderer.js","./avatar-home-sync.js","./avatar-asset-registry.js",
+  "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-current.js","./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-home-reference-v152.css","./zuno-current-viewport.css","./zuno-current-viewport-v154.css","./zuno-current-hero-separation.css","./zuno-current-home-polish-v164.css",
+  "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-core.js","./zuno-stack.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg","./zuno-stack-pieces.webp",
+  "./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-fixes-v170.js"
 ];
 
 const INFLIGHT = new Map();
@@ -48,10 +50,10 @@ async function dedupedFetch(input,init={},timeoutMs=6000){
 async function preCacheSequential(cache,files){
   for(const url of files){
     try{
-      const response=await dedupedFetch(url,{cache:'no-cache'},7000);
+      const response=await dedupedFetch(url,{cache:'reload'},7000);
       if(response?.ok)await cache.put(url,response.clone());
     }catch(_){}
-    await sleep(90);
+    await sleep(75);
   }
 }
 
@@ -61,12 +63,14 @@ function isCurrentUiAsset(url){
     path.endsWith('/zuno-avatar-studio-reference-v167.js')||
     path.endsWith('/zuno-avatar-studio-reference-v169.css')||
     path.endsWith('/zuno-avatar-studio-reference-v169.js')||
+    path.endsWith('/zuno-avatar-studio-fixes-v170.js')||
     path.endsWith('/zuno-home-reference-v152.css')||
     path.endsWith('/avatar-home-sync.js')||
     path.endsWith('/avatar-renderer.js')||
     path.endsWith('/nav.js')||
     path.endsWith('/home-app.js')||
-    path.endsWith('/realtime-global.js');
+    path.endsWith('/zuno-unified.js')||
+    path.endsWith('/zuno-unified.css');
 }
 
 async function cacheMatch(request,ignoreSearch=false){
@@ -103,11 +107,11 @@ self.addEventListener('fetch',event=>{
 
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
-      const cached=await cacheMatch(request,true);
       try{
-        const fresh=await dedupedFetch(request,{cache:'no-cache'},4500);
+        const fresh=await dedupedFetch(request,{cache:'no-store'},4000);
         if(fresh?.ok){event.waitUntil(cachePut(request,fresh));return fresh}
       }catch(_){}
+      const cached=await cacheMatch(request,true);
       if(cached)return cached;
       const fallback=await cacheMatch('./index.html',true);
       if(fallback)return fallback;
@@ -118,26 +122,30 @@ self.addEventListener('fetch',event=>{
 
   if(isCurrentUiAsset(url)){
     event.respondWith((async()=>{
-      // Interface versionada: cache primeiro. A instalação do novo SW já atualiza o cache.
-      const cached=await cacheMatch(request,true);
-      if(cached)return cached;
+      // Interface ativa é network-first. O cache só entra como fallback da MESMA geração v170.
       try{
-        const fresh=await dedupedFetch(request,{cache:'no-cache'},5000);
+        const fresh=await dedupedFetch(request,{cache:'no-store'},4000);
         if(fresh?.ok){event.waitUntil(cachePut(request,fresh));return fresh}
       }catch(_){}
+      const exact=await cacheMatch(request,false);
+      if(exact)return exact;
+      const sameGeneration=await cacheMatch(request,true);
+      if(sameGeneration)return sameGeneration;
       return new Response('Recurso de interface indisponível.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
     })());
     return;
   }
 
   event.respondWith((async()=>{
-    const cached=await cacheMatch(request,false)||await cacheMatch(request,true);
+    const cached=await cacheMatch(request,false);
     if(cached)return cached;
     try{
       const fresh=await dedupedFetch(request,{cache:'no-cache'},5000);
       if(fresh?.ok)event.waitUntil(cachePut(request,fresh));
       return fresh;
     }catch(_){
+      const sameGeneration=await cacheMatch(request,true);
+      if(sameGeneration)return sameGeneration;
       return new Response('Recurso indisponível offline.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
     }
   })());
