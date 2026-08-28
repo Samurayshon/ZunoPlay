@@ -5,20 +5,21 @@
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const skip=['login.html','cadastro.html','sala.html'];
   const route={home:'index.html',social:'amigos.html',main:'salas.html',rooms:'salas.html',profile:'perfil.html'};
-  const active=page==='index.html'?'home':(['amigos.html','conversas.html','comunidades.html','notificacoes.html'].includes(page)?'social':page==='salas.html'?'rooms':page==='perfil.html'?'profile':'');
+  const active=page==='index.html'?'home':
+    (['amigos.html','conversas.html','comunidades.html','notificacoes.html'].includes(page)?'social':
+    (['salas.html'].includes(page)?'rooms':
+    (['perfil.html','avatar.html'].includes(page)?'profile':
+    (['jogos.html','historico.html','zuno-core.html','zuno-stack.html'].includes(page)?'home':''))));
 
   function logoMarkup(){return `<a href="index.html" class="zhome-brand" aria-label="ZunoPlay"><span class="zhome-mark" aria-hidden="true"></span><span class="zhome-word">Zuno<b>Play</b></span></a>`}
   function bellMarkup(){return `<svg class="zhome-bell" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>`}
   function headerMarkup(){return `<header class="zhome-header" data-zuno-global-header="1" data-zuno-home-canonical-header="1"><div>${logoMarkup()}</div><div class="zhome-actions"><button id="searchButton" class="zhome-action" type="button" data-z-search aria-label="Buscar pessoas e salas"><span class="zhome-search-glyph" aria-hidden="true"></span></button><button class="zhome-action" type="button" onclick="location.href='notificacoes.html'" aria-label="Notificações">${bellMarkup()}<span class="zhome-notify-dot" aria-hidden="true"></span></button><button id="profileButton" class="zhome-action zhome-profile" data-zuno-header-profile="1" type="button" onclick="location.href='perfil.html'" aria-label="Perfil"></button></div></header>`}
 
-  function homeIcon(){return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8V21H5V10.8"/><path d="M9 21v-6h6v6"/></svg>`}
-  function socialIcon(){return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3.5 20c.5-4.2 2.6-6.2 5.8-6.2s5.2 2 5.7 6.2"/><path d="M14.6 14.7c2.8-.6 5.1 1.1 5.9 4.4"/></svg>`}
-  function roomsIcon(){return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h-2"/></svg>`}
-  function profileIcon(){return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.6-4.8 3.2-7.2 7.5-7.2s6.9 2.4 7.5 7.2"/></svg>`}
-  function navButton(key,label,icon,href){const on=active===key?' active':'';return `<button class="zhome-nav-item${on}" type="button" onclick="location.href='${href}'">${icon}<span>${label}</span></button>`}
-  function navMarkup(){return `<nav class="zhome-bottom-nav" data-zuno-global-nav="1" data-zuno-home-canonical-nav="1" aria-label="Navegação principal">${navButton('home','Home',homeIcon(),route.home)}${navButton('social','Social',socialIcon(),route.social)}<button class="zhome-nav-main" type="button" onclick="location.href='${route.main}'" aria-label="Explorar salas">+</button>${navButton('rooms','Salas',roomsIcon(),route.rooms)}${navButton('profile','Perfil',profileIcon(),route.profile)}</nav>`}
+  // Barra inferior: mesma estrutura e mesmos símbolos usados pela Home real em index.html.
+  function navButton(key,label,icon,href){const on=active===key?' active':'';return `<button class="nav-item${on}" type="button" onclick="location.href='${href}'"><b>${icon}</b>${label}</button>`}
+  function navMarkup(){return `<nav class="bottom-nav" data-zuno-global-nav="1" data-zuno-home-canonical-nav="1" aria-label="Navegação principal">${navButton('home','Home','⌂',route.home)}${navButton('social','Social','♟',route.social)}<button class="nav-main" type="button" onclick="location.href='${route.main}'" aria-label="Explorar salas">+</button>${navButton('rooms','Salas','♩',route.rooms)}${navButton('profile','Perfil','●',route.profile)}</nav>`}
 
-  function pageClass(){if(document.body)document.body.classList.add('zuno-page-'+page.replace('.html',''),'zuno-home-shell-v180')}
+  function pageClass(){if(document.body)document.body.classList.add('zuno-page-'+page.replace('.html',''),'zuno-home-shell-v180','zuno-home-nav-v181')}
   function hideLegacyHeaders(){
     document.querySelectorAll('.header,.chat-header,.top,.topbar,.head,.zuno-global-header').forEach(h=>{
       if(h.matches('[data-zuno-global-header]')||h.closest('[data-zuno-global-header]'))return;
@@ -41,20 +42,20 @@
   function removeDuplicateShell(){
     const headers=[...document.querySelectorAll('body > [data-zuno-global-header="1"]')];headers.slice(1).forEach(n=>n.remove());
     const navs=[...document.querySelectorAll('body > [data-zuno-global-nav="1"]')];navs.slice(1).forEach(n=>n.remove());
-    document.querySelectorAll('body > .bottom-nav:not([data-zuno-global-nav="1"]),body > .zuno-global-nav:not([data-zuno-global-nav="1"])').forEach(n=>n.remove());
+    document.querySelectorAll('body > .bottom-nav:not([data-zuno-global-nav="1"]),body > .zuno-global-nav:not([data-zuno-global-nav="1"]),body > .zhome-bottom-nav:not([data-zuno-global-nav="1"])').forEach(n=>n.remove());
   }
   function decorateDynamic(){pageClass();hideLegacyHeaders();cleanPageHeadings();cleanRoomsUi();removeDuplicateShell()}
   function mountHeader(){
     if(skip.includes(page)||page==='index.html')return;
     document.querySelectorAll('body > [data-zuno-global-header="1"]').forEach(n=>n.remove());
     document.body.insertAdjacentHTML('afterbegin',headerMarkup());
-    hideLegacyHeaders();document.body.classList.add('zuno-global-header-mounted','zuno-home-shell-mounted','zuno-home-shell-v180');
+    hideLegacyHeaders();document.body.classList.add('zuno-global-header-mounted','zuno-home-shell-mounted','zuno-home-shell-v180','zuno-home-nav-v181');
   }
   function mountBottom(){
     if(skip.includes(page)||page==='index.html')return;
-    document.querySelectorAll('body > [data-zuno-global-nav="1"],body > .bottom-nav,body > .zuno-global-nav').forEach(n=>n.remove());
+    document.querySelectorAll('body > [data-zuno-global-nav="1"],body > .bottom-nav,body > .zuno-global-nav,body > .zhome-bottom-nav').forEach(n=>n.remove());
     document.body.insertAdjacentHTML('beforeend',navMarkup());
-    document.body.classList.add('zuno-global-nav-mounted','zuno-home-shell-mounted','zuno-home-shell-v180');
+    document.body.classList.add('zuno-global-nav-mounted','zuno-home-shell-mounted','zuno-home-shell-v180','zuno-home-nav-v181');
   }
   function ensureSearch(){
     if(document.querySelector('.zuno-search-layer'))return;
@@ -85,7 +86,7 @@
   function observeDynamicShell(){if(observer||!document.body)return;observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;decorateDynamic();bindSearch()})});observer.observe(document.body,{childList:true,subtree:true})}
   function bind(){
     if(bound||!document.body)return;bound=true;pageClass();mountHeader();mountBottom();ensureSearch();decorateDynamic();bindSearch();observeDynamicShell();
-    window.dispatchEvent(new CustomEvent('zuno:shell-mounted',{detail:{page,source:'home-canonical-v180'}}));
+    window.dispatchEvent(new CustomEvent('zuno:shell-mounted',{detail:{page,source:'home-canonical-nav-v181'}}));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
   window.addEventListener('pageshow',()=>{if(!bound)bind();else{decorateDynamic();bindSearch()}});
