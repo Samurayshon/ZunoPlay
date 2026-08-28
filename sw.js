@@ -7,7 +7,7 @@ const STATIC_FILES = [
   "./avatar-renderer.js","./avatar-home-sync.js","./avatar-asset-registry.js",
   "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-current.js","./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-home-reference-v152.css","./zuno-current-viewport.css","./zuno-current-viewport-v154.css","./zuno-current-hero-separation.css","./zuno-current-home-polish-v164.css",
   "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-core.js","./zuno-stack.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg","./zuno-stack-pieces.webp",
-  "./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-reference-v170.css","./zuno-avatar-studio-fixes-v170.js","./zuno-avatar-studio-mobile-v171.css"
+  "./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-reference-v170.css","./zuno-avatar-studio-fixes-v170.js","./zuno-avatar-studio-mobile-v171.css","./zuno-avatar-studio-command-hierarchy-v172.js"
 ];
 
 const INFLIGHT = new Map();
@@ -66,6 +66,7 @@ function isCurrentUiAsset(url){
     path.endsWith('/zuno-avatar-studio-reference-v170.css')||
     path.endsWith('/zuno-avatar-studio-fixes-v170.js')||
     path.endsWith('/zuno-avatar-studio-mobile-v171.css')||
+    path.endsWith('/zuno-avatar-studio-command-hierarchy-v172.js')||
     path.endsWith('/zuno-home-reference-v152.css')||
     path.endsWith('/avatar-home-sync.js')||
     path.endsWith('/avatar-renderer.js')||
