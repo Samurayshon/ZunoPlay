@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v173";
+const CACHE_NAME = "zunoplay-v177";
 
 // Um único shell coerente por geração. Nunca misturar assets de caches antigos.
 const STATIC_FILES = [
@@ -129,7 +129,7 @@ self.addEventListener('fetch',event=>{
 
   if(isCurrentUiAsset(url)){
     event.respondWith((async()=>{
-      // Interface ativa é network-first. O cache só entra como fallback da MESMA geração v173.
+      // Interface ativa é network-first. O cache só entra como fallback da MESMA geração v177.
       try{
         const fresh=await dedupedFetch(request,{cache:'no-store'},4000);
         if(fresh?.ok){event.waitUntil(cachePut(request,fresh));return fresh}
