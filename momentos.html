@@ -9,12 +9,13 @@
 <meta name="theme-color" content="#05050d">
 <title>Pulso • ZunoPlay</title>
 <link rel="manifest" href="manifest.json">
-<style>[hidden]{display:none!important}#topicStrip{display:none}#momentsApp:has(.zm-tab[data-view="plaza"].active) #topicStrip{display:flex}</style>
-<link rel="stylesheet" href="zuno-design-system.css?v=273">
-<link rel="stylesheet" href="zuno-moments.css?v=273">
+<style>[hidden]{display:none!important}#topicStrip{display:none}</style>
+<link rel="stylesheet" href="zuno-design-system.css?v=274">
+<link rel="stylesheet" href="zuno-moments.css?v=274">
+<link rel="stylesheet" href="zuno-pulso-v2.css?v=274">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="nav.js?v=273"></script>
-<script defer src="zuno-moments.js?v=273"></script>
+<script defer src="nav.js?v=274"></script>
+<script defer src="zuno-pulso-v2.js?v=274"></script>
 </head>
 <body class="zuno-moments-page">
 <main id="momentsApp" class="zm-app">
@@ -29,9 +30,7 @@
       <button class="zm-tab" data-view="plaza" type="button">Geral</button>
     </nav>
   </header>
-
-  <section id="topicStrip" class="zm-topic-strip" aria-label="Assuntos em alta"></section>
-
+  <section id="topicStrip" class="zm-topic-strip" aria-label="Assuntos em alta" hidden></section>
   <section id="composer" class="zm-composer">
     <div class="zm-composer-top">
       <div id="composerAvatar" class="zm-avatar">Z</div>
@@ -45,12 +44,10 @@
       <button id="publishButton" class="zm-publish" type="button">Publicar</button>
     </div>
   </section>
-
   <section id="plazaIntro" class="zm-plaza-intro" hidden>
-    <div class="zm-plaza-orb">✦</div><div><strong>Pulso Geral</strong><span>Fotos de outros perfis, priorizadas por engajamento e descoberta.</span></div>
+    <div class="zm-plaza-orb">✦</div><div><strong>Pulso Geral</strong><span>Descubra fotos, pessoas e assuntos além do seu círculo.</span></div>
   </section>
-
-  <section id="feed" class="zm-feed" aria-live="polite"><div class="zm-loading">Carregando o Pulso...</div></section>
+  <section id="feed" class="zm-feed" aria-live="polite"><div class="zp-loading">Carregando o Pulso...</div></section>
 </main>
 <div id="toast" class="zm-toast" role="status" aria-live="polite"></div>
 </body>
