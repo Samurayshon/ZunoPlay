@@ -1,0 +1,42 @@
+/* ZunoPlay Avatar Studio v174 — acabamento final mobile */
+@media(max-width:520px){
+  html[data-zuno-interface="current"] body.zuno-official-avatar .app{
+    padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-subtabs{
+    margin-bottom:6px!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-officials{
+    margin-top:0!important;
+    margin-bottom:0!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-official-group,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-female-official{
+    min-height:0!important;
+  }
+
+  /* Estados antigos não fazem mais parte do fluxo visual do Studio. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .status,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .hint,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .saved{
+    display:none!important;
+  }
+
+  /* O botão de salvar já vive dentro do palco; remove qualquer reserva residual. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar > .app > .save{
+    margin:0!important;
+  }
+
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{
+    bottom:6px!important;
+  }
+}
+
+@media(max-width:365px){
+  html[data-zuno-interface="current"] body.zuno-official-avatar .app{
+    padding-bottom:calc(76px + env(safe-area-inset-bottom))!important;
+  }
+}
