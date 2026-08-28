@@ -1,8 +1,8 @@
-/* ZunoPlay Avatar Studio v175 — acabamento final mobile */
+/* ZunoPlay Avatar Studio v176 — navegação inferior restaurada e acabamento mobile */
 @media(max-width:520px){
   html[data-zuno-interface="current"] body.zuno-official-avatar .app{
     min-height:0!important;
-    padding-bottom:10px!important;
+    padding-bottom:calc(82px + env(safe-area-inset-bottom))!important;
   }
   html[data-zuno-interface="current"] body.zuno-official-avatar .studio-subtabs{margin-bottom:6px!important}
   html[data-zuno-interface="current"] body.zuno-official-avatar .studio-officials{margin-top:0!important;margin-bottom:0!important}
@@ -13,17 +13,59 @@
   html[data-zuno-interface="current"] body.zuno-official-avatar .saved{display:none!important}
   html[data-zuno-interface="current"] body.zuno-official-avatar > .app > .save{margin:0!important}
 
-  /* O Avatar Studio termina naturalmente no catálogo; a navegação entra no fluxo e não cria um vazio artificial. */
-  html[data-zuno-interface="current"] body.zuno-official-avatar.zuno-global-nav-mounted{padding-bottom:0!important}
-  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{
-    position:relative!important;
-    left:auto!important;
-    right:auto!important;
-    bottom:auto!important;
-    transform:none!important;
-    width:calc(100% - 24px)!important;
-    margin:10px auto max(6px,env(safe-area-inset-bottom))!important;
+  /* A barra oficial volta a ficar ancorada no rodapé e sempre visível. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar.zuno-global-nav-mounted{
+    padding-bottom:0!important;
   }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{
+    position:fixed!important;
+    left:50%!important;
+    right:auto!important;
+    bottom:max(6px,env(safe-area-inset-bottom))!important;
+    transform:translateX(-50%)!important;
+    width:calc(100% - 18px)!important;
+    height:68px!important;
+    margin:0!important;
+    z-index:150!important;
+  }
+
+  /* Recupera um pouco das proporções da referência sem reabrir o painel Corpo/Pele. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-reference-editor{
+    grid-template-rows:38px 420px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero{
+    height:420px!important;
+    min-height:420px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero .stage,
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero.profile .stage,
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero.room .stage,
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero:not(.profile):not(.room) .stage{
+    top:42px!important;
+    width:min(74%,182px)!important;
+    height:326px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-official-card{
+    height:108px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-official-card img{
+    height:78px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-female-official .studio-official-card{
+    height:108px!important;
+  }
+
+  /* O título não deve truncar em "Avatar Stud...". */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-header-left{gap:7px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-brand-word{font-size:15px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-page-title{
+    max-width:none!important;
+    padding-left:8px!important;
+    font-size:9px!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-actions{gap:4px!important}
 
   /* Sincronizar avatar: ícone vetorial real em vez do quadrado branco do glyph fallback. */
   html[data-zuno-interface="current"] body.zuno-official-avatar .studio-cloud-action:before{
@@ -36,6 +78,9 @@
   }
 
   /* O avatar do perfil fica estritamente contido no círculo do header. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action.is-profile{
+    overflow:hidden!important;
+  }
   html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action.is-profile img[data-zuno-studio-avatar="1"],
   html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action.is-profile img{
     position:absolute!important;
@@ -56,6 +101,8 @@
   html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action.is-profile.has-zuno-avatar:before{display:none!important}
 }
 @media(max-width:365px){
-  html[data-zuno-interface="current"] body.zuno-official-avatar .app{padding-bottom:8px!important}
-  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{width:calc(100% - 18px)!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .app{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{width:calc(100% - 14px)!important;height:66px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-reference-editor{grid-template-rows:36px 390px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero{height:390px!important;min-height:390px!important}
 }
