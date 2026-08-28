@@ -1,0 +1,103 @@
+/* ZunoPlay Avatar Studio v170 — correções do resultado real mobile */
+html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-header{
+  display:flex!important;
+  position:sticky!important;
+  top:0!important;
+  z-index:120!important;
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+  background:rgba(3,5,13,.97)!important;
+  backdrop-filter:blur(18px)!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-avatar .app{
+  padding-bottom:calc(150px + env(safe-area-inset-bottom))!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-avatar #hero .stage,
+html[data-zuno-interface="current"] body.zuno-official-avatar #hero.profile .stage,
+html[data-zuno-interface="current"] body.zuno-official-avatar #hero.room .stage,
+html[data-zuno-interface="current"] body.zuno-official-avatar #hero:not(.profile):not(.room) .stage{
+  top:46px!important;
+  left:53%!important;
+  width:min(72%,250px)!important;
+  height:470px!important;
+  --scale:1!important;
+  overflow:visible!important;
+}
+html[data-zuno-interface="current"] body.zuno-official-avatar #hero .stage img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:50% 50%!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card:first-child .studio-preview-frame img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:50% 14%!important;
+}
+html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card.mini .studio-preview-frame img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:50% 13%!important;
+}
+html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card.back .studio-preview-frame img{
+  object-fit:contain!important;
+  object-position:50% 50%!important;
+}
+
+html[data-zuno-interface="current"] body.zuno-official-avatar .studio-officials{
+  margin-bottom:28px!important;
+}
+html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-bottom-nav,
+html[data-zuno-interface="current"] body.zuno-official-avatar .bottom-nav,
+html[data-zuno-interface="current"] body.zuno-official-avatar nav[aria-label="Navegação principal"]{
+  z-index:110!important;
+}
+
+@media(max-width:520px){
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-header{
+    min-height:58px!important;
+    height:58px!important;
+    padding:6px 10px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-brand-word{font-size:18px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-page-title{font-size:11px!important;padding-left:8px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action{width:34px!important;height:34px!important}
+
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-reference-editor{
+    grid-template-columns:58px minmax(0,1fr) 86px!important;
+    grid-template-rows:46px 500px!important;
+    gap:6px!important;
+    padding:6px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar #tabs{gap:6px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar #tabs .tab{border-radius:13px!important;font-size:7px!important;padding:4px 2px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar #tabs .tab .ico{font-size:16px!important}
+
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero{
+    height:500px!important;
+    min-height:500px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero .stage,
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero.profile .stage,
+  html[data-zuno-interface="current"] body.zuno-official-avatar #hero.room .stage{
+    top:48px!important;
+    left:54%!important;
+    width:min(76%,205px)!important;
+    height:405px!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .toolGroup{left:5px!important;top:128px!important;gap:9px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tool,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-pose-button{width:44px!important;height:56px!important;font-size:7px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .tool .studio-tool-icon,
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-pose-button .studio-tool-icon{width:39px!important;height:39px!important;font-size:18px!important}
+
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card{padding:4px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card strong{font-size:7px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-officials{margin-bottom:40px!important}
+}
