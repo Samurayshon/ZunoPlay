@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v182";
+const CACHE_NAME = "zunoplay-v183";
 
 // Um único shell coerente por geração. Nunca misturar assets de caches antigos.
 const STATIC_FILES = [
