@@ -14,7 +14,14 @@ function applyWelcome(){document.querySelectorAll('.welcome-logo').forEach(el=>{
 function applyLoading(){const el=document.getElementById('loading');if(!el||el.dataset.zunoBrandOfficial)return;el.dataset.zunoBrandOfficial='1';el.classList.add('zuno-brand-ready');const box=document.createElement('div');box.className='zuno-brand-loader';box.appendChild(headSvg(70,'Zuno carregando o ZunoPlay'));const t=document.createElement('div');t.className='zuno-brand-loader-text';t.textContent='Carregando ZunoPlay';box.appendChild(t);el.appendChild(box)}
 function applyEmpty(){document.querySelectorAll('.search-empty,.empty-inline').forEach(el=>{if(el.dataset.zunoBrandOfficial)return;el.dataset.zunoBrandOfficial='1';el.classList.add('zuno-brand-empty');el.prepend(headSvg(46,'Zuno'))})}
 function applyStaticMark(){document.querySelectorAll('.zuno-official-logo-mark').forEach(el=>{if(el.dataset.zunoBrandOfficial)return;el.dataset.zunoBrandOfficial='1';el.replaceWith(markSvg(36))})}
-function run(){document.documentElement.dataset.zunoBrand='official-v1';applyHeader();applyWelcome();applyLoading();applyEmpty();applyStaticMark()}
-run();document.addEventListener('DOMContentLoaded',run,{once:true});const mo=new MutationObserver(()=>{applyHeader();applyWelcome();applyEmpty();applyStaticMark()});mo.observe(document.documentElement,{childList:true,subtree:true});
+function applyHomeGuide(){
+  const home=document.getElementById('homeScreen');if(!home||home.querySelector('.zuno-home-guide'))return;
+  const target=home.querySelector('.hero-left .aura-info')||home.querySelector('.hero-left');if(!target)return;
+  const guide=document.createElement('div');guide.className='zuno-home-guide';guide.setAttribute('role','note');guide.setAttribute('aria-label','Zuno, guia oficial do ZunoPlay');guide.appendChild(headSvg(32,'Zuno, guia oficial do ZunoPlay'));
+  const copy=document.createElement('span');copy.className='zuno-home-guide-copy';copy.innerHTML='<span class="zuno-home-guide-title">Zuno</span><span class="zuno-home-guide-sub">Energia · conexão · experiências</span>';
+  const dot=document.createElement('span');dot.className='zuno-home-guide-dot';dot.setAttribute('aria-hidden','true');guide.appendChild(copy);guide.appendChild(dot);target.appendChild(guide);
+}
+function run(){document.documentElement.dataset.zunoBrand='official-v1';applyHeader();applyWelcome();applyLoading();applyEmpty();applyStaticMark();applyHomeGuide()}
+run();document.addEventListener('DOMContentLoaded',run,{once:true});const mo=new MutationObserver(()=>{applyHeader();applyWelcome();applyEmpty();applyStaticMark();applyHomeGuide()});mo.observe(document.documentElement,{childList:true,subtree:true});
 window.ZunoBrand={headSvg,markSvg,lockup,refresh:run};
 })();
