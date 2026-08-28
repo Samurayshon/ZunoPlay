@@ -69,6 +69,22 @@ jobs:
             grep -q "$asset" sw.js
           done
 
+      - name: Validate visual finish assets
+        run: |
+          set -euo pipefail
+          for asset in zuno-stack-layout-v1.css zuno-stack-visual.css zuno-stack-visual-final.css; do
+            test -s "$asset"
+            grep -q "$asset" nav.js
+            grep -q "$asset" sw.js
+          done
+          grep -q 'prefers-reduced-motion' zuno-stack-layout-v1.css
+          grep -q 'prefers-reduced-motion' zuno-stack-visual.css
+          grep -q 'prefers-reduced-motion' zuno-stack-visual-final.css
+          grep -q 'zuno-stack-lite' zuno-stack-visual.css
+          grep -q 'zuno-stack-lite' zuno-stack-visual-final.css
+          grep -q 'zuno-stack-visual.css' sw.js
+          grep -q 'zuno-stack-visual-final.css' sw.js
+
       - name: Validate strategic board generation
         run: |
           set -euo pipefail
