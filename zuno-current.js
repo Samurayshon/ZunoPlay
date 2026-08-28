@@ -105,6 +105,7 @@
       injectScript('zunoplay-avatar-studio-fixes-v170-script','./zuno-avatar-studio-fixes-v170.js','ZunoPlay: correções do Avatar Studio indisponíveis');
       injectStyle('zunoplay-avatar-studio-mobile-v171-style','./zuno-avatar-studio-mobile-v171.css');
       injectScript('zunoplay-avatar-studio-command-hierarchy-v172','./zuno-avatar-studio-command-hierarchy-v172.js','ZunoPlay: hierarquia de comandos do Avatar Studio indisponível');
+      injectStyle('zunoplay-current-avatar-finish-v174-style','./zuno-current-avatar-finish-v174.css');
     }
     if(page==='zuno-stack.html'){
       injectStyle('zunoplay-stack-premium-pieces-style','./zuno-stack-pieces.css');
