@@ -9,7 +9,7 @@
   const titleMap={'perfil.html':'Perfil','amigos.html':'Social','conversas.html':'Conversas','comunidades.html':'Comunidades','notificacoes.html':'Notificações','salas.html':'Salas','avatar.html':'Avatar Studio','jogos.html':'Jogos','desafio.html':'Desafio Zuno','historico.html':'Histórico'};
 
   function navMarkup(){return `<nav class="zuno-global-nav" data-zuno-global-nav="1" aria-label="Navegação principal"><a class="zuno-nav-item ${active==='home'?'is-active':''}" href="${route.home}"><span class="z-icon">⌂</span><span>Home</span></a><a class="zuno-nav-item ${active==='social'?'is-active':''}" href="${route.social}"><span class="z-icon">♟</span><span>Social</span></a><a class="zuno-nav-main" href="${route.main}" aria-label="Explorar salas">+</a><a class="zuno-nav-item ${active==='rooms'?'is-active':''}" href="${route.rooms}"><span class="z-icon">♩</span><span>Salas</span></a><a class="zuno-nav-item ${active==='profile'?'is-active':''}" href="${route.profile}"><span class="z-icon">●</span><span>Perfil</span></a></nav>`}
-  function logoMarkup(){return `<a href="index.html" class="zuno-global-brand" aria-label="ZunoPlay"><span class="zuno-global-brand-mark">Z</span><span class="zuno-global-brand-word">Zuno<b>Play</b></span></a>`}
+  function logoMarkup(){return `<a href="index.html" class="zuno-global-brand" aria-label="ZunoPlay"><span class="zuno-global-brand-mark" aria-hidden="true"></span><span class="zuno-global-brand-word">Zuno<b>Play</b></span></a>`}
   function headerMarkup(){const title=titleMap[page]||'ZunoPlay';return `<header class="zuno-global-header" data-zuno-global-header="1"><div class="zuno-global-header-left">${logoMarkup()}<span class="zuno-global-page-title">${title}</span></div><div class="zuno-global-actions"><button class="zuno-global-action" type="button" data-z-search aria-label="Buscar">⌕</button><a class="zuno-global-action" href="notificacoes.html" aria-label="Notificações">♧</a><a class="zuno-global-action is-profile" href="perfil.html" aria-label="Perfil">●</a></div></header>`}
 
   function pageClass(){
@@ -21,6 +21,16 @@
       if(h.matches('[data-zuno-global-header]')||h.closest('[data-zuno-global-header]'))return;
       h.dataset.zunoLegacyHeader='1';
       h.style.setProperty('display','none','important');
+    });
+  }
+  function cleanPageHeadings(){
+    document.querySelectorAll('h1').forEach(el=>{
+      if(el.dataset.zunoHeadingClean==='1')return;
+      const raw=(el.textContent||'').trim();
+      const text=raw.replace(/^[\s💬🌐🎙️🎤🎧🔔🎮🕹️🏆📜📣👤👥🔎🔍⚡🧩]+/u,'').trim();
+      if(text)el.textContent=text;
+      el.dataset.zunoHeadingClean='1';
+      el.classList.add('zuno-official-page-heading');
     });
   }
   function cleanRoomsUi(){
@@ -44,6 +54,7 @@
   function decorateDynamic(){
     pageClass();
     hideLegacyHeaders();
+    cleanPageHeadings();
     cleanRoomsUi();
     removeDuplicateNavs();
   }
