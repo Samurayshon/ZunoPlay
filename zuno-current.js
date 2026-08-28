@@ -102,7 +102,7 @@
       injectStyle('zunoplay-avatar-studio-reference-v169-style','./zuno-avatar-studio-reference-v169.css');
       injectScript('zunoplay-avatar-studio-reference-v169-script','./zuno-avatar-studio-reference-v169.js','ZunoPlay: refinamento do Avatar Studio indisponível');
       injectStyle('zunoplay-avatar-studio-reference-v170-style','./zuno-avatar-studio-reference-v170.css');
-      injectScript('zunoplay-avatar-studio-reference-v170-script','./zuno-avatar-studio-reference-v170.js','ZunoPlay: correção final do Avatar Studio indisponível');
+      injectScript('zunoplay-avatar-studio-fixes-v170-script','./zuno-avatar-studio-fixes-v170.js','ZunoPlay: correções do Avatar Studio indisponíveis');
     }
     if(page==='zuno-stack.html'){
       injectStyle('zunoplay-stack-premium-pieces-style','./zuno-stack-pieces.css');
