@@ -30,10 +30,11 @@
     let ok=false;
     document.querySelectorAll('[data-zuno-header-profile="1"],.zhome-profile').forEach(target=>{
       let img=target.querySelector('img[data-zuno-studio-avatar="1"]');
-      if(!img){img=document.createElement('img');img.dataset.zunoStudioAvatar='1';img.alt='Avatar ZunoPlay'}
+      const fresh=!img;
+      if(fresh){img=document.createElement('img');img.dataset.zunoStudioAvatar='1';img.alt='Avatar ZunoPlay'}
       try{
         if(renderer.mount(img,cfg)!==false){
-          target.replaceChildren(img);
+          if(fresh||target.children.length!==1||target.firstElementChild!==img)target.replaceChildren(img);
           target.classList.add('has-zuno-avatar');
           ok=true;
         }
@@ -42,7 +43,11 @@
     return ok;
   }
 
-  function sanitizeRoomName(el){if(el)el.textContent=(el.textContent||'').replace(/^[\s🎙️🎤🎧]+/u,'').trim()}
+  function sanitizeRoomName(el){
+    if(!el)return;
+    const clean=(el.textContent||'').replace(/^[\s🎙️🎤🎧]+/u,'').trim();
+    if(el.textContent!==clean)el.textContent=clean;
+  }
   function refineRooms(){
     if(page!=='salas.html')return;
     document.querySelectorAll('.room-top').forEach(top=>{
@@ -52,9 +57,12 @@
       top.classList.add('z180-room-top');
       copy.classList.add('z180-room-copy');
       sanitizeRoomName(copy.querySelector('.room-name'));
-      top.querySelectorAll(':scope > .room-voice-icon,:scope > .z180-room-voice').forEach(el=>el.remove());
-      const icon=document.createElement('span');icon.className='z180-room-voice';icon.setAttribute('aria-hidden','true');
-      top.insertBefore(icon,copy);
+
+      top.querySelectorAll(':scope > .room-voice-icon').forEach(el=>el.remove());
+      const icons=[...top.querySelectorAll(':scope > .z180-room-voice')];
+      let icon=icons[0];icons.slice(1).forEach(el=>el.remove());
+      if(!icon){icon=document.createElement('span');icon.className='z180-room-voice';icon.setAttribute('aria-hidden','true')}
+      if(icon.nextElementSibling!==copy)top.insertBefore(icon,copy);
       if(copy.nextElementSibling!==button)top.insertBefore(copy,button);
       if(top.lastElementChild!==button)top.appendChild(button);
     });
