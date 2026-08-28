@@ -1,0 +1,30 @@
+/* Pulso v6 — premium mobile polish */
+.zm-app{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+.zm-composer{transition:border-color .2s ease,background .2s ease,transform .2s ease;min-height:0!important}
+.zm-composer:not(.zp-compose-open){padding:12px 16px!important}
+.zm-composer:not(.zp-compose-open) .zm-composer-top{gap:12px!important;align-items:center!important}
+.zm-composer:not(.zp-compose-open) .zm-avatar{width:48px!important;height:48px!important;flex:0 0 48px!important}
+.zm-composer:not(.zp-compose-open) textarea{min-height:48px!important;height:48px!important;padding:12px 2px!important;resize:none!important}
+.zm-composer:not(.zp-compose-open) .zm-composer-actions,.zm-composer:not(.zp-compose-open) .zm-media-preview{display:none!important}
+.zm-composer.zp-compose-open{border-color:rgba(155,77,255,.48)!important}
+.zm-post{overflow:hidden;transition:transform .16s ease,border-color .16s ease}
+.zm-post:active{transform:scale(.997)}
+.zm-post .zm-post-body{padding-top:12px!important;padding-bottom:14px!important}
+.zm-post:not(:has(.zm-post-media)) .zm-post-body{min-height:0!important}
+.zm-post-actions button{min-height:48px!important;font-size:14px!important;font-weight:650!important}
+.zm-post-actions button:active{transform:scale(.96)}
+.zp-action-icon{display:inline-grid;place-items:center;width:21px;height:21px;margin-right:6px;font-size:18px;line-height:1}
+.zp-liked .zp-action-icon{animation:zpHeart .28s ease}
+@keyframes zpHeart{50%{transform:scale(1.35)}100%{transform:scale(1)}}
+.zm-post-media img,.zm-post-media video{display:block;width:100%;max-height:620px;object-fit:cover;background:#050610}
+.zp-new-posts{position:sticky;top:126px;z-index:20;width:max-content;margin:8px auto;padding:9px 15px;border:1px solid rgba(155,77,255,.5);border-radius:999px;background:rgba(17,13,35,.94);box-shadow:0 8px 28px rgba(0,0,0,.32);font-size:13px;font-weight:750;color:#f2eaff;backdrop-filter:blur(14px)}
+.zp-sheet-backdrop{position:fixed;inset:0;z-index:10020;background:rgba(0,0,0,.58);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center}
+.zp-sheet{width:min(100%,680px);padding:10px 16px calc(18px + env(safe-area-inset-bottom));border:1px solid #292d4a;border-bottom:0;border-radius:24px 24px 0 0;background:linear-gradient(180deg,#111324,#080a14);box-shadow:0 -18px 50px rgba(0,0,0,.48)}
+.zp-sheet-handle{width:42px;height:4px;margin:2px auto 14px;border-radius:99px;background:#4b4f68}
+.zp-sheet-title{font-size:17px;font-weight:800;margin:0 4px 10px}
+.zp-sheet button{width:100%;display:flex;align-items:center;gap:12px;padding:14px 12px;border:0;border-top:1px solid rgba(255,255,255,.06);background:transparent;color:#ececf6;font:inherit;text-align:left}
+.zp-sheet button:first-of-type{border-top:0}
+.zp-sheet .danger{color:#ff718a}
+.zp-empty-state{margin:26px 12px;text-align:center;color:#8e92aa}
+.zp-empty-state b{display:block;color:#e9e9f3;font-size:17px;margin-bottom:5px}
+@media(max-width:520px){.zm-post{border-radius:22px!important}.zm-feed{gap:12px!important}.zm-post-actions{grid-template-columns:1fr 1fr 1fr!important}.zm-post-actions button{padding:10px 4px!important}.zp-action-label{font-size:13px}.zm-post-stats{font-size:12px!important}}
