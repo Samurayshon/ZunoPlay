@@ -1,4 +1,4 @@
-const CACHE_NAME = "zunoplay-v191";
+const CACHE_NAME = "zunoplay-v192";
 
 const STATIC_FILES = [
   "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./historico.html","./zuno-core.html","./zuno-stack.html",
@@ -7,7 +7,7 @@ const STATIC_FILES = [
   "./zuno-global-chrome.css","./zuno-global-chrome.js","./zuno-ui-components.css","./zuno-social.css","./zuno-social.js","./zuno-profile-avatar-stage5.css","./zuno-profile-avatar-stage5.js","./zuno-rooms-stage6.css","./zuno-rooms-stage6.js","./zuno-games-stage7.css","./zuno-games-stage7.js","./zuno-final-audit.css","./zuno-final-audit.js",
   "./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css",
   "./zuno-room-experience.css","./zuno-room-fit.css","./zuno-room-extras.css","./zuno-room-experience.js","./voz-sala.js","./presenca-sala.js",
-  "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-core.js","./zuno-stack.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg","./zuno-stack-pieces.webp",
+  "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-core.js","./zuno-core-v05.js","./zuno-stack.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg","./zuno-stack-pieces.webp",
   "./zuno-avatar-simple.css","./zuno-avatar-simple.js","./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-reference-v170.css","./zuno-avatar-studio-fixes-v170.js","./zuno-avatar-studio-mobile-v171.css","./zuno-avatar-studio-command-hierarchy-v172.js","./zuno-current-avatar-finish-v174.css"
 ];
 
