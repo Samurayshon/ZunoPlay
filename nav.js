@@ -18,7 +18,7 @@
 
   if(!isHome&&!publicPages.has(page)){loadStyle('zunoplay-global-chrome-style','./zuno-global-chrome.css');loadScript('zunoplay-global-chrome-script','./zuno-global-chrome.js')}
   if(socialPages.includes(page)){loadStyle('zunoplay-social-style','./zuno-social.css');loadScript('zunoplay-social-script','./zuno-social.js')}
-  if(gamePages.includes(page)){loadStyle('zunoplay-game-progression-style','./zuno-game-game-progression.css');loadScript('zunoplay-game-progression','./zuno-game-progression.js')}
+  if(gamePages.includes(page)){loadStyle('zunoplay-game-progression-style','./zuno-game-progression.css');loadScript('zunoplay-game-progression','./zuno-game-progression.js')}
   if(!isHome&&!publicPages.has(page)&&page!=='sala.html')loadStyle('zunoplay-ui-components','./zuno-ui-components.css');
   if(profileAvatarPages.includes(page)){loadStyle('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');loadScript('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js')}
   if(page==='sala.html'){
