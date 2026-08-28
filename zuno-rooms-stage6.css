@@ -1,0 +1,54 @@
+/* ZunoPlay — Etapa 6/8: Salas + Sala de Voz */
+:root{--zr-bg:#02040d;--zr-panel:#080b1c;--zr-panel2:#060817;--zr-line:#2e345b;--zr-text:#fff;--zr-muted:#9fa4ba;--zr-purple:#8b3dff;--zr-magenta:#c33fff;--zr-cyan:#31d3ff;--zr-green:#31dd7b;--zr-danger:#ff8aa6;--zr-grad:linear-gradient(135deg,#843bff 0%,#c33fff 58%,#31d3ff 100%)}
+
+/* Lista de salas */
+body.zuno-rooms-list{background:var(--zr-bg)!important;color:var(--zr-text)!important}
+body.zuno-rooms-list #app.app{width:min(100%,560px)!important;max-width:560px!important;margin:0 auto!important;padding:8px 14px 112px!important}
+body.zuno-rooms-list .page{padding:0!important}
+body.zuno-rooms-list .title{font-size:24px!important;line-height:1.08!important;font-weight:950!important;letter-spacing:-.6px!important;margin:8px 0 6px!important}
+body.zuno-rooms-list .subtitle{font-size:12px!important;line-height:1.5!important;color:var(--zr-muted)!important;margin:0 0 14px!important}
+body.zuno-rooms-list .status{margin:0 0 12px!important;padding:10px 12px!important;border:1px solid rgba(49,221,123,.18)!important;border-radius:14px!important;background:rgba(12,45,31,.30)!important;color:#79edac!important;font-size:11px!important;box-shadow:none!important}
+body.zuno-rooms-list .status.warning{border-color:rgba(255,196,82,.22)!important;background:rgba(64,45,14,.28)!important;color:#ffd177!important}
+body.zuno-rooms-list .room{position:relative!important;overflow:hidden!important;width:100%!important;margin:0 0 10px!important;padding:14px!important;border:1px solid var(--zr-line)!important;border-radius:20px!important;background:radial-gradient(circle at 85% 30%,rgba(91,55,210,.13),transparent 34%),linear-gradient(145deg,#0a0e21,#060817)!important;box-shadow:inset 0 0 28px rgba(76,59,165,.05),0 12px 30px rgba(0,0,0,.12)!important}
+body.zuno-rooms-list .room.current{border-color:rgba(49,221,123,.48)!important;box-shadow:inset 0 0 0 1px rgba(49,221,123,.06),0 0 20px rgba(49,221,123,.07)!important}
+body.zuno-rooms-list .room-top{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+body.zuno-rooms-list .room-name{font-size:15px!important;font-weight:900!important;color:#fff!important;letter-spacing:-.2px!important}
+body.zuno-rooms-list .room-info{font-size:10.5px!important;color:var(--zr-muted)!important;margin-top:5px!important}
+body.zuno-rooms-list .room-current-label{display:inline-flex!important;align-items:center!important;gap:5px!important;margin-top:8px!important;padding:4px 8px!important;border-radius:999px!important;background:rgba(49,221,123,.10)!important;border:1px solid rgba(49,221,123,.25)!important;color:#82efb0!important;font-size:9px!important;font-weight:850!important}
+body.zuno-rooms-list .enter-button{min-width:78px!important;min-height:40px!important;padding:9px 13px!important;border:0!important;border-radius:13px!important;background:var(--zr-grad)!important;color:#fff!important;font-size:11px!important;font-weight:900!important;box-shadow:0 0 18px rgba(139,61,255,.16)!important}
+body.zuno-rooms-list .enter-button.current{background:linear-gradient(135deg,#1fbf69,#15a660)!important;box-shadow:0 0 18px rgba(49,221,123,.12)!important}
+body.zuno-rooms-list .enter-button:disabled{opacity:.4!important;filter:saturate(.5)!important}
+body.zuno-rooms-list .empty,body.zuno-rooms-list .error{border:1px dashed rgba(89,97,148,.30)!important;border-radius:18px!important;background:rgba(7,10,24,.55)!important;padding:28px 14px!important;color:#7f849a!important;font-size:12px!important}
+
+/* Sala de voz imersiva */
+body.zuno-room-immersive{background:var(--zr-bg)!important;color:#fff!important;overflow:hidden!important}
+body.zuno-room-immersive .app{max-width:720px!important;background:radial-gradient(circle at 50% 0%,rgba(108,55,230,.18),transparent 28%),linear-gradient(180deg,#070b18,#02040d 58%)!important;border-left:1px solid rgba(78,89,142,.10)!important;border-right:1px solid rgba(78,89,142,.10)!important}
+body.zuno-room-immersive .header{height:64px!important;padding:9px 12px!important;border-bottom:1px solid rgba(55,63,105,.72)!important;background:rgba(4,7,17,.91)!important;backdrop-filter:blur(20px)!important}
+body.zuno-room-immersive .icon-btn{width:40px!important;height:40px!important;flex-basis:40px!important;border-radius:13px!important;border:1px solid #30375d!important;background:#0c1124!important;color:#fff!important;box-shadow:inset 0 0 15px rgba(84,66,176,.05)!important}
+body.zuno-room-immersive .room-title{font-size:15px!important;font-weight:950!important;color:#fff!important}
+body.zuno-room-immersive .room-meta{font-size:9.5px!important;color:#9499b0!important}
+body.zuno-room-immersive .room-status{color:var(--zr-green)!important}
+body.zuno-room-immersive .stage-shell{padding:10px 12px 7px!important}
+body.zuno-room-immersive .stage-label{font-size:9.5px!important;color:#aaaec0!important;letter-spacing:.12em!important}
+body.zuno-room-immersive .stage-live{font-size:9px!important;padding:4px 8px!important;color:#7bf0ad!important;border-color:rgba(49,221,123,.20)!important;background:rgba(49,221,123,.07)!important}
+body.zuno-room-immersive .room-stage{min-height:236px!important;padding:18px 8px 14px!important;gap:12px 6px!important;border:1px solid #343b67!important;border-radius:24px!important;background:radial-gradient(circle at 50% 38%,rgba(112,52,237,.22),transparent 32%),radial-gradient(circle at 50% 100%,rgba(36,198,255,.08),transparent 38%),linear-gradient(180deg,#0d1228,#070a18)!important;box-shadow:inset 0 -45px 90px rgba(0,0,0,.28),0 14px 40px rgba(0,0,0,.20)!important}
+body.zuno-room-immersive .avatar{border-color:#6755a9!important;background:#171b33!important;box-shadow:0 0 0 4px rgba(255,255,255,.02),0 0 15px rgba(128,65,255,.08)!important}
+body.zuno-room-immersive .avatar-slot.me .avatar{border-color:#31dd7b!important;box-shadow:0 0 0 4px rgba(49,221,123,.08),0 0 18px rgba(49,221,123,.16)!important}
+body.zuno-room-immersive .avatar-slot.owner .avatar{border-color:#f1c86e!important}
+body.zuno-room-immersive .avatar-slot.is-speaking .avatar{border-color:#b05cff!important;box-shadow:0 0 0 5px rgba(176,92,255,.18),0 0 30px rgba(111,55,255,.46)!important}
+body.zuno-room-immersive .seat-empty .empty-circle{border-color:#4c557e!important;background:rgba(255,255,255,.012)!important;color:#727a98!important}
+body.zuno-room-immersive .chat-section{border-top:1px solid rgba(62,71,116,.35)!important}
+body.zuno-room-immersive .chat-head{background:rgba(5,8,18,.72)!important}
+body.zuno-room-immersive .message{background:#0d1222!important;border-color:#2d3458!important;color:#fff!important}
+body.zuno-room-immersive .chat-row.me .message{background:linear-gradient(135deg,#7337da,#8d3fc5)!important;border-color:#9656e7!important}
+body.zuno-room-immersive .composer-wrap{border-top:1px solid #2b3152!important;background:rgba(4,7,17,.97)!important;backdrop-filter:blur(20px)!important}
+body.zuno-room-immersive .voice-dock .zuno-voice{background:#0a0f20!important;border-color:#293153!important;border-radius:14px!important}
+body.zuno-room-immersive .chat-input{background:#0a0f20!important;border-color:#30385e!important;color:#fff!important}
+body.zuno-room-immersive .chat-input:focus{border-color:#8049d8!important;box-shadow:0 0 0 3px rgba(139,61,255,.09)!important}
+body.zuno-room-immersive .speaker,body.zuno-room-immersive .emoji-button{background:#0d1224!important;border-color:#30385e!important}
+body.zuno-room-immersive .send-button{background:var(--zr-grad)!important;box-shadow:0 0 16px rgba(139,61,255,.18)!important}
+body.zuno-room-immersive .members-sheet{background:#080c1b!important;border-color:#30375c!important;box-shadow:0 -20px 70px #000a!important}
+body.zuno-room-immersive .member{border-bottom-color:#252c4b!important}
+body.zuno-room-immersive .leave{border-color:#5b2b3d!important;background:#24131c!important;color:#ff9bb2!important}
+
+@media(max-width:390px){body.zuno-rooms-list #app.app{padding-left:10px!important;padding-right:10px!important}body.zuno-rooms-list .room{padding:12px!important}body.zuno-room-immersive .room-stage{min-height:220px!important;gap:10px 2px!important;padding-left:4px!important;padding-right:4px!important}}
