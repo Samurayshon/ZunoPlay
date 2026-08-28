@@ -1,10 +1,11 @@
-const CACHE_NAME = "zunoplay-v168";
+const CACHE_NAME = "zunoplay-v169";
 
 // Shell essencial em fila única para evitar rajadas durante atualização do PWA.
 const STATIC_FILES = [
   "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./salas.html","./sala.html",
   "./manifest.json","./nav.js","./home-app.js","./realtime-global.js","./avatar-renderer.js","./avatar-home-sync.js",
-  "./zuno-current.js","./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js"
+  "./zuno-current.js","./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js",
+  "./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js"
 ];
 
 const INFLIGHT = new Map();
@@ -58,6 +59,8 @@ function isCurrentUiAsset(url){
   const path=url.pathname.toLowerCase();
   return path.includes('/zuno-current')||
     path.endsWith('/zuno-avatar-studio-reference-v167.js')||
+    path.endsWith('/zuno-avatar-studio-reference-v169.css')||
+    path.endsWith('/zuno-avatar-studio-reference-v169.js')||
     path.endsWith('/zuno-home-reference-v152.css')||
     path.endsWith('/avatar-home-sync.js')||
     path.endsWith('/avatar-renderer.js')||
