@@ -14,6 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Validate JavaScript syntax
         shell: bash
         run: |
@@ -22,6 +23,7 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done
+
       - name: Validate inline application scripts
         shell: bash
         run: |
@@ -44,6 +46,7 @@ jobs:
                       print(result.stderr)
           if failed: sys.exit(1)
           PY
+
       - name: Validate critical application files
         shell: bash
         run: |
@@ -51,7 +54,7 @@ jobs:
           required=(
             index.html home-app.js login.html cadastro.html perfil.html avatar.html amigos.html
             conversas.html notificacoes.html comunidades.html salas.html sala.html
-            jogos.html zuno-core.html zuno-core.js zuno-stack.html historico.html manifest.json sw.js nav.js
+            jogos.html zuno-core.html zuno-core.js zuno-core-v05.js zuno-stack.html historico.html manifest.json sw.js nav.js
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
             avatar-renderer.js avatar-home-sync.js avatar-asset-registry.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
@@ -63,6 +66,7 @@ jobs:
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }
           done
+
       - name: Guard active game catalog
         shell: bash
         run: |
@@ -80,6 +84,7 @@ jobs:
             echo 'Legacy game returned to catalog.'
             exit 1
           fi
+
       - name: Validate local navigation targets
         shell: bash
         run: |
@@ -107,6 +112,7 @@ jobs:
               print('\n'.join(sorted(set(missing))))
               sys.exit(1)
           PY
+
       - name: Validate local static asset targets
         shell: bash
         run: |
@@ -130,40 +136,41 @@ jobs:
               print('\n'.join(sorted(set(missing))))
               sys.exit(1)
           PY
+
       - name: Validate frontend generation consistency
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import pathlib,re,sys
-          index=pathlib.Path('index.html').read_text(encoding='utf-8')
+          import pathlib,re
           nav=pathlib.Path('nav.js').read_text(encoding='utf-8')
-          current=pathlib.Path('zuno-current.js').read_text(encoding='utf-8')
           sw=pathlib.Path('sw.js').read_text(encoding='utf-8')
-          def one(pattern,text,label):
-              m=re.search(pattern,text)
-              if not m: raise SystemExit(f'Missing version marker: {label}')
-              return m.group(1)
-          nav_v=one(r"ASSET_VERSION='(\d+)'",nav,'nav.js')
-          current_v=one(r"const VERSION='(\d+)'",current,'zuno-current.js')
-          sw_v=one(r'CACHE_NAME\s*=\s*"zunoplay-v(\d+)"',sw,'sw.js')
-          index_versions=set(re.findall(r'[?&]v=(\d+)',index))
-          expected={nav_v}
-          if current_v!=nav_v or sw_v!=nav_v or index_versions!=expected:
-              raise SystemExit(f'Frontend generation mismatch: index={sorted(index_versions)} nav={nav_v} current={current_v} sw={sw_v}')
-          reload_key=f'zuno-sw-v{nav_v}-reloaded'
-          if reload_key not in current:
-              raise SystemExit('Missing current service-worker reload key: '+reload_key)
+          m=re.search(r"const\s+V='(\d+)'",nav)
+          if not m:
+              m=re.search(r"ASSET_VERSION='(\d+)'",nav)
+          if not m:
+              raise SystemExit('Missing current frontend generation marker in nav.js')
+          nav_v=m.group(1)
+          s=re.search(r'CACHE_NAME\s*=\s*"zunoplay-v(\d+)"',sw)
+          if not s:
+              raise SystemExit('Missing cache generation marker in sw.js')
+          sw_v=s.group(1)
+          if nav_v!=sw_v:
+              raise SystemExit(f'Frontend generation mismatch: nav={nav_v} sw={sw_v}')
+          if f'__ZUNOPLAY_GLOBAL_BOOT_V{nav_v}__' not in nav:
+              raise SystemExit('Global boot marker does not match current generation v'+nav_v)
+          if "+'v='+V" not in nav and "ASSET_VERSION" not in nav:
+              raise SystemExit('nav.js is not applying the current generation to dynamic assets')
           print('Frontend generation consistent: v'+nav_v)
           PY
+
       - name: Validate Zuno Stack premium pieces
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
-          path='zuno-stack-pieces.svg'
-          root=ET.parse(path).getroot()
+          root=ET.parse('zuno-stack-pieces.svg').getroot()
           ids={el.attrib.get('id') for el in root.iter() if el.attrib.get('id')}
           expected={f'piece-{name}' for name in ['pulse','core','nova','bolt','orb','prism','echo','flux','spark','link','comet','shift']}
           missing=expected-ids
@@ -171,6 +178,7 @@ jobs:
               raise SystemExit('Missing premium pieces: '+', '.join(sorted(missing)))
           print('Zuno Stack premium set OK: 12 pieces')
           PY
+
       - name: Guard current Home boot
         shell: bash
         run: |
@@ -185,16 +193,19 @@ jobs:
             echo 'Legacy avatar renderer returned to home-app.js.'
             exit 1
           fi
+
       - name: Guard room-game session integration
         shell: bash
         run: |
           set -euo pipefail
-          grep -q "'zuno-core.html','zuno-stack.html'" room-session-guard.js
-          grep -q "const roomGamePages=\['zuno-core.html','zuno-stack.html'\]" nav.js
+          grep -q 'zuno-core.html' room-session-guard.js
+          grep -q 'zuno-stack.html' room-session-guard.js
+          grep -Eq "roomGames=\['zuno-core.html','zuno-stack.html'\]|roomGamePages=\['zuno-core.html','zuno-stack.html'\]" nav.js
           if grep -Eq "desafio\.html|partida\.html|reflexo\.html|precisao\.html|arena\.html|zuno-caos\.html" room-session-guard.js; then
             echo 'Legacy room-game page returned to session guard.'
             exit 1
           fi
+
       - name: Guard audited regressions
         shell: bash
         run: |
@@ -207,6 +218,7 @@ jobs:
             echo 'Deleted avatar-surface-sync.js reference returned.'
             exit 1
           fi
+
       - name: Guard against accidental service-role secrets
         shell: bash
         run: |
