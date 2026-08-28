@@ -14,16 +14,16 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "./zuno-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "./zuno-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -32,28 +32,28 @@
       "short_name": "Salas",
       "description": "Abrir as salas de voz do ZunoPlay",
       "url": "./salas.html",
-      "icons": [{"src":"./icon-192.png","sizes":"192x192","type":"image/png"}]
+      "icons": [{"src":"./zuno-app-icon.svg","sizes":"any","type":"image/svg+xml"}]
     },
     {
       "name": "Conversas",
       "short_name": "Conversas",
       "description": "Abrir suas conversas",
       "url": "./conversas.html",
-      "icons": [{"src":"./icon-192.png","sizes":"192x192","type":"image/png"}]
+      "icons": [{"src":"./zuno-app-icon.svg","sizes":"any","type":"image/svg+xml"}]
     },
     {
       "name": "Jogos",
       "short_name": "Jogos",
       "description": "Abrir os jogos do ZunoPlay",
       "url": "./jogos.html",
-      "icons": [{"src":"./icon-192.png","sizes":"192x192","type":"image/png"}]
+      "icons": [{"src":"./zuno-app-icon.svg","sizes":"any","type":"image/svg+xml"}]
     },
     {
       "name": "Meu perfil",
       "short_name": "Perfil",
       "description": "Abrir seu perfil",
       "url": "./perfil.html",
-      "icons": [{"src":"./icon-192.png","sizes":"192x192","type":"image/png"}]
+      "icons": [{"src":"./zuno-app-icon.svg","sizes":"any","type":"image/svg+xml"}]
     }
   ]
 }
