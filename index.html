@@ -9,8 +9,8 @@
 <style id="zunoplay-home-critical">
 :root{--bg:#04040b;--text:#f8f8ff;--muted:#9a9caf;--purple:#9b4dff}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#04040b;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,a,input{font:inherit}.app{display:none;width:min(100%,1120px);min-height:100vh;margin:auto}.home-screen{display:none}.loading{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;gap:12px;background:#04040b;color:#c7c9da;font-weight:800}.loading-spinner{width:24px;height:24px;border:3px solid #2e3048;border-top-color:var(--purple);border-radius:50%;animation:zspin .75s linear infinite}@keyframes zspin{to{transform:rotate(360deg)}}
-html:not([data-zuno-home-current-ready="1"]) #homeScreen,html:not([data-zuno-home-current-ready="1"]) #bottomNav{visibility:hidden!important;pointer-events:none!important}
-html[data-zuno-home-current-ready="1"] #homeScreen,html[data-zuno-home-current-ready="1"] #bottomNav{visibility:visible!important}
+html:not([data-zuno-home-current-ready="1"]) #homeScreen{visibility:hidden!important;pointer-events:none!important}
+html[data-zuno-home-current-ready="1"] #homeScreen{visibility:visible!important}
 html[data-zuno-avatar-system="studio"] #profileAvatarWrap>:not(.profile-glow):not([data-zuno-studio-avatar="1"]){display:none!important}
 html[data-zuno-avatar-system="studio"] #profileButton>:not([data-zuno-studio-avatar="1"]){display:none!important}
 html[data-zuno-avatar-system="studio"]:not([data-zuno-avatar-home-ready="1"]) #profileAvatarWrap,html[data-zuno-avatar-system="studio"]:not([data-zuno-avatar-home-ready="1"]) #profileButton{visibility:hidden!important}
@@ -32,7 +32,7 @@ html[data-zuno-avatar-system="studio"]:not([data-zuno-avatar-home-ready="1"]) #p
 <script id="zunoplay-current-home-script" defer src="zuno-current-home.js?v=173"></script>
 <script id="zunoplay-avatar-renderer" defer src="avatar-renderer.js?v=173"></script>
 <script id="zunoplay-avatar-home-sync" defer src="avatar-home-sync.js?v=173"></script>
-<script defer src="nav.js?v=173"></script>
+<script defer src="nav.js?v=231"></script>
 <script defer src="home-app.js?v=173"></script>
 <script defer src="zuno-home-header-guard.js?v=214"></script>
 </head>
@@ -58,7 +58,6 @@ html[data-zuno-avatar-system="studio"]:not([data-zuno-avatar-home-ready="1"]) #p
     <button id="logoutButton" class="logout">Sair da conta</button><div class="footer">ZunoPlay © 2026</div>
   </section>
 </main>
-<nav id="bottomNav" class="bottom-nav" style="display:none"><button class="nav-item active" onclick="location.href='index.html'"><b>⌂</b>Home</button><button class="nav-item" onclick="location.href='amigos.html'"><b>♟</b>Social</button><button class="nav-main" onclick="location.href='salas.html'" aria-label="Explorar salas">+</button><button class="nav-item" onclick="location.href='salas.html'"><b>♩</b>Salas</button><button class="nav-item" onclick="location.href='perfil.html'"><b>●</b>Perfil</button></nav>
 <div id="searchBackdrop" class="search-backdrop" role="dialog" aria-modal="true" aria-label="Busca do ZunoPlay"><div class="search-panel"><div class="search-head"><input id="searchInput" class="search-input" type="search" maxlength="40" autocomplete="off" placeholder="Buscar pessoas ou salas..."><button id="searchClose" class="search-close" type="button" aria-label="Fechar busca">×</button></div><div id="searchResults" class="search-results"><div class="search-empty">Digite pelo menos 2 caracteres para buscar.</div></div></div></div>
 </body>
 </html>
