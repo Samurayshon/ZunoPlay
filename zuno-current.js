@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='168';
+  const VERSION='169';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -73,9 +73,9 @@
     if(document.getElementById(id))return;
     const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script);
   }
-  function installV168Refresh(){
+  function installV169Refresh(){
     if(!('serviceWorker' in navigator))return;
-    const key='zuno-sw-v168-reloaded';
+    const key='zuno-sw-v169-reloaded';
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(sessionStorage.getItem(key)==='1')return;
       sessionStorage.setItem(key,'1');
@@ -99,6 +99,8 @@
     if(page==='avatar.html'){
       injectStyle('zunoplay-current-avatar-studio-style','./zuno-current-avatar-studio.css');
       injectScript('zunoplay-avatar-studio-reference-v167','./zuno-avatar-studio-reference-v167.js','ZunoPlay: layout do Avatar Studio indisponível');
+      injectStyle('zunoplay-avatar-studio-reference-v169-style','./zuno-avatar-studio-reference-v169.css');
+      injectScript('zunoplay-avatar-studio-reference-v169-script','./zuno-avatar-studio-reference-v169.js','ZunoPlay: refinamento do Avatar Studio indisponível');
     }
     if(page==='zuno-stack.html'){
       injectStyle('zunoplay-stack-premium-pieces-style','./zuno-stack-pieces.css');
@@ -112,7 +114,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
-    installV168Refresh();
+    installV169Refresh();
     loadCurrentModules();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
