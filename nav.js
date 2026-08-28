@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='179';
+  const ASSET_VERSION='180';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
@@ -15,8 +15,7 @@
     document.documentElement.dataset.zunoHomeBoot='current-only';
     document.documentElement.dataset.zunoAvatarSystem='studio';
     if(document.getElementById('zunoplay-home-boot-guard'))return;
-    const style=document.createElement('style');
-    style.id='zunoplay-home-boot-guard';
+    const style=document.createElement('style');style.id='zunoplay-home-boot-guard';
     style.textContent=`
       html[data-zuno-home-boot="current-only"]:not([data-zuno-home-current-ready="1"]) #homeScreen,
       html[data-zuno-home-boot="current-only"]:not([data-zuno-home-current-ready="1"]) #bottomNav{visibility:hidden!important;pointer-events:none!important}
@@ -82,16 +81,16 @@
     loadStyle('zunoplay-current-base-style','./zuno-current-base.css');
     loadScript('zunoplay-current-script','./zuno-current.js','ZunoPlay: interface atual indisponível');
     loadStyle('zunoplay-current-shell-v173','./zuno-current-shell-v173.css');
-    if(page!=='index.html')loadStyle('zunoplay-home-shell-v179','./zuno-home-shell-v179.css');
+    if(page!=='index.html')loadStyle('zunoplay-home-shell-v180','./zuno-home-shell-v180.css');
   }
 
   function installOfficialLogoStyle(){
     if(document.getElementById('zunoplay-official-logo-style'))return;
     const style=document.createElement('style');style.id='zunoplay-official-logo-style';
-    style.textContent=`.zuno-official-logo{display:inline-flex!important;align-items:center!important;gap:.26em!important;line-height:1!important;white-space:nowrap!important;letter-spacing:-.045em!important}.zuno-official-logo-mark{width:1.16em;height:1.06em;flex:0 0 auto;display:block;filter:drop-shadow(0 0 .26em rgba(145,70,255,.52))}.zuno-official-logo-word{font-weight:950;letter-spacing:-.055em;color:#f7f7ff;line-height:1}.zuno-official-logo-word b{font-weight:950;background:linear-gradient(135deg,#ca58ff 0%,#9a39ff 48%,#ef3bc8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.welcome-logo.zuno-official-logo{justify-content:center;font-size:48px}.brand.zuno-official-logo{font-size:38px}.logo.zuno-official-logo{font-size:inherit}@media(max-width:520px){.brand.zuno-official-logo{font-size:30px}.welcome-logo.zuno-official-logo{font-size:42px}}`;
+    style.textContent=`.zuno-official-logo{display:inline-flex!important;align-items:center!important;gap:.26em!important;line-height:1!important;white-space:nowrap!important;letter-spacing:-.045em!important}.zuno-official-logo-mark{position:relative!important;width:1.02em;height:.92em;flex:0 0 auto;display:block!important;background:linear-gradient(145deg,#59ddff 0%,#7353ff 38%,#b62cff 70%,#ef3bc8 100%)!important;clip-path:polygon(7% 10%,92% 10%,57% 44%,81% 44%,12% 93%,42% 55%,17% 55%)!important;filter:drop-shadow(0 0 .26em rgba(145,70,255,.52))}.zuno-official-logo-word{font-weight:950;letter-spacing:-.055em;color:#f7f7ff;line-height:1}.zuno-official-logo-word b{font-weight:950;background:linear-gradient(120deg,#61dfff 0%,#8b62ff 38%,#c439f3 78%);-webkit-background-clip:text;background-clip:text;color:transparent}.welcome-logo.zuno-official-logo{justify-content:center;font-size:48px}.brand.zuno-official-logo{font-size:38px}.logo.zuno-official-logo{font-size:inherit}@media(max-width:520px){.brand.zuno-official-logo{font-size:30px}.welcome-logo.zuno-official-logo{font-size:42px}}`;
     document.head.appendChild(style);
   }
-  function officialLogoMarkup(){return `<svg class="zuno-official-logo-mark" viewBox="0 0 76 68" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="zlg" x1="8" y1="4" x2="68" y2="64" gradientUnits="userSpaceOnUse"><stop stop-color="#4fd6ff"/><stop offset=".28" stop-color="#7b4dff"/><stop offset=".64" stop-color="#b62cff"/><stop offset="1" stop-color="#f23ed0"/></linearGradient></defs><rect x="6" y="5" width="64" height="58" rx="15" fill="url(#zlg)" opacity=".98" transform="rotate(-6 38 34)"/><path d="M22 20h38L37 35h18L27 52H15l25-18H22z" fill="#fff"/></svg><span class="zuno-official-logo-word">Zuno<b>Play</b></span>`}
+  function officialLogoMarkup(){return `<span class="zuno-official-logo-mark" aria-hidden="true"></span><span class="zuno-official-logo-word">Zuno<b>Play</b></span>`}
   function mountOfficialLogo(){
     installOfficialLogoStyle();
     document.querySelectorAll('.brand,.welcome-logo,.logo').forEach(el=>{
