@@ -3,56 +3,54 @@ body.zuno-page-sala .chat-row.zuno-grouped{margin-top:3px}
 body.zuno-page-sala .chat-row.zuno-grouped .chat-avatar{visibility:hidden}
 body.zuno-page-sala .chat-row.zuno-grouped .message-user{display:none}
 body.zuno-page-sala .message-status{font-size:8px;line-height:1;margin-top:5px;text-align:right;color:#858da8;display:flex;align-items:center;justify-content:flex-end;gap:5px}
-body.zuno-page-sala .message-status.is-sending{color:#9aa3bd}
-body.zuno-page-sala .message-status.is-sent{color:#67d79a}
-body.zuno-page-sala .message-status.is-error{color:#ff8ca7}
+body.zuno-page-sala .message-status.is-sending{color:#9aa3bd}body.zuno-page-sala .message-status.is-sent{color:#67d79a}body.zuno-page-sala .message-status.is-error{color:#ff8ca7}
 body.zuno-page-sala .message-retry{border:0;background:transparent;color:#ffadc0;font-size:9px;font-weight:800;padding:1px 0;text-decoration:underline}
 body.zuno-page-sala .chat-row.is-pending{opacity:.82}
-body.zuno-page-sala .room-stage .seat-empty{cursor:pointer;transition:transform .12s ease,filter .12s ease}
-body.zuno-page-sala .room-stage .seat-empty:active{transform:scale(.96);filter:brightness(1.2)}
+body.zuno-page-sala .room-stage .seat-empty{cursor:pointer;transition:transform .16s ease,filter .16s ease,opacity .16s ease}body.zuno-page-sala .room-stage .seat-empty:active{transform:scale(.96);filter:brightness(1.2)}
 body.zuno-page-sala .room-stage .avatar-slot.me{cursor:pointer}
 body.zuno-page-sala .member{position:relative;padding-right:48px}
 body.zuno-page-sala .zuno-member-more{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:12px;border:1px solid rgba(79,89,139,.34);background:#0d1224;color:#aeb6cf;font-size:19px;display:grid;place-items:center}
 body.zuno-page-sala .zuno-v1-overlay{position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;padding:12px;backdrop-filter:blur(5px)}
 body.zuno-page-sala .zuno-v1-sheet{width:min(520px,100%);max-height:min(72dvh,620px);overflow:auto;border:1px solid rgba(83,94,151,.42);border-radius:24px;background:linear-gradient(180deg,#10152b,#080c1b);box-shadow:0 24px 80px rgba(0,0,0,.55);padding:14px}
-body.zuno-page-sala .zuno-v1-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-body.zuno-page-sala .zuno-v1-sheet-head b{font-size:15px}.zuno-page-sala .zuno-v1-sheet-head small{display:block;color:#8991a9;font-size:10px;margin-top:3px}
+body.zuno-page-sala .zuno-v1-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}body.zuno-page-sala .zuno-v1-sheet-head b{font-size:15px}.zuno-page-sala .zuno-v1-sheet-head small{display:block;color:#8991a9;font-size:10px;margin-top:3px}
 body.zuno-page-sala .zuno-v1-close{width:34px;height:34px;border-radius:11px;border:1px solid #30375d;background:#11162a;color:#fff;font-size:18px}
-body.zuno-page-sala .zuno-v1-actions{display:grid;gap:8px}
-body.zuno-page-sala .zuno-v1-action{width:100%;min-height:48px;border-radius:15px;border:1px solid rgba(76,87,137,.36);background:#0d1224;color:#fff;display:flex;align-items:center;gap:11px;padding:10px 12px;text-align:left}
-body.zuno-page-sala .zuno-v1-action span{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(139,61,255,.1);color:#c8b8ff}
-body.zuno-page-sala .zuno-v1-action b{font-size:12px}.zuno-page-sala .zuno-v1-action small{display:block;color:#8991aa;font-size:9px;margin-top:2px}
+body.zuno-page-sala .zuno-v1-actions{display:grid;gap:8px}.zuno-page-sala .zuno-v1-action{width:100%;min-height:48px;border-radius:15px;border:1px solid rgba(76,87,137,.36);background:#0d1224;color:#fff;display:flex;align-items:center;gap:11px;padding:10px 12px;text-align:left}
+body.zuno-page-sala .zuno-v1-action span{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(139,61,255,.1);color:#c8b8ff}.zuno-page-sala .zuno-v1-action b{font-size:12px}.zuno-page-sala .zuno-v1-action small{display:block;color:#8991aa;font-size:9px;margin-top:2px}
 body.zuno-page-sala .zuno-v1-action.danger{border-color:rgba(222,77,111,.32);color:#ffb0c2}.zuno-page-sala .zuno-v1-action.danger span{background:rgba(222,77,111,.1);color:#ff9ab2}
-body.zuno-page-sala .zuno-v1-field{width:100%;min-height:92px;resize:none;border-radius:15px;border:1px solid #30375d;background:#0a0f20;color:#fff;padding:12px;font:inherit;font-size:12px;outline:none}
-body.zuno-page-sala .zuno-v1-field:focus{border-color:#7f46e9;box-shadow:0 0 0 3px rgba(127,70,233,.08)}
-body.zuno-page-sala .zuno-v1-primary{width:100%;height:44px;border:0;border-radius:14px;background:linear-gradient(135deg,#7734e8,#b03cf1);color:#fff;font-weight:900;margin-top:9px}
-body.zuno-page-sala .zuno-v1-muted{font-size:10px;line-height:1.45;color:#8f97ad}
-body.zuno-page-sala .zuno-reward-card{border:1px solid rgba(135,86,238,.32);border-radius:18px;padding:13px;background:linear-gradient(135deg,rgba(119,52,232,.12),rgba(49,211,255,.04));margin-top:8px}
-body.zuno-page-sala .zuno-reward-card strong{font-size:14px}.zuno-page-sala .zuno-reward-card p{margin:5px 0 10px;color:#8f97ad;font-size:10px;line-height:1.4}
+body.zuno-page-sala .zuno-v1-field{width:100%;min-height:92px;resize:none;border-radius:15px;border:1px solid #30375d;background:#0a0f20;color:#fff;padding:12px;font:inherit;font-size:12px;outline:none}.zuno-page-sala .zuno-v1-field:focus{border-color:#7f46e9;box-shadow:0 0 0 3px rgba(127,70,233,.08)}
+body.zuno-page-sala .zuno-v1-primary{width:100%;height:44px;border:0;border-radius:14px;background:linear-gradient(135deg,#7734e8,#b03cf1);color:#fff;font-weight:900;margin-top:9px}body.zuno-page-sala .zuno-v1-muted{font-size:10px;line-height:1.45;color:#8f97ad}
+body.zuno-page-sala .zuno-reward-card{border:1px solid rgba(135,86,238,.32);border-radius:18px;padding:13px;background:linear-gradient(135deg,rgba(119,52,232,.12),rgba(49,211,255,.04));margin-top:8px}body.zuno-page-sala .zuno-reward-card strong{font-size:14px}.zuno-page-sala .zuno-reward-card p{margin:5px 0 10px;color:#8f97ad;font-size:10px;line-height:1.4}
 body.zuno-page-sala .zuno-reward-ready{color:#62e89f;font-size:10px;font-weight:800}.zuno-page-sala .zuno-reward-wait{color:#aeb5ca;font-size:10px}
-body.zuno-page-sala .zuno-game-card{display:flex;align-items:center;gap:12px;border:1px solid rgba(74,85,136,.4);border-radius:17px;background:#0c1123;padding:12px}
-body.zuno-page-sala .zuno-game-icon{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,rgba(129,55,243,.28),rgba(49,211,255,.12));display:grid;place-items:center;font-size:21px}.zuno-page-sala .zuno-game-card b{font-size:13px}.zuno-page-sala .zuno-game-card small{display:block;font-size:9px;color:#8e96ae;margin-top:3px}
-body.zuno-page-sala .zuno-room-toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(12px);z-index:2147483600;max-width:calc(100vw - 32px);padding:10px 13px;border-radius:13px;border:1px solid rgba(80,91,145,.45);background:#10152a;color:#fff;font-size:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s ease;box-shadow:0 16px 40px rgba(0,0,0,.4)}
-body.zuno-page-sala .zuno-room-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-body.zuno-page-sala .zuno-room-toast.error{border-color:rgba(222,77,111,.5);color:#ffb3c4}
-body.zuno-page-sala .zuno-seat-busy{pointer-events:none;opacity:.65}
+body.zuno-page-sala .zuno-game-card{display:flex;align-items:center;gap:12px;border:1px solid rgba(74,85,136,.4);border-radius:17px;background:#0c1123;padding:12px}.zuno-page-sala .zuno-game-icon{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,rgba(129,55,243,.28),rgba(49,211,255,.12));display:grid;place-items:center;font-size:21px}.zuno-page-sala .zuno-game-card b{font-size:13px}.zuno-page-sala .zuno-game-card small{display:block;font-size:9px;color:#8e96ae;margin-top:3px}
+body.zuno-page-sala .zuno-room-toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(12px);z-index:2147483600;max-width:calc(100vw - 32px);padding:10px 13px;border-radius:13px;border:1px solid rgba(80,91,145,.45);background:#10152a;color:#fff;font-size:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s ease;box-shadow:0 16px 40px rgba(0,0,0,.4)}body.zuno-page-sala .zuno-room-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}body.zuno-page-sala .zuno-room-toast.error{border-color:rgba(222,77,111,.5);color:#ffb3c4}body.zuno-page-sala .zuno-seat-busy{pointer-events:none;opacity:.65}
 
-/* Sala v1.1 — mobile composition cleanup. This file is loaded last and owns these values. */
+/* Sala v1.2 — final visual polish */
 body.zuno-page-sala .stage-shell{height:296px!important;padding-top:6px!important}
 body.zuno-page-sala .stage-head{height:26px!important;min-height:26px!important}
 body.zuno-page-sala .room-stage{grid-template-rows:repeat(2,100px)!important;gap:0 2px!important;padding-top:4px!important;padding-bottom:2px!important}
 body.zuno-page-sala .avatar-slot,body.zuno-page-sala .seat-empty{min-height:96px!important}
-body.zuno-page-sala .room-stage:before{width:130px!important;height:130px!important;top:45%!important}
+body.zuno-page-sala .room-stage:before{width:130px!important;height:130px!important;top:45%!important;filter:drop-shadow(0 0 20px rgba(139,61,255,.13));animation:zunoPulseBreath 3.6s ease-in-out infinite!important}
 body.zuno-page-sala .room-stage:after{top:45%!important}
-body.zuno-page-sala .chat-section{top:284px!important;background:linear-gradient(180deg,rgba(3,6,16,.12),rgba(3,6,16,.72) 28%,rgba(3,6,16,.94) 100%)!important}
+@keyframes zunoPulseBreath{0%,100%{transform:translate(-50%,-50%) scale(.98);opacity:.68}50%{transform:translate(-50%,-50%) scale(1.025);opacity:1}}
+body.zuno-page-sala .seat-empty{opacity:.68}body.zuno-page-sala .seat-empty:hover,body.zuno-page-sala .seat-empty:active{opacity:1}
+body.zuno-page-sala .avatar-slot.me .avatar-wrap{filter:drop-shadow(0 0 10px rgba(54,233,150,.18))}
+body.zuno-page-sala .avatar-name{font-weight:850!important;letter-spacing:-.01em}.zuno-page-sala .avatar-role{opacity:.72!important}.zuno-page-sala .presence-status{font-size:8px!important;opacity:.88!important}
+body.zuno-page-sala .chat-section{top:284px!important;background:linear-gradient(180deg,rgba(3,6,16,.1),rgba(3,6,16,.72) 26%,rgba(3,6,16,.96) 100%)!important;border-top-color:rgba(101,113,169,.11)!important}
 body.zuno-page-sala .chat-head{height:30px!important;min-height:30px!important;flex-basis:30px!important;padding:0 16px!important}
-body.zuno-page-sala .chat-title{font-size:10px!important;color:#a3abc0!important}
-body.zuno-page-sala .messages{justify-content:flex-end!important;padding-top:8px!important;padding-bottom:12px!important}
-body.zuno-page-sala .messages>.empty{margin:12px 0 auto!important;align-self:flex-start!important;max-width:76%!important;padding:10px 12px!important;background:rgba(10,15,32,.5)!important;border:1px solid rgba(122,137,194,.12)!important;color:#8f98b0!important}
+body.zuno-page-sala .chat-title{font-size:10px!important;color:#a3abc0!important;font-weight:800!important}
+body.zuno-page-sala .messages{justify-content:flex-end!important;padding-top:8px!important;padding-bottom:12px!important;scroll-behavior:smooth}
+body.zuno-page-sala .chat-row{transition:opacity .16s ease,transform .16s ease}.zuno-page-sala .chat-row:last-child{animation:zunoMessageIn .16s ease-out}@keyframes zunoMessageIn{from{opacity:.2;transform:translateY(5px)}to{opacity:1;transform:none}}
+body.zuno-page-sala .chat-row.zuno-grouped{margin-top:2px!important}.zuno-page-sala .chat-row.zuno-grouped .chat-avatar{visibility:hidden!important}.zuno-page-sala .chat-row.zuno-grouped .message-user{display:none!important}
+body.zuno-page-sala .messages>.empty{margin:auto 0 12px!important;align-self:flex-start!important;max-width:none!important;padding:0 6px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#737d98!important;font-size:10px!important;line-height:1.35!important}
+body.zuno-page-sala .messages>.empty br{display:none!important}.zuno-page-sala .messages>.empty br:after{content:' '!important}
 body.zuno-page-sala #emojiButton:after{display:none!important}
 body.zuno-page-sala #emojiButton.mic-active:after,body.zuno-page-sala #emojiButton.mic-muted:after{display:block!important;content:''!important;position:absolute!important;right:5px!important;bottom:5px!important;width:5px!important;height:5px!important;border-radius:50%!important}
-body.zuno-page-sala #emojiButton.mic-active:after{background:#36e996!important;box-shadow:0 0 8px rgba(54,233,150,.8),0 0 0 2px rgba(3,6,17,.9)!important}
-body.zuno-page-sala #emojiButton.mic-muted:after{background:#ff809e!important;box-shadow:0 0 7px rgba(255,128,158,.65),0 0 0 2px rgba(3,6,17,.9)!important}
+body.zuno-page-sala #emojiButton.mic-active:after{background:#36e996!important;box-shadow:0 0 8px rgba(54,233,150,.8),0 0 0 2px rgba(3,6,17,.9)!important}body.zuno-page-sala #emojiButton.mic-muted:after{background:#ff809e!important;box-shadow:0 0 7px rgba(255,128,158,.65),0 0 0 2px rgba(3,6,17,.9)!important}
 body.zuno-page-sala #emojiButton:not(.mic-active):not(.mic-muted){color:#aeb6cf!important;background:rgba(12,17,37,.82)!important;border-color:rgba(91,106,166,.28)!important;box-shadow:none!important}
-body.zuno-page-sala .composer-wrap{box-shadow:0 -10px 30px rgba(0,0,0,.2)!important}
+body.zuno-page-sala .composer-wrap{box-shadow:0 -12px 34px rgba(0,0,0,.25)!important;background:linear-gradient(180deg,rgba(3,6,16,.86),#030610 32%)!important}
+body.zuno-page-sala #speakerButton,body.zuno-page-sala #emojiButton{transform:scale(1.02);transition:transform .12s ease,border-color .12s ease,background .12s ease}body.zuno-page-sala #speakerButton:active,body.zuno-page-sala #emojiButton:active{transform:scale(.94)}
+body.zuno-page-sala .zuno-composer-actions button{opacity:.78!important;transform:scale(.94);transition:opacity .12s ease,transform .12s ease,background .12s ease}body.zuno-page-sala .zuno-composer-actions button:active{opacity:1!important;transform:scale(.88)}
+body.zuno-page-sala #chatInput{transition:border-color .15s ease,box-shadow .15s ease,background .15s ease!important}body.zuno-page-sala #chatInput:focus{border-color:rgba(151,73,255,.62)!important;box-shadow:0 0 0 2px rgba(139,61,255,.08),0 0 18px rgba(139,61,255,.08)!important}
+body.zuno-page-sala #sendButton{transition:transform .12s ease,filter .12s ease!important}body.zuno-page-sala #sendButton:active{transform:scale(.92)!important}
 @media(max-width:430px){body.zuno-page-sala .stage-shell{height:286px!important}.zuno-page-sala .room-stage{grid-template-rows:repeat(2,96px)!important}.zuno-page-sala .chat-section{top:274px!important}.zuno-page-sala .room-stage:before{width:124px!important;height:124px!important}.zuno-page-sala .empty-circle{width:47px!important;height:47px!important}.zuno-page-sala .avatar-wrap{width:57px!important;height:57px!important}.zuno-page-sala .avatar{width:52px!important;height:52px!important}}
+@media(prefers-reduced-motion:reduce){body.zuno-page-sala .room-stage:before,body.zuno-page-sala .chat-row:last-child{animation:none!important}.zuno-page-sala .messages{scroll-behavior:auto!important}}
