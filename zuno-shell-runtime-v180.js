@@ -3,6 +3,25 @@
   window.__ZUNO_SHELL_RUNTIME_V180__=true;
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
 
+  function loadGlobalBottomNav(){
+    if(['index.html','login.html','cadastro.html','sala.html'].includes(page))return;
+    if(!document.getElementById('zunoplay-global-bottom-nav-v182-style')){
+      const link=document.createElement('link');
+      link.id='zunoplay-global-bottom-nav-v182-style';
+      link.rel='stylesheet';
+      link.href=new URL('./zuno-global-bottom-nav-v182.css?v=182',location.href).href;
+      document.head.appendChild(link);
+    }
+    if(!document.getElementById('zunoplay-global-bottom-nav-v182-script')){
+      const script=document.createElement('script');
+      script.id='zunoplay-global-bottom-nav-v182-script';
+      script.src=new URL('./zuno-global-bottom-nav-v182.js?v=182',location.href).href;
+      script.async=true;
+      script.onerror=()=>console.error('ZunoPlay: navegação inferior global v182 indisponível');
+      document.head.appendChild(script);
+    }
+  }
+
   function forceTheme(){
     let meta=document.querySelector('meta[name="theme-color"]');
     if(!meta){meta=document.createElement('meta');meta.name='theme-color';document.head.appendChild(meta)}
@@ -69,7 +88,7 @@
   }
 
   let pending=false;
-  function refresh(){forceTheme();refineRooms();mountHeaderAvatar()}
+  function refresh(){forceTheme();refineRooms();mountHeaderAvatar();loadGlobalBottomNav()}
   function schedule(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;refresh()})}
 
   ['zuno:shell-mounted','zuno-avatar-renderer-ready','zuno:avatar-home-ready','zuno-avatar-saved','pageshow'].forEach(name=>window.addEventListener(name,()=>{schedule();setTimeout(refresh,180);setTimeout(refresh,650)}));
@@ -80,6 +99,7 @@
     const obs=new MutationObserver(schedule);obs.observe(document.body,{childList:true,subtree:true});
   }
 
+  loadGlobalBottomNav();
   forceTheme();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{refresh();observe();setTimeout(refresh,250);setTimeout(refresh,900)},{once:true});
   else{refresh();observe();setTimeout(refresh,250);setTimeout(refresh,900)}
