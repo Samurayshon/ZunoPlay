@@ -10,30 +10,30 @@
 <title>Pulso • ZunoPlay</title>
 <link rel="manifest" href="manifest.json">
 <style>[hidden]{display:none!important}</style>
-<link rel="stylesheet" href="zuno-design-system.css?v=283">
-<link rel="stylesheet" href="zuno-moments.css?v=283">
-<link rel="stylesheet" href="zuno-pulso-v2.css?v=283">
-<link rel="stylesheet" href="zuno-pulso-v3.css?v=283">
-<link rel="stylesheet" href="zuno-pulso-perfect.css?v=283">
-<link rel="stylesheet" href="zuno-pulso-v6.css?v=283">
+<link rel="stylesheet" href="zuno-design-system.css?v=284">
+<link rel="stylesheet" href="zuno-moments.css?v=284">
+<link rel="stylesheet" href="zuno-pulso-v2.css?v=284">
+<link rel="stylesheet" href="zuno-pulso-v3.css?v=284">
+<link rel="stylesheet" href="zuno-pulso-perfect.css?v=284">
+<link rel="stylesheet" href="zuno-pulso-v6.css?v=284">
+<link rel="stylesheet" href="zuno-pulso-header-v7.css?v=284">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="zuno-posthog.js?v=283"></script>
-<script defer src="nav.js?v=283"></script>
-<script defer src="zuno-pulso-v3.js?v=283"></script>
-<script defer src="zuno-pulso-perfect.js?v=283"></script>
-<script defer src="zuno-pulso-v6.js?v=283"></script>
+<script defer src="zuno-posthog.js?v=284"></script>
+<script defer src="nav.js?v=284"></script>
+<script defer src="zuno-pulso-v3.js?v=284"></script>
+<script defer src="zuno-pulso-perfect.js?v=284"></script>
+<script defer src="zuno-pulso-v6.js?v=284"></script>
 </head>
 <body class="zuno-moments-page">
 <main id="momentsApp" class="zm-app">
   <header class="zm-header">
     <div class="zm-brand-row">
-      <button class="zm-back" type="button" onclick="location.href='index.html?home=1'" aria-label="Voltar">‹</button>
-      <div><div class="zm-eyebrow">Universo social Zuno</div><h1>Pulso</h1></div>
+      <div><h1>Pulso</h1></div>
       <button class="zm-profile" type="button" onclick="location.href='perfil.html'" aria-label="Perfil"><span id="myAvatarMini">Z</span></button>
     </div>
-    <nav class="zm-tabs" aria-label="Pulso de Amigos e Pulso Geral">
-      <button class="zm-tab active" data-view="moments" type="button">Amigos</button>
-      <button class="zm-tab" data-view="plaza" type="button">Geral</button>
+    <nav class="zm-tabs" aria-label="Pulso e Descobrir">
+      <button class="zm-tab active" data-view="moments" type="button">Pulso</button>
+      <button class="zm-tab" data-view="plaza" type="button">Descobrir</button>
     </nav>
   </header>
   <section id="topicStrip" class="zm-topic-strip" aria-label="Assuntos em alta" hidden></section>
@@ -46,12 +46,12 @@
     <div class="zm-composer-actions">
       <label class="zm-media-button" for="postMedia" aria-label="Adicionar foto ou vídeo">＋ Mídia</label>
       <input id="postMedia" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" hidden>
-      <span id="composerHint" class="zm-hint">Amigos veem aqui; publicações públicas podem aparecer no Geral.</span>
+      <span id="composerHint" class="zm-hint">Seus amigos veem aqui; publicações públicas podem aparecer em Descobrir.</span>
       <button id="publishButton" class="zm-publish" type="button">Publicar</button>
     </div>
   </section>
   <section id="plazaIntro" class="zm-plaza-intro" hidden>
-    <div class="zm-plaza-orb">✦</div><div><strong>Pulso Geral</strong><span>Descubra fotos, pessoas e assuntos além do seu círculo.</span></div>
+    <div class="zm-plaza-orb">✦</div><div><strong>Descobrir</strong><span>Descubra fotos, pessoas e assuntos além do seu círculo.</span></div>
   </section>
   <section id="feed" class="zm-feed" aria-live="polite"><div class="zp-loading">Carregando o Pulso...</div></section>
 </main>
