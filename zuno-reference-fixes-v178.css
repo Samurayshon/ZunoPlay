@@ -1,0 +1,111 @@
+/* ZunoPlay v178 — acabamento a partir dos prints reais
+   Home oficial continua sendo a fonte de verdade. */
+
+:root{
+  --z178-bg:#03050f;
+  --z178-panel:#090d20;
+  --z178-line:#30345f;
+  --z178-text:#f7f7ff;
+  --z178-muted:#a5a8bd;
+  --z178-purple:#8e2cff;
+  --z178-cyan:#24d9ff;
+  --z178-green:#37e481;
+  --z178-grad:linear-gradient(135deg,#7335ff 0%,#c43ef0 52%,#24d9ff 100%);
+}
+
+html,body{background-color:var(--z178-bg)!important}
+
+/* Cabeçalho secundário com a mesma escala visual da Home. */
+body .zuno-global-header{
+  min-height:78px!important;
+  padding:15px 20px 13px!important;
+  margin-bottom:18px!important;
+}
+body .zuno-global-header:after{left:20px!important;right:20px!important}
+body .zuno-global-brand{gap:8px!important}
+body .zuno-global-brand-mark{width:27px!important;height:26px!important;flex-basis:27px!important}
+body .zuno-global-brand-word{font-size:29px!important;letter-spacing:-1.55px!important}
+body .zuno-global-actions{gap:6px!important}
+body .zuno-global-action{width:42px!important;height:42px!important}
+body .zuno-global-action:before{width:25px!important;height:25px!important}
+body .zuno-global-action.is-profile{width:46px!important;height:46px!important}
+body .zuno-global-action.is-profile img[data-zuno-studio-avatar="1"]{display:block!important;opacity:1!important}
+
+/* Evita que o conteúdo termine atrás da barra fixa. */
+body.zuno-global-nav-mounted .app,
+body.zuno-global-nav-mounted #app,
+body.zuno-global-nav-mounted main.app{padding-bottom:205px!important}
+
+/* ===== Salas ===== */
+body.zuno-page-salas .page{padding-top:14px!important;padding-bottom:205px!important}
+body.zuno-page-salas .room{padding:18px!important;border-radius:24px!important}
+body.zuno-page-salas .room-top,
+body.zuno-page-salas .room-top:before,
+body.zuno-page-salas .room-top:after,
+body.zuno-page-salas .room-copy:before,
+body.zuno-page-salas .room-copy:after{
+  content:none!important;
+  box-shadow:none!important;
+}
+body.zuno-page-salas .room-top:before,
+body.zuno-page-salas .room-top:after,
+body.zuno-page-salas .room-copy:before,
+body.zuno-page-salas .room-copy:after{display:none!important}
+body.zuno-page-salas .room-top{
+  display:grid!important;
+  grid-template-columns:72px minmax(0,1fr) 104px!important;
+  align-items:center!important;
+  gap:12px!important;
+  min-height:102px!important;
+  padding:0!important;
+}
+body.zuno-page-salas .room-voice-icon{
+  position:relative!important;
+  display:block!important;
+  width:72px!important;height:72px!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,#7448eb 0 18%,#24165b 45%,#090d1f 70%)!important;
+  border:2px solid #7c3cff!important;
+  box-shadow:0 0 0 7px rgba(124,60,255,.08),0 0 24px rgba(124,60,255,.42)!important;
+}
+body.zuno-page-salas .room-voice-icon:after{
+  content:""!important;position:absolute!important;left:50%!important;top:50%!important;
+  width:27px!important;height:36px!important;transform:translate(-50%,-50%)!important;
+  background:linear-gradient(180deg,#8b7cff,#30d7ff)!important;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 32'%3E%3Crect x='6' y='1' width='12' height='20' rx='6' fill='black'/%3E%3Cpath d='M2 16a10 10 0 0 0 20 0M12 26v5M7 31h10' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 32'%3E%3Crect x='6' y='1' width='12' height='20' rx='6' fill='black'/%3E%3Cpath d='M2 16a10 10 0 0 0 20 0M12 26v5M7 31h10' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+}
+body.zuno-page-salas .room-copy{min-width:0!important;padding:0!important}
+body.zuno-page-salas .room-name{font-size:20px!important;line-height:1.12!important;margin:0 0 6px!important;word-break:normal!important}
+body.zuno-page-salas .room-info{font-size:12.5px!important;line-height:1.38!important;margin:0!important}
+body.zuno-page-salas .room-current-label{margin-top:8px!important;max-width:max-content!important;white-space:normal!important}
+body.zuno-page-salas .enter-button{
+  width:104px!important;min-width:104px!important;min-height:54px!important;
+  padding:10px 12px!important;border-radius:16px!important;font-size:15px!important;
+}
+
+/* ===== Perfil ===== */
+body.zuno-social-perfil .profile-social-card{padding:22px!important}
+body.zuno-social-perfil .zuno-profile-avatar-official{
+  width:100px!important;height:100px!important;max-width:100px!important;max-height:100px!important;
+}
+body.zuno-social-perfil .field textarea{min-height:112px!important}
+body.zuno-social-perfil .app{scroll-padding-bottom:150px!important}
+
+/* ===== Social ===== */
+body.zuno-social-amigos .app{scroll-padding-bottom:150px!important}
+body.zuno-social-amigos .card{margin-bottom:12px!important}
+
+@media(max-width:390px){
+  body .zuno-global-header{padding-left:16px!important;padding-right:16px!important}
+  body .zuno-global-header:after{left:16px!important;right:16px!important}
+  body .zuno-global-brand-word{font-size:27px!important}
+  body .zuno-global-brand-mark{width:25px!important;height:24px!important;flex-basis:25px!important}
+  body .zuno-global-actions{gap:3px!important}
+  body.zuno-page-salas .room-top{grid-template-columns:62px minmax(0,1fr) 94px!important;gap:9px!important}
+  body.zuno-page-salas .room-voice-icon{width:62px!important;height:62px!important}
+  body.zuno-page-salas .room-voice-icon:after{width:23px!important;height:31px!important}
+  body.zuno-page-salas .room-name{font-size:18px!important}
+  body.zuno-page-salas .room-info{font-size:11.5px!important}
+  body.zuno-page-salas .enter-button{width:94px!important;min-width:94px!important;padding:9px!important}
+}
