@@ -1,13 +1,13 @@
-const CACHE_NAME = "zunoplay-v187";
+const CACHE_NAME = "zunoplay-v188";
 
 const STATIC_FILES = [
   "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./historico.html","./zuno-core.html","./zuno-stack.html",
   "./manifest.json","./nav.js","./home-app.js","./realtime-global.js","./room-session-guard.js",
   "./avatar-renderer.js","./avatar-home-sync.js","./avatar-asset-registry.js",
-  "./zuno-global-chrome.css","./zuno-global-chrome.js","./zuno-ui-components.css","./zuno-social.css","./zuno-social.js",
+  "./zuno-global-chrome.css","./zuno-global-chrome.js","./zuno-ui-components.css","./zuno-social.css","./zuno-social.js","./zuno-profile-avatar-stage5.css","./zuno-profile-avatar-stage5.js",
   "./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css",
   "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-core.js","./zuno-stack.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg","./zuno-stack-pieces.webp",
-  "./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-reference-v170.css","./zuno-avatar-studio-fixes-v170.js","./zuno-avatar-studio-mobile-v171.css","./zuno-avatar-studio-command-hierarchy-v172.js","./zuno-current-avatar-finish-v174.css"
+  "./zuno-avatar-simple.css","./zuno-avatar-simple.js","./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-reference-v170.css","./zuno-avatar-studio-fixes-v170.js","./zuno-avatar-studio-mobile-v171.css","./zuno-avatar-studio-command-hierarchy-v172.js","./zuno-current-avatar-finish-v174.css"
 ];
 
 const INFLIGHT = new Map();
@@ -19,7 +19,7 @@ function originFor(input){return new URL(keyFor(input)).origin}
 function fetchWithTimeout(input,init={},timeoutMs=6000){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);return fetch(input,{...init,signal:controller.signal}).finally(()=>clearTimeout(timer))}
 async function dedupedFetch(input,init={},timeoutMs=6000){const key=keyFor(input),origin=originFor(input),blockedUntil=BACKOFF_UNTIL.get(origin)||0;if(Date.now()<blockedUntil)throw new Error('rate_limited_backoff');if(INFLIGHT.has(key))return (await INFLIGHT.get(key)).clone();const task=(async()=>{const response=await fetchWithTimeout(input,init,timeoutMs);if(response.status===429){BACKOFF_UNTIL.set(origin,Date.now()+retryAfterMs(response));throw new Error('rate_limited_429')}return response})().finally(()=>INFLIGHT.delete(key));INFLIGHT.set(key,task);return (await task).clone()}
 async function preCacheSequential(cache,files){for(const url of files){try{const response=await dedupedFetch(url,{cache:'reload'},7000);if(response?.ok)await cache.put(url,response.clone())}catch(_){}await sleep(75)}}
-function isCurrentUiAsset(url){const path=url.pathname.toLowerCase();return path.includes('/zuno-current')||path.endsWith('/zuno-global-chrome.css')||path.endsWith('/zuno-global-chrome.js')||path.endsWith('/zuno-ui-components.css')||path.endsWith('/zuno-social.css')||path.endsWith('/zuno-social.js')||path.endsWith('/avatar-home-sync.js')||path.endsWith('/avatar-renderer.js')||path.endsWith('/nav.js')||path.endsWith('/home-app.js')}
+function isCurrentUiAsset(url){const path=url.pathname.toLowerCase();return path.includes('/zuno-current')||path.endsWith('/zuno-global-chrome.css')||path.endsWith('/zuno-global-chrome.js')||path.endsWith('/zuno-ui-components.css')||path.endsWith('/zuno-social.css')||path.endsWith('/zuno-social.js')||path.endsWith('/zuno-profile-avatar-stage5.css')||path.endsWith('/zuno-profile-avatar-stage5.js')||path.endsWith('/zuno-avatar-simple.css')||path.endsWith('/zuno-avatar-simple.js')||path.endsWith('/avatar-home-sync.js')||path.endsWith('/avatar-renderer.js')||path.endsWith('/nav.js')||path.endsWith('/home-app.js')}
 async function cacheMatch(request,ignoreSearch=false){const cache=await caches.open(CACHE_NAME);return cache.match(request,{ignoreSearch})}
 async function cachePut(request,response){if(!response?.ok)return;const cache=await caches.open(CACHE_NAME);try{await cache.put(request,response.clone())}catch(_){}}
 self.addEventListener('install',event=>{event.waitUntil((async()=>{const cache=await caches.open(CACHE_NAME);await preCacheSequential(cache,STATIC_FILES);await self.skipWaiting()})())});
