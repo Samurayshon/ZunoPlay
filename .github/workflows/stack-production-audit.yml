@@ -82,6 +82,18 @@ jobs:
           grep -q "type:'game_invite'" zuno-stack-social.js
           grep -q 'prefers-reduced-motion' zuno-stack-lobby.css
 
+      - name: Validate gameplay focus boundary
+        run: |
+          set -euo pipefail
+          grep -q "const overlay=\$('#overlay .box')" zuno-stack-progression.js
+          grep -q "const overlay=\$('#overlay .box')" zuno-stack-content.js
+          grep -q "box.dataset.preGame='1'" zuno-stack-progression.js
+          grep -q "box.dataset.preGame='1'" zuno-stack-content.js
+          grep -q "addEventListener('click',()=>{box.hidden=true}" zuno-stack-progression.js
+          grep -q "addEventListener('click',()=>{box.hidden=true}" zuno-stack-content.js
+          ! grep -q "const host=\$('.app')" zuno-stack-progression.js
+          ! grep -q "const host=\$('.app')" zuno-stack-content.js
+
       - name: Validate visual finish assets
         run: |
           set -euo pipefail
