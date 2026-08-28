@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='172';
+  const ASSET_VERSION='173';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
@@ -124,7 +124,7 @@
     const roomId=q.get('room')||q.get('room_id')||sessionStorage.getItem('zuno_return_room_id')||sessionStorage.getItem('zunoplay_room_id');
     if(fromRoom&&roomId)loadScript('zunoplay-room-session-guard','./room-session-guard.js','ZunoPlay: sessão de sala indisponível');
   }
-  function loadAvatarHomeSync(){if(page==='index.html')loadScript('zunoplay-avatar-home-sync','./avatar-home-sync.js','ZunoPlay: avatar da Home indisponível')}
+  function loadAvatarHomeSync(){loadScript('zunoplay-avatar-home-sync','./avatar-home-sync.js','ZunoPlay: sincronização de avatar indisponível')}
   function loadAvatarRenderer(){
     if(window.ZunoAvatarRenderer){loadAvatarHomeSync();return}
     loadScript('zunoplay-avatar-renderer','./avatar-renderer.js','ZunoPlay: renderizador de avatar indisponível',loadAvatarHomeSync);
@@ -132,6 +132,7 @@
   function loadCurrentInterface(){
     loadStyle('zunoplay-current-base-style','./zuno-current-base.css');
     loadScript('zunoplay-current-script','./zuno-current.js','ZunoPlay: interface atual indisponível');
+    loadStyle('zunoplay-current-shell-v173','./zuno-current-shell-v173.css');
   }
 
   function installOfficialLogoStyle(){
