@@ -14,11 +14,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Validate Stack runtime modules
         run: |
           set -euo pipefail
-          modules=(zuno-stack.js zuno-stack-performance.js zuno-stack-premium.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js)
-          for file in "${modules[@]}"; do test -s "$file"; node --check "$file"; done
+          modules=(
+            zuno-stack.js
+            zuno-stack-performance.js
+            zuno-stack-premium.js
+            zuno-stack-social.js
+            zuno-stack-progression.js
+            zuno-stack-content.js
+            zuno-stack-mobile-shell.js
+            zuno-stack-strategic.js
+            zuno-stack-islands.js
+            zuno-stack-objective.js
+            zuno-stack-relay-advanced.js
+          )
+          for file in "${modules[@]}"; do
+            test -s "$file"
+            node --check "$file"
+          done
+
       - name: Validate Stack gameplay invariants
         run: |
           set -euo pipefail
@@ -27,22 +44,72 @@ jobs:
           grep -q 'TOTAL_TILES=90' zuno-stack.js
           grep -q 'COMBO_WINDOW_MS=12000' zuno-stack.js
           grep -q "roomGames=\['zuno-stack.html'\]" nav.js
-      - name: Validate stage 1-7 assets are booted and cached
+
+      - name: Validate stages 1-12 boot and cache
         run: |
           set -euo pipefail
-          for asset in zuno-stack-performance.js zuno-stack-premium.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js; do
+          assets=(
+            zuno-stack-performance.js
+            zuno-stack-premium.js
+            zuno-stack-social.js
+            zuno-stack-progression.js
+            zuno-stack-content.js
+            zuno-stack-mobile-shell.js
+            zuno-stack-strategic.js
+            zuno-stack-strategic.css
+            zuno-stack-islands.js
+            zuno-stack-islands.css
+            zuno-stack-objective.js
+            zuno-stack-objective.css
+            zuno-stack-relay-advanced.js
+            zuno-stack-relay-advanced.css
+          )
+          for asset in "${assets[@]}"; do
             grep -q "$asset" nav.js
             grep -q "$asset" sw.js
           done
+
+      - name: Validate strategic board generation
+        run: |
+          set -euo pipefail
+          grep -q 'zstack-covered' zuno-stack-strategic.js
+          grep -Eq 'data-open-pieces|openPieces' zuno-stack-strategic.js
+          grep -q 'zuno-stack-islands' zuno-stack-islands.js
+          grep -q 'island-x' zuno-stack-islands.js
+          grep -q 'island-y' zuno-stack-islands.js
+
+      - name: Validate cooperative objective and Relay
+        run: |
+          set -euo pipefail
+          grep -q 'stack_objective' zuno-stack-objective.js
+          grep -q 'room:' zuno-stack-objective.js
+          grep -q 'stack_relay_activity' zuno-stack-relay-advanced.js
+          grep -q 'room:' zuno-stack-relay-advanced.js
+          grep -q 'ATIVIDADE DA EQUIPE' zuno-stack-relay-advanced.js
+
+      - name: Validate mobile and accessibility safeguards
+        run: |
+          set -euo pipefail
+          grep -q 'prefers-reduced-motion' zuno-stack-strategic.css
+          grep -q 'prefers-reduced-motion' zuno-stack-islands.css
+          grep -q 'prefers-reduced-motion' zuno-stack-objective.css
+          grep -q 'prefers-reduced-motion' zuno-stack-relay-advanced.css
+          grep -q 'zuno-stack-lite' zuno-stack-relay-advanced.css
+          grep -q 'zuno-stack-lite' zuno-stack-strategic.css
+
       - name: Validate frontend generation
         run: |
           python3 - <<'PY'
           import pathlib,re
-          nav=pathlib.Path('nav.js').read_text(); sw=pathlib.Path('sw.js').read_text()
-          n=re.search(r"const V='(\d+)'",nav); s=re.search(r'zunoplay-v(\d+)',sw)
-          if not n or not s or n.group(1)!=s.group(1): raise SystemExit('generation mismatch')
+          nav=pathlib.Path('nav.js').read_text()
+          sw=pathlib.Path('sw.js').read_text()
+          n=re.search(r"const V='(\d+)'",nav)
+          s=re.search(r'zunoplay-v(\d+)',sw)
+          if not n or not s or n.group(1)!=s.group(1):
+              raise SystemExit('generation mismatch')
           print('generation v'+n.group(1))
           PY
+
       - name: Guard removed games and secrets
         run: |
           set -euo pipefail
