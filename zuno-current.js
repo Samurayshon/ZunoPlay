@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='180';
+  const VERSION='242';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -65,53 +65,22 @@
     if(existing){const current=existing.getAttribute('href')||'';if(!current.includes('v='+VERSION))existing.setAttribute('href',href);return}
     const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);
   }
-  function injectScript(id,file,errorText){
-    if(document.getElementById(id))return;
-    const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script);
-  }
-  function installV180Refresh(){
+  function installRefresh(){
     if(!('serviceWorker' in navigator))return;
-    const key='zuno-sw-v180-reloaded';
+    const key='zuno-sw-v242-reloaded';
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(sessionStorage.getItem(key)==='1')return;
       sessionStorage.setItem(key,'1');location.reload();
     });
   }
-  function loadCurrentModules(){
-    injectStyle('zunoplay-current-stage-style','./zuno-current-stage.css');
-    if(page==='index.html'){
-      injectStyle('zunoplay-current-home-style','./zuno-current-home.css');
-      injectScript('zunoplay-current-home-script','./zuno-current-home.js','ZunoPlay: Home atual indisponível');
-      injectStyle('zunoplay-current-home-mobile-style','./zuno-current-home-mobile.css');
-      injectStyle('zunoplay-current-home-stats-style','./zuno-current-home-stats.css');
-      injectStyle('zunoplay-current-interactions-style','./zuno-current-interactions.css');
-      injectStyle('zunoplay-home-reference-v152-style','./zuno-home-reference-v152.css');
-      injectStyle('zunoplay-current-viewport-style','./zuno-current-viewport.css');
-      injectStyle('zunoplay-current-viewport-v154-style','./zuno-current-viewport-v154.css');
-      injectStyle('zunoplay-current-hero-separation-style','./zuno-current-hero-separation.css');
-      injectStyle('zunoplay-current-home-polish-v164-style','./zuno-current-home-polish-v164.css');
-    }
-    if(page==='avatar.html'){
-      injectStyle('zunoplay-current-avatar-studio-style','./zuno-current-avatar-studio.css');
-      injectScript('zunoplay-avatar-studio-reference-v167','./zuno-avatar-studio-reference-v167.js','ZunoPlay: layout do Avatar Studio indisponível');
-      injectStyle('zunoplay-avatar-studio-reference-v169-style','./zuno-avatar-studio-reference-v169.css');
-      injectScript('zunoplay-avatar-studio-reference-v169-script','./zuno-avatar-studio-reference-v169.js','ZunoPlay: refinamento do Avatar Studio indisponível');
-      injectStyle('zunoplay-avatar-studio-reference-v170-style','./zuno-avatar-studio-reference-v170.css');
-      injectScript('zunoplay-avatar-studio-fixes-v170-script','./zuno-avatar-studio-fixes-v170.js','ZunoPlay: correções do Avatar Studio indisponíveis');
-      injectStyle('zunoplay-avatar-studio-mobile-v171-style','./zuno-avatar-studio-mobile-v171.css');
-      injectScript('zunoplay-avatar-studio-command-hierarchy-v172','./zuno-avatar-studio-command-hierarchy-v172.js','ZunoPlay: hierarquia de comandos do Avatar Studio indisponível');
-      injectStyle('zunoplay-current-avatar-finish-v174-style','./zuno-current-avatar-finish-v174.css');
-    }
-    if(page==='zuno-stack.html'){
-      injectStyle('zunoplay-stack-premium-pieces-style','./zuno-stack-pieces.css');
-      injectScript('zunoplay-stack-premium-pieces-script','./zuno-stack-pieces.js','ZunoPlay: peças premium do Zuno Stack indisponíveis');
-    }
-    if(page!=='index.html'){
-      injectStyle('zunoplay-reference-fixes-v177','./zuno-reference-fixes-v177.css');
-      injectStyle('zunoplay-reference-fixes-v178','./zuno-reference-fixes-v178.css');
-      injectStyle('zunoplay-home-shell-v180','./zuno-home-shell-v180.css');
-      injectScript('zunoplay-shell-runtime-v180','./zuno-shell-runtime-v180.js','ZunoPlay: runtime visual v180 indisponível');
-    }
+  function loadHomeRefinements(){
+    if(page!=='index.html')return;
+    // Os módulos-base da Home já estão declarados no index.html. Aqui ficam apenas refinamentos exclusivos.
+    injectStyle('zunoplay-home-reference-v152-style','./zuno-home-reference-v152.css');
+    injectStyle('zunoplay-current-viewport-style','./zuno-current-viewport.css');
+    injectStyle('zunoplay-current-viewport-v154-style','./zuno-current-viewport-v154.css');
+    injectStyle('zunoplay-current-hero-separation-style','./zuno-current-hero-separation.css');
+    injectStyle('zunoplay-current-home-polish-v164-style','./zuno-current-home-polish-v164.css');
   }
   function mount(){
     applyBodyIdentity();
@@ -120,7 +89,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
-    installV180Refresh();loadCurrentModules();
+    installRefresh();loadHomeRefinements();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
