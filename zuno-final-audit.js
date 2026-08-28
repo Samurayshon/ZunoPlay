@@ -2,36 +2,11 @@
   if(window.__ZUNO_FINAL_AUDIT_V191__)return;
   window.__ZUNO_FINAL_AUDIT_V191__=true;
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  const immersive=new Set(['sala.html','zuno-core.html','zuno-stack.html']);
+  const immersive=new Set(['sala.html','zuno-stack.html']);
   const legacySelectors=['.bottom-nav:not([data-zuno-global-nav])','.zuno-global-nav:not([data-zuno-global-nav])','.zhome-bottom-nav:not([data-zuno-global-nav])','.zuno-global-header:not([data-zuno-global-header])'];
-  function textLabel(el){
-    const t=(el.getAttribute('title')||el.textContent||'').replace(/\s+/g,' ').trim();
-    return t.slice(0,80);
-  }
-  function decorate(root=document){
-    if(!document.body)return;
-    document.body.classList.add('zuno-audit-final');
-    document.body.classList.toggle('zuno-immersive-page',immersive.has(page));
-    root.querySelectorAll?.(legacySelectors.join(',')).forEach(el=>el.classList.add('zuno-audit-hidden-legacy'));
-    root.querySelectorAll?.('button:not([aria-label]),[role="button"]:not([aria-label])').forEach(el=>{
-      const label=textLabel(el);if(label)el.setAttribute('aria-label',label);
-    });
-    root.querySelectorAll?.('img:not([alt])').forEach(img=>img.setAttribute('alt',''));
-    root.querySelectorAll?.('.friends-strip,.recent,.zuno-achievement-strip').forEach(el=>el.classList.add('zuno-audit-scroll-x'));
-    root.querySelectorAll?.('a[target="_blank"]:not([rel])').forEach(a=>a.setAttribute('rel','noopener noreferrer'));
-    root.querySelectorAll?.('input,textarea,select').forEach(el=>{if(!el.hasAttribute('autocomplete')&&el.type!=='hidden')el.setAttribute('autocomplete','off')});
-  }
-  function audit(){
-    decorate();
-    const duplicateIds=[...document.querySelectorAll('[id]')].map(el=>el.id).filter((id,i,a)=>a.indexOf(id)!==i);
-    const report={page,duplicateIds:[...new Set(duplicateIds)],legacyChromeVisible:[...document.querySelectorAll(legacySelectors.join(','))].filter(el=>getComputedStyle(el).display!=='none').length};
-    window.__ZUNO_UI_AUDIT__=report;
-    document.documentElement.dataset.zunoUi='191';
-  }
-  function mount(){
-    audit();
-    const obs=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.nodeType===1)decorate(n)});
-    obs.observe(document.body,{childList:true,subtree:true});
-  }
+  function textLabel(el){const t=(el.getAttribute('title')||el.textContent||'').replace(/\s+/g,' ').trim();return t.slice(0,80)}
+  function decorate(root=document){if(!document.body)return;document.body.classList.add('zuno-audit-final');document.body.classList.toggle('zuno-immersive-page',immersive.has(page));root.querySelectorAll?.(legacySelectors.join(',')).forEach(el=>el.classList.add('zuno-audit-hidden-legacy'));root.querySelectorAll?.('button:not([aria-label]),[role="button"]:not([aria-label])').forEach(el=>{const label=textLabel(el);if(label)el.setAttribute('aria-label',label)});root.querySelectorAll?.('img:not([alt])').forEach(img=>img.setAttribute('alt',''));root.querySelectorAll?.('.friends-strip,.recent,.zuno-achievement-strip').forEach(el=>el.classList.add('zuno-audit-scroll-x'));root.querySelectorAll?.('a[target="_blank"]:not([rel])').forEach(a=>a.setAttribute('rel','noopener noreferrer'));root.querySelectorAll?.('input,textarea,select').forEach(el=>{if(!el.hasAttribute('autocomplete')&&el.type!=='hidden')el.setAttribute('autocomplete','off')})}
+  function audit(){decorate();const duplicateIds=[...document.querySelectorAll('[id]')].map(el=>el.id).filter((id,i,a)=>a.indexOf(id)!==i);window.__ZUNO_UI_AUDIT__={page,duplicateIds:[...new Set(duplicateIds)],legacyChromeVisible:[...document.querySelectorAll(legacySelectors.join(','))].filter(el=>getComputedStyle(el).display!=='none').length};document.documentElement.dataset.zunoUi='191'}
+  function mount(){audit();const obs=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.nodeType===1)decorate(n)});obs.observe(document.body,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
