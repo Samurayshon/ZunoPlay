@@ -7,6 +7,8 @@
   const q=new URLSearchParams(location.search);
   const roomId=q.get('room')||sessionStorage.getItem('zunoplay_room_id')||'';
   const fromRoom=q.get('from')==='sala'&&!!roomId;
+  const TRAY_LIMIT=6;
+  const RISK_AT=5;
 
   const TYPES=[
     {id:'bolt',label:'Bolt',x:'60%',y:'0%'},
@@ -22,6 +24,7 @@
   let tiles=[],tray=[],relay=[null,null,null],team=[];
   let score=0,matches=0,energy=0,active=false,lastMove=null;
   let undoLeft=1,hintsLeft=2,botTimer=0,pulseEventCount=0,doubleNext=false,startedAt=0;
+  let riskAnnounced=false;
 
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const shuffle=a=>{
@@ -36,6 +39,36 @@
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[c]));
 
+  function injectTrayRiskStyles(){
+    if(document.getElementById('zunoStackTrayRiskStyles'))return;
+    const style=document.createElement('style');
+    style.id='zunoStackTrayRiskStyles';
+    style.textContent=`
+      .tray{grid-template-columns:repeat(6,1fr)!important;transition:filter .18s,transform .18s}
+      .tray.tray-risk{animation:zunoTrayRiskPulse .85s ease-in-out infinite alternate;filter:drop-shadow(0 0 9px rgba(255,86,112,.42))}
+      .tray.tray-risk .slot{border-color:rgba(255,96,121,.62);background:linear-gradient(180deg,rgba(59,15,28,.92),rgba(24,12,21,.96))}
+      .tray.tray-critical{animation:zunoTrayCriticalPulse .4s ease-in-out infinite alternate;filter:drop-shadow(0 0 13px rgba(255,64,94,.65))}
+      .tray.tray-critical .slot{border-color:#ff405e;background:#35101b}
+      .tray-risk-copy{color:#ff7182!important;font-weight:950!important;text-shadow:0 0 10px rgba(255,80,105,.35)}
+      @keyframes zunoTrayRiskPulse{from{transform:scale(1);opacity:.92}to{transform:scale(1.008);opacity:1}}
+      @keyframes zunoTrayCriticalPulse{from{transform:scale(1)}to{transform:scale(1.012)}}
+      @media(prefers-reduced-motion:reduce){.tray.tray-risk,.tray.tray-critical{animation:none}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function syncStaticTrayCopy(){
+    const head=document.querySelector('.tray-area .area-head b');
+    if(head)head.textContent='Bandeja · máximo 6';
+    const help=document.querySelector('.help');
+    if(help)help.textContent='Peças bloqueadas ficam mais escuras. Forme 3 iguais. Com 5 peças a bandeja entra em RISCO; se chegar a 6 sem formar trio, a rodada termina. Um único membro da equipe limpando o tabuleiro garante a vitória.';
+    const features=$('features');
+    if(features){
+      const items=features.querySelectorAll('.feature');
+      if(items[1])items[1].textContent='6️⃣ bandeja de 6 espaços';
+    }
+  }
+
   function announce(t){$('live').textContent=t}
   function toast(t){
     const el=$('toast');
@@ -45,10 +78,7 @@
     el._t=setTimeout(()=>el.classList.remove('show'),1800);
   }
   function clearTimers(){
-    if(botTimer){
-      clearInterval(botTimer);
-      botTimer=0;
-    }
+    if(botTimer){clearInterval(botTimer);botTimer=0;}
   }
 
   function art(meta){
@@ -73,13 +103,9 @@
     const board=$('board');
     board.innerHTML=tiles.map(t=>{
       const meta=typeById[t.type];
-      return `<button class="tile" data-tile="${t.id}" style="--x:${t.x};--y:${t.y};--layer:${t.layer}" aria-label="${meta.label}">
-        <span class="piece-shell">${art(meta)}<span class="label">${meta.label}</span></span>
-      </button>`;
+      return `<button class="tile" data-tile="${t.id}" style="--x:${t.x};--y:${t.y};--layer:${t.layer}" aria-label="${meta.label}"><span class="piece-shell">${art(meta)}<span class="label">${meta.label}</span></span></button>`;
     }).join('');
-    board.querySelectorAll('[data-tile]').forEach(b=>{
-      b.onclick=()=>pickTile(b.dataset.tile);
-    });
+    board.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>pickTile(b.dataset.tile));
     board.dataset.zunoMounted='1';
   }
 
@@ -99,20 +125,34 @@
 
   function renderTray(){
     const box=$('tray');
-    box.innerHTML=Array.from({length:7},(_,i)=>{
+    const risk=tray.length>=RISK_AT;
+    const critical=tray.length>=TRAY_LIMIT;
+    box.classList.toggle('tray-risk',risk&&!critical);
+    box.classList.toggle('tray-critical',critical);
+    box.setAttribute('aria-label',risk?`Bandeja em risco: ${tray.length} de ${TRAY_LIMIT} espaços ocupados`:`Bandeja: ${tray.length} de ${TRAY_LIMIT} espaços ocupados`);
+
+    const head=document.querySelector('.tray-area .area-head b');
+    if(head){
+      head.textContent=risk?`⚠ RISCO · ${tray.length}/${TRAY_LIMIT}`:'Bandeja · máximo 6';
+      head.classList.toggle('tray-risk-copy',risk);
+    }
+
+    box.innerHTML=Array.from({length:TRAY_LIMIT},(_,i)=>{
       const type=tray[i];
-      const danger=tray.length>=6&&i>=tray.length;
+      const danger=risk&&i>=tray.length;
       if(!type)return `<div class="slot ${danger?'danger':''}"></div>`;
       const meta=typeById[type];
-      return `<div class="slot filled">
-        <button data-tray="${i}" aria-label="Enviar ${meta.label} ao Relay">
-          <span class="piece-shell">${art(meta)}<span class="tiny">${meta.label}</span></span>
-        </button>
-      </div>`;
+      return `<div class="slot filled ${risk?'danger':''}"><button data-tray="${i}" aria-label="Enviar ${meta.label} ao Relay"><span class="piece-shell">${art(meta)}<span class="tiny">${meta.label}</span></span></button></div>`;
     }).join('');
-    box.querySelectorAll('[data-tray]').forEach(b=>{
-      b.onclick=()=>sendToRelay(Number(b.dataset.tray));
-    });
+    box.querySelectorAll('[data-tray]').forEach(b=>b.onclick=()=>sendToRelay(Number(b.dataset.tray)));
+
+    if(risk&&!riskAnnounced){
+      riskAnnounced=true;
+      toast(`⚠ RISCO: ${tray.length}/${TRAY_LIMIT} espaços ocupados.`);
+      announce(`Atenção. Bandeja em risco com ${tray.length} de ${TRAY_LIMIT} espaços ocupados.`);
+    }else if(!risk){
+      riskAnnounced=false;
+    }
   }
 
   function renderRelay(){
@@ -120,31 +160,17 @@
     box.innerHTML=relay.map((type,i)=>{
       if(!type)return `<button class="relay-slot" data-relay="${i}" disabled>VAZIO</button>`;
       const meta=typeById[type];
-      return `<button class="relay-slot filled" data-relay="${i}" aria-label="Retirar ${meta.label} do Relay">
-        <span class="zsp-relay-piece">${art(meta)}<small>${meta.label}</small></span>
-      </button>`;
+      return `<button class="relay-slot filled" data-relay="${i}" aria-label="Retirar ${meta.label} do Relay"><span class="zsp-relay-piece">${art(meta)}<small>${meta.label}</small></span></button>`;
     }).join('');
-    box.querySelectorAll('[data-relay]').forEach(b=>{
-      b.onclick=()=>takeRelay(Number(b.dataset.relay));
-    });
+    box.querySelectorAll('[data-relay]').forEach(b=>b.onclick=()=>takeRelay(Number(b.dataset.relay)));
   }
 
   function renderTeam(){
     const box=$('team');
-    box.innerHTML=team.map((p,i)=>`<div class="mate ${i===0?'me':''}">
-      <div class="mate-head">
-        <div class="mate-icon">${i===0?'⚡':i===1?'🌙':'🔥'}</div>
-        <div class="mate-copy"><b>${esc(p.name)}</b><small>${i===0?'seu tabuleiro':p.status}</small></div>
-      </div>
-      <div class="mini-bar"><i style="width:${clamp(p.progress,0,100)}%"></i></div>
-    </div>`).join('');
+    box.innerHTML=team.map((p,i)=>`<div class="mate ${i===0?'me':''}"><div class="mate-head"><div class="mate-icon">${i===0?'⚡':i===1?'🌙':'🔥'}</div><div class="mate-copy"><b>${esc(p.name)}</b><small>${i===0?'seu tabuleiro':p.status}</small></div></div><div class="mini-bar"><i style="width:${clamp(p.progress,0,100)}%"></i></div></div>`).join('');
   }
 
-  function tilesLeft(){
-    let left=0;
-    for(const t of tiles)if(!t.removed)left++;
-    return left;
-  }
+  function tilesLeft(){return tiles.reduce((n,t)=>n+(t.removed?0:1),0)}
 
   function renderHud(){
     const left=tilesLeft();
@@ -163,19 +189,11 @@
     renderTeam();
   }
 
-  function renderAll(){
-    syncBoard();
-    renderTray();
-    renderRelay();
-    renderHud();
-  }
+  function renderAll(){syncBoard();renderTray();renderRelay();renderHud();}
 
   function trayHasMatch(){
     const counts={};
-    for(const t of tray){
-      counts[t]=(counts[t]||0)+1;
-      if(counts[t]>=3)return true;
-    }
+    for(const t of tray){counts[t]=(counts[t]||0)+1;if(counts[t]>=3)return true;}
     return false;
   }
 
@@ -189,7 +207,6 @@
     doubleNext=false;
     score+=gained;
     energy=clamp(energy+1,0,5);
-    if(team[0])team[0].progress=clamp(team[0].progress+1,0,100);
     toast('Trio '+typeById[type].label+'! +'+gained);
     announce('Trio formado: '+typeById[type].label);
     if(matches%4===0)triggerPulseEvent();
@@ -200,23 +217,15 @@
     if(!active)return;
     const t=tiles.find(x=>x.id===id);
     if(!t||!isActiveTile(t))return;
-    if(tray.length>=7){
-      lose('Bandeja cheia.');
-      return;
-    }
+    if(tray.length>=TRAY_LIMIT){lose('Bandeja cheia.');return;}
     t.removed=true;
     tray.push(t.type);
     lastMove={tileId:t.id,type:t.type};
     score+=25;
     checkMatch(t.type);
     renderAll();
-    if(tilesLeft()===0){
-      win('Você limpou o tabuleiro inteiro!');
-      return;
-    }
-    if(tray.length>=7&&!trayHasMatch()){
-      lose('A bandeja chegou a 7 peças sem um trio.');
-    }
+    if(tilesLeft()===0){win('Você limpou o tabuleiro inteiro!');return;}
+    if(tray.length>=TRAY_LIMIT&&!trayHasMatch())lose('A bandeja chegou a 6 peças sem um trio.');
   }
 
   function firstRelayEmpty(){return relay.findIndex(x=>!x)}
@@ -224,10 +233,7 @@
   function sendToRelay(index){
     if(!active||index<0||index>=tray.length)return;
     const slot=firstRelayEmpty();
-    if(slot<0){
-      toast('O Relay está cheio.');
-      return;
-    }
+    if(slot<0){toast('O Relay está cheio.');return;}
     const [type]=tray.splice(index,1);
     relay[slot]=type;
     score+=20;
@@ -238,10 +244,7 @@
 
   function takeRelay(index){
     if(!active||!relay[index])return;
-    if(tray.length>=7){
-      toast('Libere espaço na bandeja primeiro.');
-      return;
-    }
+    if(tray.length>=TRAY_LIMIT){toast('Libere espaço na bandeja primeiro.');return;}
     const type=relay[index];
     relay[index]=null;
     tray.push(type);
@@ -249,19 +252,14 @@
     score+=10;
     lastMove=null;
     renderAll();
-    if(tray.length>=7&&!trayHasMatch())lose('A bandeja ficou cheia.');
+    if(tray.length>=TRAY_LIMIT&&!trayHasMatch())lose('A bandeja ficou cheia.');
   }
 
   function undo(){
     if(!active||undoLeft<=0||!lastMove)return;
     const pos=tray.lastIndexOf(lastMove.type);
     const tile=tiles.find(t=>t.id===lastMove.tileId);
-    if(pos<0||!tile){
-      toast('Essa jogada já virou um trio.');
-      lastMove=null;
-      renderHud();
-      return;
-    }
+    if(pos<0||!tile){toast('Essa jogada já virou um trio.');lastMove=null;renderHud();return;}
     tray.splice(pos,1);
     tile.removed=false;
     undoLeft--;
@@ -276,21 +274,11 @@
     const counts={};
     tray.forEach(t=>counts[t]=(counts[t]||0)+1);
     const activeTiles=tiles.filter(isActiveTile);
-    const target=
-      activeTiles.find(t=>(counts[t.type]||0)>=2)||
-      activeTiles.find(t=>(counts[t.type]||0)>=1)||
-      activeTiles[0];
-    if(!target){
-      toast('Não há peças disponíveis.');
-      return;
-    }
+    const target=activeTiles.find(t=>(counts[t.type]||0)>=2)||activeTiles.find(t=>(counts[t.type]||0)>=1)||activeTiles[0];
+    if(!target){toast('Não há peças disponíveis.');return;}
     hintsLeft--;
     renderHud();
-    const el=document.querySelector(`[data-tile="${target.id}"]`);
-    el?.animate(
-      [{outline:'0 solid #ffd16600'},{outline:'3px solid #ffd166'},{outline:'0 solid #ffd16600'}],
-      {duration:700,easing:'ease-out'}
-    );
+    document.querySelector(`[data-tile="${target.id}"]`)?.animate([{outline:'0 solid #ffd16600'},{outline:'3px solid #ffd166'},{outline:'0 solid #ffd16600'}],{duration:700,easing:'ease-out'});
     toast('Dica: procure '+typeById[target.type].label+'.');
   }
 
@@ -299,11 +287,7 @@
     energy=0;
     const counts={};
     tray.forEach(t=>counts[t]=(counts[t]||0)+1);
-    const candidates=tray
-      .map((t,i)=>({t,i,c:counts[t]}))
-      .sort((a,b)=>a.c-b.c)
-      .slice(0,2)
-      .sort((a,b)=>b.i-a.i);
+    const candidates=tray.map((t,i)=>({t,i,c:counts[t]})).sort((a,b)=>a.c-b.c).slice(0,2).sort((a,b)=>b.i-a.i);
     candidates.forEach(x=>tray.splice(x.i,1));
     score+=150;
     pulseEventCount++;
@@ -326,8 +310,7 @@
     }else if(event==='gift'){
       const counts={};
       tray.forEach(t=>counts[t]=(counts[t]||0)+1);
-      const wanted=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||
-        TYPES[Math.floor(Math.random()*TYPES.length)].id;
+      const wanted=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||TYPES[Math.floor(Math.random()*TYPES.length)].id;
       const slot=firstRelayEmpty();
       if(slot>=0)relay[slot]=wanted;
       banner.textContent='✦ EVENTO PULSE · PRESENTE: uma peça útil chegou ao Relay.';
@@ -347,27 +330,20 @@
       p.status=Math.random()>.55?'formando trio':'organizando peças';
       if(Math.random()>.58){
         const relayIndex=relay.findIndex(Boolean);
-        if(relayIndex>=0){
-          relay[relayIndex]=null;
-          p.progress=clamp(p.progress+5,0,100);
-          score+=15;
-        }
+        if(relayIndex>=0){relay[relayIndex]=null;p.progress=clamp(p.progress+5,0,100);score+=15;}
       }
       if(Math.random()>.78){
         const empty=firstRelayEmpty();
         if(empty>=0){
           const counts={};
           tray.forEach(t=>counts[t]=(counts[t]||0)+1);
-          relay[empty]=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||
-            TYPES[(idx+matches)%TYPES.length].id;
+          relay[empty]=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||TYPES[(idx+matches)%TYPES.length].id;
         }
       }
     });
     renderRelay();
     renderTeam();
-    if(team.slice(1).some(p=>p.progress>=100)){
-      win('Um parceiro limpou o tabuleiro. Vitória da equipe!');
-    }
+    if(team.slice(1).some(p=>p.progress>=100))win('Um parceiro limpou o tabuleiro. Vitória da equipe!');
   }
 
   function startGame(){
@@ -375,14 +351,7 @@
     buildTiles();
     tray=[];
     relay=[null,null,null];
-    score=0;
-    matches=0;
-    energy=0;
-    lastMove=null;
-    undoLeft=1;
-    hintsLeft=2;
-    pulseEventCount=0;
-    doubleNext=false;
+    score=0;matches=0;energy=0;lastMove=null;undoLeft=1;hintsLeft=2;pulseEventCount=0;doubleNext=false;riskAnnounced=false;
     startedAt=Date.now();
     team=[
       {name:playerName,progress:0,status:'jogando'},
@@ -399,7 +368,7 @@
     $('saving').textContent='';
     renderAll();
     botTimer=setInterval(botStep,3600);
-    announce('Zuno Stack iniciado.');
+    announce('Zuno Stack iniciado. A bandeja possui 6 espaços e entra em risco ao ocupar 5.');
   }
 
   function finish(won,reason){
@@ -416,12 +385,7 @@
     $('features').style.display='none';
     const grid=$('resultGrid');
     grid.hidden=false;
-    grid.innerHTML=`<div class="result"><small>RESULTADO</small><b>${won?'VITÓRIA':'FIM'}</b></div>
-      <div class="result"><small>PONTOS</small><b>${Math.round(score)}</b></div>
-      <div class="result"><small>TRIOS</small><b>${matches}</b></div>
-      <div class="result"><small>PEÇAS</small><b>${cleared}/54</b></div>
-      <div class="result"><small>TEMPO</small><b>${Math.max(1,Math.round((Date.now()-startedAt)/1000))}s</b></div>
-      <div class="result"><small>RECORDE</small><b>${Math.max(best,Math.round(score))}</b></div>`;
+    grid.innerHTML=`<div class="result"><small>RESULTADO</small><b>${won?'VITÓRIA':'FIM'}</b></div><div class="result"><small>PONTOS</small><b>${Math.round(score)}</b></div><div class="result"><small>TRIOS</small><b>${matches}</b></div><div class="result"><small>PEÇAS</small><b>${cleared}/54</b></div><div class="result"><small>TEMPO</small><b>${Math.max(1,Math.round((Date.now()-startedAt)/1000))}s</b></div><div class="result"><small>RECORDE</small><b>${Math.max(best,Math.round(score))}</b></div>`;
     $('start').textContent='Jogar novamente';
     $('start').onclick=startGame;
     $('overlay').classList.remove('hide');
@@ -429,9 +393,7 @@
   }
 
   function win(reason){finish(true,reason)}
-  function lose(reason){
-    finish(false,reason+' Use o Relay e os poderes para controlar melhor os 7 espaços na próxima.');
-  }
+  function lose(reason){finish(false,reason+' Use o Relay e os poderes para controlar melhor os 6 espaços na próxima.');}
 
   async function waitClient(){
     for(let i=0;i<50;i++){
@@ -443,28 +405,16 @@
 
   async function saveResult(won,cleared){
     const box=$('saving');
-    if(!sb||!user){
-      box.textContent='Resultado local salvo. Entre na conta para registrar XP.';
-      return;
-    }
+    if(!sb||!user){box.textContent='Resultado local salvo. Entre na conta para registrar XP.';return;}
     box.textContent='Salvando resultado...';
-    const {data,error}=await sb.rpc('submit_zuno_stack_result',{
-      p_score:Math.round(score),
-      p_matches:matches,
-      p_tiles_cleared:cleared,
-      p_won:won
-    });
-    if(error){
-      console.warn('Zuno Stack save',error);
-      box.textContent='Resultado local salvo; XP não pôde ser registrado.';
-      return;
-    }
+    const {data,error}=await sb.rpc('submit_zuno_stack_result',{p_score:Math.round(score),p_matches:matches,p_tiles_cleared:cleared,p_won:won});
+    if(error){console.warn('Zuno Stack save',error);box.textContent='Resultado local salvo; XP não pôde ser registrado.';return;}
     const r=data?.[0];
-    box.textContent=r?.recorded
-      ?'✓ Resultado registrado · Nível de Jogos '+(r.game_level||1)
-      :'Resultado concluído.';
+    box.textContent=r?.recorded?'✓ Resultado registrado · Nível de Jogos '+(r.game_level||1):'Resultado concluído.';
   }
 
+  injectTrayRiskStyles();
+  syncStaticTrayCopy();
   $('undo').onclick=undo;
   $('hint').onclick=hint;
   $('pulse').onclick=pulseShift;
@@ -483,20 +433,10 @@
         playerName=p?.username||user.email?.split('@')[0]||'Você';
       }
     }
-    team=[
-      {name:playerName,progress:0,status:'pronto'},
-      {name:'Nova',progress:0,status:'pronto'},
-      {name:'Kiro',progress:0,status:'pronto'}
-    ];
-    renderTeam();
-    renderTray();
-    renderRelay();
-    renderHud();
+    team=[{name:playerName,progress:0,status:'pronto'},{name:'Nova',progress:0,status:'pronto'},{name:'Kiro',progress:0,status:'pronto'}];
+    renderTeam();renderTray();renderRelay();renderHud();
   })().catch(console.warn);
 
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden)return;
-    if(active)renderHud();
-  });
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active)renderHud();});
   window.addEventListener('pagehide',clearTimers);
 })();
