@@ -1,0 +1,20 @@
+/* ZunoPlay Home — Seu mundo: salas visitadas + populares */
+body.zuno-official-home #zhomeWorld{margin-top:8px!important;margin-bottom:12px!important}
+body.zuno-official-home #zhomeWorld>.zhome-v2-kicker,body.zuno-official-home #zhomeWorld>.zhome-v2-title{margin-left:22px;margin-right:22px}
+.zhome-world-block{margin:10px 0 16px}
+.zhome-world-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 22px 9px}
+.zhome-world-head span{font-size:14px;font-weight:950;color:#f6f7ff;letter-spacing:-.15px}
+.zhome-world-head small{font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#777f99}
+.zhome-v2-world-rail{min-height:104px!important;padding-bottom:8px!important}
+.zhome-world-room-card{position:relative;flex:0 0 min(68vw,260px)!important;width:min(68vw,260px)!important;min-height:104px;padding:15px 15px 13px;border:1px solid rgba(108,121,184,.28);border-radius:20px;background:radial-gradient(circle at 88% 16%,rgba(79,211,255,.12),transparent 32%),linear-gradient(145deg,rgba(16,21,49,.97),rgba(7,10,28,.99));color:#fff;text-align:left;overflow:hidden;box-shadow:inset 0 1px rgba(255,255,255,.035)}
+.zhome-world-room-card:before{content:"";position:absolute;inset:auto -18px -34px auto;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(132,61,255,.15),transparent 68%);pointer-events:none}
+.zhome-world-room-live{display:inline-flex;align-items:center;min-height:19px;padding:0 7px;border-radius:999px;border:1px solid rgba(55,228,129,.26);background:rgba(55,228,129,.08);color:#74efaa;font-size:7px;font-weight:950;letter-spacing:.11em;margin-bottom:8px}
+.zhome-world-room-card strong{display:block;max-width:88%;font-size:16px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zhome-world-room-meta{display:block;margin-top:5px;max-width:82%;color:#989fb6;font-size:9.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zhome-world-room-count{display:block;margin-top:9px;color:#cad1e7;font-size:9px;font-weight:850}
+.zhome-world-empty{flex:0 0 calc(100% - 44px);min-height:82px;margin:0;padding:14px 15px;border:1px dashed rgba(116,124,166,.22);border-radius:18px;display:flex;align-items:center;color:#757c94;background:linear-gradient(145deg,rgba(14,17,35,.42),rgba(7,9,20,.46));font-size:10px;font-weight:750;line-height:1.35}
+body.zuno-official-home #homeScreen .zhome-v2-world-rail>.zhome-v2-rail-focus{border-color:rgba(123,92,255,.5);box-shadow:0 14px 34px rgba(0,0,0,.22),0 0 22px rgba(73,211,255,.08),0 0 20px rgba(139,61,255,.1)}
+body.zuno-official-home #homeScreen .menu-grid[data-home-v2="1"][hidden]{display:none!important;margin:0!important;padding:0!important;height:0!important;min-height:0!important}
+@media(max-width:520px){.zhome-world-room-card{width:72vw!important;flex-basis:72vw!important}.zhome-world-head{margin-bottom:8px}.zhome-world-block{margin-bottom:14px}}
+@media(max-width:390px){.zhome-world-room-card{width:76vw!important;flex-basis:76vw!important}}
+@media(prefers-reduced-motion:reduce){.zhome-world-room-card{transition:none!important}}
