@@ -1,0 +1,59 @@
+/* ZunoPlay — Etapa 8/8: auditoria final de consistência, responsividade e acessibilidade */
+:root{--z-audit-bg:#02040d;--z-audit-line:#2e345b;--z-audit-focus:#9c5cff;--z-audit-nav-h:68px}
+html,body{max-width:100%;overflow-x:hidden}
+body.zuno-audit-final{background:var(--z-audit-bg)!important;color:#fff;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.zuno-audit-final img,body.zuno-audit-final svg,body.zuno-audit-final canvas{max-width:100%}
+body.zuno-audit-final button,body.zuno-audit-final a,body.zuno-audit-final input,body.zuno-audit-final textarea,body.zuno-audit-final select{font:inherit}
+body.zuno-audit-final button,body.zuno-audit-final [role="button"],body.zuno-audit-final a{touch-action:manipulation}
+body.zuno-audit-final :where(button,a,input,textarea,select):focus-visible{outline:2px solid var(--z-audit-focus)!important;outline-offset:2px!important}
+body.zuno-audit-final :where(button,[role="button"]){min-height:40px}
+body.zuno-audit-final .zuno-global-bottom-nav{border-radius:24px!important}
+body.zuno-audit-final:not(.zuno-immersive-page)>.app,
+body.zuno-audit-final:not(.zuno-immersive-page)>#app,
+body.zuno-audit-final:not(.zuno-immersive-page)>main{scroll-margin-top:64px}
+body.zuno-audit-final:not(.zuno-immersive-page){padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+body.zuno-audit-final .zuno-global-topbar{padding-top:env(safe-area-inset-top)!important;box-sizing:content-box!important}
+body.zuno-audit-final .zuno-global-bottom-nav{bottom:max(4px,env(safe-area-inset-bottom))!important}
+body.zuno-audit-final .zuno-global-nav-main{isolation:isolate}
+body.zuno-audit-final .zuno-global-nav-item,body.zuno-audit-final .zuno-global-nav-main{-webkit-tap-highlight-color:transparent}
+body.zuno-audit-final .zuno-global-nav-item.active{color:#fff!important}
+body.zuno-audit-final .zuno-global-profile img{display:block}
+body.zuno-audit-final .zuno-audit-hidden-legacy{display:none!important;visibility:hidden!important;pointer-events:none!important}
+body.zuno-audit-final .zuno-audit-scroll-x{overflow-x:auto!important;overscroll-behavior-inline:contain;scrollbar-width:none}
+body.zuno-audit-final .zuno-audit-scroll-x::-webkit-scrollbar{display:none}
+body.zuno-audit-final :where(.card,.panel,.section,.room,.game,.conversation,.community,.notification,.item){max-width:100%}
+body.zuno-audit-final :where(.title,h1,h2,h3,.name,.room-name,.notification-title){overflow-wrap:anywhere}
+body.zuno-audit-final :where(.subtitle,.sub,.meta,.info,.last-message,.notification-message,p){overflow-wrap:anywhere}
+body.zuno-audit-final :where(input,textarea,select){font-size:max(16px,1em)}
+body.zuno-audit-final textarea{resize:vertical}
+body.zuno-audit-final button:disabled,body.zuno-audit-final [aria-disabled="true"]{cursor:not-allowed!important}
+body.zuno-audit-final.zuno-immersive-page{padding-bottom:0!important;overscroll-behavior:none}
+body.zuno-audit-final.zuno-immersive-page .zuno-global-topbar,
+body.zuno-audit-final.zuno-immersive-page .zuno-global-bottom-nav{display:none!important}
+body.zuno-audit-final.zuno-immersive-page .app{max-width:100%;}
+@media(max-width:620px){
+  body.zuno-audit-final:not(.zuno-immersive-page)>.app,
+  body.zuno-audit-final:not(.zuno-immersive-page)>#app,
+  body.zuno-audit-final:not(.zuno-immersive-page)>main.app{width:100%!important;max-width:none!important;padding-left:14px!important;padding-right:14px!important}
+  body.zuno-audit-final .zuno-global-topbar{width:calc(100% - 28px)!important}
+  body.zuno-audit-final .zuno-global-bottom-nav{left:9px!important;right:9px!important;width:auto!important}
+}
+@media(max-width:380px){
+  body.zuno-audit-final:not(.zuno-immersive-page)>.app,
+  body.zuno-audit-final:not(.zuno-immersive-page)>#app,
+  body.zuno-audit-final:not(.zuno-immersive-page)>main.app{padding-left:10px!important;padding-right:10px!important}
+  body.zuno-audit-final .zuno-global-brand{font-size:27px!important}
+  body.zuno-audit-final .zuno-global-nav-item{font-size:8.5px!important}
+}
+@media(min-width:621px){
+  body.zuno-audit-final:not(.zuno-immersive-page)>.app,
+  body.zuno-audit-final:not(.zuno-immersive-page)>#app,
+  body.zuno-audit-final:not(.zuno-immersive-page)>main.app{width:min(100%,680px)!important;max-width:680px!important;margin-left:auto!important;margin-right:auto!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.zuno-audit-final *,body.zuno-audit-final *::before,body.zuno-audit-final *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+@media(prefers-contrast:more){
+  body.zuno-audit-final :where(.card,.panel,.section,.room,.game,.conversation,.community,.notification,.item){border-color:#505987!important}
+  body.zuno-audit-final :where(.subtitle,.sub,.meta,.info,.last-message,.notification-message){color:#c0c4d4!important}
+}
