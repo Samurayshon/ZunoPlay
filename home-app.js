@@ -12,6 +12,8 @@
   function safeAvatar(v){const s=String(v||'');return /^(data:image\/(?:svg\+xml|png|jpeg|webp);|https:\/\/)/i.test(s)?s:''}
   function avatarHTML(p,cls='friend-avatar'){const src=safeAvatar(p?.avatar_url),name=p?.username||'?';return src?'<img class="'+cls+'" src="'+esc(src)+'" alt="Avatar de '+esc(name)+'">':'<div class="'+cls+' friend-avatar-fallback">'+esc(name.charAt(0).toUpperCase())+'</div>'}
   function setBadge(id,value){const el=$(id);if(!el)return;const n=Number(value)||0;if(n>0){el.textContent=n>99?'99+':String(n);el.style.display='flex'}else{el.textContent='';el.style.display='none'}}
+  function playerName(){const p=currentProfile||{},m=currentUser?.user_metadata||{};return String(p.username||m.username||m.display_name||m.full_name||m.name||currentUser?.email?.split('@')[0]||'ZunoPlayer').trim()||'ZunoPlayer'}
+  function syncPlayerName(){const el=$('username');if(!el)return;const name=playerName();el.textContent=name;el.dataset.playerName='1';el.setAttribute('title',name);window.dispatchEvent(new CustomEvent('zuno:player-name-ready',{detail:{name}}))}
 
   function hideLoading(){if(loading)loading.style.display='none'}
   function showWelcome(){
@@ -30,19 +32,19 @@
     homeRevealTimer=setTimeout(revealCurrentHome,24);
   }
   function showHome(){
-    app.style.display='block';welcomeScreen.style.display='none';homeScreen.style.display='block';bottomNav.style.display='grid';
+    app.style.display='block';welcomeScreen.style.display='none';homeScreen.style.display='block';bottomNav.style.display='grid';syncPlayerName();
     if(loading){loading.style.display='flex';loading.firstChild&&(loading.firstChild.textContent='Carregando ZunoPlay')}
     revealCurrentHome();
   }
-  window.addEventListener('zuno:home-current-ready',revealCurrentHome);
+  window.addEventListener('zuno:home-current-ready',()=>{syncPlayerName();revealCurrentHome()});
 
   function auraFor(level){if(level>=10)return'Lenda Zuno';if(level>=8)return'Guardião Estelar';if(level>=6)return'Mestre Cósmico';if(level>=4)return'Explorador Astral';if(level>=2)return'Aventureiro';return'Explorador'}
   function renderProfile(){
-    const p=currentProfile||{},name=p.username||currentUser?.email?.split('@')[0]||'ZunoPlayer',level=Math.max(1,Math.min(10,Number(p.level)||1));
-    $('username').textContent=name;$('coinCount').textContent=Number(p.coins||0).toLocaleString('pt-BR');$('auraEmblem').dataset.level=level;$('auraTitle').textContent=auraFor(level);$('levelProgress').style.width=(level*10)+'%';$('levelProgressText').textContent='Nível '+level+' de 10';$('challengeBadge').textContent='N'+level;
+    const p=currentProfile||{},level=Math.max(1,Math.min(10,Number(p.level)||1));
+    syncPlayerName();$('coinCount').textContent=Number(p.coins||0).toLocaleString('pt-BR');$('auraEmblem').dataset.level=level;$('auraTitle').textContent=auraFor(level);$('levelProgress').style.width=(level*10)+'%';$('levelProgressText').textContent='Nível '+level+' de 10';$('challengeBadge').textContent='N'+level;
     // O avatar da Home pertence exclusivamente ao Avatar Studio (avatar-home-sync.js).
   }
-  async function loadProfile(){const{data,error}=await supabaseClient.from('profiles').select('id,username,sex,level,coins').eq('id',currentUser.id).maybeSingle();if(error){console.error('Perfil:',error);return}if(data){currentProfile=data;renderProfile()}}
+  async function loadProfile(){const{data,error}=await supabaseClient.from('profiles').select('id,username,sex,level,coins').eq('id',currentUser.id).maybeSingle();if(error){console.error('Perfil:',error);syncPlayerName();return}if(data)currentProfile=data;renderProfile()}
   async function loadNotifications(){const{count,error}=await supabaseClient.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id).neq('type','message').is('read_at',null);if(!error)setBadge('notificationBadge',count)}
   async function loadUnreadMessages(){const{count,error}=await supabaseClient.from('messages').select('id',{count:'exact',head:true}).eq('receiver_id',currentUser.id).is('read_at',null);if(!error)setBadge('messagesBadge',count)}
   async function loadCommunityCount(){const{count,error}=await supabaseClient.from('community_members').select('community_id',{count:'exact',head:true}).eq('user_id',currentUser.id);if(!error)setBadge('communitiesBadge',count)}
@@ -68,7 +70,7 @@
   $('logoutButton').onclick=async()=>{$('logoutButton').disabled=true;$('logoutButton').textContent='Saindo...';try{if(notificationChannel)await supabaseClient.removeChannel(notificationChannel);if(homeLiveChannel)await supabaseClient.removeChannel(homeLiveChannel);if(messageBroadcast)await messageBroadcast.close?.();await supabaseClient.auth.signOut()}finally{location.href='index.html'}};
 
   async function boot(){try{const{data,error}=await supabaseClient.auth.getSession();if(error)throw error;currentUser=data?.session?.user||null;if(!currentUser){showWelcome();return}showHome();loadDashboard().catch(console.error);subscribeLive().catch(console.error)}catch(e){console.error(e);showWelcome()}}
-  supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){currentUser=null;closeSearch();showWelcome()}else if((event==='SIGNED_IN'||event==='USER_UPDATED')&&session?.user&&session.user.id!==currentUser?.id){currentUser=session.user;showHome();loadDashboard().catch(console.error);subscribeLive().catch(console.error)}});
+  supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){currentUser=null;currentProfile=null;closeSearch();showWelcome()}else if((event==='SIGNED_IN'||event==='USER_UPDATED')&&session?.user){currentUser=session.user;syncPlayerName();if(session.user.id!==currentProfile?.id){showHome();loadDashboard().catch(console.error);subscribeLive().catch(console.error)}}});
   window.addEventListener('beforeunload',()=>{if(notificationChannel)supabaseClient.removeChannel(notificationChannel);if(homeLiveChannel)supabaseClient.removeChannel(homeLiveChannel);messageBroadcast?.close?.().catch?.(()=>{})});
 
   setTimeout(()=>{if(loading?.style.display!=='none'&&currentUser){const text=loading.querySelector('[data-loading-text]');if(text)text.textContent='Finalizando interface oficial...'}},3500);
