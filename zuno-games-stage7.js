@@ -4,6 +4,10 @@
   const page=(location.pathname.split('/').pop()||'').toLowerCase();
   const hub=page==='jogos.html',history=page==='historico.html',immersive=['zuno-core.html','zuno-stack.html'].includes(page);
   if(!hub&&!history&&!immersive)return;
+  if(page==='zuno-core.html'&&!window.ZunoSupabaseClient){
+    const boot=()=>{try{if(!window.ZunoSupabaseClient&&window.supabase?.createClient)window.ZunoSupabaseClient=window.supabase.createClient('https://rliymfbbhqoejgfvsbuu.supabase.co','sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})}catch(e){console.warn('Zuno Core Supabase bootstrap:',e)}};
+    if(window.supabase?.createClient)boot();else{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';s.async=true;s.onload=boot;s.onerror=()=>console.warn('Zuno Core: SDK Supabase indisponível');document.head.appendChild(s)}
+  }
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   function clean(text){return String(text||'').replace(/^[\s📊🎮⚡🧩🔗🎯⭐✅🔄]+/u,'').trim()}
   function decorate(){
