@@ -1,11 +1,11 @@
-const CACHE_NAME = "zunoplay-v173";
+const CACHE_NAME = "zunoplay-v178";
 
 // Um único shell coerente por geração. Nunca misturar assets de caches antigos.
 const STATIC_FILES = [
   "./","./index.html","./login.html","./cadastro.html","./perfil.html","./avatar.html","./amigos.html","./conversas.html","./notificacoes.html","./comunidades.html","./salas.html","./sala.html","./jogos.html","./historico.html","./zuno-core.html","./zuno-stack.html",
   "./manifest.json","./nav.js","./home-app.js","./realtime-global.js","./room-session-guard.js",
   "./avatar-renderer.js","./avatar-home-sync.js","./avatar-asset-registry.js",
-  "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js","./zuno-current-shell-v173.css","./zuno-current.js","./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-home-reference-v152.css","./zuno-current-viewport.css","./zuno-current-viewport-v154.css","./zuno-current-hero-separation.css","./zuno-current-home-polish-v164.css",
+  "./zuno-design-system.css","./zuno-unified.css","./zuno-unified.js","./zuno-navigation.css","./zuno-navigation.js","./zuno-social.css","./zuno-social.js","./zuno-current-shell-v173.css","./zuno-reference-fixes-v177.css","./zuno-reference-fixes-v178.css","./zuno-shell-runtime-v178.js","./zuno-current.js","./zuno-current-base.css","./zuno-current-stage.css","./zuno-current-home.css","./zuno-current-home.js","./zuno-current-home-mobile.css","./zuno-current-home-stats.css","./zuno-current-interactions.css","./zuno-home-reference-v152.css","./zuno-current-viewport.css","./zuno-current-viewport-v154.css","./zuno-current-hero-separation.css","./zuno-current-home-polish-v164.css",
   "./zuno-game-progression.css","./zuno-game-progression.js","./zuno-core.js","./zuno-stack.js","./zuno-stack-pieces.css","./zuno-stack-pieces.js","./zuno-stack-pieces.svg","./zuno-stack-pieces.webp",
   "./zuno-current-avatar-studio.css","./zuno-avatar-studio-reference-v167.js","./zuno-avatar-studio-reference-v169.css","./zuno-avatar-studio-reference-v169.js","./zuno-avatar-studio-reference-v170.css","./zuno-avatar-studio-fixes-v170.js","./zuno-avatar-studio-mobile-v171.css","./zuno-avatar-studio-command-hierarchy-v172.js","./zuno-current-avatar-finish-v174.css"
 ];
@@ -60,6 +60,8 @@ async function preCacheSequential(cache,files){
 function isCurrentUiAsset(url){
   const path=url.pathname.toLowerCase();
   return path.includes('/zuno-current')||
+    path.includes('/zuno-reference-fixes-v17')||
+    path.endsWith('/zuno-shell-runtime-v178.js')||
     path.endsWith('/zuno-avatar-studio-reference-v167.js')||
     path.endsWith('/zuno-avatar-studio-reference-v169.css')||
     path.endsWith('/zuno-avatar-studio-reference-v169.js')||
@@ -129,7 +131,7 @@ self.addEventListener('fetch',event=>{
 
   if(isCurrentUiAsset(url)){
     event.respondWith((async()=>{
-      // Interface ativa é network-first. O cache só entra como fallback da MESMA geração v173.
+      // Interface ativa é network-first. O cache só entra como fallback da mesma geração v178.
       try{
         const fresh=await dedupedFetch(request,{cache:'no-store'},4000);
         if(fresh?.ok){event.waitUntil(cachePut(request,fresh));return fresh}
