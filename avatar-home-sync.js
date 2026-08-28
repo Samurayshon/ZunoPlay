@@ -2,7 +2,7 @@
   if(window.__ZUNO_AVATAR_HOME_SYNC_UNIFIED__)return;
   window.__ZUNO_AVATAR_HOME_SYNC_UNIFIED__=true;
   const STYLE='zuno-studio-v1';
-  let cfg=null,applying=false,observerInstalled=false,readTimer=0,readySent=false;
+  let cfg=null,applying=false,observerInstalled=false,readTimer=0,readySent=false,lastCloudRead=0,cloudReadPromise=null;
 
   document.documentElement.dataset.zunoAvatarSystem='studio';
 
@@ -20,13 +20,15 @@
     const display=clone(cfg);
     if(!display)return null;
     display.mode='Corpo inteiro';
-    display.selections={...(display.selections||{}),Mascote:1,Efeitos:1};
+    // Home agora respeita exatamente o mascote/efeito escolhido no Avatar Studio.
+    display.selections={...(display.selections||{})};
     return normalize(display)||display;
   }
   function miniDisplayConfig(){
     const display=clone(cfg);
     if(!display)return null;
     display.mode='Perfil';
+    // Mini avatar mostra apenas o rosto, sem elementos que prejudiquem a leitura.
     display.selections={...(display.selections||{}),Mascote:0,Efeitos:0};
     return normalize(display)||display;
   }
@@ -44,6 +46,8 @@
         if(!img){img=document.createElement('img');img.className='profile-avatar';img.dataset.zunoStudioAvatar='1'}
         const display=homeDisplayConfig();
         if(display&&window.ZunoAvatarRenderer.mount(img,display)!==false){
+          img.style.transform='scale(1.075)';
+          img.style.transformOrigin='50% 100%';
           if(wrap.children.length!==2||wrap.firstElementChild!==glow||wrap.lastElementChild!==img)wrap.replaceChildren(glow,img);
           mounted=true;
         }
@@ -54,6 +58,7 @@
         if(!mini){mini=document.createElement('img');mini.dataset.zunoStudioAvatar='1'}
         const display=miniDisplayConfig();
         if(display&&window.ZunoAvatarRenderer.mount(mini,display)!==false){
+          mini.style.transform='none';
           if(p.children.length!==1||p.firstElementChild!==mini)p.replaceChildren(mini);
           mounted=true;
         }
@@ -78,11 +83,30 @@
     const reference=JSON.parse(JSON.stringify(defaults));
     reference.model='masculino';
     reference.mode='Corpo inteiro';
-    reference.selections={...(reference.selections||{}),Base:0,Rosto:0,Cabelo:1,Roupas:0,Calçados:1,Acessórios:2,Mascote:1,Efeitos:1};
-    reference.colors={...(reference.colors||{}),pele:2,cabelo:5,roupa:1};
+    reference.selections={...(reference.selections||{}),Acessórios:0,Mascote:0,Efeitos:1};
     reference.rotation=0;
-    reference.zoom=1.04;
+    reference.zoom=1;
     return normalize(reference)||reference;
+  }
+
+  async function readCloudConfig(){
+    if(cloudReadPromise)return cloudReadPromise;
+    if(cfg&&Date.now()-lastCloudRead<15000)return null;
+    lastCloudRead=Date.now();
+    cloudReadPromise=(async()=>{
+      try{
+        let sb=window.ZunoSupabaseClient;
+        if(!sb&&window.supabase?.createClient)sb=window.supabase.createClient('https://rliymfbbhqoejgfvsbuu.supabase.co','sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0');
+        if(!sb)return null;
+        const {data:{session}}=await sb.auth.getSession();
+        const user=session?.user||null;
+        if(!user)return null;
+        const {data,error}=await sb.from('profiles').select('avatar_config').eq('id',user.id).maybeSingle();
+        if(error||!valid(data?.avatar_config))return null;
+        return normalize(data.avatar_config);
+      }catch(e){console.warn('Zuno avatar config:',e);return null}
+    })().finally(()=>{cloudReadPromise=null});
+    return cloudReadPromise;
   }
 
   async function readConfig(){
@@ -98,27 +122,14 @@
       mount('local');
     }
 
-    try{
-      let sb=window.ZunoSupabaseClient;
-      if(!sb&&window.supabase?.createClient)sb=window.supabase.createClient('https://rliymfbbhqoejgfvsbuu.supabase.co','sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0');
-      if(sb){
-        const {data:{session}}=await sb.auth.getSession();
-        const user=session?.user||null;
-        if(user){
-          const {data,error}=await sb.from('profiles').select('avatar_config').eq('id',user.id).maybeSingle();
-          if(!error&&valid(data?.avatar_config)){
-            const cloud=normalize(data.avatar_config);
-            if(cloud){
-              cfg=cloud;
-              localStorage.setItem('zunoAvatarPreset',JSON.stringify(cloud));
-              installScopedObservers();
-              mount('cloud');
-              return;
-            }
-          }
-        }
-      }
-    }catch(e){console.warn('Zuno avatar config:',e)}
+    const cloud=await readCloudConfig();
+    if(cloud){
+      cfg=cloud;
+      localStorage.setItem('zunoAvatarPreset',JSON.stringify(cloud));
+      installScopedObservers();
+      mount('cloud');
+      return;
+    }
 
     if(!cfg){
       cfg=defaultConfig();
@@ -131,8 +142,8 @@
   window.addEventListener('zuno-avatar-renderer-ready',()=>{scheduleRead(0);setTimeout(()=>{installScopedObservers();mount('renderer')},50)});
   window.addEventListener('zuno-avatar-saved',e=>{if(!valid(e.detail))return;const next=normalize(e.detail);if(!next)return;cfg=next;localStorage.setItem('zunoAvatarPreset',JSON.stringify(next));installScopedObservers();mount('saved')});
   window.addEventListener('storage',e=>{if(e.key!=='zunoAvatarPreset'||!e.newValue)return;try{const raw=JSON.parse(e.newValue);if(!valid(raw))return;const next=normalize(raw);if(next){cfg=next;installScopedObservers();mount('storage')}}catch(_){}});
-  window.addEventListener('focus',()=>scheduleRead(120));
-  window.addEventListener('pageshow',()=>scheduleRead(120));
+  window.addEventListener('focus',()=>scheduleRead(700));
+  window.addEventListener('pageshow',()=>scheduleRead(700));
   ['zuno:presence:sync','zuno:presence:join','zuno:presence:leave'].forEach(name=>window.addEventListener(name,()=>setTimeout(()=>{installScopedObservers();mount('presence')},0)));
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installScopedObservers();scheduleRead(0)},{once:true});
