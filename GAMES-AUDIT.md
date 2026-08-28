@@ -8,7 +8,7 @@ O catálogo foi simplificado para concentrar desenvolvimento, estabilidade e qua
 
 ## Jogo ativo
 
-- **Zuno Stack** — puzzle de trios com 54 peças em camadas, bandeja de 7, Zuno Relay, Pulse Shift, progressão e retorno para salas.
+- **Zuno Stack** — puzzle cooperativo de trios com **90 peças em 5 camadas**, **bandeja de 6**, Zuno Relay, Pulse Shift, progressão, recursos sociais e retorno para a sala oficial (`sala.html`).
 
 ## Jogos removidos do produto
 
@@ -22,24 +22,28 @@ O catálogo foi simplificado para concentrar desenvolvimento, estabilidade e qua
 - Arena Zuno
 - Partida Zuno multiplayer
 
-As páginas, scripts e rotas desses jogos não fazem parte do produto ativo e não devem voltar como dependências críticas.
+As páginas, scripts, rotas e RPCs exclusivamente ligadas a experiências removidas não devem voltar ao frontend ativo sem uma nova decisão explícita de produto.
 
 ## Infraestrutura preservada
 
 - Hub de Jogos (`jogos.html`)
 - Zuno Stack e peças premium
-- Histórico de resultados, exibindo o ciclo ativo
+- Histórico de resultados do ciclo ativo
 - Progressão geral de Jogos
-- Retorno para a sala
+- Integração jogo ↔ sala oficial (`sala.html`)
 - Supabase/Auth/Realtime compartilhados pelo restante do ZunoPlay
 - PWA/cache
-- CI/smoke checks
+- CI/smoke checks e auditoria de produção do Stack
 
-O botão **Jogar** dentro de uma sala abre diretamente o Zuno Stack.
+O botão **Jogar** dentro de uma sala abre diretamente o Zuno Stack e o retorno utiliza a sala oficial, não shells/protótipos antigos.
 
 ## Dados históricos
 
 A limpeza do produto não executa exclusão destrutiva no banco. Registros históricos podem permanecer armazenados para rastreabilidade, mas jogos removidos não aparecem no catálogo ativo.
+
+## Regra de manutenção
+
+Protótipos, shells paralelos e arquivos de referência antigos não devem permanecer no caminho de produção apenas por compatibilidade histórica. Quando uma implementação for substituída, o CI deve bloquear referências órfãs e rotas para arquivos removidos.
 
 ## Próximo marco
 

@@ -55,6 +55,7 @@ jobs:
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
             avatar-renderer.js avatar-home-sync.js avatar-asset-registry.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
+            zuno-launch-ready.js zuno-launch-ready.css
             zuno-game-progression.js zuno-game-progression.css
             zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg zuno-stack-pieces.webp
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
@@ -76,6 +77,27 @@ jobs:
           if grep -Eq 'Zuno Core|Zuno Pulse|Zuno Rush|Zuno Caos|Reflexo Zuno|Precisão Zuno|Arena Zuno|Partida Zuno' jogos.html; then
             echo 'Removed game returned to catalog.'; exit 1
           fi
+
+      - name: Guard removed structural prototypes
+        shell: bash
+        run: |
+          set -euo pipefail
+          removed=(
+            sala-v200.html zuno-room-app-v200.js
+            zuno-room-stage-v2.css zuno-room-stage-v2.js zuno-room-realtime-v2.css zuno-room-realtime-v2.js
+            zuno-room-voice-v2.css zuno-room-voice-v2.js zuno-room-social-v2.css zuno-room-social-v2.js
+            zuno-room-admin-activities-v2.css zuno-room-admin-activities-v2.js zuno-room-stability-v2.css zuno-room-stability-v2.js
+            zuno-room-immersive-v3.css zuno-room-bottom-tools-v1.css zuno-room-bottom-tools-v1.js
+            zuno-current-avatar-studio.css zuno-avatar-studio-command-hierarchy-v172.js zuno-avatar-studio-fixes-v170.js
+            zuno-avatar-studio-mobile-v171.css zuno-avatar-studio-reference-v167.js zuno-avatar-studio-reference-v169.css
+            zuno-avatar-studio-reference-v169.js zuno-avatar-studio-reference-v170.css zuno-current-avatar-finish-v174.css
+            zuno-shell-runtime-v178.js zuno-home-shell-v179.css zuno-home-shell-v180.css zuno-shell-runtime-v180.js
+            zuno-home-nav-v181.css zuno-global-bottom-nav-v182.css zuno-global-bottom-nav-v182.js
+            zuno-global-shell-v184.css zuno-global-shell-v184.js zuno-reference-fixes-v177.css zuno-reference-fixes-v178.css
+          )
+          for file in "${removed[@]}"; do if test -e "$file"; then echo "Removed prototype returned: $file"; exit 1; fi; done
+          if grep -RIn --exclude-dir=.git --exclude='app-smoke.yml' 'sala-v200\.html' .; then echo 'Legacy sala-v200 route remains.'; exit 1; fi
+          if find assets/avatars/raster -maxdepth 1 -type f -name '*street-z*.txt' | grep -q .; then echo 'Legacy avatar raster v1 returned.'; exit 1; fi
 
       - name: Validate local navigation targets
         shell: bash
@@ -121,12 +143,14 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import pathlib,re
-          nav=pathlib.Path('nav.js').read_text(encoding='utf-8'); sw=pathlib.Path('sw.js').read_text(encoding='utf-8')
-          m=re.search(r"const\s+V='(\d+)'",nav); s=re.search(r'CACHE_NAME\s*=\s*"zunoplay-v(\d+)"',sw)
+          nav=pathlib.Path('nav.js').read_text(encoding='utf-8'); sw=pathlib.Path('sw.js').read_text(encoding='utf-8'); current=pathlib.Path('zuno-current.js').read_text(encoding='utf-8')
+          m=re.search(r"const\s+V='(\d+)'",nav); s=re.search(r'CACHE_NAME\s*=\s*"zunoplay-v(\d+)"',sw); c=re.search(r"const VERSION='(\d+)'",current)
           if not m: raise SystemExit('Missing frontend generation marker in nav.js')
           if not s: raise SystemExit('Missing cache generation marker in sw.js')
-          if m.group(1)!=s.group(1): raise SystemExit(f'Frontend generation mismatch: nav={m.group(1)} sw={s.group(1)}')
+          if not c: raise SystemExit('Missing current generation marker in zuno-current.js')
+          if len({m.group(1),s.group(1),c.group(1)})!=1: raise SystemExit(f'Frontend generation mismatch: nav={m.group(1)} sw={s.group(1)} current={c.group(1)}')
           if f'__ZUNOPLAY_GLOBAL_BOOT_V{m.group(1)}__' not in nav: raise SystemExit('Global boot marker mismatch')
+          if f'zuno-sw-v{m.group(1)}-reloaded' not in current: raise SystemExit('Current SW refresh marker mismatch')
           print('Frontend generation consistent: v'+m.group(1))
           PY
 
@@ -158,6 +182,7 @@ jobs:
           grep -q 'zuno-stack.html' room-session-guard.js
           grep -q "roomGames=\['zuno-stack.html'\]" nav.js
           grep -q "new URL('zuno-stack.html'" zuno-room-games.js
+          grep -q "location.href='sala.html?room='" jogos.html
           if grep -RIn --exclude-dir=.git --exclude='app-smoke.yml' -E 'zuno-core\.html|zuno-core-v0[45]|zuno-core\.js' .; then
             echo 'Zuno Core reference remains in active application files.'; exit 1
           fi
