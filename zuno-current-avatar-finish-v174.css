@@ -1,7 +1,8 @@
-/* ZunoPlay Avatar Studio v174 — acabamento final mobile */
+/* ZunoPlay Avatar Studio v175 — acabamento final mobile */
 @media(max-width:520px){
   html[data-zuno-interface="current"] body.zuno-official-avatar .app{
-    padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;
+    min-height:0!important;
+    padding-bottom:10px!important;
   }
   html[data-zuno-interface="current"] body.zuno-official-avatar .studio-subtabs{margin-bottom:6px!important}
   html[data-zuno-interface="current"] body.zuno-official-avatar .studio-officials{margin-top:0!important;margin-bottom:0!important}
@@ -11,8 +12,50 @@
   html[data-zuno-interface="current"] body.zuno-official-avatar .hint,
   html[data-zuno-interface="current"] body.zuno-official-avatar .saved{display:none!important}
   html[data-zuno-interface="current"] body.zuno-official-avatar > .app > .save{margin:0!important}
-  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{bottom:6px!important}
+
+  /* O Avatar Studio termina naturalmente no catálogo; a navegação entra no fluxo e não cria um vazio artificial. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar.zuno-global-nav-mounted{padding-bottom:0!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    transform:none!important;
+    width:calc(100% - 24px)!important;
+    margin:10px auto max(6px,env(safe-area-inset-bottom))!important;
+  }
+
+  /* Sincronizar avatar: ícone vetorial real em vez do quadrado branco do glyph fallback. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .studio-cloud-action:before{
+    display:block!important;
+    width:24px!important;
+    height:24px!important;
+    background:#f4f5ff!important;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7.5 18H6a4 4 0 0 1-.55-7.96A6.5 6.5 0 0 1 17.9 8.2 4.5 4.5 0 0 1 18.5 17H16M12 9v8m0-8-3 3m3-3 3 3' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7.5 18H6a4 4 0 0 1-.55-7.96A6.5 6.5 0 0 1 17.9 8.2 4.5 4.5 0 0 1 18.5 17H16M12 9v8m0-8-3 3m3-3 3 3' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+  }
+
+  /* O avatar do perfil fica estritamente contido no círculo do header. */
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action.is-profile img[data-zuno-studio-avatar="1"],
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action.is-profile img{
+    position:absolute!important;
+    inset:2px!important;
+    width:calc(100% - 4px)!important;
+    height:calc(100% - 4px)!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    object-fit:cover!important;
+    object-position:50% 28%!important;
+    border-radius:50%!important;
+    clip-path:circle(50% at 50% 50%)!important;
+    transform:none!important;
+    filter:none!important;
+    display:block!important;
+  }
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-action.is-profile.has-zuno-avatar:before{display:none!important}
 }
 @media(max-width:365px){
-  html[data-zuno-interface="current"] body.zuno-official-avatar .app{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .app{padding-bottom:8px!important}
+  html[data-zuno-interface="current"] body.zuno-official-avatar .zuno-global-nav{width:calc(100% - 18px)!important}
 }
