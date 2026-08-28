@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#05050d">
+<meta name="theme-color" content="#070817">
 <title>Zuno Stack - ZunoPlay</title>
 <link rel="stylesheet" href="zuno-stack-pieces.css?v=225">
 <link rel="stylesheet" href="zuno-stack-lobby-fullscreen-v3.css?v=225">
+<link rel="stylesheet" href="zuno-stack-lobby-v2.css?v=90f3113">
+<link rel="stylesheet" href="zuno-stack-lobby-final-polish.css?v=3837e92">
+<link rel="stylesheet" href="zuno-stack-lobby-closeout.css?v=c56bb63">
 <script src="nav.js?v=225" defer></script>
 <script src="zuno-stack-pieces.js?v=225" defer></script>
 <script src="zuno-stack.js?v=225" defer></script>
@@ -22,5 +25,6 @@
 <section class="shell"><div id="pulseBanner" class="pulse-banner"></div><div class="mission"><div class="mission-icon">⚡</div><div class="mission-copy"><b id="missionTitle">Carregue o Núcleo</b><span id="missionText">Forme trios para gerar Energia Pulse.</span></div><div id="missionMeter" class="mission-meter">0/5</div></div><div class="board-wrap"><div id="board" class="board" aria-label="Tabuleiro Zuno Stack"></div></div><div class="tray-area"><div class="area-head"><b>Bandeja · máximo 6</b><span>toque numa peça para enviar ao Relay</span></div><div id="tray" class="tray"></div></div><div class="relay"><div class="relay-head"><b>🤝 Zuno Relay compartilhado</b><span>seus parceiros podem usar as peças daqui</span></div><div id="relaySlots" class="relay-slots"></div></div><div class="tools"><button id="undo" class="tool">↩ DESFAZER · 1</button><button id="pulse" class="tool primary" disabled>⚡ PULSE SHIFT</button><button id="hint" class="tool">✦ DICA · 2</button></div><div class="energy"><i id="energy"></i></div><div class="help">Forme 3 iguais. Use o Relay com sua equipe e carregue o Pulse para virar a partida.</div><div id="overlay" class="overlay"><div class="box"><div id="overlayIcon" class="big">🧩⚡</div><h1 id="overlayTitle">Zuno Stack</h1><p id="overlayText">Puzzle cooperativo do ZunoPlay.</p><div id="features" class="features"><div class="feature">Solo</div><div class="feature">Trio</div><div class="feature">Pulse</div><div class="feature">Relay</div></div><div id="resultGrid" class="result-grid" hidden></div><div id="saving" class="saving"></div><button id="start" class="start">JOGAR AGORA</button><button id="exit" class="exit">Voltar aos Jogos</button></div></div></section>
 <div id="toast" class="toast"></div><div id="live" class="sr-only" aria-live="polite"></div>
 </main>
+<script src="zuno-stack-lobby-closeout.js?v=bf8d0c0" defer></script>
 </body>
 </html>
