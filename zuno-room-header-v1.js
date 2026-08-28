@@ -1,0 +1,15 @@
+(()=>{
+if(window.__ZUNO_ROOM_HEADER_V1__)return;window.__ZUNO_ROOM_HEADER_V1__=true;
+const params=new URLSearchParams(location.search);
+const roomId=params.get('room')||params.get('room_id')||params.get('id')||sessionStorage.getItem('zunoplay_room_id')||'';
+if(!roomId)return;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const titleCase=v=>String(v||'').replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase());
+function shortId(id){const compact=String(id||'').replaceAll('-','').toUpperCase();return compact?compact.slice(0,6):'------'}
+function ensureOwnerLine(){const info=document.querySelector('.header-info');if(!info)return null;let line=info.querySelector('.zuno-room-owner-line');if(line)return line;line=document.createElement('div');line.className='zuno-room-owner-line';line.innerHTML='<span class="owner-badge">♛</span><span class="zuno-room-owner-name">Proprietário</span><span class="zuno-room-owner-role">· Dono da sala</span>';info.appendChild(line);return line}
+function rebuildMeta(room){const meta=document.querySelector('.room-meta');if(!meta)return;let status=document.getElementById('roomStatus');if(!status){status=document.createElement('span');status.id='roomStatus';status.className='room-status';meta.prepend(status)}const active=room?.status==='active';status.textContent=active?'● Sala ativa':'● Sala encerrada';status.classList.toggle('is-ended',!active);let cat=meta.querySelector('.zuno-room-category');if(!cat){cat=document.createElement('span');cat.className='zuno-room-category'}cat.textContent=titleCase(room?.category||'bate papo');let rid=meta.querySelector('.zuno-room-id');if(!rid){rid=document.createElement('span');rid.className='zuno-room-id'}rid.textContent='#'+shortId(roomId);meta.replaceChildren(status,document.createTextNode('·'),cat,document.createTextNode('·'),rid)}
+async function getClient(){for(let i=0;i<60;i++){if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;await sleep(100)}return null}
+async function sync(){const sb=await getClient();if(!sb)return;const {data:room,error}=await sb.from('rooms').select('id,name,category,status,owner_id').eq('id',roomId).maybeSingle();if(error||!room)return;rebuildMeta(room);const title=document.getElementById('roomTitle');if(title&&room.name)title.textContent=room.name;const line=ensureOwnerLine();if(!line)return;let ownerName='Proprietário';if(room.owner_id){const {data:p}=await sb.from('profiles').select('username').eq('id',room.owner_id).maybeSingle();if(p?.username)ownerName='@'+p.username}const name=line.querySelector('.zuno-room-owner-name');if(name)name.textContent=ownerName}
+function init(){ensureOwnerLine();sync();window.addEventListener('zuno:room-app-ready',sync);window.addEventListener('zuno:room-presence-sync',()=>{const count=document.getElementById('roomCountText');if(count)count.style.display='none'});const count=document.getElementById('roomCountText');if(count)count.style.display='none'}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
