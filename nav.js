@@ -1,17 +1,18 @@
 (()=>{
-  if(window.__ZUNOPLAY_GLOBAL_BOOT_V187__)return;
-  window.__ZUNOPLAY_GLOBAL_BOOT_V187__=true;
+  if(window.__ZUNOPLAY_GLOBAL_BOOT_V188__)return;
+  window.__ZUNOPLAY_GLOBAL_BOOT_V188__=true;
 
   /*
-   * ZunoPlay UI — Etapa 4/8
+   * ZunoPlay UI — Etapa 5/8
    * Home aprovada permanece intacta.
-   * Social usa chrome global + componentes + acabamento social dedicado.
+   * Perfil + Avatar Studio usam chrome global, componentes e acabamento dedicado.
    */
-  const V='187';
+  const V='188';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const isHome=page==='index.html';
   const publicPages=new Set(['login.html','cadastro.html']);
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
+  const profileAvatarPages=['perfil.html','avatar.html'];
   const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
   const roomGamePages=['zuno-core.html','zuno-stack.html'];
   const ver=file=>file+(file.includes('?')?'&':'?')+'v='+V;
@@ -25,6 +26,12 @@
   if(socialPages.includes(page)){loadStyle('zunoplay-social-style','./zuno-social.css');loadScript('zunoplay-social-script','./zuno-social.js')}
   if(gamePages.includes(page)){loadStyle('zunoplay-game-progression-style','./zuno-game-progression.css');loadScript('zunoplay-game-progression','./zuno-game-progression.js')}
   if(!isHome&&!publicPages.has(page)&&page!=='sala.html')loadStyle('zunoplay-ui-components','./zuno-ui-components.css');
+
+  /* Etapa 5: acabamento final de Perfil + Avatar Studio carrega por último. */
+  if(profileAvatarPages.includes(page)){
+    loadStyle('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');
+    loadScript('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js');
+  }
 
   if(page==='sala.html'){
     loadStyle('zunoplay-room-stage5','./zuno-room-experience.css');loadStyle('zunoplay-room-fit','./zuno-room-fit.css');loadStyle('zunoplay-room-extras','./zuno-room-extras.css');
