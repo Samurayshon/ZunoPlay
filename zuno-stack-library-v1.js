@@ -1,0 +1,29 @@
+(()=>{
+  if(window.__ZUNO_STACK_LIBRARY__)return;
+  window.__ZUNO_STACK_LIBRARY__=[
+    {id:'bolt',label:'Bolt',a:'#ffd85d',b:'#9a5605',border:'#ffe990',icon:'ϟ'},
+    {id:'gem',label:'Core',a:'#20dcff',b:'#0752a8',border:'#8cf4ff',icon:'◆'},
+    {id:'star',label:'Nova',a:'#ff66b2',b:'#8d194d',border:'#ffabd1',icon:'✦'},
+    {id:'moon',label:'Prism',a:'#b65cff',b:'#4b1a89',border:'#dfa6ff',icon:'△'},
+    {id:'orb',label:'Orb',a:'#24e8f2',b:'#08728c',border:'#8ef9ff',icon:'◉'},
+    {id:'leaf',label:'Echo',a:'#62e77c',b:'#116b37',border:'#9af6ac',icon:'◈'},
+    {id:'vortex',label:'Vortex',a:'#ffb436',b:'#9f4800',border:'#ffd57d',icon:'↻'},
+    {id:'rune',label:'Rune',a:'#47cfff',b:'#175eb0',border:'#93e6ff',icon:'✧'},
+    {id:'meteor',label:'Meteor',a:'#ff6f9e',b:'#8f2148',border:'#ffaac5',icon:'☄'},
+    {id:'crown',label:'Crown',a:'#f4cf58',b:'#7d5600',border:'#fff09d',icon:'♛'},
+    {id:'portal',label:'Portal',a:'#8d6cff',b:'#39238d',border:'#c7b7ff',icon:'◎'},
+    {id:'crystal',label:'Crystal',a:'#66f2ff',b:'#137c9d',border:'#bcfbff',icon:'◇'},
+    {id:'wave',label:'Wave',a:'#45bfff',b:'#14559e',border:'#9edfff',icon:'≈'},
+    {id:'zenstar',label:'Star',a:'#fff06a',b:'#a36d00',border:'#fff8ab',icon:'★'},
+    {id:'luna',label:'Moon',a:'#a8b7ff',b:'#444b9a',border:'#d8deff',icon:'◐'},
+    {id:'rocket',label:'Rocket',a:'#ff8c52',b:'#a23d16',border:'#ffc09f',icon:'▲'},
+    {id:'ghost',label:'Ghost',a:'#d8d8ff',b:'#66658d',border:'#f0f0ff',icon:'◌'},
+    {id:'clover',label:'Clover',a:'#67e879',b:'#1d7a34',border:'#aef5b8',icon:'✣'},
+    {id:'pulse',label:'Pulse',a:'#ff4fd8',b:'#7e2071',border:'#ffa6ec',icon:'⌁'},
+    {id:'flux',label:'Flux',a:'#31e0e7',b:'#096d77',border:'#8df9fb',icon:'∞'},
+    {id:'spark',label:'Spark',a:'#ffdd55',b:'#b86a00',border:'#fff09b',icon:'✺'},
+    {id:'link',label:'Link',a:'#5be5c8',b:'#137b68',border:'#a6fae9',icon:'⌘'},
+    {id:'comet',label:'Comet',a:'#ff6f9e',b:'#8f2148',border:'#ffaac5',icon:'☄'},
+    {id:'shift',label:'Shift',a:'#9da5bd',b:'#42495e',border:'#cbd0df',icon:'⇄'}
+  ];
+})();
