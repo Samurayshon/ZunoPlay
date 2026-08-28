@@ -1,18 +1,19 @@
 (()=>{
-  if(window.__ZUNOPLAY_GLOBAL_BOOT_V188__)return;
-  window.__ZUNOPLAY_GLOBAL_BOOT_V188__=true;
+  if(window.__ZUNOPLAY_GLOBAL_BOOT_V189__)return;
+  window.__ZUNOPLAY_GLOBAL_BOOT_V189__=true;
 
   /*
-   * ZunoPlay UI — Etapa 5/8
+   * ZunoPlay UI — Etapa 6/8
    * Home aprovada permanece intacta.
-   * Perfil + Avatar Studio usam chrome global, componentes e acabamento dedicado.
+   * Salas + Sala de Voz recebem acabamento dedicado sem quebrar a experiência imersiva.
    */
-  const V='188';
+  const V='189';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const isHome=page==='index.html';
   const publicPages=new Set(['login.html','cadastro.html']);
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   const profileAvatarPages=['perfil.html','avatar.html'];
+  const roomsPages=['salas.html','sala.html'];
   const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
   const roomGamePages=['zuno-core.html','zuno-stack.html'];
   const ver=file=>file+(file.includes('?')?'&':'?')+'v='+V;
@@ -27,7 +28,6 @@
   if(gamePages.includes(page)){loadStyle('zunoplay-game-progression-style','./zuno-game-progression.css');loadScript('zunoplay-game-progression','./zuno-game-progression.js')}
   if(!isHome&&!publicPages.has(page)&&page!=='sala.html')loadStyle('zunoplay-ui-components','./zuno-ui-components.css');
 
-  /* Etapa 5: acabamento final de Perfil + Avatar Studio carrega por último. */
   if(profileAvatarPages.includes(page)){
     loadStyle('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');
     loadScript('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js');
@@ -37,6 +37,12 @@
     loadStyle('zunoplay-room-stage5','./zuno-room-experience.css');loadStyle('zunoplay-room-fit','./zuno-room-fit.css');loadStyle('zunoplay-room-extras','./zuno-room-extras.css');
     loadScript('zunoplay-room-experience-stage5','./zuno-room-experience.js');loadScript('zunoplay-room-voice','./voz-sala.js');loadScript('zunoplay-room-session-guard','./room-session-guard.js');
   }else if(roomGamePages.includes(page))loadScript('zunoplay-room-game-return','./zuno-room-game-return.js');
+
+  /* Etapa 6 carrega por último para vencer somente o visual legado das salas. */
+  if(roomsPages.includes(page)){
+    loadStyle('zunoplay-rooms-stage6-style','./zuno-rooms-stage6.css');
+    loadScript('zunoplay-rooms-stage6-script','./zuno-rooms-stage6.js');
+  }
 
   loadScript('zunoplay-realtime-global','./realtime-global.js');
   loadScript('zunoplay-avatar-renderer','./avatar-renderer.js',()=>loadScript('zunoplay-avatar-home-sync','./avatar-home-sync.js'));
