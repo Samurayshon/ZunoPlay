@@ -12,13 +12,40 @@
   function logoMarkup(){return `<a href="index.html" class="zuno-global-brand" aria-label="ZunoPlay"><span class="zuno-global-brand-mark">Z</span><span class="zuno-global-brand-word">Zuno<b>Play</b></span></a>`}
   function headerMarkup(){const title=titleMap[page]||'ZunoPlay';return `<header class="zuno-global-header" data-zuno-global-header="1"><div class="zuno-global-header-left">${logoMarkup()}<span class="zuno-global-page-title">${title}</span></div><div class="zuno-global-actions"><button class="zuno-global-action" type="button" data-z-search aria-label="Buscar">⌕</button><a class="zuno-global-action" href="notificacoes.html" aria-label="Notificações">♧</a><a class="zuno-global-action is-profile" href="perfil.html" aria-label="Perfil">●</a></div></header>`}
 
+  function pageClass(){
+    if(!document.body)return;
+    document.body.classList.add('zuno-page-'+page.replace('.html',''));
+  }
   function hideLegacyHeaders(){
     document.querySelectorAll('.header,.chat-header,.top,.topbar,.head').forEach(h=>{
       if(h.matches('[data-zuno-global-header]')||h.closest('[data-zuno-global-header]'))return;
-      if(h.dataset.zunoLegacyHeader==='1')return;
       h.dataset.zunoLegacyHeader='1';
       h.style.setProperty('display','none','important');
     });
+  }
+  function cleanRoomsUi(){
+    if(page!=='salas.html')return;
+    const title=document.querySelector('.page .title');
+    if(title&&!title.classList.contains('zuno-room-page-title')){
+      title.textContent=(title.textContent||'Salas').replace(/^[\s🎙️🎤🎧]+/u,'').trim()||'Salas';
+      title.classList.add('zuno-room-page-title');
+    }
+    document.querySelectorAll('.room-name').forEach(el=>{
+      if(el.classList.contains('zuno-room-name'))return;
+      el.textContent=(el.textContent||'').replace(/^[\s🎙️🎤🎧]+/u,'').trim();
+      el.classList.add('zuno-room-name');
+    });
+  }
+  function removeDuplicateNavs(){
+    const global=[...document.querySelectorAll('body > [data-zuno-global-nav="1"]')];
+    global.slice(1).forEach(n=>n.remove());
+    document.querySelectorAll('body > .bottom-nav').forEach(n=>n.remove());
+  }
+  function decorateDynamic(){
+    pageClass();
+    hideLegacyHeaders();
+    cleanRoomsUi();
+    removeDuplicateNavs();
   }
   function mountHeader(){
     if(skip.includes(page)||page==='index.html')return;
@@ -63,17 +90,27 @@
     el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')});
   }
 
-  let bound=false;
+  let bound=false,observer=null,scheduled=false;
+  function observeDynamicShell(){
+    if(observer||!document.body)return;
+    observer=new MutationObserver(()=>{
+      if(scheduled)return;
+      scheduled=true;
+      requestAnimationFrame(()=>{scheduled=false;decorateDynamic()});
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
   function bind(){
     if(bound||!document.body)return;
     bound=true;
-    mountHeader();mountBottom();ensureSearch();
+    pageClass();mountHeader();mountBottom();ensureSearch();decorateDynamic();observeDynamicShell();
     document.querySelectorAll('[data-z-search]').forEach(b=>{
       if(b.dataset.bound)return;b.dataset.bound='1';
       b.onclick=()=>{const l=document.querySelector('.zuno-search-layer');if(!l)return;l.classList.add('open');setTimeout(()=>l.querySelector('.zuno-search-input')?.focus(),50)};
     });
+    window.dispatchEvent(new CustomEvent('zuno:shell-mounted',{detail:{page}}));
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
-  window.addEventListener('pageshow',()=>{if(!bound)bind()},{once:true});
+  window.addEventListener('pageshow',()=>{if(!bound)bind();else decorateDynamic()});
 })();
