@@ -4,7 +4,7 @@
   if((location.pathname.split('/').pop()||'').toLowerCase()!=='avatar.html')return;
 
   const q=s=>document.querySelector(s),clone=v=>v?JSON.parse(JSON.stringify(v)):v;
-  let refreshTimer=0,observer=null;
+  let refreshTimer=0,observer=null,initialModeFixed=false;
 
   function getState(){
     try{if(typeof state!=='undefined')return clone(state)}catch(_){}
@@ -14,13 +14,19 @@
     try{
       if(typeof state==='undefined')return;
       let changed=false;
-      if(state.mode!=='Corpo inteiro'){state.mode='Corpo inteiro';changed=true}
-      if(Number(state.zoom)!==1){state.zoom=1;changed=true}
+      if(!initialModeFixed&&state.mode!=='Corpo inteiro'){
+        state.mode='Corpo inteiro';
+        state.zoom=1;
+        changed=true;
+      }
+      initialModeFixed=true;
       if(changed&&typeof renderAll==='function')renderAll();
-      q('#hero')?.classList.remove('profile','room');
-      q('#modes [data-mode="Corpo inteiro"]')?.classList.add('on');
-      q('#modes [data-mode="Perfil"]')?.classList.remove('on');
-      q('#modes [data-mode="Sala de voz"]')?.classList.remove('on');
+      if(state.mode==='Corpo inteiro'){
+        q('#hero')?.classList.remove('profile','room');
+        q('#modes [data-mode="Corpo inteiro"]')?.classList.add('on');
+        q('#modes [data-mode="Perfil"]')?.classList.remove('on');
+        q('#modes [data-mode="Sala de voz"]')?.classList.remove('on');
+      }
     }catch(_){}
   }
   function cleanConfig(base,mode){
@@ -41,14 +47,14 @@
   function installStyle(){
     if(q('#zuno-avatar-studio-fixes-v170-style'))return;
     const s=document.createElement('style');s.id='zuno-avatar-studio-fixes-v170-style';s.textContent=`
-      html[data-zuno-interface="current"] body.zuno-official-avatar #hero .pulse{z-index:1!important;pointer-events:none!important;opacity:.24!important}
-      html[data-zuno-interface="current"] body.zuno-official-avatar #hero .stage{z-index:5!important;top:58px!important;width:218px!important;height:410px!important;--scale:1!important;transform-origin:50% 78%!important}
+      html[data-zuno-interface="current"] body.zuno-official-avatar #hero .pulse{z-index:1!important;pointer-events:none!important;opacity:.20!important}
+      html[data-zuno-interface="current"] body.zuno-official-avatar #hero .stage{z-index:5!important;top:58px!important;width:218px!important;height:410px!important;transform-origin:50% 78%!important}
       html[data-zuno-interface="current"] body.zuno-official-avatar #hero.profile .stage,
-      html[data-zuno-interface="current"] body.zuno-official-avatar #hero.room .stage{top:58px!important;--scale:1!important}
+      html[data-zuno-interface="current"] body.zuno-official-avatar #hero.room .stage{top:58px!important}
       html[data-zuno-interface="current"] body.zuno-official-avatar #avatarPreview{object-fit:contain!important;object-position:50% 50%!important}
       html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card.mini .studio-preview-frame{overflow:hidden!important}
-      html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card.mini #studioPreviewMini{transform:scale(1.42) translateY(5%)!important;transform-origin:50% 20%!important;object-fit:contain!important}
-      html[data-zuno-interface="current"] body.zuno-official-avatar #studioPreviewProfile{object-fit:contain!important;object-position:50% 8%!important}
+      html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card.mini #studioPreviewMini{transform:scale(1.52) translateY(8%)!important;transform-origin:50% 18%!important;object-fit:contain!important}
+      html[data-zuno-interface="current"] body.zuno-official-avatar #studioPreviewProfile{object-fit:contain!important;object-position:50% 5%!important}
       html[data-zuno-interface="current"] body.zuno-official-avatar .studio-preview-card.back img{transform:none!important;opacity:1!important;object-fit:contain!important}
       html[data-zuno-interface="current"] body.zuno-official-avatar #options .thumb img{width:100%!important;height:100%!important;object-fit:contain!important}
     `;document.head.appendChild(s);
