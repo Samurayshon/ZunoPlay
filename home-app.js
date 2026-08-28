@@ -41,7 +41,6 @@
     const p=currentProfile||{},name=p.username||currentUser?.email?.split('@')[0]||'ZunoPlayer',level=Math.max(1,Math.min(10,Number(p.level)||1));
     $('username').textContent=name;$('coinCount').textContent=Number(p.coins||0).toLocaleString('pt-BR');$('auraEmblem').dataset.level=level;$('auraTitle').textContent=auraFor(level);$('levelProgress').style.width=(level*10)+'%';$('levelProgressText').textContent='Nível '+level+' de 10';$('challengeBadge').textContent='N'+level;
     // O avatar da Home pertence exclusivamente ao Avatar Studio (avatar-home-sync.js).
-    // Este runtime nunca injeta avatar_url/fallback legado nos slots principais.
   }
   async function loadProfile(){const{data,error}=await supabaseClient.from('profiles').select('id,username,sex,level,coins').eq('id',currentUser.id).maybeSingle();if(error){console.error('Perfil:',error);return}if(data){currentProfile=data;renderProfile()}}
   async function loadNotifications(){const{count,error}=await supabaseClient.from('notifications').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id).neq('type','message').is('read_at',null);if(!error)setBadge('notificationBadge',count)}
@@ -75,13 +74,6 @@
   setTimeout(()=>{if(loading?.style.display!=='none'&&currentUser){const text=loading.querySelector('[data-loading-text]');if(text)text.textContent='Finalizando interface oficial...'}},3500);
 
   if('serviceWorker'in navigator){
-    let controllerReload=false;
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{
-      if(controllerReload||sessionStorage.getItem('zuno-sw-v148-reloaded')==='1')return;
-      sessionStorage.setItem('zuno-sw-v148-reloaded','1');
-      controllerReload=true;
-      location.reload();
-    });
     window.addEventListener('load',async()=>{
       try{const reg=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});reg.update().catch(()=>{})}catch(e){console.error(e)}
     });
