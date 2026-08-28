@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='249';
+  const VERSION='251';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -19,7 +19,7 @@
   function decorateGames(){const intro=document.querySelector('.intro');if(!intro||intro.dataset.zunoCurrent==='1')return;intro.dataset.zunoCurrent='1';const chip=node('div','zuno-v31-games-chip','JOGUE · COMPITA · CONECTE');chip.style.cssText='display:inline-flex;margin-bottom:8px;padding:6px 9px;border:1px solid rgba(126,141,193,.18);border-radius:999px;background:rgba(10,15,31,.62);color:#8c9bb6;font-size:8px;font-weight:900;letter-spacing:.12em';intro.prepend(chip)}
   function asset(file){return file+(file.includes('?')?'&':'?')+'v='+VERSION}
   function injectStyle(id,file){const href=asset(file),existing=document.getElementById(id);if(existing){const current=existing.getAttribute('href')||'';if(!current.includes('v='+VERSION))existing.setAttribute('href',href);return}const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link)}
-  function installRefresh(){if(!('serviceWorker' in navigator))return;const key='zuno-sw-v249-reloaded';navigator.serviceWorker.addEventListener('controllerchange',()=>{if(sessionStorage.getItem(key)==='1')return;sessionStorage.setItem(key,'1');location.reload()})}
+  function installRefresh(){if(!('serviceWorker' in navigator))return;const key='zuno-sw-v251-reloaded';navigator.serviceWorker.addEventListener('controllerchange',()=>{if(sessionStorage.getItem(key)==='1')return;sessionStorage.setItem(key,'1');location.reload()})}
   function loadHomeRefinements(){if(page!=='index.html')return;injectStyle('zunoplay-home-reference-v152-style','./zuno-home-reference-v152.css');injectStyle('zunoplay-current-viewport-style','./zuno-current-viewport.css');injectStyle('zunoplay-current-viewport-v154-style','./zuno-current-viewport-v154.css');injectStyle('zunoplay-current-hero-separation-style','./zuno-current-hero-separation.css');injectStyle('zunoplay-current-home-polish-v164-style','./zuno-current-home-polish-v164.css')}
   function mount(){applyBodyIdentity();if(page==='index.html')decorateHome();if(page==='sala.html')decorateRoom();if(page==='avatar.html')decorateAvatar();if(page==='comunidades.html')decorateCommunities();if(page==='jogos.html')decorateGames();installRefresh();loadHomeRefinements()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
