@@ -46,4 +46,6 @@ jobs:
       - name: Guard removed games and secrets
         run: |
           set -euo pipefail
-          ! grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='*.yml' -E 'zuno-core\.html|zuno-core\.js|sb_secret_|service_role' .
+          secret_pat='sb''_secret_'
+          role_pat='service''_role'
+          ! grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='*.yml' -E "zuno-core\\.html|zuno-core\\.js|${secret_pat}|${role_pat}" .
