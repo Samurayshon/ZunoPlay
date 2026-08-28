@@ -20,7 +20,6 @@
     const display=clone(cfg);
     if(!display)return null;
     display.mode='Corpo inteiro';
-    // Home agora respeita exatamente o mascote/efeito escolhido no Avatar Studio.
     display.selections={...(display.selections||{})};
     return normalize(display)||display;
   }
@@ -28,9 +27,16 @@
     const display=clone(cfg);
     if(!display)return null;
     display.mode='Perfil';
-    // Mini avatar mostra apenas o rosto, sem elementos que prejudiquem a leitura.
     display.selections={...(display.selections||{}),Mascote:0,Efeitos:0};
     return normalize(display)||display;
+  }
+
+  function miniTargets(){
+    const set=new Set();
+    const home=document.getElementById('profileButton');
+    if(home)set.add(home);
+    document.querySelectorAll('.zuno-global-action.is-profile').forEach(el=>set.add(el));
+    return [...set];
   }
 
   function mount(source='studio'){
@@ -52,17 +58,17 @@
           mounted=true;
         }
       }
-      const p=document.getElementById('profileButton');
-      if(p){
+      const display=miniDisplayConfig();
+      miniTargets().forEach(p=>{
         let mini=p.querySelector('img[data-zuno-studio-avatar="1"]');
         if(!mini){mini=document.createElement('img');mini.dataset.zunoStudioAvatar='1'}
-        const display=miniDisplayConfig();
         if(display&&window.ZunoAvatarRenderer.mount(mini,display)!==false){
           mini.style.transform='none';
           if(p.children.length!==1||p.firstElementChild!==mini)p.replaceChildren(mini);
+          p.classList.add('has-zuno-avatar');
           mounted=true;
         }
-      }
+      });
     }finally{applying=false}
     if(mounted)markReady(source);
     return mounted;
@@ -70,7 +76,7 @@
 
   function installScopedObservers(){
     if(observerInstalled)return;
-    const nodes=[document.getElementById('profileAvatarWrap'),document.getElementById('profileButton')].filter(Boolean);
+    const nodes=[document.getElementById('profileAvatarWrap'),...miniTargets()].filter(Boolean);
     if(!nodes.length)return;
     const observer=new MutationObserver(()=>{if(!applying)queueMicrotask(()=>mount('observer'))});
     nodes.forEach(node=>observer.observe(node,{childList:true,subtree:false}));
@@ -143,14 +149,15 @@
   window.addEventListener('zuno-avatar-saved',e=>{if(!valid(e.detail))return;const next=normalize(e.detail);if(!next)return;cfg=next;localStorage.setItem('zunoAvatarPreset',JSON.stringify(next));installScopedObservers();mount('saved')});
   window.addEventListener('storage',e=>{if(e.key!=='zunoAvatarPreset'||!e.newValue)return;try{const raw=JSON.parse(e.newValue);if(!valid(raw))return;const next=normalize(raw);if(next){cfg=next;installScopedObservers();mount('storage')}}catch(_){}});
   window.addEventListener('focus',()=>scheduleRead(700));
-  window.addEventListener('pageshow',()=>scheduleRead(700));
+  window.addEventListener('pageshow',()=>scheduleRead(500));
+  window.addEventListener('zuno:shell-mounted',()=>{setTimeout(()=>{installScopedObservers();mount('shell')},0);setTimeout(()=>mount('shell-late'),350)});
   ['zuno:presence:sync','zuno:presence:join','zuno:presence:leave'].forEach(name=>window.addEventListener(name,()=>setTimeout(()=>{installScopedObservers();mount('presence')},0)));
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installScopedObservers();scheduleRead(0)},{once:true});
-  else{installScopedObservers();scheduleRead(0)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installScopedObservers();scheduleRead(0);setTimeout(()=>mount('dom-late'),450)},{once:true});
+  else{installScopedObservers();scheduleRead(0);setTimeout(()=>mount('ready-late'),450)}
 
   setTimeout(()=>{
-    if(cfg)return;
+    if(cfg){mount('fallback-existing');return}
     cfg=defaultConfig();
     if(cfg){installScopedObservers();mount('fallback-timeout')}
   },1800);
