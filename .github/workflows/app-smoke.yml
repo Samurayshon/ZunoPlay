@@ -55,6 +55,7 @@ jobs:
             realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
             avatar-renderer.js avatar-home-sync.js avatar-asset-registry.js
             zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
+            zuno-launch-ready.js zuno-launch-ready.css
             zuno-game-progression.js zuno-game-progression.css
             zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg zuno-stack-pieces.webp
             zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
@@ -93,7 +94,6 @@ jobs:
             zuno-shell-runtime-v178.js zuno-home-shell-v179.css zuno-home-shell-v180.css zuno-shell-runtime-v180.js
             zuno-home-nav-v181.css zuno-global-bottom-nav-v182.css zuno-global-bottom-nav-v182.js
             zuno-global-shell-v184.css zuno-global-shell-v184.js zuno-reference-fixes-v177.css zuno-reference-fixes-v178.css
-            zuno-launch-ready.css zuno-launch-ready.js
           )
           for file in "${removed[@]}"; do if test -e "$file"; then echo "Removed prototype returned: $file"; exit 1; fi; done
           if grep -RIn --exclude-dir=.git --exclude='app-smoke.yml' 'sala-v200\.html' .; then echo 'Legacy sala-v200 route remains.'; exit 1; fi
