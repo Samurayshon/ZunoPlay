@@ -14,7 +14,6 @@
     if(!a)return b||null;if(!b)return a;
     const at=stamp(a),bt=stamp(b);
     if(at!==bt)return at>bt?a:b;
-    // Sem timestamp confiável, preserve o visual já salvo neste aparelho.
     return a;
   }
   function markReady(source='studio'){
@@ -28,7 +27,7 @@
     const display=clone(cfg);
     if(!display)return null;
     display.mode='Corpo inteiro';
-    display.selections={...(display.selections||{})};
+    display.selections={...(display.selections||{}),Mascote:0};
     return normalize(display)||display;
   }
   function miniDisplayConfig(){
