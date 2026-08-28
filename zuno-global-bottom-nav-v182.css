@@ -1,0 +1,48 @@
+/* ZunoPlay v182 — navegação inferior global canônica.
+   Fonte visual: barra #bottomNav da Home oficial. */
+:root{--znav182-bg:rgba(9,12,28,.985);--znav182-line:#29305a;--znav182-active:#7e2cff;--znav182-grad:linear-gradient(135deg,#843bff,#c33fff 58%,#31d3ff)}
+
+body.znav182-mounted{padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}
+body.znav182-mounted>.zglobal-nav-v182{
+  position:fixed!important;z-index:2147482000!important;
+  left:9px!important;right:9px!important;bottom:max(4px,env(safe-area-inset-bottom))!important;
+  width:auto!important;max-width:702px!important;height:68px!important;min-height:68px!important;margin:0 auto!important;
+  padding:5px 7px!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;align-items:center!important;
+  border:1px solid var(--znav182-line)!important;border-radius:19px!important;background:var(--znav182-bg)!important;
+  box-shadow:0 -8px 30px rgba(1,2,10,.40)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;
+  transform:none!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
+body.znav182-mounted>.zglobal-nav-v182 .nav-item{
+  height:54px!important;min-height:54px!important;margin:0!important;padding:0!important;
+  border:1px solid transparent!important;border-radius:15px!important;background:transparent!important;color:#fff!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;
+  font-size:8.8px!important;font-weight:800!important;line-height:1!important;text-decoration:none!important;box-shadow:none!important;
+  appearance:none!important;-webkit-appearance:none!important;-webkit-tap-highlight-color:transparent!important;
+}
+body.znav182-mounted>.zglobal-nav-v182 .nav-item b{font-size:19px!important;line-height:1!important;font-weight:500!important;color:#fff!important}
+body.znav182-mounted>.zglobal-nav-v182 .nav-item.active{background:linear-gradient(145deg,#2d144b,#17142d)!important;border-color:var(--znav182-active)!important;box-shadow:inset 0 0 15px rgba(143,48,255,.16)!important}
+body.znav182-mounted>.zglobal-nav-v182 .nav-main{
+  position:relative!important;width:61px!important;height:61px!important;min-width:61px!important;min-height:61px!important;
+  margin:-10px auto 0!important;padding:0!important;border-radius:50%!important;border:2px solid #b179ff!important;
+  background:var(--znav182-grad)!important;color:#fff!important;display:grid!important;place-items:center!important;
+  font-size:30px!important;font-weight:250!important;line-height:1!important;
+  box-shadow:0 0 0 4px rgba(70,34,143,.58),0 0 24px rgba(144,48,255,.70),0 0 27px rgba(33,207,255,.36)!important;
+  appearance:none!important;-webkit-appearance:none!important;-webkit-tap-highlight-color:transparent!important;
+}
+body.znav182-mounted>.zglobal-nav-v182 .nav-main:active{transform:scale(.95)!important}
+
+/* Garante que barras antigas nunca concorram com a global. */
+body.znav182-mounted>.bottom-nav:not(.zglobal-nav-v182),
+body.znav182-mounted>.zuno-global-nav:not(.zglobal-nav-v182),
+body.znav182-mounted>.zhome-bottom-nav:not(.zglobal-nav-v182){display:none!important}
+
+/* Reserva de conteúdo nas telas comuns. */
+body.znav182-mounted>.app,body.znav182-mounted>#app,body.znav182-mounted>main.app{padding-bottom:max(104px,calc(96px + env(safe-area-inset-bottom)))!important}
+
+@media(min-width:621px){
+  body.znav182-mounted>.zglobal-nav-v182{left:50%!important;right:auto!important;transform:translateX(-50%)!important;bottom:max(10px,env(safe-area-inset-bottom))!important;width:min(calc(100% - 28px),720px)!important;max-width:720px!important;height:88px!important;min-height:88px!important;padding:8px 9px!important;border-radius:29px!important;background:linear-gradient(180deg,rgba(11,14,34,.94),rgba(5,8,23,.985))!important}
+  body.znav182-mounted>.zglobal-nav-v182 .nav-item{height:64px!important;min-height:64px!important;border-radius:19px!important;gap:5px!important;font-size:10px!important;color:#aeb2ca!important}
+  body.znav182-mounted>.zglobal-nav-v182 .nav-item b{font-size:23px!important;color:currentColor!important}
+  body.znav182-mounted>.zglobal-nav-v182 .nav-item.active{color:#fff!important;border-color:rgba(142,44,255,.78)!important;background:radial-gradient(circle at 50% 10%,rgba(151,52,255,.22),transparent 62%),linear-gradient(180deg,rgba(77,31,147,.38),rgba(31,20,72,.38))!important;box-shadow:inset 0 0 24px rgba(155,61,255,.10),0 0 20px rgba(140,44,255,.18)!important}
+  body.znav182-mounted>.zglobal-nav-v182 .nav-main{width:68px!important;height:68px!important;min-width:68px!important;min-height:68px!important;margin:-17px auto 0!important;font-size:38px!important;border-color:rgba(217,126,255,.9)!important;background:linear-gradient(135deg,#7335ff 0%,#c43ef0 52%,#24d9ff 100%)!important;box-shadow:0 0 0 5px rgba(8,10,29,.96),0 0 30px rgba(155,61,255,.48),inset 0 0 22px rgba(255,255,255,.12)!important}
+}
