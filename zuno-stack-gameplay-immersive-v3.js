@@ -1,0 +1,7 @@
+(()=>{
+if(window.__ZUNO_STACK_IMMERSIVE_V3__)return;window.__ZUNO_STACK_IMMERSIVE_V3__=true;
+const $=s=>document.querySelector(s);
+function sync(){if(!document.body.classList.contains('zstack-playing'))return;const mission=$('.mission');if(!mission)return;const title=$('#missionTitle'),meter=$('#missionMeter'),tiles=parseInt($('#tilesLeft')?.textContent||'90',10)||90,matches=parseInt($('#matches')?.textContent||'0',10)||0,energy=($('#energyText')?.textContent||'0/5').trim();const removed=Math.max(0,90-tiles);if(title){if(removed<45)title.textContent=`Libere ${45-removed} peças`;else title.textContent=matches<8?`Forme ${8-matches} trios`:'Domine o Núcleo'}if(meter){meter.textContent=removed<45?`${removed}/45`:energy}mission.dataset.compact='1'}
+function boot(){const ids=['tilesLeft','matches','energyText','missionTitle','missionMeter'];ids.forEach(id=>{const e=document.getElementById(id);if(e)new MutationObserver(sync).observe(e,{childList:true,subtree:true,characterData:true})});new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});sync()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
