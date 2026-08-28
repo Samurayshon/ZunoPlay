@@ -1,42 +1,21 @@
 (()=>{
-  if(window.__ZUNOPLAY_GLOBAL_BOOT_V194__)return;
-  window.__ZUNOPLAY_GLOBAL_BOOT_V194__=true;
-
-  /* ZunoPlay — Fase 4: consolidação funcional + Sala de Voz oficial global. */
-  const V='194';
-  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  const isHome=page==='index.html';
-  const publicPages=new Set(['login.html','cadastro.html']);
-  const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
-  const profileAvatarPages=['perfil.html','avatar.html'];
-  const roomsPages=['salas.html','sala.html'];
-  const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
-  const roomGamePages=['zuno-core.html','zuno-stack.html'];
-  const ver=file=>file+(file.includes('?')?'&':'?')+'v='+V;
-  function loadStyle(id,file){if(document.getElementById(id))return;const link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=new URL(ver(file),location.href).href;document.head.appendChild(link)}
-  function loadScript(id,file,onload){const existing=document.getElementById(id);if(existing){onload?.();return}const s=document.createElement('script');s.id=id;s.src=new URL(ver(file),location.href).href;s.defer=true;if(onload)s.onload=onload;s.onerror=()=>console.error('ZunoPlay: falha ao carregar '+file);document.head.appendChild(s)}
-
-  if(!isHome&&!publicPages.has(page)){loadStyle('zunoplay-global-chrome-style','./zuno-global-chrome.css');loadScript('zunoplay-global-chrome-script','./zuno-global-chrome.js')}
-  if(socialPages.includes(page)){loadStyle('zunoplay-social-style','./zuno-social.css');loadScript('zunoplay-social-script','./zuno-social.js')}
-  if(gamePages.includes(page)){loadStyle('zunoplay-game-progression-style','./zuno-game-progression.css');loadScript('zunoplay-game-progression','./zuno-game-progression.js')}
-  if(!isHome&&!publicPages.has(page)&&page!=='sala.html')loadStyle('zunoplay-ui-components','./zuno-ui-components.css');
-  if(profileAvatarPages.includes(page)){loadStyle('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');loadScript('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js')}
-  if(page==='sala.html'){
-    loadStyle('zunoplay-room-stage5','./zuno-room-experience.css');loadStyle('zunoplay-room-fit','./zuno-room-fit.css');loadStyle('zunoplay-room-extras','./zuno-room-extras.css');
-    loadScript('zunoplay-room-experience-stage5','./zuno-room-experience.js');loadScript('zunoplay-room-voice','./voz-sala.js');loadScript('zunoplay-room-session-guard','./room-session-guard.js');
-    loadScript('zunoplay-room-connection-fix','./zuno-room-connection-fix.js');
-  }else if(roomGamePages.includes(page))loadScript('zunoplay-room-game-return','./zuno-room-game-return.js');
-  if(roomsPages.includes(page)){loadStyle('zunoplay-rooms-stage6-style','./zuno-rooms-stage6.css');loadScript('zunoplay-rooms-stage6-script','./zuno-rooms-stage6.js')}
-  if(gamePages.includes(page)){loadStyle('zunoplay-games-stage7-style','./zuno-games-stage7.css');loadScript('zunoplay-games-stage7-script','./zuno-games-stage7.js')}
-  if(!publicPages.has(page)){loadStyle('zunoplay-final-audit-style','./zuno-final-audit.css');loadScript('zunoplay-final-audit-script','./zuno-final-audit.js')}
-
-  loadScript('zunoplay-realtime-global','./realtime-global.js');
-  loadScript('zunoplay-avatar-renderer','./avatar-renderer.js',()=>loadScript('zunoplay-avatar-home-sync','./avatar-home-sync.js'));
-  if(!publicPages.has(page))loadScript('zunoplay-integration-phase4','./zuno-integration-phase4.js');
-
-  /* Layout oficial global das salas de voz: sempre carregado por último em sala.html. */
-  if(page==='sala.html'){
-    loadStyle('zunoplay-voice-room-official-style','./zuno-voice-room-official.css');
-    loadScript('zunoplay-voice-room-official-script','./zuno-voice-room-official.js');
-  }
+if(window.__ZUNOPLAY_GLOBAL_BOOT_V195__)return;window.__ZUNOPLAY_GLOBAL_BOOT_V195__=true;
+const V='195',page=(location.pathname.split('/').pop()||'index.html').toLowerCase(),home=page==='index.html',pub=new Set(['login.html','cadastro.html']),social=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'],profile=['perfil.html','avatar.html'],rooms=['salas.html','sala.html'],games=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'],roomGames=['zuno-core.html','zuno-stack.html'];
+const ver=f=>f+(f.includes('?')?'&':'?')+'v='+V;
+function css(id,f){if(document.getElementById(id))return;const l=document.createElement('link');l.id=id;l.rel='stylesheet';l.href=new URL(ver(f),location.href).href;document.head.appendChild(l)}
+function js(id,f,done){const old=document.getElementById(id);if(old){if(old.dataset.loaded==='1')done?.();else if(done)old.addEventListener('load',done,{once:true});return}const s=document.createElement('script');s.id=id;s.src=new URL(ver(f),location.href).href;s.defer=true;s.onload=()=>{s.dataset.loaded='1';done?.()};s.onerror=()=>console.error('ZunoPlay: falha ao carregar '+f);document.head.appendChild(s)}
+if(!home&&!pub.has(page)){css('zunoplay-global-chrome-style','./zuno-global-chrome.css');js('zunoplay-global-chrome-script','./zuno-global-chrome.js')}
+if(social.includes(page)){css('zunoplay-social-style','./zuno-social.css');js('zunoplay-social-script','./zuno-social.js')}
+if(games.includes(page)){css('zunoplay-game-progression-style','./zuno-game-progression.css');js('zunoplay-game-progression','./zuno-game-progression.js')}
+if(!home&&!pub.has(page)&&page!=='sala.html')css('zunoplay-ui-components','./zuno-ui-components.css');
+if(profile.includes(page)){css('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');js('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js')}
+if(page==='sala.html'){
+ css('zunoplay-room-stage5','./zuno-room-experience.css');css('zunoplay-room-fit','./zuno-room-fit.css');css('zunoplay-room-extras','./zuno-room-extras.css');
+ js('zunoplay-realtime-global','./realtime-global.js',()=>{js('zunoplay-room-session-guard','./room-session-guard.js');js('zunoplay-room-connection-fix','./zuno-room-connection-fix.js');js('zunoplay-room-experience-stage5','./zuno-room-experience.js');js('zunoplay-room-voice','./voz-sala.js')});
+}else{js('zunoplay-realtime-global','./realtime-global.js');if(roomGames.includes(page))js('zunoplay-room-game-return','./zuno-room-game-return.js')}
+if(rooms.includes(page)){css('zunoplay-rooms-stage6-style','./zuno-rooms-stage6.css');js('zunoplay-rooms-stage6-script','./zuno-rooms-stage6.js')}
+if(games.includes(page)){css('zunoplay-games-stage7-style','./zuno-games-stage7.css');js('zunoplay-games-stage7-script','./zuno-games-stage7.js')}
+if(!pub.has(page)){css('zunoplay-final-audit-style','./zuno-final-audit.css');js('zunoplay-final-audit-script','./zuno-final-audit.js')}
+js('zunoplay-avatar-renderer','./avatar-renderer.js',()=>js('zunoplay-avatar-home-sync','./avatar-home-sync.js'));if(!pub.has(page))js('zunoplay-integration-phase4','./zuno-integration-phase4.js');
+if(page==='sala.html'){css('zunoplay-voice-room-official-style','./zuno-voice-room-official.css');js('zunoplay-voice-room-official-script','./zuno-voice-room-official.js')}
 })();
