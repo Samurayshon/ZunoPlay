@@ -1,6 +1,6 @@
 (()=>{
-  if(window.__ZUNO_AVATAR_STUDIO_COMMAND_HIERARCHY_V173__)return;
-  window.__ZUNO_AVATAR_STUDIO_COMMAND_HIERARCHY_V173__=1;
+  if(window.__ZUNO_AVATAR_STUDIO_COMMAND_HIERARCHY_V174__)return;
+  window.__ZUNO_AVATAR_STUDIO_COMMAND_HIERARCHY_V174__=1;
   if((location.pathname.split('/').pop()||'').toLowerCase()!=='avatar.html')return;
 
   const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)];
@@ -65,6 +65,40 @@
     if(img)img.alt='Vista traseira do avatar';
   }
 
+  function installNoBodyControls(){
+    qa('.studio-subtab[data-cat="Base"]').forEach(el=>el.remove());
+    const sub=q('.studio-subtabs');
+    if(sub){
+      sub.setAttribute('aria-label','Partes do avatar: Rosto, Cabelo, Roupas e Calçados');
+      sub.style.setProperty('grid-template-columns','repeat(4,minmax(0,1fr))','important');
+    }
+    const cat=currentCat();
+    const panel=q('.panel');
+    if(panel){
+      if(cat==='Base'){
+        panel.dataset.zunoBodyControlsRemoved='1';
+        panel.style.setProperty('display','none','important');
+      }else if(panel.dataset.zunoBodyControlsRemoved==='1'){
+        panel.style.removeProperty('display');
+      }
+    }
+    const random=q('.studio-random');
+    if(random&&random.dataset.zunoNoBodySkin!=='1'){
+      random.dataset.zunoNoBodySkin='1';
+      random.onclick=()=>{
+        try{
+          if(typeof state==='undefined')return;
+          if(typeof push==='function')push();
+          state.selections.Acessórios=Math.floor(Math.random()*4);
+          state.selections.Mascote=Math.floor(Math.random()*4);
+          state.selections.Efeitos=Math.floor(Math.random()*4);
+          state.colors.roupa=Math.floor(Math.random()*7);
+          if(typeof renderAll==='function')renderAll();
+        }catch(_){}
+      };
+    }
+  }
+
   function syncHierarchy(){
     const tabs=qa('#tabs .tab');
     tabs.forEach(normalizeTab);
@@ -82,9 +116,8 @@
       rail.style.removeProperty('visibility');
       rail.setAttribute('aria-label','Categorias principais: Avatar, Acessórios, Auras e Mascotes');
     }
-    const sub=q('.studio-subtabs');
-    if(sub)sub.setAttribute('aria-label','Partes do avatar: Corpo, Rosto, Cabelo, Roupas e Calçados');
     syncPreviewLabel();
+    installNoBodyControls();
   }
 
   function mount(){
