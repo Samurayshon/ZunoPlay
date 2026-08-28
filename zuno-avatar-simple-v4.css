@@ -1,0 +1,61 @@
+/* ZunoPlay Avatar Studio Simple v4 — layout compactado para mobile */
+@media (max-width:520px){
+  body.zuno-avatar-simple .avatar-simple-app{
+    padding:10px 10px calc(78px + env(safe-area-inset-bottom))!important;
+    min-height:auto!important;
+  }
+  .avatar-simple-intro{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:8px!important;
+    margin:0 2px 8px!important;
+    align-items:end!important;
+  }
+  .avatar-simple-intro h1{font-size:19px!important;line-height:1.05!important}
+  .avatar-simple-intro p{margin-top:4px!important;font-size:9.5px!important;line-height:1.3!important;max-width:255px!important}
+  .avatar-simple-badge{padding:5px 8px!important;font-size:7.5px!important}
+
+  .avatar-choice-grid{gap:7px!important;margin-bottom:8px!important}
+  .avatar-choice{
+    height:82px!important;
+    min-height:82px!important;
+    grid-template-columns:43px minmax(0,1fr)!important;
+    padding:4px 25px 4px 5px!important;
+    gap:5px!important;
+    border-radius:16px!important;
+  }
+  .avatar-choice img{width:43px!important;height:70px!important}
+  .avatar-choice-copy strong{font-size:12px!important}
+  .avatar-choice-copy span{font-size:8px!important;margin-top:3px!important}
+  .avatar-choice-check{width:19px!important;height:19px!important;right:6px!important;top:6px!important}
+
+  .avatar-stage-card{height:276px!important;border-radius:19px!important}
+  .avatar-stage-title{top:11px!important;left:12px!important;font-size:9px!important}
+  .avatar-stage-img{top:17px!important;width:min(68%,205px)!important;height:228px!important}
+  .avatar-stage-ring{width:184px!important;height:184px!important;top:54%!important}
+  .avatar-stage-ring::before{width:148px!important;height:148px!important}
+  .avatar-stage-ring::after{width:112px!important;height:112px!important}
+  .avatar-stage-platform{bottom:11px!important;width:168px!important;height:43px!important}
+
+  .avatar-simple-section{margin-top:8px!important;padding:8px!important;border-radius:17px!important}
+  .avatar-simple-section-head{margin-bottom:6px!important}
+  .avatar-simple-section-head h2{font-size:14px!important}
+  .avatar-simple-section-head span{font-size:8.5px!important}
+  .mascot-grid{gap:5px!important}
+  .mascot-option{height:52px!important;border-radius:12px!important;gap:3px!important}
+  .mascot-icon{width:24px!important;height:24px!important;border-radius:8px!important;font-size:12px!important}
+  .mascot-option span:last-child{font-size:7px!important}
+
+  .avatar-save{height:45px!important;margin-top:8px!important;border-radius:15px!important;font-size:12px!important}
+  .avatar-status{min-height:12px!important;margin-top:4px!important;font-size:8px!important}
+}
+
+@media (max-width:380px){
+  .avatar-simple-intro{grid-template-columns:1fr!important}
+  .avatar-simple-badge{justify-self:start!important}
+  .avatar-stage-card{height:262px!important}
+  .avatar-stage-img{height:216px!important}
+  .avatar-stage-ring{width:174px!important;height:174px!important}
+  .avatar-stage-platform{width:158px!important}
+  .avatar-choice-copy span{display:none!important}
+  .avatar-simple-section-head span{max-width:150px!important;text-align:right!important}
+}
