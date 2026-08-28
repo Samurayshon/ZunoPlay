@@ -1,0 +1,27 @@
+(()=>{
+if(window.__ZUNO_STACK_RELAY_ADVANCED__)return;window.__ZUNO_STACK_RELAY_ADVANCED__=true;
+const $=s=>document.querySelector(s),roomId=new URLSearchParams(location.search).get('room')||sessionStorage.getItem('zunoplay_room_id')||'';
+const relay=$('.relay'),slots=$('#relaySlots'),tray=$('#tray');if(!relay||!slots||!tray)return;
+let channel=null,user=null,me='Você',slotMeta=[null,null,null],log=[],lastSlots=[],busy=false;
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function playerName(){return $('.mate.me .mate-copy b')?.textContent?.trim()||'Você'}
+function pieceLabel(el){return el?.querySelector('.tiny,.zsp-relay-piece small,.label')?.textContent?.trim()||'peça'}
+function ensureUI(){
+ if(!$('#zraActivity')){const box=document.createElement('div');box.id='zraActivity';box.className='zra-activity';box.innerHTML='<div class="zra-head"><b>ATIVIDADE DA EQUIPE</b><span id="zraStatus">Relay local</span></div><div id="zraFeed" class="zra-feed"><span class="zra-empty">As ações do Relay aparecem aqui.</span></div>';relay.appendChild(box)}
+ renderMeta();renderFeed();
+}
+function renderMeta(){const buttons=[...slots.querySelectorAll('.relay-slot')];buttons.forEach((b,i)=>{b.querySelector('.zra-owner')?.remove();const m=slotMeta[i];if(!m||!b.classList.contains('filled'))return;const tag=document.createElement('span');tag.className='zra-owner';tag.textContent=m.actor===me?'VOCÊ':m.actor;tag.title=`Enviado por ${m.actor}`;b.appendChild(tag)})}
+function renderFeed(){const f=$('#zraFeed');if(!f)return;if(!log.length){f.innerHTML='<span class="zra-empty">As ações do Relay aparecem aqui.</span>';return}f.innerHTML=log.slice(-3).reverse().map(x=>`<div class="zra-row ${x.remote?'remote':'local'}"><span>${x.action==='send'?'↗':'↙'}</span><b>${esc(x.actor)}</b><small>${x.action==='send'?'enviou':'pegou'} ${esc(x.piece)}</small></div>`).join('')}
+function flashSlot(i){const b=slots.querySelectorAll('.relay-slot')[i];if(!b)return;b.classList.remove('zra-flash');void b.offsetWidth;b.classList.add('zra-flash');setTimeout(()=>b.classList.remove('zra-flash'),650)}
+function markMate(name){[...document.querySelectorAll('#team .mate')].forEach(m=>{const n=m.querySelector('.mate-copy b')?.textContent?.trim();if(n!==name)return;m.classList.add('zra-active-mate');setTimeout(()=>m.classList.remove('zra-active-mate'),900)})}
+function addActivity(data,remote=false){const actor=data.actor||'Jogador',action=data.action==='take'?'take':'send',piece=data.piece||'peça',slot=Math.max(0,Math.min(2,Number(data.slot)||0));if(action==='send')slotMeta[slot]={actor,piece,at:Date.now()};else slotMeta[slot]=null;log.push({actor,action,piece,slot,remote,at:Date.now()});if(log.length>8)log=log.slice(-8);renderMeta();renderFeed();flashSlot(slot);markMate(actor)}
+function state(){return [...slots.querySelectorAll('.relay-slot')].map(b=>({filled:b.classList.contains('filled'),piece:pieceLabel(b)}))}
+function sendActivity(data){addActivity(data,false);if(!channel||!roomId)return;channel.send({type:'broadcast',event:'stack_relay_activity',payload:{...data,from:user?.id||'',at:Date.now()}}).catch(()=>{})}
+function afterLocal(kind,before,pieceHint){requestAnimationFrame(()=>{const after=state();let slot=-1;if(kind==='send')slot=after.findIndex((x,i)=>x.filled&&!before[i]?.filled);else slot=before.findIndex((x,i)=>x.filled&&!after[i]?.filled);if(slot<0)return;sendActivity({actor:me,action:kind,slot,piece:kind==='send'?(after[slot]?.piece||pieceHint):(before[slot]?.piece||pieceHint)})})}
+tray.addEventListener('click',e=>{const btn=e.target.closest('[data-tray]');if(!btn||busy)return;busy=true;me=playerName();const before=state(),piece=pieceLabel(btn);afterLocal('send',before,piece);setTimeout(()=>busy=false,80)},true);
+slots.addEventListener('click',e=>{const btn=e.target.closest('[data-relay]');if(!btn||!btn.classList.contains('filled')||busy)return;busy=true;me=playerName();const before=state(),piece=pieceLabel(btn);afterLocal('take',before,piece);setTimeout(()=>busy=false,80)},true);
+const obs=new MutationObserver(()=>{lastSlots=state();renderMeta()});obs.observe(slots,{childList:true,subtree:true});
+async function connect(){ensureUI();if(!roomId){$('#zraStatus').textContent='Relay local';return}for(let i=0;i<45&&!window.ZunoSupabaseClient;i++)await new Promise(r=>setTimeout(r,100));const sb=window.ZunoSupabaseClient;if(!sb)return;try{const r=await sb.auth.getUser();user=r.data?.user||null}catch(_){}me=playerName();try{await sb.realtime.setAuth?.()}catch(_){}channel=sb.channel(`room:${roomId}:games`,{config:{private:true,broadcast:{self:false}}}).on('broadcast',{event:'stack_relay_activity'},({payload})=>{if(!payload||payload.from&&payload.from===user?.id)return;addActivity(payload,true)}).subscribe(status=>{const s=$('#zraStatus');if(!s)return;s.textContent=status==='SUBSCRIBED'?'● AO VIVO':status==='CHANNEL_ERROR'||status==='TIMED_OUT'?'reconectando…':'conectando…';s.classList.toggle('live',status==='SUBSCRIBED')})}
+window.addEventListener('pagehide',()=>{try{if(channel&&window.ZunoSupabaseClient)window.ZunoSupabaseClient.removeChannel(channel)}catch(_){}});
+lastSlots=state();connect();
+})();
