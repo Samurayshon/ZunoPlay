@@ -1,7 +1,7 @@
 (()=>{
   if(window.__ZUNOPLAY_CURRENT_INTERFACE__)return;
   window.__ZUNOPLAY_CURRENT_INTERFACE__=true;
-  const VERSION='173';
+  const VERSION='177';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const pageClass={
     'index.html':'zuno-official-home',
@@ -73,9 +73,9 @@
     if(document.getElementById(id))return;
     const script=document.createElement('script');script.id=id;script.src=asset(file);script.async=true;script.onerror=()=>console.error(errorText);document.head.appendChild(script);
   }
-  function installV173Refresh(){
+  function installV177Refresh(){
     if(!('serviceWorker' in navigator))return;
-    const key='zuno-sw-v173-reloaded';
+    const key='zuno-sw-v177-reloaded';
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(sessionStorage.getItem(key)==='1')return;
       sessionStorage.setItem(key,'1');
@@ -111,6 +111,7 @@
       injectStyle('zunoplay-stack-premium-pieces-style','./zuno-stack-pieces.css');
       injectScript('zunoplay-stack-premium-pieces-script','./zuno-stack-pieces.js','ZunoPlay: peças premium do Zuno Stack indisponíveis');
     }
+    if(page!=='index.html')injectStyle('zunoplay-reference-fixes-v177','./zuno-reference-fixes-v177.css');
   }
   function mount(){
     applyBodyIdentity();
@@ -119,7 +120,7 @@
     if(page==='avatar.html')decorateAvatar();
     if(page==='comunidades.html')decorateCommunities();
     if(page==='jogos.html')decorateGames();
-    installV173Refresh();
+    installV177Refresh();
     loadCurrentModules();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
