@@ -1,0 +1,46 @@
+/* ZunoPlay — Etapa 5/8: Perfil + Avatar Studio alinhados à Home aprovada */
+body.zuno-profile-stage5,body.zuno-avatar-stage5{--z5-panel:linear-gradient(145deg,#080b1c,#060817);--z5-line:#2e345b;--z5-muted:#a8abbd;--z5-grad:linear-gradient(135deg,#843bff 0%,#c33fff 58%,#31d3ff 100%)}
+
+/* PERFIL */
+body.zuno-profile-stage5 .app{width:min(100%,560px)!important;max-width:560px!important;padding:8px 14px 112px!important}
+body.zuno-profile-stage5 #content{width:100%!important}
+body.zuno-profile-stage5 #content>.card{position:relative!important;overflow:hidden!important;border-radius:24px!important;padding:18px!important;background:radial-gradient(circle at 78% 8%,rgba(130,55,255,.16),transparent 30%),var(--z5-panel)!important;border:1px solid var(--z5-line)!important;box-shadow:inset 0 0 38px rgba(82,52,170,.05),0 18px 50px rgba(0,0,0,.22)!important}
+body.zuno-profile-stage5 #content>.card:before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(126,63,255,.55),rgba(49,211,255,.28),transparent);pointer-events:none}
+body.zuno-profile-stage5 .zuno-profile-avatar-official{width:118px!important;height:118px!important;margin:2px auto 10px!important;border-radius:50%!important;display:grid!important;place-items:center!important;overflow:hidden!important;border:2px solid #8b3dff!important;background:radial-gradient(circle,#151b39,#080b1c)!important;box-shadow:0 0 0 5px rgba(139,61,255,.08),0 0 34px rgba(139,61,255,.28)!important}
+body.zuno-profile-stage5 .zuno-profile-avatar-official img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:50% 12%!important}
+body.zuno-profile-stage5 .name{font-size:25px!important;line-height:1.05!important;margin:0!important;color:#fff!important;text-align:center!important;font-weight:950!important;letter-spacing:-.7px!important}
+body.zuno-profile-stage5 .email{margin:6px 0 17px!important;color:var(--z5-muted)!important;font-size:11px!important}
+body.zuno-profile-stage5 .stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-bottom:13px!important}
+body.zuno-profile-stage5 .stat{min-width:0!important;border-radius:16px!important;padding:12px 7px!important;background:linear-gradient(145deg,#0b1023,#080b18)!important;border:1px solid #29305a!important}
+body.zuno-profile-stage5 .stat b{font-size:17px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.zuno-profile-stage5 .stat small{display:block!important;margin-top:3px!important;font-size:9px!important;color:#8f94aa!important}
+body.zuno-profile-stage5 .avatarBtn{height:48px!important;margin-top:2px!important;border-radius:15px!important;background:var(--z5-grad)!important;box-shadow:0 0 22px rgba(139,61,255,.20)!important}
+body.zuno-profile-stage5 .field{margin-top:12px!important}
+body.zuno-profile-stage5 .field label{color:#c4c7d7!important;font-size:11px!important;font-weight:800!important}
+body.zuno-profile-stage5 .field input,body.zuno-profile-stage5 .field textarea{border-radius:14px!important;background:#090d1d!important;border:1px solid #29305a!important}
+body.zuno-profile-stage5 #save{height:48px!important;border-radius:15px!important;background:var(--z5-grad)!important}
+body.zuno-profile-stage5 .msg{min-height:18px!important;color:#82eeb4!important}
+body.zuno-profile-stage5 .social-stage4-mark{display:none!important}
+
+/* AVATAR STUDIO */
+body.zuno-avatar-stage5 .avatar-simple-app{width:min(100%,560px)!important;max-width:560px!important;margin:0 auto!important;padding:7px 14px calc(112px + env(safe-area-inset-bottom))!important;background:transparent!important}
+body.zuno-avatar-stage5 .avatar-simple-intro{display:block!important;margin:0 2px 12px!important}
+body.zuno-avatar-stage5 .avatar-simple-intro h1{font-size:25px!important;line-height:1.05!important;font-weight:950!important;letter-spacing:-.7px!important}
+body.zuno-avatar-stage5 .avatar-simple-intro p{font-size:11px!important;line-height:1.45!important;color:var(--z5-muted)!important;max-width:450px!important}
+body.zuno-avatar-stage5 .avatar-simple-badge{display:inline-flex!important;margin-top:9px!important;padding:6px 9px!important;border-radius:999px!important;background:rgba(9,15,31,.78)!important;border:1px solid rgba(49,211,255,.25)!important;color:#64e5ff!important;font-size:8px!important}
+body.zuno-avatar-stage5 .avatar-choice-grid{gap:8px!important;margin-bottom:10px!important}
+body.zuno-avatar-stage5 .avatar-choice{height:98px!important;border-radius:18px!important;background:linear-gradient(155deg,#10152d,#080b1c)!important;border:1px solid #2e345b!important}
+body.zuno-avatar-stage5 .avatar-choice.is-active{border-color:#7e2cff!important;box-shadow:inset 0 0 18px rgba(143,48,255,.13),0 0 20px rgba(49,211,255,.08)!important}
+body.zuno-avatar-stage5 .avatar-choice-check{background:#0b1021!important;border-color:#353b64!important}
+body.zuno-avatar-stage5 .avatar-choice.is-active .avatar-choice-check{background:var(--z5-grad)!important}
+body.zuno-avatar-stage5 .avatar-stage-card{height:326px!important;border-radius:22px!important;border:1px solid #2e345b!important;background:radial-gradient(circle at 50% 53%,rgba(99,44,224,.32),transparent 34%),linear-gradient(180deg,#0a1024,#050817 72%,#08091b)!important;box-shadow:inset 0 0 60px rgba(74,32,170,.12),0 18px 44px rgba(0,0,0,.28)!important}
+body.zuno-avatar-stage5 .avatar-stage-title{color:#66e8ff!important}
+body.zuno-avatar-stage5 .avatar-simple-section{border-radius:18px!important;border:1px solid #2e345b!important;background:var(--z5-panel)!important;padding:11px!important}
+body.zuno-avatar-stage5 .avatar-simple-section-head h2{font-size:14px!important;font-weight:900!important}
+body.zuno-avatar-stage5 .avatar-simple-section-head span{color:#9297ad!important}
+body.zuno-avatar-stage5 .mascot-option{border-radius:13px!important;border:1px solid #29305a!important;background:linear-gradient(145deg,#10152a,#080c1b)!important}
+body.zuno-avatar-stage5 .mascot-option.is-active{border-color:#7e2cff!important;box-shadow:inset 0 0 16px rgba(139,61,255,.15)!important}
+body.zuno-avatar-stage5 .avatar-save{height:50px!important;border-radius:16px!important;background:var(--z5-grad)!important;box-shadow:0 0 24px rgba(139,61,255,.25),0 0 18px rgba(49,211,255,.08)!important}
+body.zuno-avatar-stage5 .avatar-status{font-size:9px!important;color:#858b9f!important}
+
+@media(max-width:380px){body.zuno-profile-stage5 .stats{gap:6px!important}body.zuno-profile-stage5 .stat{padding:10px 5px!important}body.zuno-avatar-stage5 .avatar-simple-app{padding-left:10px!important;padding-right:10px!important}body.zuno-avatar-stage5 .avatar-stage-card{height:306px!important}}
