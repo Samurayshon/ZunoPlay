@@ -107,6 +107,29 @@ jobs:
               print('\n'.join(sorted(set(missing))))
               sys.exit(1)
           PY
+      - name: Validate local static asset targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,sys
+          asset=re.compile(r'["\']((?:\.?\.?/)?[^"\']+\.(?:js|css|svg|webp|png|json))(?:\?[^"\']*)?["\']',re.I)
+          missing=[]
+          for path in list(pathlib.Path('.').glob('*.html'))+list(pathlib.Path('.').glob('*.js')):
+              text=path.read_text(encoding='utf-8')
+              for raw in asset.findall(text):
+                  if raw.startswith(('http://','https://','data:')):
+                      continue
+                  target=raw.split('?',1)[0].lstrip('./')
+                  if not target or '${' in target or '`' in target:
+                      continue
+                  if not pathlib.Path(target).exists():
+                      missing.append(f'{path}: {raw}')
+          if missing:
+              print('Broken local static asset targets:')
+              print('\n'.join(sorted(set(missing))))
+              sys.exit(1)
+          PY
       - name: Validate frontend generation consistency
         shell: bash
         run: |
@@ -170,6 +193,18 @@ jobs:
           grep -q "const roomGamePages=\['zuno-core.html','zuno-stack.html'\]" nav.js
           if grep -Eq "desafio\.html|partida\.html|reflexo\.html|precisao\.html|arena\.html|zuno-caos\.html" room-session-guard.js; then
             echo 'Legacy room-game page returned to session guard.'
+            exit 1
+          fi
+      - name: Guard audited regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -q 'display_name' zuno-core.js; then
+            echo 'Removed profiles.display_name reference returned to Zuno Core.'
+            exit 1
+          fi
+          if grep -RIn --exclude-dir=.git --exclude='core-smoke.yml' 'avatar-surface-sync\.js' .; then
+            echo 'Deleted avatar-surface-sync.js reference returned.'
             exit 1
           fi
       - name: Guard against accidental service-role secrets
