@@ -1,13 +1,10 @@
-# ZunoPlay Games — Reset do catálogo
+# ZunoPlay Games — catálogo atual
 
-Status: **Zuno Stack é o único jogo ativo**.
+Status: **Zuno Stack é o único jogo ativo do ZunoPlay.**
 
 ## Decisão de produto
 
-O catálogo anterior foi removido para concentrar desenvolvimento e qualidade em duas frentes:
-
-1. evoluir o **Zuno Stack**;
-2. criar um novo **jogo carro-chefe exclusivo do ZunoPlay**.
+O catálogo foi simplificado para concentrar desenvolvimento, estabilidade e qualidade exclusivamente no **Zuno Stack**.
 
 ## Jogo ativo
 
@@ -15,6 +12,7 @@ O catálogo anterior foi removido para concentrar desenvolvimento e qualidade em
 
 ## Jogos removidos do produto
 
+- protótipo Zuno Core e todas as suas versões Alpha
 - Zuno Pulse
 - Zuno Rush
 - Zuno Caos
@@ -24,32 +22,25 @@ O catálogo anterior foi removido para concentrar desenvolvimento e qualidade em
 - Arena Zuno
 - Partida Zuno multiplayer
 
-As páginas e scripts desses jogos não devem existir no catálogo nem voltar como dependências críticas no CI.
+As páginas, scripts e rotas desses jogos não fazem parte do produto ativo e não devem voltar como dependências críticas.
 
 ## Infraestrutura preservada
 
 - Hub de Jogos (`jogos.html`)
-- Zuno Stack
-- Histórico de resultados
+- Zuno Stack e peças premium
+- Histórico de resultados, exibindo o ciclo ativo
 - Progressão geral de Jogos
 - Retorno para a sala
 - Supabase/Auth/Realtime compartilhados pelo restante do ZunoPlay
 - PWA/cache
 - CI/smoke checks
 
-O botão **Jogar** dentro de uma sala passa a abrir diretamente o Zuno Stack enquanto o novo carro-chefe não é definido.
+O botão **Jogar** dentro de uma sala abre diretamente o Zuno Stack.
 
-## Dados legados
+## Dados históricos
 
-Nenhum dado histórico do banco foi apagado nesta limpeza. Resultados antigos podem permanecer no histórico para testes e rastreabilidade. Qualquer exclusão destrutiva de dados deve acontecer somente por decisão explícita separada.
+A limpeza do produto não executa exclusão destrutiva no banco. Registros históricos podem permanecer armazenados para rastreabilidade, mas jogos removidos não aparecem no catálogo ativo.
 
 ## Próximo marco
 
-Definir o conceito do novo jogo carro-chefe antes de iniciar implementação. A escolha deve priorizar:
-
-- identidade própria do ZunoPlay;
-- multiplayer/social como parte central da mecânica;
-- partidas curtas e alta rejogabilidade;
-- mobile-first;
-- visual forte e reconhecível;
-- potencial para temporadas, progressão e cosméticos sem pay-to-win.
+Evoluir o **Zuno Stack** como a única experiência de jogo do ZunoPlay, priorizando estabilidade mobile, qualidade visual, cooperação, progressão e multiplayer real quando a base estiver suficientemente estável.

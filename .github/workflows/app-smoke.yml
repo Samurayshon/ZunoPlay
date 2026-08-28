@@ -1,0 +1,171 @@
+name: ZunoPlay App Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -maxdepth 1 -name '*.js' -print0 | while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done
+
+      - name: Validate inline application scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,subprocess,tempfile,sys
+          files=['index.html','login.html','cadastro.html','jogos.html','zuno-stack.html','historico.html']
+          failed=False
+          for name in files:
+              text=pathlib.Path(name).read_text(encoding='utf-8')
+              blocks=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>',text,re.I|re.S)
+              for i,code in enumerate(blocks,1):
+                  with tempfile.NamedTemporaryFile('w',suffix='.js',encoding='utf-8',delete=False) as f:
+                      f.write(code); tmp=f.name
+                  result=subprocess.run(['node','--check',tmp],capture_output=True,text=True)
+                  if result.returncode:
+                      failed=True; print(f'Inline JS error: {name} block {i}'); print(result.stderr)
+          if failed: sys.exit(1)
+          PY
+
+      - name: Validate critical application files
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            index.html home-app.js login.html cadastro.html perfil.html avatar.html amigos.html
+            conversas.html notificacoes.html comunidades.html salas.html sala.html
+            jogos.html zuno-stack.html historico.html manifest.json sw.js nav.js
+            realtime-global.js presenca-sala.js voz-sala.js room-session-guard.js
+            avatar-renderer.js avatar-home-sync.js avatar-asset-registry.js
+            zuno-current.js zuno-current-base.css zuno-current-stage.css zuno-current-home.js zuno-current-home.css zuno-current-home-mobile.css zuno-current-home-stats.css
+            zuno-game-progression.js zuno-game-progression.css
+            zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-pieces.svg zuno-stack-pieces.webp
+            zuno-room-experience.js zuno-voice-feedback.js zuno-room-profile-card.js
+            zuno-directed-gifts.js zuno-room-games.js zuno-room-game-return.js zuno-room-moderation.js
+          )
+          for file in "${required[@]}"; do test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }; done
+
+      - name: Guard Stack-only game catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          removed=(
+            zuno-core.html zuno-core.js zuno-core-v04.js zuno-core-v05.js zuno-core-v05-engine.js
+            desafio.html partida.html reflexo.html precisao.html arena.html zuno-caos.html zuno-rush.html zuno-pulse.html
+            zuno-caos.js zuno-rush.js zuno-pulse.js zuno-mini-games.js zuno-mini-games.css zuno-game-social.js zuno-game-social.css zuno-stack-catalog.js
+          )
+          for file in "${removed[@]}"; do if test -e "$file"; then echo "Removed game file returned: $file"; exit 1; fi; done
+          grep -q 'Zuno Stack' jogos.html
+          if grep -Eq 'Zuno Core|Zuno Pulse|Zuno Rush|Zuno Caos|Reflexo Zuno|Precisão Zuno|Arena Zuno|Partida Zuno' jogos.html; then
+            echo 'Removed game returned to catalog.'; exit 1
+          fi
+
+      - name: Validate local navigation targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,sys
+          patterns=[re.compile(r'href\s*=\s*["\']([^"\']+)',re.I),re.compile(r'location\.href\s*=\s*["\']([^"\']+)',re.I),re.compile(r'location\.replace\(\s*["\']([^"\']+)',re.I),re.compile(r'new\s+URL\(\s*["\']([^"\']+)',re.I)]
+          missing=[]
+          for path in list(pathlib.Path('.').glob('*.html'))+list(pathlib.Path('.').glob('*.js')):
+              text=path.read_text(encoding='utf-8')
+              for pattern in patterns:
+                  for raw in pattern.findall(text):
+                      target=raw.split('#',1)[0].split('?',1)[0].strip()
+                      if not target or target.startswith(('http:','https:','mailto:','javascript:','#','data:')): continue
+                      if target.endswith('.html') and not pathlib.Path(target).exists(): missing.append(f'{path}: {target}')
+          if missing:
+              print('Broken local navigation targets:'); print('\n'.join(sorted(set(missing)))); sys.exit(1)
+          PY
+
+      - name: Validate local static asset targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,sys
+          asset=re.compile(r'["\']((?:\.?\.?/)?[^"\']+\.(?:js|css|svg|webp|png|json))(?:\?[^"\']*)?["\']',re.I)
+          missing=[]
+          for path in list(pathlib.Path('.').glob('*.html'))+list(pathlib.Path('.').glob('*.js')):
+              text=path.read_text(encoding='utf-8')
+              for raw in asset.findall(text):
+                  if raw.startswith(('http://','https://','data:')): continue
+                  target=raw.split('?',1)[0].lstrip('./')
+                  if not target or '${' in target or '`' in target: continue
+                  if not pathlib.Path(target).exists(): missing.append(f'{path}: {raw}')
+          if missing:
+              print('Broken local static asset targets:'); print('\n'.join(sorted(set(missing)))); sys.exit(1)
+          PY
+
+      - name: Validate frontend generation consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re
+          nav=pathlib.Path('nav.js').read_text(encoding='utf-8'); sw=pathlib.Path('sw.js').read_text(encoding='utf-8')
+          m=re.search(r"const\s+V='(\d+)'",nav); s=re.search(r'CACHE_NAME\s*=\s*"zunoplay-v(\d+)"',sw)
+          if not m: raise SystemExit('Missing frontend generation marker in nav.js')
+          if not s: raise SystemExit('Missing cache generation marker in sw.js')
+          if m.group(1)!=s.group(1): raise SystemExit(f'Frontend generation mismatch: nav={m.group(1)} sw={s.group(1)}')
+          if f'__ZUNOPLAY_GLOBAL_BOOT_V{m.group(1)}__' not in nav: raise SystemExit('Global boot marker mismatch')
+          print('Frontend generation consistent: v'+m.group(1))
+          PY
+
+      - name: Validate Zuno Stack premium pieces
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root=ET.parse('zuno-stack-pieces.svg').getroot(); ids={el.attrib.get('id') for el in root.iter() if el.attrib.get('id')}
+          expected={f'piece-{name}' for name in ['pulse','core','nova','bolt','orb','prism','echo','flux','spark','link','comet','shift']}
+          missing=expected-ids
+          if missing: raise SystemExit('Missing premium pieces: '+', '.join(sorted(missing)))
+          print('Zuno Stack premium set OK: 12 pieces')
+          PY
+
+      - name: Guard current Home boot
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'data-zuno-home-boot="current-only"' index.html
+          grep -q 'data-zuno-avatar-system="studio"' index.html
+          if grep -q 'profile-avatar profile-fallback' index.html; then echo 'Legacy main-avatar fallback returned.'; exit 1; fi
+
+      - name: Guard Stack room-game integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'zuno-stack.html' room-session-guard.js
+          grep -q "roomGames=\['zuno-stack.html'\]" nav.js
+          grep -q "new URL('zuno-stack.html'" zuno-room-games.js
+          if grep -RIn --exclude-dir=.git --exclude='app-smoke.yml' -E 'zuno-core\.html|zuno-core-v0[45]|zuno-core\.js' .; then
+            echo 'Zuno Core reference remains in active application files.'; exit 1
+          fi
+
+      - name: Guard against accidental service-role secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='app-smoke.yml' -E 'service_role|sb_secret_' .; then
+            echo 'Potential server secret found in repository.'; exit 1
+          fi
