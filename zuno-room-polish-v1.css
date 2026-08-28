@@ -1,0 +1,41 @@
+/* ZunoPlay Room Polish v1 — acabamento final da sala */
+body.zuno-page-sala .header{height:66px!important;flex-basis:66px!important;padding:9px 12px!important;gap:10px!important}
+body.zuno-page-sala .header .icon-btn{width:40px!important;height:40px!important;min-width:40px!important;border-radius:14px!important}
+body.zuno-page-sala .room-title{font-size:16.5px!important}
+body.zuno-page-sala .top-avatar{width:28px!important;height:28px!important}
+body.zuno-page-sala .people-count{min-width:28px!important;height:28px!important;padding:0 7px!important;font-size:9px!important}
+body.zuno-page-sala .stage-shell{height:326px!important;padding-top:8px!important}
+body.zuno-page-sala .stage-head{height:28px!important;min-height:28px!important}
+body.zuno-page-sala .room-stage{grid-template-rows:repeat(2,114px)!important;padding-top:6px!important;gap:2px!important}
+body.zuno-page-sala .chat-section{top:312px!important}
+body.zuno-page-sala .chat-head{height:26px!important;min-height:26px!important;flex-basis:26px!important;padding:0 16px!important}
+body.zuno-page-sala .chat-title{font-size:9px!important;color:#9aa3ba!important}
+body.zuno-page-sala .room-stage:before{width:146px!important;height:146px!important;top:46%!important;color:rgba(205,163,255,.78)!important;border-color:rgba(161,86,255,.28)!important;background:radial-gradient(circle,rgba(150,68,255,.23),rgba(83,45,170,.075) 49%,transparent 70%)!important;box-shadow:0 0 0 24px rgba(108,48,224,.025),0 0 62px rgba(133,63,255,.19)!important}
+body.zuno-page-sala .room-stage:after{top:46%!important;width:62px!important;height:24px!important;opacity:.76!important;filter:drop-shadow(0 0 9px rgba(128,72,255,.34))}
+body.zuno-page-sala.zuno-room-speaking .room-stage:before{animation:zunoPulseAmbient 1.15s ease-in-out infinite!important}
+body.zuno-page-sala.zuno-room-speaking .room-stage:after{animation:zunoPulseWave .72s ease-in-out infinite!important}
+@keyframes zunoPulseAmbient{50%{transform:translate(-50%,-50%) scale(1.055);box-shadow:0 0 0 29px rgba(108,48,224,.035),0 0 82px rgba(57,208,255,.22)}}
+@keyframes zunoPulseWave{50%{transform:translate(-50%,-50%) scaleX(1.12) scaleY(1.16);opacity:1}}
+body.zuno-page-sala .seat-empty{opacity:.82!important}
+body.zuno-page-sala .empty-circle{width:51px!important;height:51px!important;border-width:1px!important;color:#65708c!important;font-size:24px!important;background:rgba(8,13,31,.11)!important}
+body.zuno-page-sala .empty-label{font-size:7.5px!important;margin-top:4px!important;color:#626b83!important}
+body.zuno-page-sala .avatar-wrap{width:62px!important;height:62px!important}
+body.zuno-page-sala .avatar{width:57px!important;height:57px!important}
+body.zuno-page-sala .avatar-name{font-size:10px!important;margin-top:5px!important}
+body.zuno-page-sala .avatar-role{font-size:7.8px!important}
+body.zuno-page-sala .presence-status{font-size:7.6px!important}
+/* O estado da voz passa a ser comunicado pelo proprio botao de microfone. */
+body.zuno-page-sala .zuno-compact-voice{display:none!important}
+body.zuno-page-sala .composer-wrap{padding-top:5px!important;background:linear-gradient(180deg,rgba(3,5,13,.25),rgba(3,5,13,.995) 28%)!important;box-shadow:0 -14px 34px rgba(0,0,0,.22)!important}
+body.zuno-page-sala .composer-wrap:before{top:-14px!important;height:16px!important;opacity:.72!important}
+body.zuno-page-sala .composer{height:44px!important}
+body.zuno-page-sala .chat-input{background:rgba(9,14,31,.9)!important;border-color:rgba(90,106,166,.34)!important}
+body.zuno-page-sala .chat-input:focus{border-color:rgba(154,74,255,.82)!important;background:rgba(12,17,38,.98)!important;box-shadow:0 0 0 3px rgba(139,61,255,.09),0 0 18px rgba(139,61,255,.08)!important}
+body.zuno-page-sala .zuno-composer-actions button{color:#9da7c2!important;background:rgba(12,17,37,.88)!important;border-color:rgba(83,96,151,.34)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important}
+body.zuno-page-sala .zuno-composer-actions button:active{background:linear-gradient(145deg,rgba(73,31,125,.66),rgba(21,18,45,.88))!important;color:#fff!important;box-shadow:inset 0 0 0 1px rgba(139,61,255,.6)!important}
+body.zuno-page-sala #emojiButton{position:relative!important}
+body.zuno-page-sala #emojiButton:after{content:'';position:absolute;right:5px;bottom:5px;width:5px;height:5px;border-radius:50%;background:#65708c;box-shadow:0 0 0 2px rgba(3,6,17,.9)}
+body.zuno-page-sala #emojiButton.mic-active:after{background:#36e996;box-shadow:0 0 8px rgba(54,233,150,.8),0 0 0 2px rgba(3,6,17,.9)}
+body.zuno-page-sala #emojiButton.mic-muted:after{background:#ff809e;box-shadow:0 0 7px rgba(255,128,158,.6),0 0 0 2px rgba(3,6,17,.9)}
+body.zuno-page-sala .messages>.empty{margin:auto 0 4px!important;padding:9px 11px!important;max-width:70%!important;background:rgba(10,15,32,.42)!important;border-color:rgba(122,137,194,.11)!important;font-size:9.5px!important}
+@media(max-width:430px){body.zuno-page-sala .header{height:64px!important;flex-basis:64px!important}.zuno-page-sala .stage-shell{height:316px!important}.zuno-page-sala .room-stage{grid-template-rows:repeat(2,110px)!important}.zuno-page-sala .chat-section{top:302px!important}.zuno-page-sala .room-stage:before{width:138px!important;height:138px!important}.zuno-page-sala .empty-circle{width:49px!important;height:49px!important}.zuno-page-sala .avatar-wrap{width:60px!important;height:60px!important}.zuno-page-sala .avatar{width:55px!important;height:55px!important}}
