@@ -4,7 +4,7 @@
 
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-  const ASSET_VERSION='180';
+  const ASSET_VERSION='181';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const socialPages=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'];
   const gamePages=['jogos.html','historico.html','zuno-core.html','zuno-stack.html'];
@@ -57,6 +57,7 @@
   function loadNavigation(){
     if(page==='index.html')return;
     loadStyle('zunoplay-navigation-style','./zuno-navigation.css');
+    loadStyle('zunoplay-home-nav-v181','./zuno-home-nav-v181.css');
     loadScript('zunoplay-navigation-stage3','./zuno-navigation.js','ZunoPlay: navegação global indisponível');
   }
   function loadSocialSystem(){if(!socialPages.includes(page))return;loadStyle('zunoplay-social-style','./zuno-social.css');loadScript('zunoplay-social-stage4','./zuno-social.js','ZunoPlay: sistema social indisponível')}
