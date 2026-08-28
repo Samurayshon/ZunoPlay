@@ -1,6 +1,6 @@
 (()=>{
-if(window.__ZUNOPLAY_GLOBAL_BOOT_V256__)return;window.__ZUNOPLAY_GLOBAL_BOOT_V256__=true;
-const V='256',page=(location.pathname.split('/').pop()||'index.html').toLowerCase(),home=page==='index.html',pub=new Set(['login.html','cadastro.html','entrada.html']),social=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'],profile=['perfil.html','avatar.html'],rooms=['salas.html','sala.html'],games=['jogos.html','historico.html','zuno-stack.html'],roomGames=['zuno-stack.html'];
+if(window.__ZUNOPLAY_GLOBAL_BOOT_V257__)return;window.__ZUNOPLAY_GLOBAL_BOOT_V257__=true;
+const V='257',page=(location.pathname.split('/').pop()||'index.html').toLowerCase(),home=page==='index.html',pub=new Set(['login.html','cadastro.html','entrada.html']),social=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'],profile=['perfil.html','avatar.html'],rooms=['salas.html','sala.html'],games=['jogos.html','historico.html','zuno-stack.html'],roomGames=['zuno-stack.html'];
 const ver=f=>f+(f.includes('?')?'&':'?')+'v='+V;
 function css(id,f){if(document.getElementById(id))return;const l=document.createElement('link');l.id=id;l.rel='stylesheet';l.href=new URL(ver(f),location.href).href;document.head.appendChild(l)}
 function js(id,f,done){const old=document.getElementById(id);if(old){if(old.dataset.loaded==='1')done?.();else if(done)old.addEventListener('load',done,{once:true});return}const s=document.createElement('script');s.id=id;s.src=new URL(ver(f),location.href).href;s.defer=true;s.onload=()=>{s.dataset.loaded='1';done?.()};s.onerror=()=>console.error('ZunoPlay: falha ao carregar '+f);document.head.appendChild(s)}
