@@ -4,6 +4,8 @@
   const $=id=>document.getElementById(id),q=new URLSearchParams(location.search);
   const roomId=q.get('room')||q.get('room_id')||q.get('id')||sessionStorage.getItem('zunoplay_room_id');
   let recovering=false;
+  function loadScript(src,id){return new Promise((resolve,reject)=>{if(id&&document.getElementById(id))return resolve();const s=document.createElement('script');if(id)s.id=id;s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('Falha ao carregar '+src));document.head.appendChild(s)})}
+  loadScript('avatar-renderer.js?v=21','zuno-room-avatar-renderer').then(()=>loadScript('zuno-room-avatar-sync-v1.js?v=1','zuno-room-avatar-sync')).catch(e=>console.warn('Avatar oficial da sala',e));
   function status(text,error=false){const el=$('roomStatus');if(el){el.textContent='● '+text;el.style.color=error?'#ff8aa6':'#31dd7b'}}
   function fail(text){status('Falha ao iniciar',true);const t=$('roomTitle');if(t)t.textContent='Não foi possível abrir a sala';const m=$('messages');if(m)m.innerHTML='<div class="error">'+text+'<br><button id="zunoRoomRetry" type="button" style="margin-top:12px;padding:10px 16px;border:0;border-radius:12px;background:#7c3aed;color:#fff;font-weight:800">Tentar novamente</button></div>';setTimeout(()=>{$('zunoRoomRetry')?.addEventListener('click',()=>{sessionStorage.removeItem('zuno_room_recovery_'+roomId);const u=new URL(location.href);u.searchParams.set('_room_retry',Date.now());location.replace(u.href)})},0)}
   async function recover(){
