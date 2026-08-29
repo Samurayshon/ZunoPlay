@@ -32,6 +32,7 @@ jobs:
             zuno-stack-pressure-official.css zuno-stack-pressure-official.js zuno-stack-touchfix-official.css
             zuno-stack-rhythm-official.css zuno-stack-rhythm-official.js zuno-stack-settings-official.css zuno-stack-settings-official.js
             zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js zuno-stack-final-compose.css
+            zuno-stack-final-polish.css
           )
           for file in "${files[@]}"; do test -s "$file" || { echo "Missing Stack runtime file: $file"; exit 1; }; done
           for file in zuno-stack*.js; do node --check "$file"; done
@@ -59,6 +60,7 @@ jobs:
             zuno-stack-pressure-official.css zuno-stack-pressure-official.js zuno-stack-touchfix-official.css
             zuno-stack-rhythm-official.css zuno-stack-rhythm-official.js zuno-stack-settings-official.css zuno-stack-settings-official.js
             zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js zuno-stack-final-compose.css
+            zuno-stack-final-polish.css
           )
           for asset in "${official[@]}"; do grep -q "$asset" zuno-stack-performance-official.js || { echo "Stack official composition asset missing: $asset"; exit 1; }; done
           ! grep -q 'zuno-stack-final-compose.js' zuno-stack-performance-official.js || { echo 'Obsolete final-compose JS returned to boot graph'; exit 1; }
