@@ -73,12 +73,18 @@
     if(patched)rerenderStudio();
   }
 
+  let raf=0;
+  function schedule(){
+    if(raf)return;
+    raf=requestAnimationFrame(()=>{raf=0;run()});
+  }
+
   window.ZunoMascotOfficial={version:1,asset:abs(),makeHead,refresh:run};
-  window.addEventListener('zuno:brand-ready',()=>setTimeout(run,0));
-  window.addEventListener('zuno-avatar-renderer-ready',()=>setTimeout(run,0));
+  window.addEventListener('zuno:brand-ready',schedule);
+  window.addEventListener('zuno-avatar-renderer-ready',schedule);
   document.addEventListener('click',e=>{if(e.target.closest?.('.mascot-option'))setTimeout(syncStudioMascot,0)},true);
-  const mo=new MutationObserver(()=>{replaceBrandHeads();ensureStudioMascot()});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});run()},{once:true});
-  else{mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});run()}
+  const mo=new MutationObserver(schedule);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{mo.observe(document.body,{childList:true,subtree:true});run()},{once:true});
+  else{mo.observe(document.body,{childList:true,subtree:true});run()}
   window.dispatchEvent(new CustomEvent('zuno:mascot-ready',{detail:{version:1}}));
 })();
