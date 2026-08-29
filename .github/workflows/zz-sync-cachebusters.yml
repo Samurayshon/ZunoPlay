@@ -1,0 +1,44 @@
+name: One-shot frontend generation sync
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Align core runtime cachebusters
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re
+          nav=pathlib.Path('nav.js').read_text(encoding='utf-8')
+          m=re.search(r"const V='(\d+)'",nav)
+          if not m: raise SystemExit('nav generation not found')
+          v=m.group(1)
+          files=['amigos.html','avatar.html','conversas.html','index.html','jogos.html','momentos.html','notificacoes.html','perfil.html','zuno-stack.html']
+          pat=re.compile(r'(?P<asset>nav\.js|home-app\.js|zuno-current\.js)\?v=\d+')
+          changed=[]
+          for name in files:
+              p=pathlib.Path(name)
+              before=p.read_text(encoding='utf-8')
+              after=pat.sub(lambda x:f"{x.group('asset')}?v={v}",before)
+              if after!=before:
+                  p.write_text(after,encoding='utf-8')
+                  changed.append(name)
+          print('generation',v,'changed',','.join(changed) or 'none')
+          PY
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'ZunoPlay QA'
+          git config user.email 'actions@users.noreply.github.com'
+          git add amigos.html avatar.html conversas.html index.html jogos.html momentos.html notificacoes.html perfil.html zuno-stack.html
+          git commit -m 'fix(runtime): align frontend cachebusters v310'
+          git push origin HEAD:main
