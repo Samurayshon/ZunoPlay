@@ -21,6 +21,7 @@ function loadOfficialModules(){
  loadCss('zuno-stack-relay-v2-official.css?v=435e897','zsoRelayV2');loadJs('zuno-stack-relay-v2-official.js?v=e035b07','zsoRelayV2');
  loadJs('zuno-stack-systems-official.js?v=43fac9d','zsoSystems');
  loadJs('zuno-stack-authority-official.js?v=12a3532','zsoAuthority');
+ loadJs('zuno-stack-relay-authority.js?v=1','zsoRelayAuthority');
  loadJs('zuno-stack-integrity-official.js?v=673cd4f','zsoIntegrity');
 }
 loadOfficialModules();document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));
