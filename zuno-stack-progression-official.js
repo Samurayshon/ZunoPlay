@@ -1,0 +1,12 @@
+(()=>{
+if(window.__ZUNO_STACK_PROGRESSION_OFFICIAL__)return;window.__ZUNO_STACK_PROGRESSION_OFFICIAL__=true;
+const $=s=>document.querySelector(s);
+let lastOverlay='',recorded=false;
+function load(){try{return JSON.parse(localStorage.getItem('zuno_stack_progression_official')||'{}')}catch(_){return{}}}
+function save(s){localStorage.setItem('zuno_stack_progression_official',JSON.stringify(s))}
+function score(){return parseInt($('#score')?.textContent||'0',10)||0}function matches(){return parseInt($('#matches')?.textContent||'0',10)||0}
+function result(){const ov=$('#overlay');if(!ov||ov.classList.contains('hide')){recorded=false;return}const title=($('#overlayTitle')?.textContent||'').trim();if(!title||/Zuno Stack/i.test(title)||title===lastOverlay)return;lastOverlay=title;if(recorded)return;recorded=true;const s=load();s.games=(s.games||0)+1;s.wins=(s.wins||0)+(/vit|venceu|stack completo|conclu/i.test(title)?1:0);s.bestScore=Math.max(s.bestScore||0,score());s.bestMatches=Math.max(s.bestMatches||0,matches());s.xp=(s.xp||0)+Math.max(20,Math.round(score()/50)+matches()*8);s.level=Math.max(1,Math.floor((s.xp||0)/500)+1);s.streak=/vit|venceu|stack completo|conclu/i.test(title)?(s.streak||0)+1:0;s.updatedAt=new Date().toISOString();const achievements=new Set(s.achievements||[]);if(matches()>=8)achievements.add('Oito Trios');if(score()>=5000)achievements.add('Stack 5K');if((s.wins||0)>=10)achievements.add('10 Vitórias');if((s.streak||0)>=3)achievements.add('Sequência x3');s.achievements=[...achievements];save(s);decorate(s)}
+function decorate(s){const grid=$('#resultGrid');if(!grid)return;grid.hidden=false;grid.querySelectorAll('[data-zso-progress]').forEach(e=>e.remove());const items=[`XP ${s.xp||0}`,`Nível ${s.level||1}`,`Vitórias ${s.wins||0}`];items.forEach(t=>{const d=document.createElement('div');d.className='feature';d.dataset.zsoProgress='1';d.textContent=t;grid.appendChild(d)})}
+function boot(){new MutationObserver(()=>requestAnimationFrame(result)).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});setInterval(result,800)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
