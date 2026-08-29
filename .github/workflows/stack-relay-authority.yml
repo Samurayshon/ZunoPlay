@@ -21,7 +21,9 @@ jobs:
           node --check zuno-stack-relay-authority.js
           node --check zuno-stack-performance-official.js
           f='supabase/migrations/20260829223500_server_authoritative_zuno_stack_relay.sql'
+          hard='supabase/migrations/20260829223600_block_legacy_zuno_stack_relay_requests.sql'
           test -s "$f"
+          test -s "$hard"
           grep -q 'stack_server_relay_required' "$f"
           grep -q "new.state->'engine'->'relay' is distinct from old.state->'engine'->'relay'" "$f"
           grep -q 'for update' "$f"
@@ -35,9 +37,14 @@ jobs:
           grep -q 'revoke all on function public.zuno_stack_relay_send' "$f"
           grep -q 'revoke all on function public.zuno_stack_relay_take' "$f"
           grep -q 'to authenticated, service_role' "$f"
+          grep -q 'stack_server_relay_required' "$hard"
+          grep -q "v_kind in ('relay_send','relay_take')" "$hard"
+          grep -q 'action_request_relay_send' "$hard"
+          grep -q 'action_request_relay_take' "$hard"
           grep -q "sb.rpc(fn,args)" zuno-stack-relay-authority.js
           grep -q "closest('\[data-tray\]')" zuno-stack-relay-authority.js
           grep -q "closest('\[data-relay\]')" zuno-stack-relay-authority.js
+          grep -q 'event.isTrusted===false\|e.isTrusted===false' zuno-stack-relay-authority.js
           grep -q "stopImmediatePropagation" zuno-stack-relay-authority.js
           grep -q "authority.reconcile" zuno-stack-relay-authority.js
           grep -q "zuno-stack-relay-authority.js" zuno-stack-performance-official.js
