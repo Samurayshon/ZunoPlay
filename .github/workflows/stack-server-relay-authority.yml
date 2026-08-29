@@ -1,0 +1,49 @@
+name: Zuno Stack Server Relay Authority
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  relay-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard server authoritative Relay
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-relay-v2-official.js
+          f='supabase/migrations/20260829223500_server_authoritative_zuno_stack_relay.sql'
+          hard='supabase/migrations/20260829223600_block_legacy_zuno_stack_relay_requests.sql'
+          test -s "$f"
+          test -s "$hard"
+          grep -q 'zuno_stack_relay_send' "$f"
+          grep -q 'zuno_stack_relay_take' "$f"
+          grep -q 'stack_relay_full' "$f"
+          grep -q 'stack_relay_empty' "$f"
+          grep -q 'stack_action_id_conflict' "$f"
+          grep -q 'revision_conflict' "$f"
+          grep -q 'for update' "$f"
+          grep -q 'security definer' "$f"
+          grep -q "set search_path = ''" "$f"
+          grep -q 'revoke all on function public.zuno_stack_relay_send' "$f"
+          grep -q 'revoke all on function public.zuno_stack_relay_take' "$f"
+          grep -q 'grant execute on function public.zuno_stack_relay_send' "$f"
+          grep -q 'grant execute on function public.zuno_stack_relay_take' "$f"
+          grep -q 'stack_server_relay_required' "$hard"
+          grep -q "v_kind in ('relay_send','relay_take')" "$hard"
+          grep -q 'action_request_relay_send' "$hard"
+          grep -q 'action_request_relay_take' "$hard"
+          grep -q "sb.rpc(fn,args)" zuno-stack-relay-v2-official.js
+          grep -q "'zuno_stack_relay_send'" zuno-stack-relay-v2-official.js
+          grep -q "'zuno_stack_relay_take'" zuno-stack-relay-v2-official.js
+          grep -q "document.addEventListener('click',serverRelayCapture,true)" zuno-stack-relay-v2-official.js
+          grep -q "target.closest('\[data-tray\]')" zuno-stack-relay-v2-official.js
+          grep -q "target.closest('\[data-relay\]')" zuno-stack-relay-v2-official.js
+          grep -q 'event.isTrusted===false' zuno-stack-relay-v2-official.js
