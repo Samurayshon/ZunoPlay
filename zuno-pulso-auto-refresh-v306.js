@@ -4,7 +4,7 @@ const $=(s,r=document)=>r.querySelector(s);
 let timer=null,channel=null,lastRefresh=0;
 const active=()=>$('.zm-tab[data-view="plaza"]')?.classList.contains('active');
 const benignEmpty=()=>{const box=$('#zp304Panel .zp304-empty');return !!box&&/Seu Para você está começando|Nada em destaque por enquanto/i.test(box.textContent||'')};
-function cleanEmpty(){if(!benignEmpty())return;const btn=$('#zp304Retry');if(btn)btn.remove();let note=$('#zpAutoRefreshNote');if(!note){note=document.createElement('small');note.id='zpAutoRefreshNote';note.textContent='Atualiza automaticamente quando surgirem novidades.';$('#zp304Panel .zp304-empty')?.appendChild(note)}}
+function cleanEmpty(){if(!benignEmpty())return;$('#zp304Retry')?.remove();$('#zpAutoRefreshNote')?.remove()}
 function refresh(reason='timer'){
  if(!active()||document.hidden)return;
  const now=Date.now();if(now-lastRefresh<5000)return;lastRefresh=now;
