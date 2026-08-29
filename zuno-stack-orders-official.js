@@ -1,6 +1,0 @@
-(()=>{
-if(window.__ZUNO_STACK_ORDERS_OFFICIAL__)return;window.__ZUNO_STACK_ORDERS_OFFICIAL__=true;
-const $=s=>document.querySelector(s);let last='';
-function render(){const sys=window.ZunoStackSystems,state=sys?.getState?.(),o=state?.order,box=$('.zso-order');if(!o||!box)return;const sig=JSON.stringify(o);if(sig===last)return;last=sig;box.dataset.orderOfficial='2';box.dataset.orderState=o.done>=o.goal?'complete':o.done/o.goal>=.66?'near':'active';const small=box.querySelector('small');if(small)small.textContent='PEDIDO PULSE';const b=box.querySelector('b');if(b){let label=o.label||o.type||'Objetivo';if(o.kind==='family'){const tile=(window.ZunoStackCore?.getState?.().tiles||[]).find(t=>t.type===o.type);const el=tile?document.querySelector(`[data-tile="${CSS.escape(tile.id)}"]`):null;label=el?.getAttribute('aria-label')||label}b.innerHTML=`<span class="zso-order-symbol">${o.kind==='relay'?'🤝':o.kind==='trios'?'✦':'⚡'}</span> <span class="zso-order-name">${label}</span> <strong class="zso-order-progress">${o.done}/${o.goal}</strong>`}const bar=box.querySelector('em');if(bar)bar.style.width=(Math.min(1,o.done/o.goal)*100)+'%'}
-setInterval(render,350);document.addEventListener('zuno:stack-systems-ready',render);render();
-})();
