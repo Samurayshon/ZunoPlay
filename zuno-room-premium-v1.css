@@ -1,0 +1,53 @@
+/* ZunoPlay Room Premium v1 — integrated social voice experience */
+body.zuno-page-sala{--zr-bg:#000;--zr-surface:#090a0d;--zr-surface2:#0d0f14;--zr-line:#1b1e25;--zr-text:#f7f7f8;--zr-muted:#777c88;--zr-purple:#8b42e8;--zr-green:#31df8c;background:#000!important}
+body.zuno-page-sala .app{background:#000!important;max-width:760px!important}
+/* header becomes part of the room, not a website navbar */
+body.zuno-page-sala .header{height:104px!important;min-height:104px!important;padding:22px 20px 12px!important;gap:12px!important;background:linear-gradient(180deg,#050506 0%,#000 100%)!important;border-bottom:1px solid #111318!important}
+body.zuno-page-sala .header .icon-btn:first-child{width:34px!important;height:34px!important;border:0!important;background:transparent!important;border-radius:12px!important;font-size:28px!important;color:#e8e9ed!important;padding:0!important}
+body.zuno-page-sala .header-info{align-self:center!important}
+body.zuno-page-sala .room-title{font-size:20px!important;line-height:24px!important;font-weight:850!important;letter-spacing:-.45px!important}
+body.zuno-page-sala .room-meta{margin-top:5px!important;gap:6px!important;font-size:10px!important;color:#747985!important;align-items:center!important}
+body.zuno-page-sala .room-status{font-weight:800!important;color:#3ce493!important}
+body.zuno-page-sala #peopleButton{width:48px!important;height:42px!important;border-radius:15px!important;border:1px solid #1c202a!important;background:#080a0f!important;color:#e9eaf0!important;font-size:17px!important}
+body.zuno-page-sala .top-people{margin-right:2px!important}
+body.zuno-page-sala .top-avatar{width:35px!important;height:35px!important;border:1px solid #292e3b!important;background:#0b0d13!important}
+/* stage: compact social table, no prototype labels */
+body.zuno-page-sala .stage-shell{padding:14px 18px 8px!important;background:#000!important}
+body.zuno-page-sala .room-stage{min-height:250px!important;height:250px!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:repeat(2,112px)!important;gap:10px 4px!important;padding:0!important;background:#000!important;align-content:start!important}
+body.zuno-page-sala .avatar-slot,body.zuno-page-sala .seat-empty{min-height:100px!important;justify-content:flex-start!important;padding-top:4px!important}
+body.zuno-page-sala .avatar-wrap{width:62px!important;height:62px!important}
+body.zuno-page-sala .avatar{width:58px!important;height:58px!important;border:1.5px solid #343844!important;background:#0a0c11!important;box-shadow:0 8px 24px rgba(0,0,0,.34)!important}
+body.zuno-page-sala .avatar-slot.me .avatar{border-color:#36e293!important;box-shadow:0 0 0 3px rgba(54,226,147,.09),0 0 22px rgba(54,226,147,.13)!important}
+body.zuno-page-sala .avatar-name{margin-top:5px!important;max-width:76px!important;font-size:10px!important;line-height:12px!important;color:#f0f1f3!important}
+body.zuno-page-sala .avatar-role{display:none!important}
+body.zuno-page-sala .presence-status{font-size:7px!important;line-height:9px!important;margin-top:2px!important;color:#45db93!important}
+body.zuno-page-sala .empty-circle{width:54px!important;height:54px!important;border:1px solid #242833!important;background:radial-gradient(circle at 50% 35%,#0c0e14,#050609 70%)!important;color:#555b69!important;font-size:25px!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.01)!important;transition:.18s ease!important}
+body.zuno-page-sala .seat-empty:hover .empty-circle,body.zuno-page-sala .seat-empty:active .empty-circle{border-color:#4e376d!important;background:#0d0912!important;color:#a174d7!important}
+body.zuno-page-sala .empty-label{display:none!important}
+body.zuno-page-sala .mic-dot{width:18px!important;height:18px!important;left:-1px!important;bottom:1px!important;border:1px solid #292d36!important;background:#11141a!important;font-size:9px!important}
+/* chat is now the living center of the room */
+body.zuno-page-sala .main{min-height:0!important;overflow:hidden!important}
+body.zuno-page-sala .chat-section{position:relative!important;min-height:0!important;flex:1!important;margin:0!important;border-top:1px solid #0e1014!important;background:linear-gradient(180deg,#020203 0%,#000 18%)!important;overflow:hidden!important}
+body.zuno-page-sala .chat-section:before{content:'Conversa';display:block;padding:11px 22px 3px;color:#555a65;font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+body.zuno-page-sala .messages{min-height:0!important;height:100%!important;overflow-y:auto!important;padding:8px 20px 24px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;overscroll-behavior:contain!important}
+body.zuno-page-sala .empty{padding:18px 0!important;text-align:left!important;color:#555a65!important}
+body.zuno-page-sala .chat-row{width:max-content!important;max-width:84%!important;margin:3px 0!important;gap:8px!important;align-items:flex-end!important}
+body.zuno-page-sala .chat-row.me{margin-left:0!important;flex-direction:row!important}
+body.zuno-page-sala .chat-avatar{width:29px!important;height:29px!important;flex:0 0 29px!important;border:1px solid #242833!important;background:#090b10!important}
+body.zuno-page-sala .message-user{font-size:8px!important;line-height:10px!important;color:#8b809a!important;margin:0 4px 3px!important}
+body.zuno-page-sala .message{width:max-content!important;max-width:min(420px,72vw)!important;padding:8px 11px!important;border-radius:14px 14px 14px 5px!important;background:#111319!important;border:1px solid #20232b!important;color:#f3f4f6!important;box-shadow:0 5px 16px rgba(0,0,0,.14)!important}
+body.zuno-page-sala .chat-row.me .message{background:linear-gradient(135deg,#7130c1,#933de2)!important;border-color:#8d44d2!important}
+body.zuno-page-sala .message-text{font-size:13px!important;line-height:17px!important}
+body.zuno-page-sala .chat-row.zuno-grouped{margin-top:1px!important}
+/* dock: one coherent control surface */
+body.zuno-page-sala .composer-wrap{position:relative!important;flex:0 0 auto!important;padding:9px 14px calc(10px + env(safe-area-inset-bottom))!important;background:linear-gradient(180deg,rgba(0,0,0,.93),#000)!important;border-top:1px solid #14161b!important;box-shadow:0 -14px 30px rgba(0,0,0,.58)!important}
+body.zuno-page-sala .voice-dock{display:none!important}
+body.zuno-page-sala .composer{height:48px!important;min-height:48px!important;gap:7px!important;overflow:visible!important}
+body.zuno-page-sala .speaker,body.zuno-page-sala #emojiButton{width:44px!important;height:44px!important;min-width:44px!important;border-radius:15px!important;border:1px solid #222630!important;background:#090b10!important;color:#d8dbe2!important;box-shadow:none!important}
+body.zuno-page-sala .chat-form{min-width:0!important;display:flex!important;align-items:center!important;gap:7px!important}
+body.zuno-page-sala .chat-input{height:44px!important;min-width:90px!important;border-radius:16px!important;border:1px solid #20232a!important;background:#090a0d!important;color:#f5f5f6!important;padding:0 14px!important;font-size:13px!important}
+body.zuno-page-sala .chat-input:focus{outline:0!important;border-color:#4e386a!important;background:#0c0d11!important}
+body.zuno-page-sala .zuno-composer-actions{display:flex!important;gap:6px!important;flex:0 0 auto!important}
+body.zuno-page-sala .zuno-composer-actions button{width:40px!important;height:40px!important;min-width:40px!important;border-radius:13px!important;border:1px solid #1f2229!important;background:#07080b!important;color:#858b98!important}
+body.zuno-page-sala .send-button{width:42px!important;height:42px!important;min-width:42px!important;border-radius:14px!important;background:linear-gradient(135deg,#7434c8,#a13bea)!important}
+@media(max-width:430px){body.zuno-page-sala .header{padding-left:18px!important;padding-right:18px!important}body.zuno-page-sala .stage-shell{padding-left:10px!important;padding-right:10px!important}body.zuno-page-sala .room-stage{grid-template-rows:repeat(2,108px)!important;min-height:240px!important;height:240px!important}body.zuno-page-sala .avatar-wrap{width:57px!important;height:57px!important}body.zuno-page-sala .avatar{width:53px!important;height:53px!important}body.zuno-page-sala .empty-circle{width:50px!important;height:50px!important}body.zuno-page-sala .messages{padding-left:16px!important;padding-right:16px!important}body.zuno-page-sala .composer-wrap{padding-left:10px!important;padding-right:10px!important}body.zuno-page-sala .zuno-composer-actions{max-width:126px!important;overflow-x:auto!important;scrollbar-width:none!important}body.zuno-page-sala .zuno-composer-actions::-webkit-scrollbar{display:none!important}}
