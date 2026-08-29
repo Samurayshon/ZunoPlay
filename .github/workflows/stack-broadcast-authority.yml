@@ -20,9 +20,10 @@ jobs:
           set -euo pipefail
           node --check zuno-stack.js
           grep -q "function reconcileBroadcast" zuno-stack.js
-          grep -q "broadcast_stack_relay" zuno-stack.js
-          grep -q "broadcast_stack_win" zuno-stack.js
-          grep -q "broadcast_stack_boost" zuno-stack.js
+          grep -Fq "reconcileBroadcast('stack_relay'" zuno-stack.js
+          grep -Fq "reconcileBroadcast('stack_win'" zuno-stack.js
+          grep -Fq "reconcileBroadcast('stack_boost'" zuno-stack.js
+          grep -q "function renderAuthoritativeEnd" zuno-stack.js
           ! grep -Fq "relay=payload.relay.slice(0,3)" zuno-stack.js
           ! grep -Fq "score+=60" zuno-stack.js
           python3 - <<'PY'
