@@ -22,7 +22,4 @@ body.zstack-playing .zso-tactical-power{height:54px!important}
 /* todo o espaço que sobrar pertence ao tabuleiro */
 body.zstack-playing .board-wrap{min-height:0!important;height:100%!important;padding:0 8px!important}
 body.zstack-playing .board{height:100%!important;min-height:0!important;aspect-ratio:auto!important}
-/* Uma única fonte visual para a identidade das peças. O Core já define --piece-icon. */
-body.zstack-playing .zsp-art::after{display:grid!important}
-body.zstack-playing .zsf-piece-icon{display:none!important}
 @media(max-width:390px){body.zstack-playing .shell{height:calc(100dvh - 8px)!important;grid-template-rows:44px 61px minmax(0,1fr) 46px 60px 55px!important}.relay-slot{height:48px!important;min-height:48px!important}.zso-tactical-power{height:51px!important}}
