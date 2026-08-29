@@ -8,6 +8,7 @@
   let client=window.ZunoSupabaseClient||null;
   let globalPresence=null;
   let user=null;
+  let accessToken=null;
   let startPromise=null;
   let globalStatus='offline';
 
@@ -28,7 +29,19 @@
     if(!window.supabase?.createClient)return null;
     client=window.supabase.createClient(URL,KEY);
     window.ZunoSupabaseClient=client;
+    window.__zunoSupabaseClient=client;
     return client;
+  }
+
+  async function authenticateRealtime(sb){
+    const{data,error}=await sb.auth.getSession();
+    if(error)throw error;
+    const session=data?.session||null;
+    user=session?.user||null;
+    accessToken=session?.access_token||null;
+    if(!user||!accessToken)return null;
+    await sb.realtime.setAuth(accessToken);
+    return session;
   }
 
   async function removeScope(id,channel){
@@ -53,13 +66,11 @@
     startPromise=(async()=>{
       const sb=getClient();
       if(!sb){emit('error',new Error('Supabase indisponível'));return null}
-      const{data,error}=await sb.auth.getSession();
-      if(error){emit('error',error);return null}
-      user=data?.session?.user||null;
-      if(!user){globalStatus='offline';emit('auth:none',null);return null}
+      let session;
+      try{session=await authenticateRealtime(sb)}catch(error){emit('error',error);return null}
+      if(!session?.user){globalStatus='offline';emit('auth:none',null);return null}
       if(globalPresence)return user;
 
-      await sb.realtime.setAuth();
       globalPresence=sb.channel('zuno-global-presence',{config:{private:true,presence:{key:user.id}}});
       globalPresence
         .on('presence',{event:'sync'},()=>emit('presence:sync',globalPresence.presenceState()))
@@ -69,8 +80,14 @@
           emit('connection',status);
           if(status==='SUBSCRIBED'){
             globalStatus='online';
-            await globalPresence.track({user_id:user.id,status:'online',page:location.pathname.split('/').pop()||'index.html',at:new Date().toISOString()});
-            emit('ready',user);
+            try{
+              await globalPresence.track({user_id:user.id,status:'online',page:location.pathname.split('/').pop()||'index.html',at:new Date().toISOString()});
+              emit('ready',user);
+              emit('presence:sync',globalPresence.presenceState());
+            }catch(error){
+              globalStatus='offline';
+              emit('error',error);
+            }
           }
           if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')globalStatus='offline';
         });
@@ -98,7 +115,7 @@
       type:'presence',topic,channel,
       on(event,fn){channel.on('presence',{event},fn);return api},
       async subscribe(){
-        await sb.realtime.setAuth();
+        await authenticateRealtime(sb);
         return new Promise((resolve,reject)=>{
           channel.subscribe(async status=>{
             if(status==='SUBSCRIBED'){
@@ -131,7 +148,7 @@
       on(event,fn){channel.on('broadcast',{event},fn);return api},
       async subscribe(){
         if(subscribed)return api;
-        if(config.private)await sb.realtime.setAuth();
+        if(config.private)await authenticateRealtime(sb);
         return new Promise((resolve,reject)=>{
           channel.subscribe(status=>{
             if(status==='SUBSCRIBED'){subscribed=true;resolve(api)}
@@ -198,13 +215,20 @@
     sb.auth.onAuthStateChange(async(event,session)=>{
       if(event==='SIGNED_OUT'){
         user=null;
+        accessToken=null;
         await stopGlobalPresence();
         for(const scope of [...scopes.values()]){try{await scope.close?.()}catch(_){}}
         emit('auth:signed_out',null);
-      }else if(session?.user&&(!user||session.user.id!==user.id)){
+      }else if(session?.user){
+        const tokenChanged=session.access_token&&session.access_token!==accessToken;
+        const userChanged=!user||session.user.id!==user.id;
         user=session.user;
-        await stopGlobalPresence();
-        start().catch(error=>emit('error',error));
+        accessToken=session.access_token||accessToken;
+        if(tokenChanged)try{await sb.realtime.setAuth(accessToken)}catch(error){emit('error',error)}
+        if(userChanged){
+          await stopGlobalPresence();
+          start().catch(error=>emit('error',error));
+        }
       }
     });
   }
