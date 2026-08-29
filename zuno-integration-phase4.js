@@ -2,7 +2,7 @@
   if(window.__ZUNO_INTEGRATION_PHASE4__)return;
   window.__ZUNO_INTEGRATION_PHASE4__=true;
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  const protectedPages=new Set(['index.html','perfil.html','avatar.html','amigos.html','conversas.html','comunidades.html','notificacoes.html','salas.html','sala.html','jogos.html','historico.html','zuno-stack.html','momentos.html']);
+  const protectedPages=new Set(['index.html','perfil.html','avatar.html','amigos.html','conversas.html','comunidades.html','notificacoes.html','salas.html','sala.html','jogos.html','historico.html','zuno-stack.html','pulso.html']);
   const immersive=new Set(['sala.html','zuno-stack.html']);
   const state={page,auth:'pending',realtime:'pending',avatar:'pending',navigation:'pending',pulso:'pending',errors:[],warnings:[],checkedAt:null};
   const emit=()=>{state.checkedAt=new Date().toISOString();window.__ZUNO_INTEGRATION_STATUS__={...state,errors:[...state.errors],warnings:[...state.warnings]};window.dispatchEvent(new CustomEvent('zuno:integration-status',{detail:window.__ZUNO_INTEGRATION_STATUS__}))};
@@ -21,7 +21,7 @@
       const{data,error}=await sb.from('moments_posts').insert({user_id:session.user.id,content:clean,hashtags:normalized,visibility:visibility==='friends'?'friends':'public',source_type:sourceType,source_id:sourceId||null}).select().single();
       if(error)throw error;window.dispatchEvent(new CustomEvent('zuno:pulso-published',{detail:{post:data,source:sourceType}}));try{window.posthog?.capture?.('pulso_activity_publish',{source_type:sourceType,post_id:data.id})}catch(_){}return data;
     },
-    open(postId){location.href='momentos.html'+(postId?`?post=${encodeURIComponent(postId)}`:'')},
+    open(postId){location.href='pulso.html'+(postId?`?post=${encodeURIComponent(postId)}`:'')},
     shareGameResult(text,sourceId){return this.publishActivity({type:'game',text,sourceId,hashtags:['zunostack','jogos']})},
     shareRoomMoment(text,sourceId){return this.publishActivity({type:'room',text,sourceId,hashtags:['salas','aovivo']})},
     shareAchievement(text,sourceId){return this.publishActivity({type:'achievement',text,sourceId,hashtags:['conquista']})}
