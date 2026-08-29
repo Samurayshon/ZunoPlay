@@ -22,7 +22,9 @@ jobs:
           node --check zuno-turn-provider.js
           node --check zuno-room-avatar-sync-v1.js
           node --check zuno-room-bootstrap-v201.js
-          node --check voz-sala.js
+          node --check voz-sala-v2.js
+          node --check zuno-room-access-v1.js
+          node --check zuno-room-invite-entry-v1.js
           node --check zuno-messages.js
           node --check zuno-stack.js
 
@@ -31,7 +33,9 @@ jobs:
         run: |
           set -euo pipefail
           grep -q 'zuno-turn-provider.js' sala.html
-          grep -q 'voz-sala.js' sala.html
+          grep -q 'voz-sala-v2.js' sala.html
+          grep -q 'zuno-room-access-v1.js' sala.html
+          grep -q 'zuno-room-invite-entry-v1.js' salas.html
           grep -q 'avatar-renderer.js' zuno-room-bootstrap-v201.js
           grep -q 'zuno-room-avatar-sync-v1.js' zuno-room-bootstrap-v201.js
           grep -q "mode:'Sala de voz'" zuno-room-avatar-sync-v1.js
@@ -54,6 +58,22 @@ jobs:
           grep -q 'speaker_required' "$f"
           grep -q 'submit_zuno_stack_result' "$f"
           grep -q "new.game !~" "$f"
+
+      - name: Guard P1 room and voice hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          f='supabase/migrations/20260829223000_harden_rooms_voice_access.sql'
+          g='supabase/migrations/20260829223100_guard_voice_answer_direction.sql'
+          h='supabase/migrations/20260829223200_reject_membership_in_inactive_room.sql'
+          test -s "$f"
+          test -s "$g"
+          test -s "$h"
+          grep -q 'room_invites' "$f"
+          grep -q 'zuno_end_room_on_owner_departure' "$f"
+          grep -q 'zuno_voice_broadcast_allowed' "$f"
+          grep -q 'recvonly|inactive' "$g"
+          grep -q 'zuno_reject_membership_in_inactive_room' "$h"
 
       - name: Guard PWA and auth boot
         shell: bash
