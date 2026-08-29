@@ -1,0 +1,76 @@
+name: ZunoPlay Stage 19 Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  stage19:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate Stage 19 JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-turn-provider.js
+          node --check zuno-room-avatar-sync-v1.js
+          node --check zuno-room-bootstrap-v201.js
+          node --check voz-sala.js
+          node --check zuno-messages.js
+          node --check zuno-stack.js
+
+      - name: Guard voice and room integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'zuno-turn-provider.js' sala.html
+          grep -q 'voz-sala.js' sala.html
+          grep -q 'avatar-renderer.js' zuno-room-bootstrap-v201.js
+          grep -q 'zuno-room-avatar-sync-v1.js' zuno-room-bootstrap-v201.js
+          grep -q "mode:'Sala de voz'" zuno-room-avatar-sync-v1.js
+          grep -q "avatar_config" zuno-room-avatar-sync-v1.js
+          grep -q 'ZunoVoiceICEProvider' zuno-turn-provider.js
+          grep -q 'voice-turn' zuno-turn-provider.js
+
+      - name: Guard database stabilization migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          f='supabase/migrations/20260829195500_etapa19_security_stability.sql'
+          test -s "$f"
+          grep -q 'max_speakers = 8' "$f"
+          grep -q "room_access_denied" "$f"
+          grep -q 'room_members_select_authorized' "$f"
+          grep -q 'rooms_select_authorized' "$f"
+          grep -q 'zunoplay:voice-reward:' "$f"
+          grep -q 'zunoplay:presence-reward:' "$f"
+          grep -q 'speaker_required' "$f"
+          grep -q 'submit_zuno_stack_result' "$f"
+          grep -q "new.game !~" "$f"
+
+      - name: Guard PWA and auth boot
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'rel="manifest"' index.html
+          grep -q "serviceWorker.register('./sw.js'" home-app.js
+          grep -q "CACHE_NAME=\"zunoplay-v" sw.js
+          grep -q "notificationclick" sw.js
+          grep -q 'signUp' zuno-onboarding.js
+          grep -q 'complete_zuno_identity' zuno-onboarding.js
+
+      - name: Guard essential social and game persistence
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "from('messages').insert" zuno-messages.js
+          grep -q "zuno_get_or_create_direct_conversation" zuno-messages.js
+          grep -q "submit_zuno_stack_result" zuno-stack.js
+          grep -q "game_scores" historico.html
