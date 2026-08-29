@@ -1,18 +1,18 @@
 (()=>{
 if(window.__ZUNO_STACK__)return;window.__ZUNO_STACK__=true;
 const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms)),q=new URLSearchParams(location.search),roomId=q.get('room')||sessionStorage.getItem('zunoplay_room_id')||'',fromRoom=q.get('from')==='sala'&&!!roomId;
-const TRAY_LIMIT=7,RISK_AT=6,FAMILIES_PER_MATCH=10,PIECES_PER_FAMILY=9,TOTAL_TILES=90,LAYER_COUNTS=[36,24,15,10,5],TARGET_MIN_MS=240000,TARGET_MAX_MS=360000,BOT_TICK_MS=4800,COMBO_WINDOW_MS=12000;
+const TRAY_LIMIT=7,RISK_AT=6,FAMILIES_PER_MATCH=10,PIECES_PER_FAMILY=9,TOTAL_TILES=90,LAYER_COUNTS=[36,24,15,10,5],TARGET_MIN_MS=240000,TARGET_MAX_MS=360000,BOT_TICK_MS=4800,COMBO_WINDOW_MS=4000;
 const FALLBACK=[{id:'bolt',label:'Bolt',a:'#ffd85d',b:'#9a5605',border:'#ffe990',icon:'ϟ'},{id:'gem',label:'Core',a:'#20dcff',b:'#0752a8',border:'#8cf4ff',icon:'◆'},{id:'star',label:'Nova',a:'#ff66b2',b:'#8d194d',border:'#ffabd1',icon:'✦'},{id:'moon',label:'Prism',a:'#b65cff',b:'#4b1a89',border:'#dfa6ff',icon:'△'},{id:'orb',label:'Orb',a:'#24e8f2',b:'#08728c',border:'#8ef9ff',icon:'◉'},{id:'leaf',label:'Echo',a:'#62e77c',b:'#116b37',border:'#9af6ac',icon:'◈'}];
 const LIB=Array.isArray(window.__ZUNO_STACK_LIBRARY__)?window.__ZUNO_STACK_LIBRARY__:[],TYPES=LIB.length>=FAMILIES_PER_MATCH?LIB:FALLBACK,typeById=Object.fromEntries(TYPES.map(x=>[x.id,x]));
 let sb=null,user=null,playerName='Você',tiles=[],tray=[],relay=[null,null,null],team=[],matchTypes=[],score=0,matches=0,energy=0,active=false,lastMove=null,undoLeft=1,hintsLeft=2,botTimer=0,pulseEventCount=0,doubleNext=false,startedAt=0,riskAnnounced=false,currentSeed=0,combo=0,bestCombo=0,lastMatchAt=0;
 let gameChannel=null,presenceChannel=null,coopReady=false,coopPeers=new Map(),relayRev=0,presenceTimer=0;
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 function seeded(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function shuffleWith(a,rng){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
 function freshSeed(){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]||Date.now()>>>0}catch(_){return(Date.now()^Math.floor(Math.random()*0xffffffff))>>>0}}
 function elapsed(){return startedAt?Date.now()-startedAt:0}
 function announce(t){$('live').textContent=t}function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800)}
-function clearTimers(){if(botTimer){clearInterval(botTimer);botTimer=0}if(presenceTimer){clearInterval(presenceTimer);presenceTimer=0}}
+function clearTimers(includePresence=false){if(botTimer){clearInterval(botTimer);botTimer=0}if(includePresence&&presenceTimer){clearInterval(presenceTimer);presenceTimer=0}}
 function authCommit(kind){try{window.ZunoStackAuthority?.commit?.(kind,fullState())}catch(_){}}
 function art(m){return `<span class="zsp-art" style="--piece-a:${m.a||'#8b4dff'};--piece-b:${m.b||'#3b176f'};--piece-border:${m.border||'#d3a2ff'};--piece-icon:${JSON.stringify(m.icon||'✦')}" aria-hidden="true"></span>`}
 function injectStyles(){if($('zunoStackStage4Styles'))return;const s=document.createElement('style');s.id='zunoStackStage4Styles';s.textContent=`.tray{grid-template-columns:repeat(${TRAY_LIMIT},1fr)!important}.tray.tray-risk{animation:zRisk .85s ease-in-out infinite alternate;filter:drop-shadow(0 0 9px rgba(255,86,112,.42))}.tray.tray-risk .slot{border-color:rgba(255,96,121,.62);background:#2b1019}.tray.tray-critical{filter:drop-shadow(0 0 13px rgba(255,64,94,.65))}.tray-risk-copy{color:#ff7182!important;font-weight:950!important}@keyframes zRisk{to{transform:scale(1.008)}}@media(prefers-reduced-motion:reduce){.tray.tray-risk{animation:none}}`;document.head.appendChild(s)}
@@ -75,5 +75,5 @@ window.ZunoStackCore={version:2,getState:fullState,applyState:applyFullState,sta
 document.dispatchEvent(new CustomEvent('zuno:stack-core-ready'));
 injectStyles();syncCopy();$('undo').onclick=undo;$('hint').onclick=hint;$('pulse').onclick=pulseShift;$('start').onclick=startGame;$('back').onclick=()=>location.href=fromRoom?'sala.html?room='+encodeURIComponent(roomId):'jogos.html';$('exit').onclick=$('back').onclick;if(roomId)$('room').textContent='● Conectando coop';
 (async()=>{sb=await waitClient();if(sb){const {data}=await sb.auth.getSession();user=data?.session?.user||null;if(user){const {data:p}=await sb.from('profiles').select('username').eq('id',user.id).maybeSingle();playerName=p?.username||user.email?.split('@')[0]||'Você'}}team=roomId?[{name:playerName,progress:0,status:'pronto'}]:[{name:playerName,progress:0,status:'pronto'},{name:'Nova',progress:0,status:'pronto'},{name:'Kiro',progress:0,status:'pronto'}];renderTeam();renderTray();renderRelay();renderHud();if(roomId&&user)await initCoop()})().catch(console.warn);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active){renderHud();publishState()}});window.addEventListener('pagehide',()=>{clearTimers();closeCoop()},{once:true});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active){renderHud();publishState()}});window.addEventListener('pagehide',()=>{clearTimers(true);closeCoop()},{once:true});
 })();
