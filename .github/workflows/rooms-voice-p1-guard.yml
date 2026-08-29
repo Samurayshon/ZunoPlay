@@ -1,0 +1,55 @@
+name: Rooms Voice P1 Guard
+
+on:
+  push:
+    branches: [main, fix/rooms-voice-p1-audit]
+  pull_request:
+    branches: [main]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate JavaScript
+        run: |
+          set -euo pipefail
+          node --check voz-sala-v2.js
+          node --check zuno-room-access-v1.js
+          node --check zuno-room-invite-entry-v1.js
+
+      - name: Guard secured voice wiring
+        run: |
+          set -euo pipefail
+          grep -q 'voz-sala-v2.js?v=260' sala.html
+          grep -q 'zuno-room-access-v1.js?v=260' sala.html
+          grep -q 'zuno-room-invite-entry-v1.js?v=260' salas.html
+          grep -q "canPublish:seatIndex!==null" voz-sala-v2.js
+          grep -q "if(!permission.canPublish)throw new Error('speaker_required')" voz-sala-v2.js
+          grep -q "requestMic" zuno-room-access-v1.js
+          grep -q "leave_room_session" zuno-room-access-v1.js
+
+      - name: Guard private invite and host lifecycle migration
+        run: |
+          set -euo pipefail
+          f='supabase/migrations/20260829213500_harden_rooms_voice_access.sql'
+          g='supabase/migrations/20260829213600_guard_voice_answer_direction.sql'
+          test -s "$f"
+          test -s "$g"
+          grep -q 'create table if not exists public.room_invites' "$f"
+          grep -q 'extensions.digest' "$f"
+          grep -q 'p_invite_token text default null' "$f"
+          grep -q 'zuno_end_room_on_owner_departure' "$f"
+          grep -q 'zuno_voice_broadcast_allowed' "$f"
+          grep -q "v_kind='offer'" "$f"
+          grep -q 'recvonly|inactive' "$g"
+          grep -q 'sendrecv|sendonly' "$g"
+
+      - name: Reject legacy voice loader
+        run: |
+          set -euo pipefail
+          ! grep -q 'src="voz-sala.js' sala.html || { echo 'Legacy voice controller is still loaded'; exit 1; }
