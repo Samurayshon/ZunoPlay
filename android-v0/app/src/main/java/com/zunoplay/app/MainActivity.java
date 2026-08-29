@@ -7,22 +7,49 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends Activity {
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
+    private static final String BUILD_ID = "android-v0-boot-v2";
     private static final int PERMISSION_REQUEST = 7001;
+    private static final long BOOT_TIMEOUT_MS = 12000L;
+
     private WebView webView;
+    private final Handler bootHandler = new Handler(Looper.getMainLooper());
+    private int bootRecoveryAttempts = 0;
+
+    private final Runnable bootWatchdog = new Runnable() {
+        @Override
+        public void run() {
+            if (webView == null) return;
+            webView.evaluateJavascript(
+                    "(function(){var l=document.getElementById('loading');if(!l)return false;var s=getComputedStyle(l);return s.display!=='none'&&s.visibility!=='hidden';})()",
+                    value -> {
+                        if (webView == null) return;
+                        if ("true".equals(value)) {
+                            recoverFromStuckBoot();
+                        }
+                    }
+            );
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,24 +73,50 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.1");
+        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.1 " + BUILD_ID);
+
+        // Preserve auth/localStorage, but never preserve stale HTTP resources during v0 development.
+        webView.clearCache(true);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 String host = uri.getHost();
-                if (host != null && (host.equals("samurayshon.github.io") || host.endsWith("supabase.co") || host.equals("cdn.jsdelivr.net"))) {
+                if (host != null && (host.equals("samurayshon.github.io") || host.endsWith("supabase.co") || host.equals("cdn.jsdelivr.net") || host.equals("unpkg.com"))) {
                     return false;
                 }
                 startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, uri));
                 return true;
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                bootHandler.removeCallbacks(bootWatchdog);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (url != null && url.startsWith(START_URL)) {
+                    bootHandler.removeCallbacks(bootWatchdog);
+                    bootHandler.postDelayed(bootWatchdog, BOOT_TIMEOUT_MS);
+                }
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                if (request != null && request.isForMainFrame()) {
+                    showNativeRecovery("Não foi possível carregar o ZunoPlay.");
+                }
             }
         });
 
@@ -82,11 +135,49 @@ public class MainActivity extends Activity {
 
         requestMediaPermissions();
 
-        if (savedInstanceState == null) {
-            webView.loadUrl(START_URL);
-        } else {
-            webView.restoreState(savedInstanceState);
+        // Never restore a previously frozen WebView snapshot. A recreated Activity starts clean.
+        loadFreshHome();
+    }
+
+    private void loadFreshHome() {
+        if (webView == null) return;
+        bootRecoveryAttempts = 0;
+        loadFreshUrl("startup");
+    }
+
+    private void loadFreshUrl(String reason) {
+        if (webView == null) return;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cache-Control", "no-cache, no-store, max-age=0");
+        headers.put("Pragma", "no-cache");
+        String url = START_URL + "?android_build=" + BUILD_ID + "&reason=" + Uri.encode(reason) + "&t=" + System.currentTimeMillis();
+        webView.loadUrl(url, headers);
+    }
+
+    private void recoverFromStuckBoot() {
+        if (webView == null) return;
+        bootHandler.removeCallbacks(bootWatchdog);
+        if (bootRecoveryAttempts < 1) {
+            bootRecoveryAttempts++;
+            webView.stopLoading();
+            webView.clearCache(true);
+            loadFreshUrl("watchdog");
+            return;
         }
+        showNativeRecovery("O ZunoPlay demorou mais que o esperado para iniciar.");
+    }
+
+    private void showNativeRecovery(String message) {
+        if (webView == null) return;
+        bootHandler.removeCallbacks(bootWatchdog);
+        String html = "<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'>" +
+                "<style>html,body{margin:0;min-height:100%;background:#04040b;color:#fff;font-family:sans-serif}body{display:grid;place-items:center;padding:28px;box-sizing:border-box}.box{max-width:420px;text-align:center}h2{margin:0 0 10px}p{color:#a8acbf;line-height:1.5}button{margin-top:18px;border:0;border-radius:14px;padding:14px 22px;background:linear-gradient(135deg,#8b3dff,#31d3ff);color:#fff;font-weight:800;font-size:16px}</style></head>" +
+                "<body><div class='box'><h2>Não conseguimos iniciar agora</h2><p>" + escapeHtml(message) + "</p><button onclick=\"location.href='" + START_URL + "?android_retry='+Date.now()\">Tentar novamente</button></div></body></html>";
+        webView.loadDataWithBaseURL(START_URL, html, "text/html", "UTF-8", null);
+    }
+
+    private String escapeHtml(String value) {
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
     private void configureEdgeToEdge() {
@@ -124,9 +215,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if (webView != null) {
-            webView.saveState(outState);
-        }
+        // Intentionally do not save WebView state: stale frozen boot state must not survive recreation.
         super.onSaveInstanceState(outState);
     }
 
@@ -159,6 +248,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        bootHandler.removeCallbacksAndMessages(null);
         if (webView != null) {
             webView.loadUrl("about:blank");
             webView.stopLoading();
