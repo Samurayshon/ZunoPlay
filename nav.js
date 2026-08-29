@@ -1,6 +1,6 @@
 (()=>{
-if(window.__ZUNOPLAY_GLOBAL_BOOT_V342__)return;window.__ZUNOPLAY_GLOBAL_BOOT_V342__=true;
-const V='342',page=(location.pathname.split('/').pop()||'index.html').toLowerCase(),home=page==='index.html',moments=page==='pulso.html',pub=new Set(['login.html','cadastro.html','entrada.html']),social=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'],profile=['perfil.html','avatar.html'],rooms=['salas.html'],games=['jogos.html','historico.html','zuno-stack.html'];
+if(window.__ZUNOPLAY_GLOBAL_BOOT_V343__)return;window.__ZUNOPLAY_GLOBAL_BOOT_V343__=true;
+const V='343',page=(location.pathname.split('/').pop()||'index.html').toLowerCase(),home=page==='index.html',moments=page==='pulso.html',pub=new Set(['login.html','cadastro.html','entrada.html']),social=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'],profile=['perfil.html','avatar.html'],rooms=['salas.html'],games=['jogos.html','historico.html','zuno-stack.html'];
 document.documentElement.classList.add('zuno-fluid-page');document.documentElement.dataset.zunoPage=page.replace('.html','');
 const ver=f=>f+(f.includes('?')?'&':'?')+'v='+V;
 function css(id,f){if(document.getElementById(id))return;const l=document.createElement('link');l.id=id;l.rel='stylesheet';l.href=new URL(ver(f),location.href).href;document.head.appendChild(l)}
