@@ -1,0 +1,16 @@
+(()=>{
+if(window.__ZUNO_STACK_SETTINGS_OFFICIAL__)return;window.__ZUNO_STACK_SETTINGS_OFFICIAL__=true;
+const $=s=>document.querySelector(s);
+const KEY='zuno_stack_settings_v1';
+let cfg={volume:70};try{cfg={...cfg,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(_){}
+const clamp=n=>Math.max(0,Math.min(100,Number(n)||0));
+function save(){cfg.volume=clamp(cfg.volume);localStorage.setItem(KEY,JSON.stringify(cfg));window.__ZUNO_STACK_VOLUME__=cfg.volume/100;window.dispatchEvent(new CustomEvent('zuno-stack-volume',{detail:{volume:window.__ZUNO_STACK_VOLUME__}}))}
+function exitGame(){const q=new URLSearchParams(location.search),room=q.get('room')||sessionStorage.getItem('zunoplay_room_id')||'',fromRoom=q.get('from')==='sala'&&!!room;location.href=fromRoom?'sala.html?room='+encodeURIComponent(room):'jogos.html'}
+function mount(){if($('#zssSettings'))return;const ui=$('#zsoUi');if(!ui)return;const btn=document.createElement('button');btn.id='zssSettingsButton';btn.className='zss-settings-button';btn.type='button';btn.setAttribute('aria-label','Configurações do jogo');btn.innerHTML='<span>☰</span>';const goal=$('.zso-goal');goal?.prepend(btn);
+const panel=document.createElement('div');panel.id='zssSettings';panel.className='zss-settings';panel.setAttribute('aria-hidden','true');panel.innerHTML=`<div class="zss-backdrop" data-zss-close></div><section class="zss-card" role="dialog" aria-modal="true" aria-labelledby="zssTitle"><header><div><small>ZUNO STACK</small><h2 id="zssTitle">Configurações</h2></div><button type="button" data-zss-close aria-label="Fechar">×</button></header><div class="zss-section"><b>Regras do jogo</b><ol><li>Toque apenas nas peças disponíveis no topo das pilhas.</li><li>Forme grupos de 3 peças iguais para removê-las.</li><li>A Bandeja comporta no máximo 7 peças.</li><li>Use o Zuno Relay para compartilhar peças no modo cooperativo.</li><li>Pulse, Explosão e Gelo ajudam a controlar situações de risco.</li><li>Limpe o tabuleiro antes que a Bandeja fique sem saída.</li></ol></div><div class="zss-section zss-volume"><div><b>Volume</b><span id="zssVolumeValue">${clamp(cfg.volume)}%</span></div><input id="zssVolume" type="range" min="0" max="100" step="5" value="${clamp(cfg.volume)}" aria-label="Volume do jogo"></div><button id="zssExit" class="zss-exit" type="button">Sair do jogo</button></section>`;document.body.appendChild(panel);
+function open(){panel.classList.add('open');panel.setAttribute('aria-hidden','false');document.body.classList.add('zss-open')}
+function close(){panel.classList.remove('open');panel.setAttribute('aria-hidden','true');document.body.classList.remove('zss-open')}
+btn.onclick=open;panel.querySelectorAll('[data-zss-close]').forEach(x=>x.onclick=close);$('#zssExit').onclick=exitGame;const range=$('#zssVolume');range.oninput=()=>{cfg.volume=clamp(range.value);$('#zssVolumeValue').textContent=cfg.volume+'%';save()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))close()});save()}
+function boot(){const tryMount=()=>{mount();if(!$('#zssSettingsButton'))setTimeout(tryMount,120)};tryMount()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
