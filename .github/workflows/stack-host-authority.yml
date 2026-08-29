@@ -1,0 +1,42 @@
+name: Zuno Stack Host Authority
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  host-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard leased host state authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-authority-official.js
+          f='supabase/migrations/20260829220000_enforce_zuno_stack_host_authority.sql'
+          fix='supabase/migrations/20260829220500_fix_zuno_stack_action_idempotency.sql'
+          test -s "$f"
+          test -s "$fix"
+          grep -q 'stack_host_lease_required' "$f"
+          grep -q 'stack_bootstrap_only_before_host' "$f"
+          grep -q 'zuno_stack_request_action' "$f"
+          grep -q 'p_expected_revision' "$f"
+          grep -q 'stack_action_rate_limited' "$f"
+          grep -q 'alter publication supabase_realtime add table public.zuno_stack_game_events' "$f"
+          grep -q 'stack_action_id_conflict' "$fix"
+          grep -q 'v_effective_payload' "$fix"
+          grep -q 'if found then' "$fix"
+          grep -q 'return v_id' "$fix"
+          grep -q 'function isHost()' zuno-stack-authority-official.js
+          grep -q 'function inferAction' zuno-stack-authority-official.js
+          grep -q 'function requestAction' zuno-stack-authority-official.js
+          grep -q 'function handleActionRow' zuno-stack-authority-official.js
+          grep -q "if(!isHost())return routeNonHost" zuno-stack-authority-official.js
+          grep -q "table:'zuno_stack_game_events'" zuno-stack-authority-official.js
+          grep -q 'version:4' zuno-stack-authority-official.js
