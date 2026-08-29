@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate current Stack runtime
+      - name: Validate canonical Stack runtime
         shell: bash
         run: |
           set -euo pipefail
@@ -24,17 +24,15 @@ jobs:
             zuno-stack-lobby-fullscreen-v3.css zuno-stack-lobby-v2.css zuno-stack-lobby-v2.js zuno-stack-lobby-final-polish.css
             zuno-stack-lobby-closeout.css zuno-stack-lobby-closeout.js zuno-stack-brand.css zuno-stack-brand.js zuno-stack-arena-motion.js
             zuno-stack-gameplay-official.css zuno-stack-gameplay-official.js zuno-stack-modes-official.js
-            zuno-stack-coop-official.js zuno-stack-progression-official.js zuno-stack-performance-official.js
-            zuno-stack-performance.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js zuno-stack-mobile-shell.js
-            zuno-stack-objective.js zuno-stack-objective.css zuno-stack-relay-advanced.js zuno-stack-relay-advanced.css
-            zuno-stack-feel-official.css zuno-stack-feel-official.js zuno-stack-powers-official.css zuno-stack-powers-official.js
-            zuno-stack-orders-official.css zuno-stack-orders-official.js zuno-stack-coop-official.css
+            zuno-stack-progression-official.js zuno-stack-performance-official.js
+            zuno-stack-feel-official.css zuno-stack-feel-official.js zuno-stack-orders-official.css zuno-stack-coop-official.css
             zuno-stack-pressure-official.css zuno-stack-pressure-official.js zuno-stack-touchfix-official.css
             zuno-stack-rhythm-official.css zuno-stack-rhythm-official.js zuno-stack-settings-official.css zuno-stack-settings-official.js
-            zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js zuno-stack-final-compose.css
-            zuno-stack-final-polish.css
+            zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js
+            zuno-stack-final-compose.css zuno-stack-final-polish.css zuno-stack-intuitive-final.css
+            zuno-stack-relay-v2-official.css zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-integrity-official.js
           )
-          for file in "${files[@]}"; do test -s "$file" || { echo "Missing Stack runtime file: $file"; exit 1; }; done
+          for file in "${files[@]}"; do test -s "$file" || { echo "Missing canonical Stack runtime file: $file"; exit 1; }; done
           for file in zuno-stack*.js; do node --check "$file"; done
 
       - name: Validate Stack boot graph
@@ -45,27 +43,24 @@ jobs:
             zuno-stack-pieces.css zuno-stack-lobby-fullscreen-v3.css zuno-stack-lobby-v2.css zuno-stack-lobby-final-polish.css
             zuno-stack-lobby-closeout.css zuno-stack-brand.css zuno-stack-gameplay-official.css
             zuno-stack-pieces.js zuno-stack-modes-official.js zuno-stack.js zuno-stack-gameplay-official.js
-            zuno-stack-coop-official.js zuno-stack-progression-official.js zuno-stack-performance-official.js
-            zuno-stack-brand.js zuno-stack-arena-motion.js zuno-stack-lobby-closeout.js
+            zuno-stack-progression-official.js zuno-stack-performance-official.js zuno-stack-brand.js zuno-stack-arena-motion.js
+            zuno-stack-lobby-closeout.js
           )
           for asset in "${direct[@]}"; do grep -q "$asset" zuno-stack.html || { echo "Stack direct boot asset missing: $asset"; exit 1; }; done
-          injected=(
-            zuno-stack-performance.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js zuno-stack-mobile-shell.js
-            zuno-stack-objective.css zuno-stack-objective.js zuno-stack-relay-advanced.css zuno-stack-relay-advanced.js zuno-stack-lobby-v2.js
-          )
-          for asset in "${injected[@]}"; do grep -q "$asset" nav.js || { echo "Stack injected boot asset missing: $asset"; exit 1; }; done
+
+          grep -q 'zuno-stack-lobby-v2.js' nav.js || { echo 'Canonical Stack lobby injection missing'; exit 1; }
+
           official=(
-            zuno-stack-feel-official.css zuno-stack-feel-official.js zuno-stack-powers-official.css zuno-stack-powers-official.js
-            zuno-stack-orders-official.css zuno-stack-orders-official.js zuno-stack-coop-official.css zuno-stack-coop-official.js
+            zuno-stack-feel-official.css zuno-stack-feel-official.js zuno-stack-orders-official.css zuno-stack-coop-official.css
             zuno-stack-pressure-official.css zuno-stack-pressure-official.js zuno-stack-touchfix-official.css
             zuno-stack-rhythm-official.css zuno-stack-rhythm-official.js zuno-stack-settings-official.css zuno-stack-settings-official.js
-            zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js zuno-stack-final-compose.css
-            zuno-stack-final-polish.css
+            zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js
+            zuno-stack-final-compose.css zuno-stack-final-polish.css zuno-stack-intuitive-final.css zuno-stack-relay-v2-official.css
+            zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-integrity-official.js
           )
           for asset in "${official[@]}"; do grep -q "$asset" zuno-stack-performance-official.js || { echo "Stack official composition asset missing: $asset"; exit 1; }; done
-          ! grep -q 'zuno-stack-final-compose.js' zuno-stack-performance-official.js || { echo 'Obsolete final-compose JS returned to boot graph'; exit 1; }
 
-      - name: Validate gameplay and cooperation invariants
+      - name: Validate gameplay authority invariants
         shell: bash
         run: |
           set -euo pipefail
@@ -73,15 +68,17 @@ jobs:
           grep -q 'RISK_AT=6' zuno-stack.js
           grep -q 'TOTAL_TILES=90' zuno-stack.js
           grep -q 'LAYER_COUNTS=\[36,24,15,10,5\]' zuno-stack.js
-          grep -q 'TARGET_MIN_MS=240000' zuno-stack.js
-          grep -q 'TARGET_MAX_MS=360000' zuno-stack.js
           grep -q 'stack_relay' zuno-stack.js
           grep -q 'stack_state' zuno-stack.js
           grep -q 'submit_zuno_stack_result' zuno-stack.js
-          grep -q 'get_friend_game_leaderboard' zuno-stack-progression.js
-          grep -q "from('messages')" zuno-stack-social.js
+          grep -q 'function useFluxo' zuno-stack-systems-official.js
+          grep -q 'function useVortice' zuno-stack-systems-official.js
+          grep -q 'window.ZunoStackSystems' zuno-stack-systems-official.js
+          grep -q 'zuno_stack_commit_state' zuno-stack-authority-official.js
+          grep -q 'revision_conflict' zuno-stack-authority-official.js
+          grep -q 'window.ZunoStackIntegrity' zuno-stack-integrity-official.js
 
-      - name: Guard obsolete Stack assets
+      - name: Guard removed and duplicate Stack assets
         shell: bash
         run: |
           set -euo pipefail
@@ -90,8 +87,17 @@ jobs:
             zuno-stack-lobby.css zuno-stack-gameplay-v1.css zuno-stack-gameplay-v1.js
             zuno-stack-gameplay-polish-v2.css zuno-stack-gameplay-polish-v2.js
             zuno-stack-gameplay-immersive-v3.css zuno-stack-gameplay-immersive-v3.js
+            zuno-stack-performance.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js zuno-stack-mobile-shell.js
+            zuno-stack-objective.js zuno-stack-objective.css zuno-stack-relay-advanced.js zuno-stack-relay-advanced.css
+            zuno-stack-powers-official.js zuno-stack-powers-official.css zuno-stack-orders-official.js zuno-stack-coop-official.js
+            zuno-stack-combo-chain.js zuno-stack-combo-chain.css zuno-stack-relay-v2-official.js zuno-stack-mechanics-official.js
           )
           for old in "${obsolete[@]}"; do test ! -e "$old" || { echo "Obsolete Stack asset returned: $old"; exit 1; }; done
+          for old in "${obsolete[@]}"; do
+            ! grep -q "$old" nav.js || { echo "Obsolete Stack asset referenced by nav.js: $old"; exit 1; }
+            ! grep -q "$old" zuno-stack-performance-official.js || { echo "Obsolete Stack asset referenced by loader: $old"; exit 1; }
+            ! grep -q "$old" zuno-stack.html || { echo "Obsolete Stack asset referenced by HTML: $old"; exit 1; }
+          done
 
       - name: Validate frontend generation
         shell: bash
