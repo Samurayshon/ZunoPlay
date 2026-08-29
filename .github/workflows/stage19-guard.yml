@@ -72,5 +72,9 @@ jobs:
           set -euo pipefail
           grep -q "from('messages').insert" zuno-messages.js
           grep -q "zuno_get_or_create_direct_conversation" zuno-messages.js
-          grep -q "submit_zuno_stack_result" zuno-stack.js
+          reward_guard='supabase/migrations/20260829202500_contain_unverified_zuno_stack_rewards.sql'
+          test -s "$reward_guard"
+          grep -q 'revoke execute on function public.submit_zuno_stack_result' "$reward_guard"
+          grep -q 'zunoplay_zuno_stack_last_result' zuno-stack.js
+          ! grep -q "sb.rpc('submit_zuno_stack_result'" zuno-stack.js || { echo 'Unsafe Zuno Stack reward RPC returned'; exit 1; }
           grep -q "game_scores" historico.html

@@ -14,9 +14,13 @@ Os antigos sprites `zuno-stack-pieces.svg/webp` e as folhas `zuno-stack-layout-v
 
 A geração v279 usa precache tolerante a falhas, timeout de rede e fallback de cache. Falha de um asset não aborta mais toda a instalação do Service Worker. Scripts, CSS e navegações usam network-first com timeout; mídia usa cache-first. O clique em notificações do Service Worker voltou a navegar para o destino correto.
 
-## Backend
+## Backend e recompensas
 
-`submit_zuno_stack_result` permanece como endpoint autenticado de resultado. RPCs de sala necessárias ao fluxo atual permanecem autenticadas; funções internas de trigger não são executáveis diretamente por clientes.
+As partidas continuam usando os RPCs autenticados de sala necessários ao fluxo cooperativo; funções internas de trigger não são executáveis diretamente por clientes.
+
+`submit_zuno_stack_result` está deliberadamente revogado de `anon` e `authenticated`. O resultado anterior era calculado a partir de score, trios e peças fornecidos pelo cliente e não constitui prova server-authoritative de uma partida concluída. Reabrir esse RPC sem um protocolo de partida verificável reintroduziria manipulação de XP/recompensas.
+
+Enquanto esse protocolo não existir, o runtime salva o último resultado apenas localmente em `zunoplay_zuno_stack_last_result` e informa explicitamente que o XP está suspenso. O cliente não deve chamar `submit_zuno_stack_result`.
 
 ## Critérios de aceite
 
@@ -26,3 +30,5 @@ A geração v279 usa precache tolerante a falhas, timeout de rede e fallback de 
 - nenhuma referência ativa a protótipos/arquivos removidos
 - geração `nav.js` / `zuno-current.js` / `sw.js` consistente
 - nenhuma credencial server-side no frontend
+- nenhuma chamada browser/app para `submit_zuno_stack_result` enquanto a validação server-authoritative não existir
+- progressão/recompensas do Zuno Stack permanecem classificadas como parcial até existir protocolo verificável e teste ponta a ponta
