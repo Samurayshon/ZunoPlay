@@ -5,7 +5,7 @@ const style=document.createElement('style');style.textContent=`.zso-lite .tile.a
 function loadCss(href,key){if(document.querySelector(`link[data-${key}]`))return;const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset[key]='1';document.head.appendChild(l)}
 function loadJs(src,key){if(document.querySelector(`script[data-${key}]`))return;const s=document.createElement('script');s.src=src;s.defer=true;s.dataset[key]='1';document.head.appendChild(s)}
 function loadOfficialModules(){
- loadCss('zuno-stack-feel-official.css?v=af4cab7','zsoFeel');loadJs('zuno-stack-feel-official.js?v=a58ba9a','zsoFeel');
+ loadCss('zuno-stack-feel-official.css?v=af4cab7','zsoFeel');loadJs('zuno-stack-feel-official.js?v=1fb2605','zsoFeel');
  loadCss('zuno-stack-orders-official.css?v=3d5bc85','zsoOrders');
  loadCss('zuno-stack-coop-official.css?v=29e961e','zsoCoop');
  loadCss('zuno-stack-pressure-official.css?v=210688b','zsoPressure');loadJs('zuno-stack-pressure-official.js?v=77b4179','zsoPressure');
@@ -17,7 +17,6 @@ function loadOfficialModules(){
  loadCss('zuno-stack-final-compose.css?v=99d3232','zsoFinalCompose');
  loadCss('zuno-stack-final-polish.css?v=22c5fdc','zsoFinalPolish');
  loadCss('zuno-stack-intuitive-final.css?v=67d33fc','zsoIntuitiveFinal');
- loadCss('zuno-stack-piece-symbol-guard.css?v=04bb58e','zsoPieceSymbolGuard');
  loadCss('zuno-stack-combo-chain.css?v=d391dac','zsoComboChain');loadJs('zuno-stack-combo-chain.js?v=6cb6e95','zsoComboChain');
  loadCss('zuno-stack-relay-v2-official.css?v=435e897','zsoRelayV2');loadJs('zuno-stack-relay-v2-official.js?v=e035b07','zsoRelayV2');
  loadJs('zuno-stack-systems-official.js?v=43fac9d','zsoSystems');
