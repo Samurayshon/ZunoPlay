@@ -1,0 +1,49 @@
+/* ZunoPlay Profile — mobile scroll recovery */
+html[data-zuno-page="perfil"]{
+  height:auto!important;
+  min-height:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch;
+}
+html[data-zuno-page="perfil"] body{
+  position:static!important;
+  height:auto!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch;
+}
+html[data-zuno-page="perfil"] .profile-v2,
+html[data-zuno-page="perfil"] #profileV2Root,
+html[data-zuno-page="perfil"] .profile-shell{
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  touch-action:pan-y!important;
+}
+html[data-zuno-page="perfil"] .zs-overlay:not(.open),
+html[data-zuno-page="perfil"] .zp-concept-edit-modal:not(.open),
+html[data-zuno-page="perfil"] .zuno-hub-backdrop:not(.open),
+html[data-zuno-page="perfil"] #zunoGlobalSearch:not(.open){
+  display:none!important;
+  pointer-events:none!important;
+  touch-action:none!important;
+}
+html[data-zuno-page="perfil"] .zs-overlay.open,
+html[data-zuno-page="perfil"] .zp-concept-edit-modal.open,
+html[data-zuno-page="perfil"] .zuno-hub-backdrop.open,
+html[data-zuno-page="perfil"] #zunoGlobalSearch.open{
+  pointer-events:auto!important;
+}
+html[data-zuno-page="perfil"] .zs-body,
+html[data-zuno-page="perfil"] .zp-concept-edit-sheet,
+html[data-zuno-page="perfil"] #zunoGlobalSearch .search-results{
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y!important;
+}
