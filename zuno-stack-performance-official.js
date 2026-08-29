@@ -29,9 +29,9 @@ loadJs('zuno-stack-pressure-official.js?v=77b4179','zsoPressure');
 loadCss('zuno-stack-touchfix-official.css?v=8ce88a8','zsoTouchfix');
 loadCss('zuno-stack-rhythm-official.css?v=e527a33','zsoRhythm');
 loadJs('zuno-stack-rhythm-official.js?v=ce9dc28','zsoRhythm');
-loadCss('zuno-stack-settings-official.css?v=d5debe5','zsoSettings');
+loadCss('zuno-stack-settings-official.css?v=bc07115','zsoSettings');
 loadJs('zuno-stack-settings-official.js?v=048a248','zsoSettings');
+loadCss('zuno-stack-feedback-official.css?v=b222d49','zsoFeedback');
 }
-loadOfficialModules();
-document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));
+loadOfficialModules();document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));
 })();
