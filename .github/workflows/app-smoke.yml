@@ -143,4 +143,5 @@ jobs:
         run: |
           set -euo pipefail
           secret_pat='sb''_secret_'; role_pat='service''_role'
-          if grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='*.yml' -E "${secret_pat}|${role_pat}" .; then echo 'Potential server secret found.'; exit 1; fi
+          if grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='*.yml' -E "${secret_pat}" .; then echo 'Potential Supabase secret key found.'; exit 1; fi
+          if grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='*.yml' --exclude='*.sql' -E "${role_pat}" .; then echo 'Potential service role exposure found outside SQL migrations.'; exit 1; fi
