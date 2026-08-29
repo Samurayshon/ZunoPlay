@@ -1,0 +1,13 @@
+(()=>{
+if(window.__ZUNO_STACK_POWERS_2__)return;window.__ZUNO_STACK_POWERS_2__=true;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const meta={pulse:{title:'PULSE',desc:'Reorganiza o campo',tone:'pulse'},blast:{title:'EXPLOSÃO',desc:'Fecha um trio visível',tone:'blast'},freeze:{title:'GELO',desc:'+5s e trava a pressão',tone:'freeze'}};
+let last={pulse:null,blast:null,freeze:null},scheduled=false;
+function mount(){const wrap=$('.zso-powers');if(!wrap)return;$$('[data-zso-power]').forEach(btn=>{const type=btn.dataset.zsoPower;if(!meta[type])return;btn.classList.add('zspow');if(!btn.querySelector('.zspow-ring')){const ring=document.createElement('i');ring.className='zspow-ring';ring.innerHTML='<em></em>';btn.appendChild(ring)}if(!btn.querySelector('.zspow-copy')){const copy=document.createElement('span');copy.className='zspow-copy';copy.innerHTML=`<strong>${meta[type].title}</strong><small>${meta[type].desc}</small>`;btn.appendChild(copy)}})}
+function count(type){const id=type==='pulse'?'#zsoPulseN':type==='blast'?'#zsoBlastN':'#zsoFreezeN';return parseInt($(id)?.textContent||'0',10)||0}
+function sync(){if(!document.body.classList.contains('zstack-playing'))return;mount();$$('[data-zso-power]').forEach(btn=>{const type=btn.dataset.zsoPower,n=count(type),ready=!btn.disabled&&n>0;btn.dataset.powerState=ready?'ready':n>0?'charging':'empty';btn.style.setProperty('--power-fill',ready?'1':n>0?'.45':'0');if(last[type]!==null&&n<last[type])activate(type,btn);last[type]=n})}
+function activate(type,btn){btn.classList.remove('zspow-fired');void btn.offsetWidth;btn.classList.add('zspow-fired');setTimeout(()=>btn.classList.remove('zspow-fired'),700);const board=$('#board');if(board){const pulse=document.createElement('div');pulse.className=`zspow-board-wave ${type}`;board.appendChild(pulse);setTimeout(()=>pulse.remove(),720)}const toast=document.createElement('div');toast.className=`zspow-toast ${type}`;toast.innerHTML=`<b>${meta[type].title}</b><span>${type==='pulse'?'CAMPO ENERGIZADO':type==='blast'?'TRIO DETONADO':'+5s · PRESSÃO CONGELADA'}</span>`;document.body.appendChild(toast);setTimeout(()=>toast.remove(),900)}
+function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;sync()})}
+function boot(){mount();sync();new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','disabled']});setInterval(sync,350)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
