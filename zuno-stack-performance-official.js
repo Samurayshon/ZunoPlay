@@ -17,6 +17,8 @@ loadJs('zuno-stack-coop-official.js?v=f076fcd','zsoCoop');
 loadCss('zuno-stack-pressure-official.css?v=210688b','zsoPressure');
 loadJs('zuno-stack-pressure-official.js?v=e0ec8f2','zsoPressure');
 loadCss('zuno-stack-touchfix-official.css?v=8ce88a8','zsoTouchfix');
+loadCss('zuno-stack-rhythm-official.css?v=e527a33','zsoRhythm');
+loadJs('zuno-stack-rhythm-official.js?v=f9dc8f9','zsoRhythm');
 }
 loadOfficialModules();
 document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));
