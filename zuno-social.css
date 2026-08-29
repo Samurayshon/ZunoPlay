@@ -1,94 +1,19 @@
-/* ZunoPlay — Etapa 4/8: Social unificado com a Home aprovada */
+/* ZunoPlay — Social unificado */
 body.zuno-social-page{background:#02040d!important;color:#fff!important}
 body.zuno-social-page .app,body.zuno-social-page #app{width:min(100%,520px)!important;max-width:520px!important;margin:0 auto!important;padding:8px 14px 112px!important}
-
-/* Cabeçalho de conteúdo social */
-.z-social-heading{margin:2px 0 12px!important;padding:2px 1px 0!important}
-.z-social-kicker{display:inline-flex!important;align-items:center!important;gap:7px!important;margin:0 0 9px!important;padding:7px 10px!important;border:1px solid #2e345b!important;border-radius:999px!important;background:rgba(10,14,31,.78)!important;color:#b9bdcf!important;font-size:10px!important;font-weight:800!important;letter-spacing:.02em!important}
-.z-social-kicker:before{content:"";width:8px;height:8px;border-radius:50%;background:#31dd7b;box-shadow:0 0 10px rgba(49,221,123,.65)}
-.z-social-heading h1{margin:0!important;font-size:25px!important;line-height:1.05!important;letter-spacing:-.8px!important;font-weight:950!important;color:#fff!important}
-.z-social-heading p{margin:6px 0 0!important;color:#a8abbd!important;font-size:12px!important;line-height:1.45!important}
-
-/* Remove cabeçalhos legados do conteúdo. O chrome global continua responsável por logo/nav. */
-body.zuno-social-page .app>.header,body.zuno-social-page #app>.header,body.zuno-social-page .page>.header{display:none!important}
-body.zuno-social-page .page{padding:0!important}
-body.zuno-social-page .page>.title,body.zuno-social-page .page>.subtitle{display:none!important}
-body.zuno-social-page .card>.title:first-child,body.zuno-social-page .card>.sub:first-of-type{ }
-
-/* Cards sociais */
-body.zuno-social-page .card,
-body.zuno-social-page .conversation,
-body.zuno-social-page .community,
-body.zuno-social-page .notification,
-body.zuno-social-page .count{
-  border:1px solid #2e345b!important;
-  background:linear-gradient(145deg,#080b1c,#060817)!important;
-  color:#fff!important;
-  box-shadow:inset 0 0 28px rgba(72,63,155,.055),0 12px 34px rgba(0,0,0,.14)!important;
-}
-body.zuno-social-page .card{border-radius:18px!important;padding:15px!important;margin-bottom:11px!important}
-body.zuno-social-page .title{font-size:22px!important;line-height:1.08!important;margin:0 0 6px!important;font-weight:900!important;color:#fff!important}
-body.zuno-social-page .sub,body.zuno-social-page .subtitle,body.zuno-social-page .meta,body.zuno-social-page .last-message,body.zuno-social-page .notification-message,body.zuno-social-page .notification-time{color:#9398ad!important}
-
-/* Busca / formulários */
-body.zuno-social-page .search{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
-body.zuno-social-page .search input,body.zuno-social-page .input,body.zuno-social-page .composer input{min-height:46px!important;border:1px solid #2e345b!important;border-radius:13px!important;background:#0b0f22!important;color:#fff!important}
-body.zuno-social-page .search input:focus,body.zuno-social-page .input:focus,body.zuno-social-page .composer input:focus{border-color:#7d47d8!important;box-shadow:0 0 0 3px rgba(139,61,255,.11)!important}
-body.zuno-social-page .btn,body.zuno-social-page .button,body.zuno-social-page .send,body.zuno-social-page .action.accept{border:0!important;border-radius:13px!important;background:linear-gradient(135deg,#843bff,#c33fff 58%,#31d3ff)!important;color:#fff!important;font-weight:850!important;box-shadow:0 0 18px rgba(139,61,255,.20)!important}
-body.zuno-social-page .button{min-height:44px!important}
-body.zuno-social-page .btn.soft{background:#15182b!important;border:1px solid #353b60!important;box-shadow:none!important}
-body.zuno-social-page .btn.danger,body.zuno-social-page .danger,body.zuno-social-page .reject{background:#25131c!important;border:1px solid #5b2a3a!important;color:#ffb3c3!important;box-shadow:none!important}
-
-/* Amigos */
-body.zuno-social-amigos .card:first-of-type{padding-top:15px!important}
-body.zuno-social-amigos .section-title{display:flex!important;align-items:center!important;gap:9px!important;font-size:14px!important;font-weight:900!important;margin:0 0 8px!important;color:#fff!important}
-body.zuno-social-amigos .section-title:before{content:"";width:10px;height:10px;border-radius:50%;background:#8b3dff;box-shadow:0 0 12px rgba(139,61,255,.42)}
-body.zuno-social-amigos .row{padding:11px 0!important;border-bottom:1px solid rgba(46,52,91,.62)!important}
-body.zuno-social-amigos .avatar{width:45px!important;height:45px!important;flex:0 0 45px!important;border:1px solid rgba(139,61,255,.46)!important;background:linear-gradient(145deg,#30205b,#10253f)!important}
-body.zuno-social-amigos .status{display:inline-flex!important;align-items:center!important;min-height:26px!important;padding:5px 9px!important;margin-top:10px!important;border:1px solid rgba(49,221,123,.18)!important;border-radius:999px!important;background:rgba(15,55,36,.31)!important;color:#78ecaa!important;font-size:10px!important;font-weight:800!important}
-body.zuno-social-amigos .status:not(.off):before{content:"";width:7px;height:7px;margin-right:6px;border-radius:50%;background:#31dd7b;box-shadow:0 0 8px rgba(49,221,123,.6)}
-
-/* Conversas */
-body.zuno-social-conversas .status{display:inline-flex!important;align-items:center!important;width:auto!important;min-height:28px!important;padding:6px 10px!important;margin:0 0 12px!important;border:1px solid rgba(49,221,123,.18)!important;border-radius:999px!important;background:rgba(15,55,36,.31)!important;color:#78ecaa!important;font-size:10px!important;font-weight:800!important}
-body.zuno-social-conversas .conversation{width:100%!important;display:grid!important;grid-template-columns:48px minmax(0,1fr) auto!important;align-items:center!important;gap:11px!important;border-radius:17px!important;padding:12px!important;margin:0 0 8px!important;text-align:left!important}
-body.zuno-social-conversas .conversation:active{transform:scale(.988)!important;border-color:#7038cb!important}
-body.zuno-social-conversas .avatar,body.zuno-social-conversas .chat-avatar{background:linear-gradient(145deg,#30205b,#10253f)!important;border:1px solid rgba(139,61,255,.44)!important;box-shadow:0 0 14px rgba(139,61,255,.12)!important}
-body.zuno-social-conversas .unread-badge{background:linear-gradient(135deg,#a634f1,#7f35ff)!important;box-shadow:0 0 12px rgba(166,52,241,.28)!important}
-body.zuno-social-conversas .chat{min-height:calc(100dvh - 58px)!important;padding-bottom:92px!important}
-body.zuno-social-conversas .chat-header{position:relative!important;top:auto!important;z-index:2!important;margin:0 0 8px!important;padding:10px 0!important;border:0!important;background:transparent!important}
-body.zuno-social-conversas .chat-user{padding:10px 12px!important;border:1px solid #2e345b!important;border-radius:17px!important;background:linear-gradient(145deg,#080b1c,#060817)!important}
-body.zuno-social-conversas .chat-status{color:#31dd7b!important}
-body.zuno-social-conversas .chat-messages{padding:10px 1px 172px!important;gap:8px!important}
-body.zuno-social-conversas .message{border-radius:16px!important;padding:10px 13px!important;max-width:82%!important}
-body.zuno-social-conversas .message.mine{background:linear-gradient(135deg,#7235ed,#aa3ce2)!important;box-shadow:0 8px 22px rgba(91,40,180,.16)!important}
-body.zuno-social-conversas .message.theirs{background:#11162a!important;border:1px solid #2e345b!important}
-body.zuno-social-conversas .composer{position:fixed!important;z-index:2147481500!important;left:50%!important;transform:translateX(-50%)!important;bottom:calc(80px + env(safe-area-inset-bottom))!important;width:min(calc(100% - 18px),502px)!important;padding:9px!important;border:1px solid #2e345b!important;border-radius:17px!important;background:rgba(7,10,24,.97)!important;backdrop-filter:blur(18px)!important;box-shadow:0 14px 40px rgba(0,0,0,.32)!important}
-body.zuno-social-conversas .send{width:48px!important;min-width:48px!important;height:46px!important}
-
-/* Comunidades */
-body.zuno-social-comunidades .community{position:relative!important;overflow:hidden!important;border-radius:17px!important;padding:14px!important;margin-top:10px!important}
-body.zuno-social-comunidades .community:after{content:"";position:absolute;right:-28px;top:-34px;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,rgba(49,211,255,.11),transparent 68%);pointer-events:none}
-body.zuno-social-comunidades .community h3{font-size:16px!important;margin:0 0 5px!important;color:#fff!important}
-body.zuno-social-comunidades .community p{font-size:12px!important;line-height:1.45!important;color:#969bad!important}
-body.zuno-social-comunidades .community .meta{color:#c866ff!important;font-size:10px!important;font-weight:800!important}
-body.zuno-social-comunidades .row{gap:7px!important;border:0!important;padding:8px 0 0!important}
-body.zuno-social-comunidades .row .button{margin:0!important}
-
-/* Notificações */
-body.zuno-social-notificacoes .page{padding:0!important}
-body.zuno-social-notificacoes .notification{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto!important;align-items:start!important;gap:11px!important;border-radius:17px!important;padding:13px!important;margin-bottom:8px!important}
-body.zuno-social-notificacoes .notification.unread{border-color:#6e37bd!important;background:linear-gradient(145deg,#15102c,#090a1a)!important;box-shadow:inset 0 0 20px rgba(139,61,255,.08)!important}
-body.zuno-social-notificacoes .icon{width:44px!important;height:44px!important;min-width:44px!important;border-radius:14px!important;background:#11162a!important;border:1px solid #30365d!important;font-size:19px!important}
-body.zuno-social-notificacoes .notification-title{font-size:13px!important;font-weight:900!important;color:#fff!important;margin-bottom:4px!important}
-body.zuno-social-notificacoes .dot{width:8px!important;height:8px!important;background:#a23cff!important;box-shadow:0 0 10px rgba(162,60,255,.65)!important}
-body.zuno-social-notificacoes .count{padding:10px 12px!important;border-radius:14px!important;color:#c9b2ff!important;font-size:11px!important;margin:0 0 10px!important}
-body.zuno-social-notificacoes .mark-all{display:none!important}
-body.zuno-social-notificacoes .actions{display:flex!important;gap:7px!important;margin-top:10px!important}
-body.zuno-social-notificacoes .action{min-height:36px!important;border-radius:11px!important;padding:8px 12px!important;font-size:10px!important;font-weight:850!important}
-
-/* Estado vazio/loading */
-body.zuno-social-page .empty,body.zuno-social-page .loading{padding:22px 8px!important;color:#7f849a!important;font-size:12px!important}
-body.zuno-social-page .notice.ok{background:rgba(17,68,43,.42)!important;color:#86efac!important;border:1px solid rgba(49,221,123,.18)!important}
-body.zuno-social-page .notice.err,body.zuno-social-page .error{background:rgba(75,27,39,.30)!important;color:#ffc0ca!important;border-color:rgba(255,127,159,.18)!important}
-
-@media(max-width:380px){body.zuno-social-page .app,body.zuno-social-page #app{padding-left:11px!important;padding-right:11px!important}.z-social-heading h1{font-size:23px!important}body.zuno-social-conversas .conversation{grid-template-columns:44px minmax(0,1fr) auto!important}.zuno-global-brand{font-size:26px!important}}
+.z-social-heading{margin:2px 0 14px!important;padding:2px 1px 0!important}.z-social-kicker{display:inline-flex!important;align-items:center!important;gap:7px!important;margin:0 0 9px!important;padding:7px 10px!important;border:1px solid #2e345b!important;border-radius:999px!important;background:rgba(10,14,31,.78)!important;color:#b9bdcf!important;font-size:10px!important;font-weight:800!important}.z-social-kicker:before{content:"";width:8px;height:8px;border-radius:50%;background:#31dd7b;box-shadow:0 0 10px rgba(49,221,123,.65)}.z-social-heading h1{margin:0!important;font-size:25px!important;line-height:1.05!important;letter-spacing:-.8px!important;font-weight:950!important}.z-social-heading p{margin:6px 0 0!important;color:#a8abbd!important;font-size:12px!important;line-height:1.45!important}
+body.zuno-social-page .app>.header,body.zuno-social-page #app>.header,body.zuno-social-page .page>.header{display:none!important}body.zuno-social-page .page{padding:0!important}
+body.zuno-social-page .card,body.zuno-social-page .conversation,body.zuno-social-page .community,body.zuno-social-page .notification,body.zuno-social-page .count{border:1px solid #242a49!important;background:linear-gradient(145deg,#080b1c,#060817)!important;color:#fff!important;box-shadow:inset 0 0 24px rgba(72,63,155,.035),0 10px 28px rgba(0,0,0,.12)!important}body.zuno-social-page .card{border-radius:18px!important;padding:15px!important;margin-bottom:10px!important}.title{color:#fff}.sub,.subtitle,.meta,.last-message,.notification-message,.notification-time{color:#9398ad!important}
+body.zuno-social-page .search{display:grid!important;grid-template-columns:minmax(0,1fr) 48px!important;gap:7px!important}body.zuno-social-page .search input{min-height:48px!important;border:1px solid #293052!important;border-radius:14px!important;background:#0b0f22!important;color:#fff!important;padding:0 15px!important}body.zuno-social-page .search input:focus{border-color:#7d47d8!important;box-shadow:0 0 0 3px rgba(139,61,255,.1)!important}.btn{border:0}.zuno-social-page .btn{border-radius:13px!important;background:linear-gradient(135deg,#843bff,#b63cff 60%,#31d3ff)!important;color:#fff!important;font-weight:850!important}.zuno-social-page .btn.soft{background:#15182b!important;border:1px solid #353b60!important}.zuno-social-page .btn.danger{background:#25131c!important;border:1px solid #5b2a3a!important;color:#ffb3c3!important}
+/* Amigos: a página já possui título oficial; o primeiro card é somente busca. */
+body.zuno-social-amigos .card:first-of-type{padding:12px!important}body.zuno-social-amigos .card:first-of-type>.title,body.zuno-social-amigos .card:first-of-type>.sub{display:none!important}body.zuno-social-amigos .card:first-of-type .btn#search{width:48px!important;min-width:48px!important;padding:0!important;font-size:0!important;position:relative!important}body.zuno-social-amigos .card:first-of-type .btn#search:after{content:"⌕";font-size:25px!important;line-height:1!important;color:#fff!important}body.zuno-social-amigos .status{display:inline-flex!important;align-items:center!important;min-height:24px!important;padding:4px 8px!important;margin-top:8px!important;border:1px solid rgba(49,221,123,.15)!important;border-radius:999px!important;background:rgba(15,55,36,.22)!important;color:#78ecaa!important;font-size:9px!important;font-weight:800!important}body.zuno-social-amigos .status:not(.off):before{content:"";width:6px;height:6px;margin-right:5px;border-radius:50%;background:#31dd7b}
+body.zuno-social-amigos .section-title{display:flex!important;align-items:center!important;gap:8px!important;font-size:14px!important;font-weight:900!important;margin:0 0 7px!important;color:#fff!important}body.zuno-social-amigos .section-title:before{content:"";width:8px;height:8px;border-radius:50%;background:#8b3dff;box-shadow:0 0 10px rgba(139,61,255,.35)}
+body.zuno-social-amigos .card:nth-of-type(2){display:none!important}body.zuno-social-amigos .card:nth-of-type(3){padding:13px 15px!important}body.zuno-social-amigos .card:nth-of-type(3):has(#requests .empty){padding-bottom:10px!important}body.zuno-social-amigos #requests .empty{padding:7px 2px 2px!important;text-align:left!important;font-size:11px!important}body.zuno-social-amigos .card:nth-of-type(4){padding:14px 15px!important;margin-bottom:8px!important;min-height:0!important}
+body.zuno-social-amigos .row{padding:10px 0!important;border-bottom:1px solid rgba(46,52,91,.5)!important}.zuno-social-amigos .avatar{width:44px!important;height:44px!important;flex:0 0 44px!important;border:1px solid rgba(139,61,255,.4)!important;background:linear-gradient(145deg,#30205b,#10253f)!important}.zuno-social-amigos .name{font-size:13px!important}.zuno-social-amigos .meta{font-size:10px!important}.zuno-social-amigos .empty{padding:14px 4px!important;color:#777d92!important;font-size:11px!important}.zuno-social-amigos #friends .empty{text-align:left!important;padding:12px 2px 4px!important}
+.zuno-friends-tabs{margin:2px 0 5px!important;padding:4px!important;gap:4px!important;border-color:#272e50!important;background:#070a17!important}.zuno-friends-tab{min-height:34px!important;font-size:10px!important}.zuno-friends-tab.active{box-shadow:0 4px 14px rgba(123,55,220,.16)!important}
+/* resultados surgem só após uma busca real */
+body.zuno-social-amigos:has(#results.empty) .card:nth-of-type(2){display:none!important}body.zuno-social-amigos .card:nth-of-type(2):has(#results .row){display:block!important;padding:13px 15px!important}
+/* Conversas / demais páginas */
+body.zuno-social-conversas .conversation{width:100%!important;display:grid!important;grid-template-columns:48px minmax(0,1fr) auto!important;align-items:center!important;gap:11px!important;border-radius:17px!important;padding:12px!important;margin:0 0 8px!important;text-align:left!important}body.zuno-social-conversas .chat{min-height:calc(100dvh - 58px)!important;padding-bottom:92px!important}body.zuno-social-conversas .composer{position:fixed!important;z-index:2147481500!important;left:50%!important;transform:translateX(-50%)!important;bottom:calc(80px + env(safe-area-inset-bottom))!important;width:min(calc(100% - 18px),502px)!important;padding:9px!important;border:1px solid #2e345b!important;border-radius:17px!important;background:rgba(7,10,24,.97)!important}
+body.zuno-social-page .notice.ok{background:rgba(17,68,43,.42)!important;color:#86efac!important;border:1px solid rgba(49,221,123,.18)!important}body.zuno-social-page .notice.err,body.zuno-social-page .error{background:rgba(75,27,39,.30)!important;color:#ffc0ca!important;border-color:rgba(255,127,159,.18)!important}
+@media(max-width:380px){body.zuno-social-page .app,body.zuno-social-page #app{padding-left:11px!important;padding-right:11px!important}.z-social-heading h1{font-size:23px!important}}
