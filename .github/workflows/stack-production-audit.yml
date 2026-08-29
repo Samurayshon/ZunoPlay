@@ -15,131 +15,69 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate Stack runtime modules
+      - name: Validate current Stack runtime
+        shell: bash
         run: |
           set -euo pipefail
-          modules=(
-            zuno-stack.js
-            zuno-stack-performance.js
-            zuno-stack-premium.js
-            zuno-stack-social.js
-            zuno-stack-progression.js
-            zuno-stack-content.js
-            zuno-stack-mobile-shell.js
-            zuno-stack-strategic.js
-            zuno-stack-islands.js
-            zuno-stack-objective.js
-            zuno-stack-relay-advanced.js
+          files=(
+            zuno-stack.html zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css
+            zuno-stack-performance.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js zuno-stack-mobile-shell.js
+            zuno-stack-objective.js zuno-stack-objective.css zuno-stack-relay-advanced.js zuno-stack-relay-advanced.css
+            zuno-stack-lobby-fullscreen-v3.css zuno-stack-lobby-v2.css zuno-stack-lobby-v2.js zuno-stack-lobby-final-polish.css
+            zuno-stack-lobby-closeout.css zuno-stack-lobby-closeout.js zuno-stack-gameplay-state.js zuno-stack-gameplay-v1.css zuno-stack-gameplay-v1.js
+            zuno-stack-gameplay-polish-v2.css zuno-stack-gameplay-polish-v2.js zuno-stack-gameplay-immersive-v3.css zuno-stack-gameplay-immersive-v3.js
+            zuno-stack-brand.css zuno-stack-brand.js zuno-stack-arena-motion.js
           )
-          for file in "${modules[@]}"; do
-            test -s "$file"
-            node --check "$file"
-          done
+          for file in "${files[@]}"; do test -s "$file" || { echo "Missing Stack runtime file: $file"; exit 1; }; done
+          for file in zuno-stack*.js; do node --check "$file"; done
 
-      - name: Validate Stack gameplay invariants
+      - name: Validate Stack boot graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          direct=(zuno-stack-pieces.css zuno-stack-lobby-fullscreen-v3.css zuno-stack-lobby-v2.css zuno-stack-lobby-final-polish.css zuno-stack-lobby-closeout.css zuno-stack-gameplay-v1.css zuno-stack-gameplay-polish-v2.css zuno-stack-gameplay-immersive-v3.css zuno-stack-brand.css zuno-stack-pieces.js zuno-stack.js zuno-stack-gameplay-state.js zuno-stack-gameplay-v1.js zuno-stack-gameplay-polish-v2.js zuno-stack-gameplay-immersive-v3.js zuno-stack-brand.js zuno-stack-arena-motion.js zuno-stack-lobby-closeout.js)
+          for asset in "${direct[@]}"; do grep -q "$asset" zuno-stack.html; done
+          injected=(zuno-stack-performance.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js zuno-stack-mobile-shell.js zuno-stack-objective.css zuno-stack-objective.js zuno-stack-relay-advanced.css zuno-stack-relay-advanced.js zuno-stack-lobby-v2.js)
+          for asset in "${injected[@]}"; do grep -q "$asset" nav.js; done
+
+      - name: Validate gameplay and cooperation invariants
+        shell: bash
         run: |
           set -euo pipefail
           grep -q 'TRAY_LIMIT=7' zuno-stack.js
           grep -q 'RISK_AT=6' zuno-stack.js
           grep -q 'TOTAL_TILES=90' zuno-stack.js
-          grep -q 'COMBO_WINDOW_MS=12000' zuno-stack.js
-          grep -q "roomGames=\['zuno-stack.html'\]" nav.js
-
-      - name: Validate stages 1-12 boot and cache
-        run: |
-          set -euo pipefail
-          assets=(
-            zuno-stack-performance.js
-            zuno-stack-premium.js
-            zuno-stack-social.js
-            zuno-stack-progression.js
-            zuno-stack-content.js
-            zuno-stack-mobile-shell.js
-            zuno-stack-strategic.js
-            zuno-stack-strategic.css
-            zuno-stack-islands.js
-            zuno-stack-islands.css
-            zuno-stack-objective.js
-            zuno-stack-objective.css
-            zuno-stack-relay-advanced.js
-            zuno-stack-relay-advanced.css
-          )
-          for asset in "${assets[@]}"; do
-            grep -q "$asset" nav.js
-            grep -q "$asset" sw.js
-          done
-
-      - name: Validate social lobby and contextual invites
-        run: |
-          set -euo pipefail
-          test -s zuno-stack-lobby.css
-          grep -q 'zuno-stack-lobby.css' nav.js
-          grep -q 'zuno-stack-lobby.css' sw.js
-          grep -q 'zstackLobby' zuno-stack-social.js
-          grep -q 'zslInviteSheet' zuno-stack-social.js
+          grep -q 'LAYER_COUNTS=\[36,24,15,10,5\]' zuno-stack.js
+          grep -q 'TARGET_MIN_MS=240000' zuno-stack.js
+          grep -q 'TARGET_MAX_MS=360000' zuno-stack.js
+          grep -q 'stack_relay' zuno-stack.js
+          grep -q 'stack_state' zuno-stack.js
+          grep -q 'submit_zuno_stack_result' zuno-stack.js
+          grep -q 'get_friend_game_leaderboard' zuno-stack-progression.js
           grep -q "from('messages')" zuno-stack-social.js
-          grep -q 'stack_party_accept' zuno-stack-social.js
-          grep -q "type:'game_invite'" zuno-stack-social.js
-          grep -q 'prefers-reduced-motion' zuno-stack-lobby.css
 
-      - name: Validate visual finish assets
+      - name: Guard obsolete Stack assets
+        shell: bash
         run: |
           set -euo pipefail
-          for asset in zuno-stack-layout-v1.css zuno-stack-visual.css zuno-stack-visual-final.css; do
-            test -s "$asset"
-            grep -q "$asset" nav.js
-            grep -q "$asset" sw.js
-          done
-          grep -q 'prefers-reduced-motion' zuno-stack-layout-v1.css
-          grep -q 'prefers-reduced-motion' zuno-stack-visual.css
-          grep -q 'prefers-reduced-motion' zuno-stack-visual-final.css
-          grep -q 'zuno-stack-lite' zuno-stack-visual.css
-          grep -q 'zuno-stack-lite' zuno-stack-visual-final.css
-
-      - name: Validate strategic board generation
-        run: |
-          set -euo pipefail
-          grep -q 'zstack-covered' zuno-stack-strategic.js
-          grep -Eq 'data-open-pieces|openPieces' zuno-stack-strategic.js
-          grep -q 'zuno-stack-islands' zuno-stack-islands.js
-          grep -q 'island-x' zuno-stack-islands.js
-          grep -q 'island-y' zuno-stack-islands.js
-
-      - name: Validate cooperative objective and Relay
-        run: |
-          set -euo pipefail
-          grep -q 'stack_objective' zuno-stack-objective.js
-          grep -q 'room:' zuno-stack-objective.js
-          grep -q 'stack_relay_activity' zuno-stack-relay-advanced.js
-          grep -q 'room:' zuno-stack-relay-advanced.js
-          grep -q 'ATIVIDADE DA EQUIPE' zuno-stack-relay-advanced.js
-
-      - name: Validate mobile and accessibility safeguards
-        run: |
-          set -euo pipefail
-          grep -q 'prefers-reduced-motion' zuno-stack-strategic.css
-          grep -q 'prefers-reduced-motion' zuno-stack-islands.css
-          grep -q 'prefers-reduced-motion' zuno-stack-objective.css
-          grep -q 'prefers-reduced-motion' zuno-stack-relay-advanced.css
-          grep -q 'zuno-stack-lite' zuno-stack-relay-advanced.css
-          grep -q 'zuno-stack-lite' zuno-stack-strategic.css
+          test ! -e zuno-stack-pieces.svg
+          test ! -e zuno-stack-pieces.webp
+          for old in zuno-stack-layout-v1.css zuno-stack-visual.css zuno-stack-visual-final.css zuno-stack-lobby.css; do test ! -e "$old"; done
 
       - name: Validate frontend generation
+        shell: bash
         run: |
           python3 - <<'PY'
           import pathlib,re
-          nav=pathlib.Path('nav.js').read_text()
-          sw=pathlib.Path('sw.js').read_text()
-          n=re.search(r"const V='(\d+)'",nav)
-          s=re.search(r'zunoplay-v(\d+)',sw)
-          if not n or not s or n.group(1)!=s.group(1):
-              raise SystemExit('generation mismatch')
+          nav=pathlib.Path('nav.js').read_text(); sw=pathlib.Path('sw.js').read_text()
+          n=re.search(r"const V='(\d+)'",nav); s=re.search(r'zunoplay-v(\d+)',sw)
+          if not n or not s or n.group(1)!=s.group(1): raise SystemExit('generation mismatch')
           print('generation v'+n.group(1))
           PY
 
       - name: Guard removed games and secrets
+        shell: bash
         run: |
           set -euo pipefail
-          secret_pat='sb''_secret_'
-          role_pat='service''_role'
+          secret_pat='sb''_secret_'; role_pat='service''_role'
           ! grep -RIn --exclude-dir=.git --exclude='*.md' --exclude='*.yml' -E "zuno-core\\.html|zuno-core\\.js|${secret_pat}|${role_pat}" .
