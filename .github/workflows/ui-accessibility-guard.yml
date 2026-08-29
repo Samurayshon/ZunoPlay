@@ -1,0 +1,54 @@
+name: ZunoPlay UI Accessibility Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ui-accessibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Guard mobile UI accessibility invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          home = Path('zuno-current-home-mobile.css').read_text(encoding='utf-8')
+          nav_css = Path('zuno-global-navigation-v1.css').read_text(encoding='utf-8')
+          chrome = Path('zuno-global-chrome.css').read_text(encoding='utf-8')
+          components = Path('zuno-ui-components.css').read_text(encoding='utf-8')
+          nav_js = Path('nav.js').read_text(encoding='utf-8')
+          index = Path('index.html').read_text(encoding='utf-8')
+
+          required = {
+              'Home top action 44px': 'body.zuno-official-home .icon-button{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important' in home,
+              'Home profile 44px': 'body.zuno-official-home .mini-profile{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important' in home,
+              'Home progress label >=11px': '.progress-text{font-size:11px!important' in home,
+              'Home menu copy >=10.5px': '.menu-card p{font-size:10.5px!important' in home,
+              'Home bottom navigation label >=10.5px': '#bottomNav .nav-item{height:54px!important;min-height:54px!important;font-size:10.5px!important' in home,
+              'Canonical nav label >=10.5px': '.zuno-canonical-item{height:56px' in nav_css and 'font-size:10.5px!important' in nav_css,
+              'Hub close target 44px': '.zuno-hub-close{width:44px;height:44px;min-width:44px;min-height:44px' in nav_css,
+              'Global chrome action 44px': '.zuno-global-action{position:relative!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important' in chrome,
+              'Global profile 44px': '.zuno-global-profile{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important' in chrome,
+              'Shared buttons 44px': 'min-height:44px!important;' in components,
+              'Core runtime stays v310': "const V='310',UI_V='311'" in nav_js,
+              'UI CSS cache version is isolated': "css('zunoplay-canonical-navigation-style','./zuno-global-navigation-v1.css',UI_V)" in nav_js and "css('zunoplay-global-chrome-style','./zuno-global-chrome.css',UI_V)" in nav_js and "css('zunoplay-ui-components','./zuno-ui-components.css',UI_V)" in nav_js,
+              'Home mobile CSS cache v311': 'zuno-current-home-mobile.css?v=311' in index,
+              'nav runtime reference remains v310': 'nav.js?v=310' in index,
+          }
+
+          failed = [name for name, ok in required.items() if not ok]
+          if failed:
+              print('UI accessibility regression detected:')
+              for name in failed:
+                  print(' -', name)
+              raise SystemExit(1)
+
+          print(f'UI accessibility guard passed ({len(required)} invariants).')
+          PY
