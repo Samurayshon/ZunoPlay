@@ -2,7 +2,7 @@ name: Rooms Voice P1 Guard
 
 on:
   push:
-    branches: [main, fix/rooms-voice-p1-main2]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -39,9 +39,11 @@ jobs:
           f='supabase/migrations/20260829223000_harden_rooms_voice_access.sql'
           g='supabase/migrations/20260829223100_guard_voice_answer_direction.sql'
           h='supabase/migrations/20260829223200_reject_membership_in_inactive_room.sql'
+          i='supabase/migrations/20260829223300_fix_room_join_trigger_for_invites.sql'
           test -s "$f"
           test -s "$g"
           test -s "$h"
+          test -s "$i"
           grep -q 'create table if not exists public.room_invites' "$f"
           grep -q 'extensions.digest' "$f"
           grep -q 'p_invite_token text default null' "$f"
@@ -52,6 +54,10 @@ jobs:
           grep -q 'sendrecv|sendonly' "$g"
           grep -q 'room_not_available' "$h"
           grep -q 'zuno_reject_membership_in_inactive_room' "$h"
+          grep -q 'create or replace function public.assign_room_member_session' "$i"
+          ! grep -q "v_room.visibility='private'" "$i"
+          grep -q "new.role:='owner'" "$i"
+          grep -q "new.role:='audience'" "$i"
 
       - name: Reject legacy voice loader
         run: |
