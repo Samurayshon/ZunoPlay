@@ -17,6 +17,7 @@ function loadOfficialModules(){
  loadCss('zuno-stack-final-compose.css?v=99d3232','zsoFinalCompose');
  loadCss('zuno-stack-final-polish.css?v=22c5fdc','zsoFinalPolish');
  loadCss('zuno-stack-intuitive-final.css?v=67d33fc','zsoIntuitiveFinal');
+ loadCss('zuno-stack-piece-symbol-guard.css?v=eb2c3f5','zsoPieceSymbolGuard');
  loadCss('zuno-stack-combo-chain.css?v=d391dac','zsoComboChain');loadJs('zuno-stack-combo-chain.js?v=6cb6e95','zsoComboChain');
  loadCss('zuno-stack-relay-v2-official.css?v=435e897','zsoRelayV2');loadJs('zuno-stack-relay-v2-official.js?v=e035b07','zsoRelayV2');
  loadJs('zuno-stack-systems-official.js?v=43fac9d','zsoSystems');
