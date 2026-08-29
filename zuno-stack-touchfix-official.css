@@ -34,6 +34,34 @@ body.zstack-playing .tile{
   user-select:none!important;
   touch-action:manipulation;
 }
+/* O flash branco vinha do container quadrado sendo iluminado pelas animações de toque. */
+body.zstack-playing .tile.zso-pick,
+body.zstack-playing .tile.zsf-picked,
+body.zstack-playing .tile:active,
+body.zstack-playing .tile:focus,
+body.zstack-playing .tile:focus-visible{
+  animation:none!important;
+  outline:none!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+body.zstack-playing .tile.zso-pick .zsp-art,
+body.zstack-playing .tile.zsf-picked .zsp-art,
+body.zstack-playing .tile:active .zsp-art{
+  animation:zstTileTap .18s cubic-bezier(.2,.8,.2,1)!important;
+}
+body.zstack-playing .tile button,
+body.zstack-playing .tile [role="button"],
+body.zstack-playing .tile .zsp-art{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  outline:none!important;
+}
+@keyframes zstTileTap{
+  0%{transform:translateY(-2px) scale(1);filter:brightness(1)}
+  45%{transform:translateY(1px) scale(.94);filter:brightness(1.22)}
+  100%{transform:translateY(-2px) scale(1);filter:brightness(1)}
+}
 /* Mantém acessibilidade por teclado fora das peças do tabuleiro. */
 body.zstack-playing .tool:focus-visible,
 body.zstack-playing .zso-powers button:focus-visible,
