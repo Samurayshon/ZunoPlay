@@ -19,5 +19,5 @@ if(page==='zuno-stack.html')js('zunoplay-room-game-return','./zuno-room-game-ret
 if(rooms.includes(page)){css('zunoplay-rooms-stage6-style','./zuno-rooms-stage6.css');js('zunoplay-rooms-stage6-script','./zuno-rooms-stage6.js')}
 if(games.includes(page)){css('zunoplay-games-stage7-style','./zuno-games-stage7.css');js('zunoplay-games-stage7-script','./zuno-games-stage7.js')}
 if(page==='zuno-stack.html')js('zunoplay-stack-lobby-v2','./zuno-stack-lobby-v2.js');
-js('zunoplay-avatar-renderer','./avatar-renderer.js',()=>js('zunoplay-official-avatars','./zuno-official-avatars.js',()=>{js('zunoplay-avatar-home-sync','./avatar-home-sync.js');if(!pub.has(page))js('zunoplay-avatar-social-sync.js','./zuno-avatar-social-sync.js')}));if(!pub.has(page))js('zunoplay-integration-phase4','./zuno-integration-phase4.js');
+js('zunoplay-avatar-renderer','./avatar-renderer.js',()=>js('zunoplay-official-avatars','./zuno-official-avatars.js',()=>{js('zunoplay-avatar-home-sync','./avatar-home-sync.js');if(!pub.has(page))js('zunoplay-avatar-social-sync','./zuno-avatar-social-sync.js')}));if(!pub.has(page))js('zunoplay-integration-phase4','./zuno-integration-phase4.js');
 })();
