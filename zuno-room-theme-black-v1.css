@@ -1,0 +1,17 @@
+/* ZunoPlay — Tema-base preto para salas
+   Base neutra e editável: remove gradientes, halos e fundos decorativos
+   sem alterar layout, assentos, voz, mensagens ou lógica da sala. */
+:root{--zuno-room-black:#000;--zuno-room-black-soft:#030303;--zuno-room-black-panel:#070707;--zuno-room-black-line:#171717}
+html,body,body.zuno-page-sala,body.zuno-room-immersive,body.zuno-voice-room-official{background:#000!important}
+body.zuno-page-sala #app.app,body.zuno-room-immersive #app.app,body.zuno-voice-room-official #app.app{background:#000!important;background-image:none!important}
+body.zuno-page-sala .header{background:#000!important;background-image:none!important;border-bottom-color:#111!important;box-shadow:none!important}
+body.zuno-page-sala .main,body.zuno-page-sala .stage-shell,body.zuno-page-sala .chat-section,body.zuno-page-sala .messages{background:#000!important;background-image:none!important}
+body.zuno-page-sala .room-stage{background:#000!important;background-image:none!important;border-color:transparent!important;box-shadow:none!important}
+body.zuno-page-sala .room-stage:before{background:none!important;box-shadow:none!important}
+body.zuno-page-sala .room-stage:after{display:none!important;content:none!important}
+body.zuno-page-sala .composer-wrap{background:#000!important;background-image:none!important;border-top-color:#111!important;box-shadow:none!important}
+body.zuno-page-sala .chat-input{background:#070707!important;border-color:#202020!important}
+body.zuno-page-sala .speaker,body.zuno-page-sala .emoji-button,body.zuno-page-sala .send-button{border-color:#202020!important}
+body.zuno-page-sala .sheet-backdrop{background:rgba(0,0,0,.82)!important}
+body.zuno-page-sala .members-sheet{background:#050505!important;background-image:none!important;border-color:#191919!important}
+/* Mantém identidade funcional: presença, microfone, avatar e mensagens continuam coloridos. */
