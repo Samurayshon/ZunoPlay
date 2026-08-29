@@ -1,0 +1,63 @@
+/* ZunoPlay Room Social Polish v254 — visual finish on top of stable 5x2 architecture */
+body.zuno-page-sala{background:#000!important;color:#f7f7f8!important}
+body.zuno-page-sala .app{background:#000!important}
+
+/* Header: quieter, denser, more app-like */
+body.zuno-page-sala .header{background:#000!important;border-bottom:1px solid #0d0f13!important;box-shadow:none!important}
+body.zuno-page-sala .room-title{font-size:19px!important;letter-spacing:-.35px!important}
+body.zuno-page-sala .room-meta{color:#737986!important}
+body.zuno-page-sala #peopleButton{background:#07080c!important;border-color:#1b1e25!important;box-shadow:none!important}
+body.zuno-page-sala .top-avatar{background:#090b10!important;border-color:#242833!important}
+body.zuno-page-sala .people-count{background:#090b10!important;border-color:#242833!important;color:#d8dbe2!important}
+
+/* Voice zone: remove prototype card feeling while keeping visual structure */
+body.zuno-page-sala .stage-shell{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:8px 10px 2px!important;padding:12px 4px 8px!important;overflow:visible!important}
+body.zuno-page-sala #roomStage{background:transparent!important}
+body.zuno-page-sala #roomStage>.avatar-slot,body.zuno-page-sala #roomStage>.seat-empty{transition:transform .18s ease,opacity .18s ease!important}
+body.zuno-page-sala #roomStage>.avatar-slot:active,body.zuno-page-sala #roomStage>.seat-empty:active{transform:scale(.97)!important}
+
+/* Free seats: subtle and premium */
+body.zuno-page-sala .empty-circle{background:#050609!important;border:1px solid #20232b!important;color:#505663!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.01)!important}
+body.zuno-page-sala .seat-empty{opacity:.82!important}
+body.zuno-page-sala .seat-empty:hover,body.zuno-page-sala .seat-empty:active{opacity:1!important}
+body.zuno-page-sala .seat-empty:hover .empty-circle,body.zuno-page-sala .seat-empty:active .empty-circle{border-color:#533675!important;color:#9d6dd5!important;background:#09060d!important}
+
+/* Occupied seats: presence first, decoration second */
+body.zuno-page-sala .avatar{background:#0a0c11!important;border-color:#2b3039!important;box-shadow:0 5px 18px rgba(0,0,0,.24)!important}
+body.zuno-page-sala .avatar-slot.me .avatar{border-color:#31d889!important;box-shadow:0 0 0 2px rgba(49,216,137,.08),0 0 18px rgba(49,216,137,.12)!important}
+body.zuno-page-sala .avatar-slot.is-speaking .avatar,body.zuno-page-sala .avatar-slot[data-voice-state="speaking"] .avatar{border-color:#43e59a!important;box-shadow:0 0 0 3px rgba(67,229,154,.10),0 0 24px rgba(67,229,154,.20)!important;animation:zunoSpeakSoft 1.45s ease-in-out infinite!important}
+@keyframes zunoSpeakSoft{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+body.zuno-page-sala .avatar-name{color:#f1f2f4!important;font-weight:800!important}
+body.zuno-page-sala .presence-status{color:#39d98d!important;opacity:.85!important}
+body.zuno-page-sala .mic-dot{background:#0e1116!important;border-color:#242831!important;box-shadow:0 2px 7px rgba(0,0,0,.35)!important}
+body.zuno-page-sala .avatar-slot.is-muted .mic-dot,body.zuno-page-sala .avatar-slot[data-voice-muted="true"] .mic-dot{background:#281116!important;border-color:#66313e!important;color:#ff7f97!important}
+
+/* Conversation: make it feel like the living layer of the room */
+body.zuno-page-sala .chat-section{background:linear-gradient(180deg,#010101 0%,#000 16%)!important}
+body.zuno-page-sala .chat-section:before{content:'Conversa';padding:7px 18px 8px!important;color:#4f535c!important;font-size:8px!important;letter-spacing:.14em!important}
+body.zuno-page-sala .messages{padding-top:6px!important;padding-bottom:28px!important}
+body.zuno-page-sala .chat-row{margin:2px 0!important;max-width:86%!important}
+body.zuno-page-sala .chat-avatar{width:28px!important;height:28px!important;flex-basis:28px!important;background:#080a0e!important;border-color:#20242c!important}
+body.zuno-page-sala .message-user{font-size:8px!important;color:#82738e!important;margin-bottom:3px!important}
+body.zuno-page-sala .message{padding:8px 11px!important;border-radius:15px 15px 15px 5px!important;background:#0d0f13!important;border:1px solid #1d2026!important;box-shadow:none!important}
+body.zuno-page-sala .chat-row.me .message{background:linear-gradient(135deg,#6e2cbb,#8a37d0)!important;border-color:#7c38bf!important}
+body.zuno-page-sala .message-text{font-size:13px!important;line-height:17px!important}
+body.zuno-page-sala .message-time{opacity:.55!important;font-size:7px!important}
+body.zuno-page-sala .chat-row.zuno-grouped .chat-avatar,body.zuno-page-sala .chat-row.zuno-grouped .message-user{visibility:hidden!important}
+
+/* Composer: one unified dock, not a row of prototype buttons */
+body.zuno-page-sala .composer-wrap{background:rgba(0,0,0,.98)!important;border-top:1px solid #111318!important;box-shadow:0 -10px 24px rgba(0,0,0,.46)!important}
+body.zuno-page-sala .speaker,body.zuno-page-sala #emojiButton{background:#080a0e!important;border-color:#20242c!important;color:#d8dce4!important}
+body.zuno-page-sala #emojiButton[data-voice-state="active"]{border-color:#27583f!important;background:#07110c!important;color:#4be39b!important}
+body.zuno-page-sala #emojiButton[data-voice-state="muted"]{border-color:#5a2835!important;background:#12070a!important;color:#ff8198!important}
+body.zuno-page-sala #chatInput{background:#07080b!important;border-color:#1d2027!important;color:#f2f3f5!important}
+body.zuno-page-sala #chatInput::placeholder{color:#6d727e!important}
+body.zuno-page-sala #chatInput:focus{background:#0a0b0f!important;border-color:#4d315f!important;box-shadow:0 0 0 2px rgba(139,66,232,.07)!important}
+body.zuno-page-sala #zunoComposerActions button{background:#06070a!important;border-color:#1b1e24!important;color:#777d88!important;transition:.15s ease!important}
+body.zuno-page-sala #zunoComposerActions button:active{transform:scale(.94)!important;background:#0b0c10!important;color:#a58aba!important}
+body.zuno-page-sala .send-button{background:linear-gradient(135deg,#7431c4,#9b3ce0)!important;box-shadow:0 6px 16px rgba(121,47,195,.18)!important}
+
+/* Empty room copy stays quiet */
+body.zuno-page-sala .empty{color:#50545d!important;font-size:11px!important}
+
+@media(max-width:390px){body.zuno-page-sala .stage-shell{margin-left:6px!important;margin-right:6px!important}body.zuno-page-sala .chat-section:before{padding-left:14px!important}body.zuno-page-sala .messages{padding-left:13px!important;padding-right:13px!important}}
