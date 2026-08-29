@@ -21,8 +21,10 @@ jobs:
           node --check zuno-stack-authority-official.js
           f='supabase/migrations/20260829220000_enforce_zuno_stack_host_authority.sql'
           fix='supabase/migrations/20260829220500_fix_zuno_stack_action_idempotency.sql'
+          server='supabase/migrations/20260829221000_server_authoritative_zuno_stack_tile.sql'
           test -s "$f"
           test -s "$fix"
+          test -s "$server"
           grep -q 'stack_host_lease_required' "$f"
           grep -q 'stack_bootstrap_only_before_host' "$f"
           grep -q 'zuno_stack_request_action' "$f"
@@ -33,10 +35,15 @@ jobs:
           grep -q 'v_effective_payload' "$fix"
           grep -q 'if found then' "$fix"
           grep -q 'return v_id' "$fix"
+          grep -q 'stack_server_action_required' "$server"
+          grep -q 'zuno_stack_apply_tile' "$server"
+          grep -q 'zuno_stack_apply_undo' "$server"
           grep -q 'function isHost()' zuno-stack-authority-official.js
           grep -q 'function inferAction' zuno-stack-authority-official.js
           grep -q 'function requestAction' zuno-stack-authority-official.js
           grep -q 'function handleActionRow' zuno-stack-authority-official.js
           grep -q "if(!isHost())return routeNonHost" zuno-stack-authority-official.js
           grep -q "table:'zuno_stack_game_events'" zuno-stack-authority-official.js
-          grep -q 'version:4' zuno-stack-authority-official.js
+          grep -q "if(kind==='tile')" zuno-stack-authority-official.js
+          grep -q "if(kind==='undo')" zuno-stack-authority-official.js
+          grep -Eq 'version:[5-9]|version:[1-9][0-9]+' zuno-stack-authority-official.js
