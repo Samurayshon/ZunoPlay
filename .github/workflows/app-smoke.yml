@@ -133,7 +133,8 @@ jobs:
           grep -q 'RISK_AT=6' zuno-stack.js
           grep -q 'TOTAL_TILES=90' zuno-stack.js
           grep -q "new URL('jogos.html'" zuno-room-experience-v2.js
-          grep -q "submit_zuno_stack_result" zuno-stack.js
+          grep -q 'zunoplay_zuno_stack_last_result' zuno-stack.js
+          ! grep -RIn --include='zuno-stack*.js' "sb.rpc('submit_zuno_stack_result'" . || { echo 'Unsafe Zuno Stack reward RPC returned'; exit 1; }
           grep -q 'zuno-pulso-v6.js' momentos.html
           grep -q 'zuno-pulso-header-v8.js' momentos.html
 
