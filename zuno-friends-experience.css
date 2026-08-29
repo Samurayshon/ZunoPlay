@@ -2,30 +2,13 @@
 .zuno-friends-home-card{cursor:pointer!important;user-select:none;transition:transform .16s ease,border-color .16s ease;position:relative!important;display:block!important;padding:0!important;overflow:hidden!important;-webkit-tap-highlight-color:transparent!important;outline:none!important}
 .zuno-friends-home-card:active{transform:scale(.985)}
 .zuno-friends-home-card:focus,.zuno-friends-home-card:focus-visible{outline:none!important;box-shadow:inherit!important}
-
-/* Card social da Home: sem ícones/chevrons legados. */
-.zuno-friends-home-card .stat-icon,
-.zuno-friends-home-card .online-icon,
-.zuno-friends-home-card .dot-online,
-.zuno-friends-home-card .zuno-friends-home-arrow,
-.zuno-friends-home-card .chevron,
-.zuno-friends-home-card [class*="chevron"],
-.zuno-friends-home-card [data-chevron],
-.zuno-friends-home-card .z33-friend-mini{display:none!important}
+.zuno-friends-home-card .stat-icon,.zuno-friends-home-card .online-icon,.zuno-friends-home-card .dot-online,.zuno-friends-home-card .zuno-friends-home-arrow,.zuno-friends-home-card .chevron,.zuno-friends-home-card [class*="chevron"],.zuno-friends-home-card [data-chevron],.zuno-friends-home-card .z33-friend-mini{display:none!important}
 .zuno-friends-home-card::after,.zuno-friends-home-card::before{content:none!important;display:none!important}
-
-/* Wrapper dedicado e absoluto: não depende do flex genérico dos stat-pill,
-   portanto não muda de posição quando outros estilos/scripts terminam de carregar. */
 .zuno-friends-home-card>.friends-home-copy{position:absolute!important;inset:0!important;min-width:0!important;width:100%!important;height:100%!important;padding:13px 14px 10px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;overflow:hidden!important}
 .zuno-friends-home-card .stat-label{display:block!important;flex:0 0 auto!important;margin:0 0 7px!important;padding:0!important;white-space:nowrap!important;color:#c7c8d4!important;font-size:13px!important;font-weight:500!important;line-height:15px!important;opacity:1!important;visibility:visible!important;transform:none!important}
-.zuno-friends-home-card #onlineCount,.zuno-friends-home-card #onlineFriendsAvatars{display:flex!important;flex:0 0 auto!important;align-items:flex-start!important;justify-content:flex-start!important;min-width:0!important;min-height:18px!important;max-width:100%!important;margin:0!important;padding:0!important;font-size:11px!important;line-height:14px!important;font-weight:450!important;color:#73788c!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;transform:none!important}
+.zuno-friends-home-card #friendsHomePresence{display:flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;min-height:34px!important;max-width:100%!important;margin:0!important;padding:0!important;font-size:11px!important;line-height:14px!important;font-weight:450!important;color:#73788c!important;white-space:nowrap!important;overflow:hidden!important;transform:none!important}
 .zuno-friends-home-avatars{display:flex!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;min-height:34px!important;width:auto!important;padding:0!important;margin:0!important;line-height:1!important;overflow:visible!important}
-.zuno-friends-home-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;margin-left:-8px;border:2px solid #121326;background:linear-gradient(145deg,#7437db,#17294b);color:#fff;font-size:12px;font-weight:900;box-shadow:0 0 0 1px rgba(139,61,255,.42),0 5px 14px rgba(0,0,0,.18)}
-.zuno-friends-home-avatar:first-child{margin-left:0}
-.zuno-friends-home-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.zuno-friends-home-empty{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:11px!important;line-height:14px!important;color:#73788c!important;font-weight:450!important;letter-spacing:0!important;white-space:nowrap!important}
-
+.zuno-friends-home-avatar{width:32px;height:32px;flex:0 0 32px;border-radius:50%;overflow:hidden;display:grid;place-items:center;margin-left:-7px;border:2px solid #121326;background:linear-gradient(145deg,#7437db,#17294b);color:#fff;font-size:11px;font-weight:900;box-shadow:0 0 0 1px rgba(139,61,255,.36),0 4px 12px rgba(0,0,0,.22)}
+.zuno-friends-home-avatar:first-child{margin-left:0}.zuno-friends-home-avatar img{width:100%;height:100%;object-fit:cover;display:block}.zuno-friends-home-empty{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:11px!important;line-height:14px!important;color:#73788c!important;font-weight:450!important;letter-spacing:0!important;white-space:nowrap!important}
 .zuno-friends-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;margin:0 0 10px;border:1px solid #2e345b;border-radius:14px;background:#090c1b}.zuno-friends-tab{min-height:38px;border:0;border-radius:10px;background:transparent;color:#8f94aa;font-size:11px;font-weight:900;letter-spacing:.02em}.zuno-friends-tab.active{background:linear-gradient(135deg,#6f35d9,#9b3cff);color:#fff;box-shadow:0 5px 18px rgba(123,55,220,.22)}
-.zuno-friend-online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:#31dd7b;box-shadow:0 0 8px rgba(49,221,123,.65)}
-body.zuno-social-amigos #friends .row[data-zuno-online="0"] .meta{color:#72778c!important}
-body.zuno-social-amigos #friends .row[data-zuno-hidden="1"]{display:none!important}
+.zuno-friend-online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:#31dd7b;box-shadow:0 0 8px rgba(49,221,123,.65)}body.zuno-social-amigos #friends .row[data-zuno-online="0"] .meta{color:#72778c!important}body.zuno-social-amigos #friends .row[data-zuno-hidden="1"]{display:none!important}
