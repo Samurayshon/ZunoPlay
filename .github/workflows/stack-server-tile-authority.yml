@@ -1,0 +1,37 @@
+name: Zuno Stack Server Tile Authority
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  server-tile-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard server-authoritative tile path
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-authority-official.js
+          f='supabase/migrations/20260829221000_server_authoritative_zuno_stack_tile.sql'
+          test -s "$f"
+          grep -q 'stack_server_action_required' "$f"
+          grep -q 'zuno_stack_apply_tile_internal' "$f"
+          grep -q 'stack_tile_blocked' "$f"
+          grep -q 'serverUndo' "$f"
+          grep -q 'zuno_stack_apply_undo_internal' "$f"
+          grep -q 'security definer' "$f"
+          grep -q "set search_path = ''" "$f"
+          grep -q 'revoke all on function public.zuno_stack_apply_tile' "$f"
+          grep -q 'grant execute on function public.zuno_stack_apply_tile' "$f"
+          grep -q 'function applyTile' zuno-stack-authority-official.js
+          grep -q 'function applyUndo' zuno-stack-authority-official.js
+          grep -q 'function serverActionCapture' zuno-stack-authority-official.js
+          grep -q "kind==='tile'" zuno-stack-authority-official.js
+          grep -q 'version:5' zuno-stack-authority-official.js
