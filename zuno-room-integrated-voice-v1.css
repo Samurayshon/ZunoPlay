@@ -1,0 +1,203 @@
+/* ZunoPlay — Integrated Voice Room v1
+   Sala de voz + mensagens. Sem Pulse, sem palco cenográfico, sem ondas decorativas. */
+body.zuno-page-sala,
+body.zuno-page-sala #app.app,
+body.zuno-page-sala .main,
+body.zuno-page-sala .stage-shell,
+body.zuno-page-sala .room-stage,
+body.zuno-page-sala .chat-section,
+body.zuno-page-sala .messages,
+body.zuno-page-sala .composer-wrap{background:#000!important;background-image:none!important}
+
+/* A área de voz é uma área funcional, não um palco. */
+body.zuno-page-sala .stage-shell{
+  height:216px!important;
+  min-height:216px!important;
+  padding:8px 14px 6px!important;
+  overflow:hidden!important;
+  border-bottom:1px solid #0f0f0f!important;
+}
+body.zuno-page-sala .room-stage{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,94px)!important;
+  gap:8px 4px!important;
+  width:100%!important;
+  height:200px!important;
+  min-height:200px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  align-content:center!important;
+  overflow:visible!important;
+}
+
+/* Remove totalmente Zuno Pulse e ligações/ondas antigas. */
+body.zuno-page-sala .room-stage::before,
+body.zuno-page-sala .room-stage::after{display:none!important;content:none!important;background:none!important;box-shadow:none!important;border:0!important}
+body.zuno-page-sala .room-stage>*::after{display:none!important;content:none!important;background:none!important;filter:none!important}
+body.zuno-page-sala .room-stage>.avatar-slot,
+body.zuno-page-sala .room-stage>.seat-empty{
+  grid-column:auto!important;
+  grid-row:auto!important;
+  position:relative!important;
+  width:100%!important;
+  min-width:0!important;
+  height:94px!important;
+  min-height:94px!important;
+  margin:0!important;
+  padding:2px 0!important;
+  justify-self:stretch!important;
+  align-self:center!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  flex-direction:column!important;
+  z-index:2!important;
+}
+
+/* Assento ocupado: identidade e estado de voz são o foco. */
+body.zuno-page-sala .avatar-wrap{
+  width:56px!important;
+  height:56px!important;
+  transform:none!important;
+  transition:transform .14s ease,filter .14s ease!important;
+}
+body.zuno-page-sala .avatar{
+  width:52px!important;
+  height:52px!important;
+  border:1.5px solid #34384a!important;
+  background:#0b0d14!important;
+  box-shadow:none!important;
+}
+body.zuno-page-sala .avatar-slot.me .avatar{border-color:#2bdc86!important}
+body.zuno-page-sala .avatar-slot.owner .avatar{border-color:#cda958!important}
+body.zuno-page-sala .avatar-slot.is-speaking .avatar,
+body.zuno-page-sala .avatar-slot[data-voice-state="speaking"] .avatar{
+  border-color:#31e88f!important;
+  box-shadow:0 0 0 3px rgba(49,232,143,.10),0 0 18px rgba(49,232,143,.24)!important;
+}
+body.zuno-page-sala .avatar-slot.is-speaking .avatar-wrap,
+body.zuno-page-sala .avatar-slot[data-voice-state="speaking"] .avatar-wrap{transform:scale(1.035)!important}
+body.zuno-page-sala .mic-dot{
+  left:-1px!important;
+  bottom:1px!important;
+  width:18px!important;
+  height:18px!important;
+  background:#11141d!important;
+  border:1px solid #242937!important;
+  font-size:8px!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.45)!important;
+}
+body.zuno-page-sala .owner-crown{width:18px!important;height:18px!important;font-size:8px!important;right:-1px!important;bottom:1px!important}
+body.zuno-page-sala .avatar-name{
+  margin-top:4px!important;
+  max-width:74px!important;
+  font-size:9px!important;
+  line-height:11px!important;
+  font-weight:800!important;
+  color:#f0f1f5!important;
+}
+body.zuno-page-sala .avatar-role{display:none!important}
+body.zuno-page-sala .presence-status{
+  margin-top:1px!important;
+  font-size:6.8px!important;
+  line-height:8px!important;
+  color:#4fdc92!important;
+  opacity:.82!important;
+}
+
+/* Assentos livres ficam claros sem dominar a tela. */
+body.zuno-page-sala .seat-empty{opacity:.72!important;cursor:pointer!important}
+body.zuno-page-sala .empty-circle{
+  width:48px!important;
+  height:48px!important;
+  border:1px dashed #343849!important;
+  background:#030303!important;
+  color:#656a7a!important;
+  font-size:25px!important;
+  box-shadow:none!important;
+}
+body.zuno-page-sala .empty-label{
+  margin-top:6px!important;
+  color:#565b69!important;
+  font-size:7px!important;
+  line-height:9px!important;
+}
+body.zuno-page-sala .seat-empty:active .empty-circle{border-color:#73798a!important;color:#a3a8b5!important;transform:scale(.96)!important}
+
+/* Feed de mensagens começa logo após os assentos e ocupa todo o resto. */
+body.zuno-page-sala .chat-section{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:216px!important;
+  bottom:0!important;
+  min-height:0!important;
+  border:0!important;
+  background:#000!important;
+}
+body.zuno-page-sala .messages{
+  min-height:0!important;
+  height:100%!important;
+  overflow-y:auto!important;
+  padding:12px 16px 22px!important;
+  justify-content:flex-start!important;
+  align-content:flex-start!important;
+  scroll-padding-bottom:18px!important;
+}
+body.zuno-page-sala .messages>.empty{
+  margin:8px 0!important;
+  padding:0!important;
+  text-align:left!important;
+  color:#505563!important;
+  font-size:10px!important;
+}
+
+/* Mensagens simples e integradas, sem aparência de protótipo. */
+body.zuno-page-sala .chat-row{margin:3px 0!important;gap:7px!important;max-width:86%!important}
+body.zuno-page-sala .chat-avatar{width:28px!important;height:28px!important;border:1px solid #262a38!important;background:#0a0c12!important}
+body.zuno-page-sala .message-user{font-size:8px!important;margin:0 4px 3px!important;color:#8e92a2!important;font-weight:700!important}
+body.zuno-page-sala .message{
+  padding:8px 10px!important;
+  border-radius:13px!important;
+  border:1px solid #20232e!important;
+  background:#0a0b10!important;
+  box-shadow:none!important;
+}
+body.zuno-page-sala .chat-row.me .message{
+  background:#6f2fc2!important;
+  border-color:#7e3bd1!important;
+}
+body.zuno-page-sala .message-text{font-size:12px!important;line-height:1.32!important}
+body.zuno-page-sala .message-time{display:none!important}
+
+/* Composer como dock permanente da conversa/voz. */
+body.zuno-page-sala .composer-wrap{
+  border-top:1px solid #141414!important;
+  box-shadow:0 -12px 24px rgba(0,0,0,.42)!important;
+}
+body.zuno-page-sala .chat-input{background:#070707!important;border-color:#252832!important}
+body.zuno-page-sala .speaker,
+body.zuno-page-sala .emoji-button,
+body.zuno-page-sala .zuno-composer-actions button{background:#080a10!important;border-color:#252936!important}
+
+@media(max-width:430px){
+  body.zuno-page-sala .stage-shell{height:210px!important;min-height:210px!important;padding:7px 8px 5px!important}
+  body.zuno-page-sala .room-stage{height:198px!important;min-height:198px!important;grid-template-rows:repeat(2,92px)!important;gap:6px 2px!important}
+  body.zuno-page-sala .room-stage>.avatar-slot,body.zuno-page-sala .room-stage>.seat-empty{height:92px!important;min-height:92px!important}
+  body.zuno-page-sala .chat-section{top:210px!important}
+  body.zuno-page-sala .avatar-wrap{width:53px!important;height:53px!important}
+  body.zuno-page-sala .avatar{width:49px!important;height:49px!important}
+  body.zuno-page-sala .empty-circle{width:45px!important;height:45px!important}
+}
+@media(max-height:720px){
+  body.zuno-page-sala .stage-shell{height:184px!important;min-height:184px!important}
+  body.zuno-page-sala .room-stage{height:174px!important;min-height:174px!important;grid-template-rows:repeat(2,82px)!important;gap:4px 2px!important}
+  body.zuno-page-sala .room-stage>.avatar-slot,body.zuno-page-sala .room-stage>.seat-empty{height:82px!important;min-height:82px!important}
+  body.zuno-page-sala .chat-section{top:184px!important}
+  body.zuno-page-sala .avatar-wrap{width:48px!important;height:48px!important}
+  body.zuno-page-sala .avatar{width:44px!important;height:44px!important}
+  body.zuno-page-sala .empty-circle{width:41px!important;height:41px!important}
+}
