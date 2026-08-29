@@ -1,0 +1,43 @@
+/* Zuno Stack — Touch/Focus Fix Oficial */
+body.zstack-playing .tile,
+body.zstack-playing .tile *,
+body.zstack-playing .slot,
+body.zstack-playing .slot *,
+body.zstack-playing .relay-slot,
+body.zstack-playing .relay-slot *{
+  -webkit-tap-highlight-color:transparent!important;
+}
+body.zstack-playing .tile,
+body.zstack-playing .tile:focus,
+body.zstack-playing .tile:focus-visible,
+body.zstack-playing .tile:active,
+body.zstack-playing .tile button,
+body.zstack-playing .tile button:focus,
+body.zstack-playing .tile button:focus-visible,
+body.zstack-playing .tile button:active,
+body.zstack-playing .tile [role="button"],
+body.zstack-playing .tile [role="button"]:focus,
+body.zstack-playing .tile [role="button"]:focus-visible,
+body.zstack-playing .tile [role="button"]:active{
+  outline:none!important;
+}
+body.zstack-playing .tile button:focus,
+body.zstack-playing .tile button:focus-visible,
+body.zstack-playing .tile button:active,
+body.zstack-playing .tile [role="button"]:focus,
+body.zstack-playing .tile [role="button"]:focus-visible,
+body.zstack-playing .tile [role="button"]:active{
+  box-shadow:none!important;
+}
+body.zstack-playing .tile{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  touch-action:manipulation;
+}
+/* Mantém acessibilidade por teclado fora das peças do tabuleiro. */
+body.zstack-playing .tool:focus-visible,
+body.zstack-playing .zso-powers button:focus-visible,
+body.zstack-playing .back:focus-visible{
+  outline:2px solid rgba(102,220,255,.9)!important;
+  outline-offset:2px!important;
+}
