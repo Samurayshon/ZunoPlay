@@ -1,11 +1,12 @@
 (()=>{
-  if(window.__ZUNO_TURN_PROVIDER_V1__)return;
-  window.__ZUNO_TURN_PROVIDER_V1__=true;
+  if(window.__ZUNO_TURN_PROVIDER_V2__)return;
+  window.__ZUNO_TURN_PROVIDER_V2__=true;
 
-  window.ZunoVoiceICEProvider=async({supabase})=>{
+  window.ZunoVoiceICEProvider=async({supabase,roomId})=>{
     const sb=supabase||window.ZunoSupabaseClient;
     if(!sb?.functions?.invoke)throw new Error('Supabase Functions indisponível');
-    const {data,error}=await sb.functions.invoke('voice-turn');
+    if(!roomId)throw new Error('Sala necessária para solicitar TURN');
+    const {data,error}=await sb.functions.invoke('voice-turn',{body:{room_id:roomId}});
     if(error)throw error;
     const iceServers=Array.isArray(data?.iceServers)?data.iceServers:[];
     if(!iceServers.some(server=>{
