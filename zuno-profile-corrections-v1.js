@@ -174,7 +174,7 @@
   const start=()=>{
     const root=document.getElementById('profileV2Root');
     if(!root) return;
-    observer.observe(root,{childList:true,subtree:true});
+    observer.observe(root,{childList:true});
     apply();
     clearInterval(refreshTimer);
     refreshTimer=setInterval(apply,30000);
