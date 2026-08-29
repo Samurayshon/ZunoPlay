@@ -1,0 +1,27 @@
+/* Pulso v10 — secondary discovery navigation */
+.zm-tabs .zm-tab[data-view="plaza"]{display:none!important}
+.zm-tabs{padding-right:104px!important}
+.zp-discovery-nav{display:flex;align-items:center;gap:10px;margin:8px 0 14px;padding:0 2px;overflow-x:auto;scrollbar-width:none}
+.zp-discovery-nav::-webkit-scrollbar{display:none}
+.zp-discovery-nav button{flex:0 0 auto;min-height:42px;padding:0 16px;border:1px solid #343957;border-radius:999px;background:#0b0d18;color:#aaaec1;font:inherit;font-size:14px;font-weight:750;white-space:nowrap;transition:.18s ease}
+.zp-discovery-nav button.active{color:#fff;border-color:#8f4dff;background:linear-gradient(135deg,rgba(126,55,255,.2),rgba(45,195,255,.08));box-shadow:0 0 18px rgba(141,69,255,.14)}
+.zp-discovery-nav button:active{transform:scale(.97)}
+#zpDiscoveryHub{display:none!important}
+#momentsApp[data-zp-discovery-mode="zuno"] #zpDiscoveryHub{display:block!important}
+#momentsApp[data-zp-discovery-mode="zuno"] #feed{display:none!important}
+#momentsApp[data-zp-discovery-mode="zuno"] #plazaIntro{display:none!important}
+#momentsApp[data-zp-discovery-mode="zuno"] #topicStrip{display:none!important}
+#momentsApp[data-zp-discovery-mode="for-you"] #zpDiscoveryHub{display:none!important}
+#momentsApp[data-zp-view="general"] #plazaIntro{display:none!important}
+#momentsApp[data-zp-view="general"] #topicStrip{margin-top:2px!important}
+#momentsApp[data-zp-view="general"] #topicStrip [data-topic=""]{display:none!important}
+.zp-discovery-hub{margin-top:4px!important;padding:0!important}
+.zp-discovery-hero{padding:18px!important;border:1px solid #2a2f4a!important;border-radius:22px!important;background:linear-gradient(145deg,#0d1020,#080a14)!important}
+.zp-discovery-kicker{font-size:12px!important;font-weight:850!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#a96bff!important}
+.zp-discovery-hero h2{margin:6px 0 5px!important;font-size:22px!important;line-height:1.15!important;color:#f5f6fb!important}
+.zp-discovery-hero p{margin:0!important;color:#8e93aa!important;font-size:13px!important;line-height:1.45!important}
+.zp-discovery-section{margin-top:14px!important;padding:16px!important;border:1px solid #252a44!important;border-radius:20px!important;background:#090b16!important}
+.zp-discovery-section-head{display:flex!important;justify-content:space-between!important;align-items:center!important;margin-bottom:12px!important}.zp-discovery-section-head b{font-size:16px!important}.zp-discovery-section-head span{font-size:11px!important;color:#7f849a!important}
+.zp-creator-row{display:flex!important;gap:10px!important;overflow-x:auto!important;padding-bottom:3px!important;scrollbar-width:none}.zp-creator-row::-webkit-scrollbar{display:none}
+.zp-creator-card{min-width:132px!important;padding:12px!important;border:1px solid #292e4b!important;border-radius:18px!important;background:linear-gradient(145deg,#101326,#090b15)!important}.zp-creator-avatar{width:54px!important;height:54px!important;border-radius:50%!important;margin-bottom:8px!important}.zp-creator-card b{display:block!important;font-size:13px!important}.zp-creator-card small{display:block!important;color:#7d8399!important;font-size:10px!important;margin:3px 0 9px!important}.zp-creator-card button{width:100%!important;height:31px!important;border:1px solid #6940a7!important;border-radius:10px!important;background:rgba(145,70,255,.14)!important;color:#d8c0ff!important;font-weight:800!important;font-size:11px!important}
+@media(max-width:420px){.zp-discovery-nav{margin-top:4px}.zp-discovery-nav button{min-height:40px;padding:0 14px;font-size:13px}.zp-discovery-hero h2{font-size:20px!important}}
