@@ -30,7 +30,6 @@
 #zpPulseModes .zp-pulse-mode.active>span:first-child{background:linear-gradient(145deg,rgba(155,77,255,.3),rgba(49,211,255,.14));color:#fff}
 #zpPulseModes .zp-pulse-mode.active .zp-pulse-mode-avatar{box-shadow:0 0 0 2px rgba(255,255,255,.84),0 0 14px rgba(83,219,255,.32)}
 #zpPulseModes .zp-pulse-mode.active small{color:#aeb4c8}
-#zpPulseModes .zp-pulse-mode.active::after{content:none!important}
 #momentsApp[data-zp-view="general"] .zp-pulse-modes{display:none!important}
 
 /* Swipe transition is scoped to the internal content only; top-level Pulso/Descobrir never slides. */
