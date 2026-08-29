@@ -1,0 +1,16 @@
+(()=>{
+if(window.__ZUNO_ROOM_AVATAR_SYNC_V1__)return;window.__ZUNO_ROOM_AVATAR_SYNC_V1__=true;
+const q=new URLSearchParams(location.search),roomId=q.get('room')||q.get('room_id')||q.get('id')||sessionStorage.getItem('zunoplay_room_id');
+if(!roomId)return;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let sb=null,observer=null,refreshTimer=0;const configs=new Map();
+async function deps(){for(let i=0;i<80;i++){sb=window.ZunoSupabaseClient||sb;if(sb&&window.ZunoAvatarRenderer?.mount)return true;await sleep(100)}return false}
+function roomConfig(raw){if(!raw||raw.style!=='zuno-studio-v1')return null;return {...raw,mode:'Sala de voz',rotation:0,zoom:1}}
+function ensureImage(root,cls){let el=root?.querySelector?.('.'+cls);if(!el)return null;if(el.tagName!=='IMG'){const img=document.createElement('img');img.className=el.className;img.alt='Avatar ZunoPlay';el.replaceWith(img);el=img}return el}
+function mountFor(root,userId,cls){const cfg=configs.get(String(userId));if(!cfg||!root)return;const img=ensureImage(root,cls);if(!img)return;const sig=JSON.stringify(cfg);if(img.dataset.zunoRoomAvatarSig===sig)return;if(window.ZunoAvatarRenderer?.mount?.(img,cfg))img.dataset.zunoRoomAvatarSig=sig}
+function render(){document.querySelectorAll('#roomStage .avatar-slot[data-user-id]').forEach(root=>mountFor(root,root.dataset.userId,'avatar'));document.querySelectorAll('#members .member[data-user-id]').forEach(root=>mountFor(root,root.dataset.userId,'member-avatar'))}
+async function refresh(){if(!sb)return;try{const {data:members,error}=await sb.from('room_members').select('user_id').eq('room_id',roomId);if(error)throw error;const ids=[...new Set((members||[]).map(x=>x.user_id).filter(Boolean))];if(!ids.length){configs.clear();return render()}const {data:profiles,error:pe}=await sb.from('profiles').select('id,avatar_config').in('id',ids);if(pe)throw pe;configs.clear();for(const p of profiles||[]){const cfg=roomConfig(p.avatar_config);if(cfg)configs.set(String(p.id),cfg)}render()}catch(e){console.warn('Zuno room avatar sync',e)}}
+function schedule(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>refresh(),80)}
+async function boot(){if(!await deps())return;await refresh();const targets=[document.getElementById('roomStage'),document.getElementById('members')].filter(Boolean);observer=new MutationObserver(()=>{render();schedule()});for(const t of targets)observer.observe(t,{childList:true,subtree:true});window.addEventListener('zuno:room-presence-sync',schedule);window.addEventListener('zuno-avatar-saved',schedule);const ch=sb.channel('room-avatar-profile-'+roomId).on('postgres_changes',{event:'UPDATE',schema:'public',table:'profiles'},payload=>{if(payload?.new?.id&&configs.has(String(payload.new.id)))schedule()}).subscribe();window.addEventListener('pagehide',()=>{observer?.disconnect();try{sb.removeChannel(ch)}catch(_){}},{once:true});window.dispatchEvent(new CustomEvent('zuno:room-avatar-sync-ready',{detail:{room_id:roomId}}))}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>boot().catch(console.warn),{once:true});else boot().catch(console.warn);
+})();
