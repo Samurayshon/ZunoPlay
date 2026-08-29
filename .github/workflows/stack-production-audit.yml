@@ -30,6 +30,7 @@ jobs:
             zuno-stack-rhythm-official.css zuno-stack-rhythm-official.js zuno-stack-settings-official.css zuno-stack-settings-official.js
             zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js
             zuno-stack-final-compose.css zuno-stack-final-polish.css zuno-stack-intuitive-final.css
+            zuno-stack-combo-chain.css zuno-stack-combo-chain.js
             zuno-stack-relay-v2-official.css zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-integrity-official.js
           )
           for file in "${files[@]}"; do test -s "$file" || { echo "Missing canonical Stack runtime file: $file"; exit 1; }; done
@@ -55,8 +56,9 @@ jobs:
             zuno-stack-pressure-official.css zuno-stack-pressure-official.js zuno-stack-touchfix-official.css
             zuno-stack-rhythm-official.css zuno-stack-rhythm-official.js zuno-stack-settings-official.css zuno-stack-settings-official.js
             zuno-stack-feedback-official.css zuno-stack-layout-v2-official.css zuno-stack-layout-v2-official.js
-            zuno-stack-final-compose.css zuno-stack-final-polish.css zuno-stack-intuitive-final.css zuno-stack-relay-v2-official.css
-            zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-integrity-official.js
+            zuno-stack-final-compose.css zuno-stack-final-polish.css zuno-stack-intuitive-final.css
+            zuno-stack-combo-chain.css zuno-stack-combo-chain.js
+            zuno-stack-relay-v2-official.css zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-integrity-official.js
           )
           for asset in "${official[@]}"; do grep -q "$asset" zuno-stack-performance-official.js || { echo "Stack official composition asset missing: $asset"; exit 1; }; done
 
@@ -90,7 +92,7 @@ jobs:
             zuno-stack-performance.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js zuno-stack-mobile-shell.js
             zuno-stack-objective.js zuno-stack-objective.css zuno-stack-relay-advanced.js zuno-stack-relay-advanced.css
             zuno-stack-powers-official.js zuno-stack-powers-official.css zuno-stack-orders-official.js zuno-stack-coop-official.js
-            zuno-stack-combo-chain.js zuno-stack-combo-chain.css zuno-stack-relay-v2-official.js zuno-stack-mechanics-official.js
+            zuno-stack-relay-v2-official.js zuno-stack-mechanics-official.js
           )
           for old in "${obsolete[@]}"; do test ! -e "$old" || { echo "Obsolete Stack asset returned: $old"; exit 1; }; done
           for old in "${obsolete[@]}"; do
