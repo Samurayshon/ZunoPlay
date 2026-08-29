@@ -14,15 +14,37 @@
 #momentsApp[data-zp-view="general"]>.zp-discovery-nav,#momentsApp[data-zp-view="general"] .zp-discovery-nav{display:flex!important}
 #momentsApp[data-zp-view="friends"] .zp-discovery-nav{display:none!important}
 #composer{clear:both!important;margin-top:6px!important}
-.zp-pulse-modes{display:flex;align-items:center;justify-content:center;gap:6px;width:max-content;max-width:100%;margin:2px auto 12px;padding:4px;border:1px solid rgba(130,137,173,.16);border-radius:18px;background:rgba(13,15,29,.78);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.zp-pulse-mode{position:relative;display:grid;place-items:center;width:52px;height:42px;margin:0;padding:0;border:0;border-radius:14px;background:transparent;color:#777d95;transition:background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease}
-.zp-pulse-mode svg{width:23px;height:23px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-.zp-pulse-mode-avatar{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#7135d8,#363a70);color:#fff;font-size:12px;font-weight:900;letter-spacing:-.2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);pointer-events:none}
-.zp-pulse-mode-avatar img{display:block;width:100%;height:100%;object-fit:cover}
-.zp-pulse-mode:active{transform:scale(.94)}
-.zp-pulse-mode.active{color:#fff;background:linear-gradient(135deg,rgba(154,76,255,.96),rgba(69,91,255,.86));box-shadow:0 7px 22px rgba(111,70,255,.24),inset 0 1px 0 rgba(255,255,255,.2)}
-.zp-pulse-mode.active .zp-pulse-mode-avatar{box-shadow:0 0 0 2px rgba(255,255,255,.84),0 0 14px rgba(83,219,255,.32)}
-.zp-pulse-mode.active::after{content:'';position:absolute;left:50%;bottom:4px;width:4px;height:4px;border-radius:50%;background:#55dbff;box-shadow:0 0 9px rgba(85,219,255,.72);transform:translateX(-50%)}
+
+/* Internal Pulso navigation now follows the Descobrir card language. */
+#zpPulseModes.zp-pulse-modes{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;max-width:none;margin:8px 0 14px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+#zpPulseModes .zp-pulse-mode{position:relative;display:flex;align-items:center;justify-content:flex-start;gap:10px;width:auto;height:auto;min-width:0;min-height:58px;margin:0;padding:10px 12px;border:1px solid #2b3150;border-radius:18px;background:linear-gradient(150deg,#0b0e1c,#080a15);color:#969caf;text-align:left;box-shadow:0 10px 28px rgba(0,0,0,.14);transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease}
+#zpPulseModes .zp-pulse-mode>span:first-child{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:12px;background:rgba(153,73,255,.12);color:#b980ff}
+#zpPulseModes .zp-pulse-mode>span:first-child.zp-pulse-mode-avatar{overflow:hidden;border-radius:50%;background:linear-gradient(145deg,#392162,#17374e);color:#fff;font-size:12px;font-weight:900;letter-spacing:-.2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+#zpPulseModes .zp-pulse-mode-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+#zpPulseModes .zp-pulse-mode>span:first-child svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#zpPulseModes .zp-pulse-mode>div{min-width:0}
+#zpPulseModes .zp-pulse-mode b{display:block;color:inherit;font-size:13px;line-height:1.1;white-space:nowrap}
+#zpPulseModes .zp-pulse-mode small{display:block;margin-top:4px;color:#747b93;font-size:8.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#zpPulseModes .zp-pulse-mode:active{transform:scale(.985)}
+#zpPulseModes .zp-pulse-mode.active{border-color:rgba(148,75,255,.76);background:linear-gradient(135deg,rgba(142,63,255,.20),rgba(49,211,255,.07));color:#fff;box-shadow:0 12px 34px rgba(0,0,0,.18),0 0 24px rgba(145,66,255,.08)}
+#zpPulseModes .zp-pulse-mode.active>span:first-child{background:linear-gradient(145deg,rgba(155,77,255,.3),rgba(49,211,255,.14));color:#fff}
+#zpPulseModes .zp-pulse-mode.active .zp-pulse-mode-avatar{box-shadow:0 0 0 2px rgba(255,255,255,.84),0 0 14px rgba(83,219,255,.32)}
+#zpPulseModes .zp-pulse-mode.active small{color:#aeb4c8}
+#zpPulseModes .zp-pulse-mode.active::after{content:none!important}
 #momentsApp[data-zp-view="general"] .zp-pulse-modes{display:none!important}
+
+/* Swipe transition is scoped to the internal content only; top-level Pulso/Descobrir never slides. */
+#feed,#zp304Panel{will-change:transform,opacity;touch-action:pan-y}
+.zp-carousel-moving{pointer-events:none}
+.zp-carousel-out-left{animation:zpCarouselOutLeft .13s ease both}
+.zp-carousel-out-right{animation:zpCarouselOutRight .13s ease both}
+.zp-carousel-in-left{animation:zpCarouselInLeft .18s ease both}
+.zp-carousel-in-right{animation:zpCarouselInRight .18s ease both}
+@keyframes zpCarouselOutLeft{to{transform:translate3d(-24px,0,0);opacity:.2}}
+@keyframes zpCarouselOutRight{to{transform:translate3d(24px,0,0);opacity:.2}}
+@keyframes zpCarouselInLeft{from{transform:translate3d(24px,0,0);opacity:.2}to{transform:none;opacity:1}}
+@keyframes zpCarouselInRight{from{transform:translate3d(-24px,0,0);opacity:.2}to{transform:none;opacity:1}}
+
 .zp-empty-action{margin-top:12px;padding:9px 14px;border:1px solid rgba(148,91,255,.32);border-radius:12px;background:rgba(139,75,255,.1);color:#d9c8ff;font:inherit;font-weight:750}
-@media(max-width:420px){.zm-header{min-height:72px!important;padding-top:8px!important}.zm-tabs{gap:26px!important;height:56px!important;min-height:56px!important;padding-right:92px!important}.zm-tabs .zm-tab{height:56px!important;font-size:18px!important}.zm-tabs .zm-tab.active{font-size:27px!important}.zm-brand-row{top:8px!important;right:4px!important;width:84px!important;height:56px!important;min-height:56px!important}.zp-head-action{width:39px!important;height:39px!important}.zp-head-action svg{width:23px!important;height:23px!important}.zp-pulse-modes{margin-top:0;margin-bottom:10px}.zp-pulse-mode{width:50px;height:40px}}
+@media(max-width:420px){.zm-header{min-height:72px!important;padding-top:8px!important}.zm-tabs{gap:26px!important;height:56px!important;min-height:56px!important;padding-right:92px!important}.zm-tabs .zm-tab{height:56px!important;font-size:18px!important}.zm-tabs .zm-tab.active{font-size:27px!important}.zm-brand-row{top:8px!important;right:4px!important;width:84px!important;height:56px!important;min-height:56px!important}.zp-head-action{width:39px!important;height:39px!important}.zp-head-action svg{width:23px!important;height:23px!important}#zpPulseModes.zp-pulse-modes{gap:8px}#zpPulseModes .zp-pulse-mode{min-height:54px;padding:9px 10px}#zpPulseModes .zp-pulse-mode>span:first-child{width:30px;height:30px;flex-basis:30px}#zpPulseModes .zp-pulse-mode b{font-size:12px}#zpPulseModes .zp-pulse-mode small{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.zp-carousel-out-left,.zp-carousel-out-right,.zp-carousel-in-left,.zp-carousel-in-right{animation:none!important}}
