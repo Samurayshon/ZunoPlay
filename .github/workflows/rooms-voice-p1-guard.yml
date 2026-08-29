@@ -21,6 +21,7 @@ jobs:
           node --check voz-sala-v2.js
           node --check zuno-room-access-v1.js
           node --check zuno-room-invite-entry-v1.js
+          node --check zuno-turn-provider.js
 
       - name: Guard secured voice wiring
         run: |
@@ -32,6 +33,8 @@ jobs:
           grep -q "if(!permission.canPublish)throw new Error('speaker_required')" voz-sala-v2.js
           grep -q 'requestMic' zuno-room-access-v1.js
           grep -q 'leave_room_session' zuno-room-access-v1.js
+          grep -q '__ZUNO_TURN_PROVIDER_V2__' zuno-turn-provider.js
+          grep -q "body:{room_id:roomId}" zuno-turn-provider.js
 
       - name: Guard private invite and host lifecycle migrations
         run: |
@@ -58,6 +61,22 @@ jobs:
           ! grep -q "v_room.visibility='private'" "$i"
           grep -q "new.role:='owner'" "$i"
           grep -q "new.role:='audience'" "$i"
+
+      - name: Guard TURN credential authorization
+        run: |
+          set -euo pipefail
+          f='supabase/functions/voice-turn/index.ts'
+          test -s "$f"
+          grep -q 'room_members' "$f"
+          grep -q 'body.room_id' "$f"
+          grep -q 'user_id' "$f"
+          grep -q 'eq.active' "$f"
+          grep -q 'room_membership_required' "$f"
+          grep -q 'active_room_required' "$f"
+          grep -q 'TURN_URLS' "$f"
+          grep -q 'TURN_ALLOWED_ORIGINS' "$f"
+          ! grep -q 'SUPABASE_SERVICE_ROLE_KEY' "$f"
+          ! grep -q 'SUPABASE_SECRET_KEYS' "$f"
 
       - name: Reject legacy voice loader
         run: |
