@@ -49,8 +49,8 @@ jobs:
           required=(
             index.html entrada.html login.html cadastro.html perfil.html avatar.html amigos.html conversas.html notificacoes.html comunidades.html
             salas.html sala.html jogos.html historico.html momentos.html zuno-stack.html manifest.json sw.js nav.js
-            home-app.js realtime-global.js room-session-guard.js zuno-room-app.js zuno-room-v1-core.js zuno-room-experience.js
-            zuno-room-controls-v1.js zuno-room-composer-v2.js voz-sala.js presenca-sala.js
+            home-app.js realtime-global.js room-session-guard.js zuno-room-app.js zuno-room-v1-core.js zuno-room-experience-v2.js
+            zuno-room-controls-v2.js zuno-room-composer-v2.js voz-sala.js presenca-sala.js
             avatar-renderer.js avatar-home-sync.js zuno-notifications.js zuno-messages.js zuno-pulso-v3.js zuno-pulso-v6.js
             zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-social.js zuno-stack-performance.js
           )
@@ -71,6 +71,11 @@ jobs:
             zuno-room-moderation.css zuno-room-moderation.js zuno-room-profile-card.css zuno-room-profile-card.js zuno-room-voice-headless-v1.js zuno-voice-feedback.css zuno-voice-feedback.js
             zuno-stack-pieces.svg zuno-stack-pieces.webp zuno-core.html zuno-core.js zuno-core-v04.js zuno-core-v05.js zuno-core-v05-engine.js
             desafio.html partida.html reflexo.html precisao.html arena.html zuno-caos.html zuno-rush.html zuno-pulse.html
+            zuno-home-auth-gate.js zuno-home-header-guard.js zuno-home-header-guard.css zuno-final-audit.js zuno-final-audit.css
+            zuno-pulso-discover-rescue-v303.js zuno-pulso-discover-v15.css zuno-pulso-discover-v15.js zuno-pulso-discover-v9.css zuno-pulso-discover-v9.js
+            zuno-pulso-discovery-nav-v10.css zuno-pulso-discovery-nav-v10.js zuno-pulso-header-v7.css
+            zuno-room-connection-fix.js zuno-room-controls-clean-v1.js zuno-room-controls-v1.js zuno-room-experience.js
+            zuno-stack-endgame.css zuno-stack-endgame.js zuno-stack-final-compose.js zuno-stack-gameplay-state.js zuno-stack-streak-official.css zuno-stack-streak-official.js
           )
           for file in "${removed[@]}"; do if test -e "$file"; then echo "Dead/prototype file returned: $file"; exit 1; fi; done
 
@@ -100,13 +105,24 @@ jobs:
           text=pathlib.Path('sw.js').read_text()
           m=re.search(r'const STATIC_FILES=(\[.*?\]);',text,re.S)
           if not m: raise SystemExit('STATIC_FILES missing')
-          files=json.loads(m.group(1))
-          missing=[]
+          files=json.loads(m.group(1)); missing=[]
           for item in files:
               p=item.split('?',1)[0].removeprefix('./')
               if p and p!='.' and not pathlib.Path(p).exists(): missing.append(item)
           if missing: raise SystemExit('Missing precache assets: '+', '.join(missing))
           PY
+
+      - name: Guard canonical Home boot
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -q 'user_metadata' home-app.js
+          grep -Fq "currentProfile?.username" home-app.js
+          ! grep -q 'zuno-home-auth-gate' nav.js
+          ! grep -q 'zuno-final-audit' nav.js
+          ! grep -q 'id="searchBackdrop"' index.html
+          ! grep -q 'class="topbar"' index.html
+          grep -q "zuno-stack.html" index.html
 
       - name: Guard current product invariants
         shell: bash
@@ -116,7 +132,7 @@ jobs:
           grep -q 'TRAY_LIMIT=7' zuno-stack.js
           grep -q 'RISK_AT=6' zuno-stack.js
           grep -q 'TOTAL_TILES=90' zuno-stack.js
-          grep -q "new URL('jogos.html'" zuno-room-experience.js
+          grep -q "new URL('jogos.html'" zuno-room-experience-v2.js
           grep -q "submit_zuno_stack_result" zuno-stack.js
           grep -q 'zuno-pulso-v6.js' momentos.html
           grep -q 'zuno-pulso-header-v8.js' momentos.html
