@@ -1,6 +1,9 @@
-/* Pulso v10 — secondary navigation lives inside Descobrir */
-.zm-tabs{padding-right:104px!important}
+/* Pulso v10 — stable primary + nested discovery navigation */
+.zm-header{position:relative!important;min-height:92px!important;overflow:visible!important}
+.zm-tabs{position:relative!important;inset:auto!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:38px!important;width:100%!important;min-height:56px!important;padding:0 104px 0 2px!important;margin:0!important;box-sizing:border-box!important;overflow:visible!important}
+.zm-tabs .zm-tab{position:relative!important;inset:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;height:56px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;white-space:nowrap!important;transform:none!important}
 .zm-tabs .zm-tab[data-view="plaza"]{display:flex!important}
+.zm-tabs .zm-tab.active::after{left:0!important;right:0!important;bottom:0!important;width:100%!important;transform:none!important}
 .zp-discovery-nav{display:none;align-items:center;gap:10px;margin:8px 0 14px;padding:0 2px;overflow-x:auto;scrollbar-width:none}
 #momentsApp[data-zp-view="general"] .zp-discovery-nav{display:flex}
 .zp-discovery-nav::-webkit-scrollbar{display:none}
@@ -25,4 +28,4 @@
 .zp-discovery-section-head{display:flex!important;justify-content:space-between!important;align-items:center!important;margin-bottom:12px!important}.zp-discovery-section-head b{font-size:16px!important}.zp-discovery-section-head span{font-size:11px!important;color:#7f849a!important}
 .zp-creator-row{display:flex!important;gap:10px!important;overflow-x:auto!important;padding-bottom:3px!important;scrollbar-width:none}.zp-creator-row::-webkit-scrollbar{display:none}
 .zp-creator-card{min-width:132px!important;padding:12px!important;border:1px solid #292e4b!important;border-radius:18px!important;background:linear-gradient(145deg,#101326,#090b15)!important}.zp-creator-avatar{width:54px!important;height:54px!important;border-radius:50%!important;margin-bottom:8px!important}.zp-creator-card b{display:block!important;font-size:13px!important}.zp-creator-card small{display:block!important;color:#7d8399!important;font-size:10px!important;margin:3px 0 9px!important}.zp-creator-card button{width:100%!important;height:31px!important;border:1px solid #6940a7!important;border-radius:10px!important;background:rgba(145,70,255,.14)!important;color:#d8c0ff!important;font-weight:800!important;font-size:11px!important}
-@media(max-width:420px){.zp-discovery-nav{margin-top:4px}.zp-discovery-nav button{min-height:40px;padding:0 14px;font-size:13px}.zp-discovery-hero h2{font-size:20px!important}}
+@media(max-width:420px){.zm-tabs{gap:30px!important;padding-right:94px!important}.zm-tabs .zm-tab{height:54px!important}.zp-discovery-nav{margin-top:4px}.zp-discovery-nav button{min-height:40px;padding:0 14px;font-size:13px}.zp-discovery-hero h2{font-size:20px!important}}
