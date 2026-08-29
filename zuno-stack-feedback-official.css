@@ -1,0 +1,59 @@
+/* Zuno Stack — Feedback Oficial */
+body.zstack-playing .toast{
+  left:50%!important;
+  bottom:112px!important;
+  width:auto!important;
+  max-width:min(76vw,300px)!important;
+  min-height:32px!important;
+  padding:7px 12px 7px 30px!important;
+  border:1px solid rgba(150,78,255,.46)!important;
+  border-radius:999px!important;
+  background:linear-gradient(100deg,rgba(31,17,57,.96),rgba(10,13,29,.96))!important;
+  color:#f7f2ff!important;
+  font-size:8px!important;
+  line-height:1.25!important;
+  font-weight:850!important;
+  letter-spacing:.01em!important;
+  text-align:left!important;
+  white-space:normal!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.38),0 0 18px rgba(154,61,255,.16),inset 0 1px rgba(255,255,255,.06)!important;
+  transform:translate(-50%,8px) scale(.96)!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transition:opacity .16s ease,transform .18s ease!important;
+}
+body.zstack-playing .toast:before{
+  content:'⚡';
+  position:absolute;
+  left:8px;
+  top:50%;
+  width:16px;
+  height:16px;
+  transform:translateY(-50%);
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:linear-gradient(145deg,#a641ff,#5726d6);
+  color:#ffe55b;
+  font-size:9px;
+  box-shadow:0 0 10px rgba(153,57,255,.45);
+}
+body.zstack-playing .toast.show{
+  opacity:1!important;
+  transform:translate(-50%,0) scale(1)!important;
+}
+body.zstack-playing .toast.show:after{
+  content:'';
+  position:absolute;
+  left:29px;
+  right:10px;
+  bottom:3px;
+  height:1px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#9d43ff,#35d9ff,#ffd34a);
+  opacity:.7;
+}
+.zso-mobile-lite body.zstack-playing .toast,
+html.zso-mobile-lite body.zstack-playing .toast{box-shadow:0 6px 16px rgba(0,0,0,.34)!important}
+@media(max-width:390px){body.zstack-playing .toast{bottom:106px!important;max-width:78vw!important;font-size:7.6px!important;padding:6px 11px 6px 29px!important}}
+@media(prefers-reduced-motion:reduce){body.zstack-playing .toast{transition:none!important}}
