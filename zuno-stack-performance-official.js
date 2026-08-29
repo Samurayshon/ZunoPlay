@@ -12,6 +12,8 @@ loadCss('zuno-stack-powers-official.css?v=7b6fc17','zsoPowers');
 loadJs('zuno-stack-powers-official.js?v=3d14b6d','zsoPowers');
 loadCss('zuno-stack-orders-official.css?v=3d5bc85','zsoOrders');
 loadJs('zuno-stack-orders-official.js?v=56818f3','zsoOrders');
+loadCss('zuno-stack-coop-official.css?v=29e961e','zsoCoop');
+loadJs('zuno-stack-coop-official.js?v=f076fcd','zsoCoop');
 }
 loadOfficialModules();
 document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));
