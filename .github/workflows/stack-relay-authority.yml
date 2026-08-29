@@ -1,0 +1,43 @@
+name: Zuno Stack Server Relay Authority
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  server-relay-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard server-owned Relay
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-relay-authority.js
+          node --check zuno-stack-performance-official.js
+          f='supabase/migrations/20260829223500_server_authoritative_zuno_stack_relay.sql'
+          test -s "$f"
+          grep -q 'stack_server_relay_required' "$f"
+          grep -q "new.state->'engine'->'relay' is distinct from old.state->'engine'->'relay'" "$f"
+          grep -q 'for update' "$f"
+          grep -q 'revision_conflict' "$f"
+          grep -q 'stack_action_id_conflict' "$f"
+          grep -q 'stack_action_rate_limited' "$f"
+          grep -q 'server_relay_send' "$f"
+          grep -q 'server_relay_take' "$f"
+          grep -q 'zuno_stack_relay_send' "$f"
+          grep -q 'zuno_stack_relay_take' "$f"
+          grep -q 'revoke all on function public.zuno_stack_relay_send' "$f"
+          grep -q 'revoke all on function public.zuno_stack_relay_take' "$f"
+          grep -q 'to authenticated, service_role' "$f"
+          grep -q "sb.rpc(fn,args)" zuno-stack-relay-authority.js
+          grep -q "closest('\[data-tray\]')" zuno-stack-relay-authority.js
+          grep -q "closest('\[data-relay\]')" zuno-stack-relay-authority.js
+          grep -q "stopImmediatePropagation" zuno-stack-relay-authority.js
+          grep -q "authority.reconcile" zuno-stack-relay-authority.js
+          grep -q "zuno-stack-relay-authority.js" zuno-stack-performance-official.js
