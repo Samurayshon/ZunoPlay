@@ -11,7 +11,26 @@ function hideLegacyObjective(){if(!document.body.classList.contains('zstack-play
 function readableOffset(row,col,d){const stagger=row%2?4.5:-2.5,edge=col===0?2:col===5?-2:0,seed=((row*13+col*7)%5)-2;return{x:stagger+edge+seed*1.2+d*(col<3?-1.7:1.7),y:((row%3)-1)*1.8+(((col+row)%2)?1.2:-1.2)-d*2.35,r:(seed*.35)+(d%2?.45:-.45)}}
 function cascade(ids){if(!ids.length)return;const board=$('#board');board?.classList.add('zsf-cascade');ids.slice(0,8).sort((a,b)=>idx(a)-idx(b)).forEach((el,n)=>setTimeout(()=>{el.classList.add('zsf-revealed');setTimeout(()=>el.classList.remove('zsf-revealed'),360)},Math.min(n*32,160)));setTimeout(()=>board?.classList.remove('zsf-cascade'),420)}
 function boardSignature(tiles){return tiles.map(e=>`${e.dataset.tile}:${e.classList.contains('active')?1:0}:${e.classList.contains('removed')?1:0}`).join('|')}
-function decorate(force=false){if(!document.body.classList.contains('zstack-playing'))return;hideLegacyObjective();const tiles=$$('.tile[data-tile]'),sig=boardSignature(tiles);if(force||sig!==lastBoardSig){lastBoardSig=sig;tiles.forEach(el=>{ensureIcon(el);if(!el.dataset.zsfDecorated){const i=idx(el),d=depth(el),row=Math.floor(i/6),col=i%6,o=readableOffset(row,col,d);el.style.setProperty('--zsf-x',o.x.toFixed(1)+'px');el.style.setProperty('--zsf-y',o.y.toFixed(1)+'px');el.style.setProperty('--zsf-r',o.r.toFixed(2)+'deg');el.dataset.zsfDepth=String(Math.max(0,Math.min(2,d)));el.dataset.zsfStack=`${col}-${row}`;el.dataset.zsfDecorated='1'}if(!el.dataset.zsfBound){el.dataset.zsfBound='1';el.addEventListener('pointerdown',()=>{if(!el.classList.contains('active')||el.classList.contains('removed'))return;el.classList.add('zsf-picked');flight(el);setTimeout(()=>el.classList.remove('zsf-picked'),180)},{passive:true})}});const activeEls=tiles.filter(e=>e.classList.contains('active')&&!e.classList.contains('removed')),active=new Set(activeEls.map(e=>e.dataset.tile));if(lastActive.size)cascade(activeEls.filter(e=>!lastActive.has(e.dataset.tile)));lastActive=active}$$('#tray .slot.filled,#relaySlots .relay-slot.filled').forEach(ensureIcon);syncTray()}
+function decorate(force=false){
+ if(!document.body.classList.contains('zstack-playing'))return;
+ hideLegacyObjective();
+ const tiles=$$('.tile[data-tile]');
+ /* Icon decoration must run on every pass. The core can replace the DOM with an
+    equivalent board whose signature is unchanged; skipping here recreated the
+    symbol-less legacy-looking tiles after trios/powers/reconciliation. */
+ tiles.forEach(ensureIcon);
+ $$('#tray .slot.filled,#relaySlots .relay-slot.filled').forEach(ensureIcon);
+ const sig=boardSignature(tiles);
+ if(force||sig!==lastBoardSig){
+  lastBoardSig=sig;
+  tiles.forEach(el=>{
+   if(!el.dataset.zsfDecorated){const i=idx(el),d=depth(el),row=Math.floor(i/6),col=i%6,o=readableOffset(row,col,d);el.style.setProperty('--zsf-x',o.x.toFixed(1)+'px');el.style.setProperty('--zsf-y',o.y.toFixed(1)+'px');el.style.setProperty('--zsf-r',o.r.toFixed(2)+'deg');el.dataset.zsfDepth=String(Math.max(0,Math.min(2,d)));el.dataset.zsfStack=`${col}-${row}`;el.dataset.zsfDecorated='1'}
+   if(!el.dataset.zsfBound){el.dataset.zsfBound='1';el.addEventListener('pointerdown',()=>{if(!el.classList.contains('active')||el.classList.contains('removed'))return;el.classList.add('zsf-picked');flight(el);setTimeout(()=>el.classList.remove('zsf-picked'),180)},{passive:true})}
+  });
+  const activeEls=tiles.filter(e=>e.classList.contains('active')&&!e.classList.contains('removed')),active=new Set(activeEls.map(e=>e.dataset.tile));if(lastActive.size)cascade(activeEls.filter(e=>!lastActive.has(e.dataset.tile)));lastActive=active;
+ }
+ syncTray();
+}
 function firstTarget(){return $('#tray .slot:not(.filled)')||$('#tray .slot:last-child')||$('#tray')}
 function flight(src){const target=firstTarget();if(!target)return;const a=src.getBoundingClientRect(),b=target.getBoundingClientRect();if(!a.width||!b.width)return;const clone=document.createElement('div');clone.className='zsf-flight';clone.setAttribute('aria-hidden','true');const art=src.querySelector('.zsp-art');if(art){const artClone=art.cloneNode(true);artClone.style.width='100%';artClone.style.height='100%';artClone.style.maxWidth='none';clone.appendChild(artClone)}Object.assign(clone.style,{left:a.left+'px',top:a.top+'px',width:a.width+'px',height:a.height+'px',pointerEvents:'none',border:'0',outline:'0',background:'transparent',padding:'0',margin:'0'});document.body.appendChild(clone);const tx=(b.left+b.width/2)-(a.left+a.width/2),ty=(b.top+b.height/2)-(a.top+a.height/2),scale=Math.max(.34,Math.min(.72,b.width/a.width));requestAnimationFrame(()=>{clone.style.transform=`translate(${tx}px,${ty}px) scale(${scale}) rotate(${tx>0?5:-5}deg)`;clone.style.opacity='.12'});setTimeout(()=>clone.remove(),240)}
 function trayCount(){return $$('#tray .slot.filled').length}
