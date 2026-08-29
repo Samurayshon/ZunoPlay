@@ -75,7 +75,7 @@ jobs:
           grep -q 'stack_relay' zuno-stack.js
           grep -q 'stack_state' zuno-stack.js
           grep -q 'zunoplay_zuno_stack_last_result' zuno-stack.js
-          ! grep -q "sb.rpc('submit_zuno_stack_result'" zuno-stack.js || { echo 'Unsafe client reward RPC returned'; exit 1; }
+          ! grep -RIn --include='zuno-stack*.js' "sb.rpc('submit_zuno_stack_result'" . || { echo 'Unsafe client reward RPC returned'; exit 1; }
           grep -q 'function useFluxo' zuno-stack-systems-official.js
           grep -q 'function useVortice' zuno-stack-systems-official.js
           grep -q 'window.ZunoStackSystems' zuno-stack-systems-official.js
