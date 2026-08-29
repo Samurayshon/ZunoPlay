@@ -1,0 +1,43 @@
+name: Zuno Stack Server Relay Authority
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  relay-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard server-authoritative Relay
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-authority-official.js
+          f='supabase/migrations/20260829223500_server_authoritative_zuno_stack_relay.sql'
+          test -s "$f"
+          grep -q 'stack_server_relay_required' "$f"
+          grep -q 'trg_zuno_stack_server_relay_required' "$f"
+          grep -q 'zuno_stack_relay_send' "$f"
+          grep -q 'zuno_stack_relay_take' "$f"
+          grep -q "p_mode='send'" "$f"
+          grep -q "p_mode='take'" "$f"
+          grep -q 'stack_action_id_conflict' "$f"
+          grep -q 'stack_action_rate_limited' "$f"
+          grep -q 'security invoker' "$f"
+          grep -q 'function applyRelay' zuno-stack-authority-official.js
+          grep -q "sb.rpc('zuno_stack_relay_send'" zuno-stack-authority-official.js || grep -q "'zuno_stack_relay_send'" zuno-stack-authority-official.js
+          grep -q "'zuno_stack_relay_take'" zuno-stack-authority-official.js
+          grep -q "kind==='relay_send'||kind==='relay_take'" zuno-stack-authority-official.js
+          grep -q "applyRelay('send',Number(payload.index)" zuno-stack-authority-official.js
+          grep -q "applyRelay('take',Number(payload.index)" zuno-stack-authority-official.js
+          grep -q "closest('\[data-tray\]')" zuno-stack-authority-official.js
+          grep -q "closest('\[data-relay\]')" zuno-stack-authority-official.js
+          ! grep -q 'clickSelector(`\[data-tray=' zuno-stack-authority-official.js
+          ! grep -q 'clickSelector(`\[data-relay=' zuno-stack-authority-official.js
+          grep -Eq 'version:[6-9]|version:[1-9][0-9]+' zuno-stack-authority-official.js
