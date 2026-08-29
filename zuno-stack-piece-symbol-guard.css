@@ -1,13 +1,14 @@
-/* Zuno Stack — symbol guard
-   Keep the native piece symbol visible while the presentation layer has not injected .zsf-piece-icon yet.
-   This prevents symbol-less legacy-looking frames after board/tray/relay rerenders. */
-body.zstack-playing .zsp-art:not(:has(.zsf-piece-icon))::after{
+/* Zuno Stack — authoritative symbol layer
+   Blank pieces are no longer a valid visual state.
+   The symbol is rendered directly from --piece-icon on every board, tray and Relay piece.
+   The JS-injected duplicate icon is hidden so there is only one symbol renderer. */
+body.zstack-playing .zsp-art::after{
   display:grid!important;
   place-items:center!important;
   content:var(--piece-icon,'✦')!important;
   position:absolute!important;
   inset:0!important;
-  z-index:7!important;
+  z-index:8!important;
   color:#fff!important;
   font-family:Arial,"Segoe UI Symbol",sans-serif!important;
   font-size:clamp(18px,5.2vw,31px)!important;
@@ -17,6 +18,8 @@ body.zstack-playing .zsp-art:not(:has(.zsf-piece-icon))::after{
   filter:drop-shadow(0 0 5px #fff4)!important;
   pointer-events:none!important;
 }
-body.zstack-playing .zsp-art:has(.zsf-piece-icon)::after{display:none!important}
-body.zstack-playing .slot.filled .zsp-art:not(:has(.zsf-piece-icon))::after{font-size:19px!important}
-body.zstack-playing .relay-slot.filled .zsp-art:not(:has(.zsf-piece-icon))::after{font-size:13px!important}
+/* The presentation JS may still create this node for effects, but it is never the visual source of truth. */
+body.zstack-playing .zsf-piece-icon{display:none!important}
+body.zstack-playing .slot.filled .zsp-art::after{font-size:19px!important}
+body.zstack-playing .relay-slot.filled .zsp-art::after{font-size:13px!important}
+body.zstack-playing .zsf-flight .zsp-art::after{display:grid!important}
