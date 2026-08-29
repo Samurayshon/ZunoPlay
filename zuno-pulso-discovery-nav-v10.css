@@ -1,7 +1,8 @@
-/* Pulso v10 — secondary discovery navigation */
-.zm-tabs .zm-tab[data-view="plaza"]{display:none!important}
+/* Pulso v10 — secondary navigation lives inside Descobrir */
 .zm-tabs{padding-right:104px!important}
-.zp-discovery-nav{display:flex;align-items:center;gap:10px;margin:8px 0 14px;padding:0 2px;overflow-x:auto;scrollbar-width:none}
+.zm-tabs .zm-tab[data-view="plaza"]{display:flex!important}
+.zp-discovery-nav{display:none;align-items:center;gap:10px;margin:8px 0 14px;padding:0 2px;overflow-x:auto;scrollbar-width:none}
+#momentsApp[data-zp-view="general"] .zp-discovery-nav{display:flex}
 .zp-discovery-nav::-webkit-scrollbar{display:none}
 .zp-discovery-nav button{flex:0 0 auto;min-height:42px;padding:0 16px;border:1px solid #343957;border-radius:999px;background:#0b0d18;color:#aaaec1;font:inherit;font-size:14px;font-weight:750;white-space:nowrap;transition:.18s ease}
 .zp-discovery-nav button.active{color:#fff;border-color:#8f4dff;background:linear-gradient(135deg,rgba(126,55,255,.2),rgba(45,195,255,.08));box-shadow:0 0 18px rgba(141,69,255,.14)}
