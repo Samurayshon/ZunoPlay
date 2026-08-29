@@ -1,0 +1,30 @@
+name: Zuno Stack State Coherence
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  coherence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard authoritative state validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          f='supabase/migrations/20260829214500_validate_zuno_stack_state_coherence.sql'
+          test -s "$f"
+          grep -q "invalid_stack_initial_kind" "$f"
+          grep -q "invalid_stack_round_shape" "$f"
+          grep -q "invalid_stack_match_relation" "$f"
+          grep -q "invalid_stack_start_distribution" "$f"
+          grep -q "stack_round_identity_mismatch" "$f"
+          grep -q "stack_board_layout_mutation" "$f"
+          grep -q "stack_piece_identity_mutation" "$f"
+          grep -q "stack_illegal_tile_restore" "$f"
+          grep -q "stack_excessive_match_delta" "$f"
+          grep -q "revoke execute on function public.zuno_stack_commit_state(uuid,bigint,jsonb) from public" "$f"
+          grep -q "grant execute on function public.zuno_stack_commit_state(uuid,bigint,jsonb) to authenticated, service_role" "$f"
