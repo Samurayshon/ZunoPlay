@@ -14,8 +14,15 @@ function ensureModeUI(){
 function syncAvatar(){
  const target=$('#myAvatarMini'),source=$('#composerAvatar');if(!target||!source)return;
  const img=source.querySelector('img');
- if(img?.src){target.innerHTML='';const clone=document.createElement('img');clone.src=img.src;clone.alt='';target.appendChild(clone);return}
- const value=(source.textContent||'Z').trim();target.textContent=(value[0]||'Z').toUpperCase();
+ if(img?.src){
+  const current=target.querySelector('img');
+  if(current?.src===img.src&&target.childElementCount===1)return;
+  target.replaceChildren();
+  const clone=document.createElement('img');clone.src=img.src;clone.alt='';target.appendChild(clone);return;
+ }
+ const value=((source.textContent||'Z').trim()[0]||'Z').toUpperCase();
+ if(!target.querySelector('img')&&target.textContent===value)return;
+ target.textContent=value;
 }
 function publishSucceeded(){
  const text=$('#postText'),file=$('#postMedia'),preview=$('#mediaPreview');
@@ -44,7 +51,6 @@ function bindPublish(){
 function boot(){
  ensureModeUI();bindPublish();
  const composer=$('#composerAvatar');if(composer)new MutationObserver(syncAvatar).observe(composer,{childList:true,subtree:true,characterData:true});
- const modes=$('#zpPulseModes');if(modes)new MutationObserver(ensureModeUI).observe(modes,{childList:true,subtree:true});
  window.addEventListener('pageshow',()=>{ensureModeUI();syncAvatar()});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
