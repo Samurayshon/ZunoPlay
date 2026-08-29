@@ -31,9 +31,15 @@ body.zuno-page-sala .avatar-slot:not(.me):active .avatar-wrap{transform:scale(.9
 body.zuno-page-sala .chat-section{top:280px!important;background:linear-gradient(180deg,rgba(3,6,16,.06),rgba(3,6,16,.58) 24%,rgba(3,6,16,.96) 100%)!important}
 body.zuno-page-sala .chat-head{height:30px!important;min-height:30px!important;flex-basis:30px!important;padding:0 18px!important;border-bottom:1px solid rgba(96,107,154,.08)!important}
 body.zuno-page-sala .chat-title{font-size:10px!important;color:#a5adc0!important}
-body.zuno-page-sala .messages{padding:10px 14px 12px!important;gap:3px!important;justify-content:flex-start!important;align-content:flex-start!important;overscroll-behavior:contain!important;scroll-behavior:auto!important}
-body.zuno-page-sala .chat-row,body.zuno-page-sala .chat-row.me{gap:6px!important;margin:2px 0!important}
-body.zuno-page-sala .chat-row.zuno-grouped{margin-top:0!important}
+body.zuno-page-sala .messages{padding:10px 14px 12px!important;gap:0!important;justify-content:flex-start!important;align-content:flex-start!important;overscroll-behavior:contain!important;scroll-behavior:auto!important}
+body.zuno-page-sala .chat-row,body.zuno-page-sala .chat-row.me{gap:6px!important;margin:3px 0!important}
+body.zuno-page-sala .chat-row.zuno-grouped{margin-top:-1px!important;margin-bottom:1px!important}
+body.zuno-page-sala .chat-row.zuno-grouped .chat-avatar{visibility:hidden!important}
+body.zuno-page-sala .chat-row.zuno-grouped .message-user{display:none!important}
+body.zuno-page-sala .chat-row.zuno-grouped .message{border-top-left-radius:8px!important}
+body.zuno-page-sala .chat-row.me.zuno-grouped .message{border-top-left-radius:12px!important;border-top-right-radius:8px!important}
+body.zuno-page-sala .chat-row:not(.zuno-grouped):has(+ .chat-row.zuno-grouped) .message{border-bottom-left-radius:8px!important}
+body.zuno-page-sala .chat-row.me:not(.zuno-grouped):has(+ .chat-row.me.zuno-grouped) .message{border-bottom-left-radius:12px!important;border-bottom-right-radius:8px!important}
 body.zuno-page-sala .chat-avatar{width:25px!important;height:25px!important;min-width:25px!important;flex-basis:25px!important}
 body.zuno-page-sala .bubble-wrap,body.zuno-page-sala .chat-row.me .bubble-wrap{max-width:min(78%,510px)!important}
 body.zuno-page-sala .message-user{font-size:7.2px!important;margin:0 0 2px 4px!important}
