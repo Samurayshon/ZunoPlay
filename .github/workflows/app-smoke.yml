@@ -52,7 +52,7 @@ jobs:
             home-app.js realtime-global.js room-session-guard.js zuno-room-app.js zuno-room-v1-core.js zuno-room-experience-v2.js
             zuno-room-controls-v2.js zuno-room-composer-v2.js voz-sala.js presenca-sala.js
             avatar-renderer.js avatar-home-sync.js zuno-notifications.js zuno-messages.js zuno-pulso-v3.js zuno-pulso-v6.js
-            zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-social.js zuno-stack-performance.js
+            zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css zuno-stack-performance-official.js zuno-stack-combo-chain.js zuno-stack-combo-chain.css
           )
           for file in "${required[@]}"; do test -s "$file" || { echo "Missing/empty critical file: $file"; exit 1; }; done
 
