@@ -27,7 +27,8 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
-    private static final String BUILD_ID = "android-v0-boot-v2";
+    private static final String BUILD_ID = "android-v0-boot-v3";
+    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_boot_v3";
     private static final int PERMISSION_REQUEST = 7001;
     private static final long BOOT_TIMEOUT_MS = 12000L;
 
@@ -43,9 +44,7 @@ public class MainActivity extends Activity {
                     "(function(){var l=document.getElementById('loading');if(!l)return false;var s=getComputedStyle(l);return s.display!=='none'&&s.visibility!=='hidden';})()",
                     value -> {
                         if (webView == null) return;
-                        if ("true".equals(value)) {
-                            recoverFromStuckBoot();
-                        }
+                        if ("true".equals(value)) recoverFromStuckBoot();
                     }
             );
         }
@@ -81,7 +80,6 @@ public class MainActivity extends Activity {
         settings.setDisplayZoomControls(false);
         settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.1 " + BUILD_ID);
 
-        // Preserve auth/localStorage, but never preserve stale HTTP resources during v0 development.
         webView.clearCache(true);
 
         webView.setWebViewClient(new WebViewClient() {
@@ -105,10 +103,9 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if (url != null && url.startsWith(START_URL)) {
-                    bootHandler.removeCallbacks(bootWatchdog);
-                    bootHandler.postDelayed(bootWatchdog, BOOT_TIMEOUT_MS);
-                }
+                if (url == null || !url.startsWith(START_URL)) return;
+                bootHandler.removeCallbacks(bootWatchdog);
+                purgeLegacyServiceWorkerOnce(view);
             }
 
             @Override
@@ -134,9 +131,26 @@ public class MainActivity extends Activity {
         });
 
         requestMediaPermissions();
-
-        // Never restore a previously frozen WebView snapshot. A recreated Activity starts clean.
         loadFreshHome();
+    }
+
+    private void purgeLegacyServiceWorkerOnce(WebView view) {
+        String js = "(function(){try{" +
+                "var k='" + SW_RESET_KEY + "';" +
+                "if(localStorage.getItem(k)==='1')return 'ready';" +
+                "localStorage.setItem(k,'1');" +
+                "Promise.resolve().then(async function(){" +
+                "try{if('serviceWorker' in navigator){var rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(function(r){return r.unregister();}));}}catch(e){}" +
+                "try{if(window.caches){var ks=await caches.keys();await Promise.all(ks.map(function(x){return caches.delete(x);}));}}catch(e){}" +
+                "location.replace('" + START_URL + "?android_build=" + BUILD_ID + "&sw_reset=1&t='+Date.now());" +
+                "});return 'resetting';" +
+                "}catch(e){return 'error';}})()";
+
+        view.evaluateJavascript(js, value -> {
+            if (webView == null) return;
+            if ("\"resetting\"".equals(value)) return;
+            bootHandler.postDelayed(bootWatchdog, BOOT_TIMEOUT_MS);
+        });
     }
 
     private void loadFreshHome() {
@@ -215,7 +229,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        // Intentionally do not save WebView state: stale frozen boot state must not survive recreation.
         super.onSaveInstanceState(outState);
     }
 
@@ -239,11 +252,8 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
     }
 
     @Override
