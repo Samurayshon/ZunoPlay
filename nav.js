@@ -13,7 +13,9 @@ if(social.includes(page)){css('zunoplay-social-style','./zuno-social.css');js('z
 if(games.includes(page)){css('zunoplay-game-progression-style','./zuno-game-progression.css');js('zunoplay-game-progression','./zuno-game-progression.js')}
 if(!home&&!pub.has(page)&&!moments)css('zunoplay-ui-components','./zuno-ui-components.css');
 if(profile.includes(page)){css('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');js('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js')}
-js('zunoplay-realtime-global','./realtime-global.js');if(page==='zuno-stack.html')js('zunoplay-room-game-return','./zuno-room-game-return.js');
+js('zunoplay-realtime-global','./realtime-global.js');
+if(home||page==='amigos.html'){css('zunoplay-friends-experience-style','./zuno-friends-experience.css');js('zunoplay-friends-experience-script','./zuno-friends-experience.js')}
+if(page==='zuno-stack.html')js('zunoplay-room-game-return','./zuno-room-game-return.js');
 if(rooms.includes(page)){css('zunoplay-rooms-stage6-style','./zuno-rooms-stage6.css');js('zunoplay-rooms-stage6-script','./zuno-rooms-stage6.js')}
 if(games.includes(page)){css('zunoplay-games-stage7-style','./zuno-games-stage7.css');js('zunoplay-games-stage7-script','./zuno-games-stage7.js')}
 if(page==='zuno-stack.html')js('zunoplay-stack-lobby-v2','./zuno-stack-lobby-v2.js');
