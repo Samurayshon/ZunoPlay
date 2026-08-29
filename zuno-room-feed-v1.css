@@ -1,11 +1,10 @@
 /* ZunoPlay Room Activity Feed v1 */
-body.zuno-page-sala .chat-section{border-top:0!important;background:linear-gradient(180deg,rgba(3,6,16,0),rgba(3,6,16,.5) 22%,rgba(3,6,16,.96) 100%)!important}
-body.zuno-page-sala .chat-head{height:16px!important;min-height:16px!important;flex-basis:16px!important;padding:0 16px!important;border:0!important;opacity:.48;pointer-events:none}
-body.zuno-page-sala .chat-title{font-size:7px!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#6d7690!important;font-weight:800!important}
-body.zuno-page-sala .chat-hint{display:none!important}
-body.zuno-page-sala .messages{display:flex!important;flex-direction:column!important;justify-content:flex-end!important;align-items:stretch!important;padding:10px 14px 12px!important;gap:2px!important;background:transparent!important;scrollbar-width:none!important}
+body.zuno-page-sala .chat-section{border-top:0!important;background:linear-gradient(180deg,rgba(3,6,16,0),rgba(3,6,16,.42) 26%,rgba(3,6,16,.96) 100%)!important}
+body.zuno-page-sala .chat-head{display:none!important;height:0!important;min-height:0!important;flex-basis:0!important;padding:0!important;border:0!important;overflow:hidden!important}
+body.zuno-page-sala .chat-title,body.zuno-page-sala .chat-hint{display:none!important}
+body.zuno-page-sala .messages{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;align-content:flex-start!important;padding:10px 14px 12px!important;gap:2px!important;background:transparent!important;scrollbar-width:none!important;scroll-behavior:auto!important;overscroll-behavior:contain!important}
 body.zuno-page-sala .messages::-webkit-scrollbar{display:none!important}
-body.zuno-page-sala .messages>.empty{margin:auto 0 10px!important;align-self:flex-start!important;padding:0 5px!important;background:transparent!important;border:0!important;color:#616b84!important;font-size:9px!important;max-width:260px!important;text-align:left!important}
+body.zuno-page-sala .messages>.empty{margin:8px 0 0!important;align-self:flex-start!important;padding:0 5px!important;background:transparent!important;border:0!important;color:#616b84!important;font-size:9px!important;max-width:260px!important;text-align:left!important}
 body.zuno-page-sala .chat-row,body.zuno-page-sala .chat-row.me{max-width:88%!important;margin:2px 0!important;gap:6px!important;align-items:flex-end!important}
 body.zuno-page-sala .chat-row.me{align-self:flex-end!important}
 body.zuno-page-sala .chat-row:not(.me){align-self:flex-start!important}
