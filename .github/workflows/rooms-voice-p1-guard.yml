@@ -33,8 +33,11 @@ jobs:
           grep -q "if(!permission.canPublish)throw new Error('speaker_required')" voz-sala-v2.js
           grep -q 'requestMic' zuno-room-access-v1.js
           grep -q 'leave_room_session' zuno-room-access-v1.js
-          grep -q '__ZUNO_TURN_PROVIDER_V2__' zuno-turn-provider.js
+          grep -q '__ZUNO_TURN_PROVIDER_V3__' zuno-turn-provider.js
           grep -q "body:{room_id:roomId}" zuno-turn-provider.js
+          grep -q "zuno:turn-status" zuno-turn-provider.js
+          grep -q 'Conectividade de voz limitada' zuno-turn-provider.js
+          grep -q 'zuno-turn-provider.js?v=3' sala.html
 
       - name: Guard private invite and host lifecycle migrations
         run: |
