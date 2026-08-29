@@ -1,0 +1,25 @@
+/* Zuno Stack — uso integral da tela + Relay intuitivo */
+body.zstack-playing #zunoStackApp{height:100dvh!important;min-height:100dvh!important;padding-bottom:max(4px,env(safe-area-inset-bottom))!important;overflow:hidden!important}
+body.zstack-playing .shell{height:calc(100dvh - 78px)!important;min-height:0!important;grid-template-rows:46px 64px minmax(0,1fr) 48px 64px 58px!important;gap:5px!important}
+/* Bandeja: só os 7 slots já explicam a função */
+body.zstack-playing .tray-area{padding:0 8px!important;display:flex!important;align-items:center!important}
+body.zstack-playing .tray-area .area-head{display:none!important}
+body.zstack-playing .tray{width:100%!important;height:44px!important;min-height:44px!important;gap:5px!important}
+body.zstack-playing .slot{height:42px!important;min-height:42px!important;border-radius:11px!important;background:#090d19!important;border-color:#39435f!important}
+/* Relay vira uma zona visual de cooperação, sem texto explicativo */
+body.zstack-playing .relay{position:relative!important;height:64px!important;min-height:64px!important;margin:0 8px!important;padding:6px!important;border:1px solid #31d9ff42!important;border-radius:17px!important;background:radial-gradient(circle at 50% 50%,#28d8ff12,transparent 62%),linear-gradient(180deg,#0a1424,#070b16)!important;box-shadow:inset 0 0 18px #32d9ff0d,0 0 14px #32d9ff0a!important;overflow:hidden!important}
+body.zstack-playing .relay-head{display:none!important}
+body.zstack-playing .relay-slots{position:static!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%!important;height:100%!important;gap:8px!important}
+body.zstack-playing .relay-slot{position:relative!important;height:52px!important;min-height:52px!important;border:1px dashed #54dfff7a!important;border-radius:14px!important;background:linear-gradient(180deg,#10223b99,#09101fbb)!important;box-shadow:inset 0 0 12px #31d9ff0d!important;opacity:1!important}
+body.zstack-playing .relay-slot:empty:before{content:'⇄'!important;position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;color:#69e7ff88!important;font-size:18px!important;font-weight:900!important}
+body.zstack-playing .relay-slot.filled{border-style:solid!important;border-color:#55e5ffcc!important;background:#0b1c31!important;box-shadow:inset 0 0 14px #35dcff24,0 0 12px #35dcff1b!important}
+body.zstack-playing .relay-slot.filled:before{display:none!important}
+body.zstack-playing .relay-slot.filled .zsp-art{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+/* poderes ocupam o fim útil da viewport */
+body.zstack-playing .zso-power-dock{margin:0 8px max(2px,env(safe-area-inset-bottom))!important;align-self:stretch!important}
+body.zstack-playing .zso-power-dock-items{height:56px!important;gap:7px!important}
+body.zstack-playing .zso-tactical-power{height:54px!important}
+/* tabuleiro usa todo o espaço restante */
+body.zstack-playing .board-wrap{min-height:0!important;height:100%!important;padding:0 8px!important}
+body.zstack-playing .board{height:100%!important;min-height:0!important;aspect-ratio:auto!important}
+@media(max-width:390px){body.zstack-playing .shell{grid-template-rows:44px 61px minmax(0,1fr) 46px 60px 55px!important}.relay-slot{height:48px!important;min-height:48px!important}.zso-tactical-power{height:51px!important}}
