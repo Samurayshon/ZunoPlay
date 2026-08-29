@@ -1,0 +1,124 @@
+/* ZunoPlay Room — Social Stage v1
+   Inspired by social voice-room spatial UX, preserving ZunoPlay identity. */
+body.zuno-page-sala .stage-shell{
+  height:304px!important;
+  padding:8px 14px 0!important;
+  overflow:visible!important;
+}
+body.zuno-page-sala .room-stage{
+  position:relative!important;
+  height:296px!important;
+  min-height:296px!important;
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-template-rows:94px 88px 88px!important;
+  gap:4px 2px!important;
+  align-content:start!important;
+  padding:4px 2px 0!important;
+  overflow:visible!important;
+}
+body.zuno-page-sala .room-stage>.avatar-slot,
+body.zuno-page-sala .room-stage>.seat-empty{
+  position:relative!important;
+  min-width:0!important;
+  min-height:84px!important;
+  height:84px!important;
+  align-self:center!important;
+  justify-self:stretch!important;
+  z-index:3!important;
+}
+/* 2 + 3 + 3 spatial composition */
+body.zuno-page-sala .room-stage>:nth-child(1){grid-column:2/span 2!important;grid-row:1!important}
+body.zuno-page-sala .room-stage>:nth-child(2){grid-column:4/span 2!important;grid-row:1!important}
+body.zuno-page-sala .room-stage>:nth-child(3){grid-column:1/span 2!important;grid-row:2!important}
+body.zuno-page-sala .room-stage>:nth-child(4){grid-column:3/span 2!important;grid-row:2!important}
+body.zuno-page-sala .room-stage>:nth-child(5){grid-column:5/span 2!important;grid-row:2!important}
+body.zuno-page-sala .room-stage>:nth-child(6){grid-column:1/span 2!important;grid-row:3!important}
+body.zuno-page-sala .room-stage>:nth-child(7){grid-column:3/span 2!important;grid-row:3!important}
+body.zuno-page-sala .room-stage>:nth-child(8){grid-column:5/span 2!important;grid-row:3!important}
+
+/* Voice links between seats */
+body.zuno-page-sala .room-stage>:nth-child(1)::after,
+body.zuno-page-sala .room-stage>:nth-child(3)::after,
+body.zuno-page-sala .room-stage>:nth-child(4)::after,
+body.zuno-page-sala .room-stage>:nth-child(6)::after,
+body.zuno-page-sala .room-stage>:nth-child(7)::after{
+  content:''!important;
+  position:absolute!important;
+  width:28px!important;
+  height:20px!important;
+  right:-15px!important;
+  top:28px!important;
+  z-index:1!important;
+  opacity:.32!important;
+  pointer-events:none!important;
+  background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 24'%3E%3Cpath d='M1 12h7l4-7 5 14 6-18 6 22 6-15 5 8 5-5 4 1h10' fill='none' stroke='%238b95b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;
+}
+body.zuno-page-sala.zuno-room-speaking .room-stage>:nth-child(1)::after,
+body.zuno-page-sala.zuno-room-speaking .room-stage>:nth-child(3)::after,
+body.zuno-page-sala.zuno-room-speaking .room-stage>:nth-child(4)::after,
+body.zuno-page-sala.zuno-room-speaking .room-stage>:nth-child(6)::after,
+body.zuno-page-sala.zuno-room-speaking .room-stage>:nth-child(7)::after{
+  opacity:.68!important;
+  filter:drop-shadow(0 0 6px rgba(64,216,255,.32))!important;
+}
+
+/* Zuno Pulse becomes ambience, not the central object */
+body.zuno-page-sala .room-stage::before{
+  width:104px!important;
+  height:104px!important;
+  top:45%!important;
+  opacity:.48!important;
+  border-color:rgba(157,82,255,.16)!important;
+  background:radial-gradient(circle,rgba(142,69,255,.18),rgba(68,41,135,.04) 54%,transparent 72%)!important;
+  box-shadow:0 0 54px rgba(139,61,255,.10)!important;
+}
+body.zuno-page-sala .room-stage::after{
+  top:45%!important;
+  width:50px!important;
+  opacity:.48!important;
+}
+
+/* Occupied seats feel premium; empty seats recede */
+body.zuno-page-sala .avatar-wrap{width:60px!important;height:60px!important}
+body.zuno-page-sala .avatar{width:55px!important;height:55px!important}
+body.zuno-page-sala .avatar-slot.owner .avatar-wrap,
+body.zuno-page-sala .avatar-slot.me .avatar-wrap{transform:scale(1.06)}
+body.zuno-page-sala .avatar-slot.owner .avatar{box-shadow:0 0 0 2px rgba(241,200,110,.12),0 0 20px rgba(241,200,110,.14)!important}
+body.zuno-page-sala .avatar-slot.me .avatar{box-shadow:0 0 0 2px rgba(56,233,155,.10),0 0 22px rgba(56,233,155,.16)!important}
+body.zuno-page-sala .seat-empty{opacity:.46!important}
+body.zuno-page-sala .seat-empty:active{opacity:.9!important}
+body.zuno-page-sala .empty-circle{width:48px!important;height:48px!important;border-width:1.25px!important;background:rgba(8,13,31,.04)!important}
+body.zuno-page-sala .empty-label{font-size:7px!important;opacity:.7!important}
+body.zuno-page-sala .avatar-name{font-size:9px!important;margin-top:3px!important}
+body.zuno-page-sala .avatar-role{font-size:7px!important;margin-top:0!important}
+body.zuno-page-sala .presence-status{font-size:6.8px!important;margin-top:1px!important}
+
+/* Feed starts immediately after the social stage */
+body.zuno-page-sala .chat-section{top:304px!important}
+body.zuno-page-sala .messages{padding-top:8px!important}
+
+@media(max-width:430px){
+  body.zuno-page-sala .stage-shell{height:292px!important;padding-left:10px!important;padding-right:10px!important}
+  body.zuno-page-sala .room-stage{height:286px!important;min-height:286px!important;grid-template-rows:90px 84px 84px!important}
+  body.zuno-page-sala .chat-section{top:292px!important}
+  body.zuno-page-sala .room-stage>.avatar-slot,body.zuno-page-sala .room-stage>.seat-empty{height:80px!important;min-height:80px!important}
+  body.zuno-page-sala .avatar-wrap{width:57px!important;height:57px!important}
+  body.zuno-page-sala .avatar{width:52px!important;height:52px!important}
+  body.zuno-page-sala .empty-circle{width:45px!important;height:45px!important}
+  body.zuno-page-sala .room-stage>:nth-child(1)::after,
+  body.zuno-page-sala .room-stage>:nth-child(3)::after,
+  body.zuno-page-sala .room-stage>:nth-child(4)::after,
+  body.zuno-page-sala .room-stage>:nth-child(6)::after,
+  body.zuno-page-sala .room-stage>:nth-child(7)::after{width:24px!important;right:-12px!important}
+}
+@media(max-height:720px){
+  body.zuno-page-sala .stage-shell{height:258px!important}
+  body.zuno-page-sala .room-stage{height:252px!important;min-height:252px!important;grid-template-rows:80px 74px 74px!important}
+  body.zuno-page-sala .chat-section{top:258px!important}
+  body.zuno-page-sala .room-stage>.avatar-slot,body.zuno-page-sala .room-stage>.seat-empty{height:72px!important;min-height:72px!important}
+  body.zuno-page-sala .avatar-wrap{width:51px!important;height:51px!important}
+  body.zuno-page-sala .avatar{width:47px!important;height:47px!important}
+  body.zuno-page-sala .empty-circle{width:40px!important;height:40px!important}
+}
+@media(prefers-reduced-motion:reduce){body.zuno-page-sala .room-stage>:nth-child(1)::after,body.zuno-page-sala .room-stage>:nth-child(3)::after,body.zuno-page-sala .room-stage>:nth-child(4)::after,body.zuno-page-sala .room-stage>:nth-child(6)::after,body.zuno-page-sala .room-stage>:nth-child(7)::after{transition:none!important}}
