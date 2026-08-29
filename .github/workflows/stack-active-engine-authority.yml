@@ -1,0 +1,43 @@
+name: Zuno Stack Active Engine Authority
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  active-engine-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard active engine server ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-server-engine-guard.js
+          f='supabase/migrations/20260829230500_lock_zuno_stack_active_engine_writes.sql'
+          test -s "$f"
+          grep -q 'stack_server_action_required' "$f"
+          grep -q 'stack_server_start_required' "$f"
+          grep -q 'trg_zuno_stack_server_engine_required' "$f"
+          grep -q "v_kind = 'hint'" "$f"
+          grep -q "v_new_engine - 'hintsLeft'" "$f"
+          grep -q "v_kind <> 'start'" "$f"
+          grep -q "safeKinds=new Set(\['start','hint','tile','undo','relay_send','relay_take'\])" zuno-stack-server-engine-guard.js
+          grep -q "k==='late_start'" zuno-stack-server-engine-guard.js
+          grep -q "closest('#pulse')" zuno-stack-server-engine-guard.js
+          grep -q "data-zso-tactical" zuno-stack-server-engine-guard.js
+          grep -q 'stopImmediatePropagation' zuno-stack-server-engine-guard.js
+          grep -q 'server_action_required_' zuno-stack-server-engine-guard.js
+          grep -q 'zuno-stack-server-engine-guard.js?v=1' zuno-stack.html
+          python3 - <<'PY'
+          import pathlib
+          text=pathlib.Path('zuno-stack.html').read_text()
+          guard=text.index('zuno-stack-server-engine-guard.js?v=1')
+          systems=text.index('zuno-stack-performance-official.js?v=88d9e80')
+          if guard>=systems: raise SystemExit('engine guard must load before performance/systems')
+          PY
