@@ -1,0 +1,15 @@
+(()=>{
+if(window.__ZUNO_STACK_RELAY_AUTHORITY__)return;window.__ZUNO_STACK_RELAY_AUTHORITY__=true;
+const q=new URLSearchParams(location.search),roomId=q.get('room')||sessionStorage.getItem('zunoplay_room_id')||'';
+if(!roomId)return;
+let busy=false,seq=0;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const toast=t=>{const e=document.getElementById('toast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1400)};
+async function deps(){for(let i=0;i<80;i++){if(window.ZunoSupabaseClient&&window.ZunoStackAuthority&&window.ZunoStackCore)return true;await sleep(100)}return false}
+function actionId(kind){const raw=crypto?.randomUUID?.()||`${Date.now()}-${++seq}`;return `relay-${kind}-${raw}`.slice(0,160)}
+async function run(kind,index){if(busy||!Number.isInteger(index))return false;if(!await deps()){toast('Relay aguardando autoridade do servidor.');return false}const sb=window.ZunoSupabaseClient,authority=window.ZunoStackAuthority;const a=authority.getState?.()||{},revision=Number(a.revision)||0;if(revision<1)return false;busy=true;try{const fn=kind==='send'?'zuno_stack_relay_send':'zuno_stack_relay_take';const args=kind==='send'?{p_room_id:roomId,p_expected_revision:revision,p_action_id:actionId(kind),p_tray_index:index}:{p_room_id:roomId,p_expected_revision:revision,p_action_id:actionId(kind),p_relay_index:index};const {error}=await sb.rpc(fn,args);if(error){const m=String(error.message||'');if(m.includes('revision_conflict'))await authority.reconcile?.('server_relay_revision_conflict');else if(m.includes('stack_relay_full'))toast('O Relay está cheio.');else if(m.includes('stack_relay_empty'))await authority.reconcile?.('server_relay_empty');else if(m.includes('stack_tray_full'))toast('Libere espaço primeiro.');else if(m.includes('stack_tray_index_invalid')||m.includes('invalid_stack_relay_index'))await authority.reconcile?.('server_relay_stale_index');else toast('Relay não confirmado pelo servidor.');return false}await authority.reconcile?.(kind==='send'?'server_relay_send':'server_relay_take');return true}catch(_){return false}finally{busy=false}}
+function capture(e){const t=e.target instanceof Element?e.target:null;if(!t||!window.ZunoStackCore?.getState?.()?.active)return;const tray=t.closest('[data-tray]');if(tray){e.preventDefault();e.stopImmediatePropagation();run('send',Number(tray.getAttribute('data-tray')));return}const relay=t.closest('[data-relay]');if(relay&&!relay.disabled){e.preventDefault();e.stopImmediatePropagation();run('take',Number(relay.getAttribute('data-relay')))}}
+document.addEventListener('click',capture,true);
+window.ZunoStackRelayAuthority={version:1,send:i=>run('send',Number(i)),take:i=>run('take',Number(i))};
+document.dispatchEvent(new CustomEvent('zuno:stack-relay-authority-ready'));
+})();
