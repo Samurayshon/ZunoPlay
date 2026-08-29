@@ -1,12 +1,14 @@
-/* Zuno Stack — Relay 2.0: coop útil e legível */
-body.zstack-playing .relay{overflow:visible!important}
-body.zstack-playing .zrv-badge{position:absolute;left:10px;top:50%;transform:translateY(-50%);z-index:5;display:flex;align-items:center;gap:4px;padding:3px 6px;border-radius:999px;background:#07101ddd;border:1px solid #35d9ff33;color:#8feeff;pointer-events:none;opacity:.72;transition:.18s}
-body.zstack-playing .zrv-badge span{font-size:10px;font-weight:1000}body.zstack-playing .zrv-badge b{font-size:4.4px;letter-spacing:.7px}body.zstack-playing .zrv-badge i{font-size:4.2px;font-style:normal;color:#dffbff}
-body.zstack-playing .zrv-badge[data-active="1"]{opacity:1;border-color:#4be4ff88;box-shadow:0 0 12px #35d9ff22}
-body.zstack-playing .relay-slots{padding-left:58px!important}
+/* Zuno Stack — Relay 2.0: feedback útil sem contador redundante */
+body.zstack-playing .zrv-badge{display:none!important}
+body.zstack-playing .relay-slots{padding-left:0!important;position:static!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%!important;height:100%!important;gap:8px!important}
+body.zstack-playing .relay-slot{position:relative!important;height:52px!important;min-height:52px!important;border:1px dashed #54dfff7a!important;border-radius:14px!important;background:linear-gradient(180deg,#10223b99,#09101fbb)!important;box-shadow:inset 0 0 12px #31d9ff0d!important;opacity:1!important}
+body.zstack-playing .relay-slot:empty:before{content:'⇄'!important;position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;color:#69e7ff88!important;font-size:18px!important;font-weight:900!important}
+body.zstack-playing .relay-slot.filled{border-style:solid!important;border-color:#55e5ffcc!important;background:#0b1c31!important;box-shadow:inset 0 0 14px #35dcff24,0 0 12px #35dcff1b!important}
+body.zstack-playing .relay-slot.filled:before{display:none!important}
+body.zstack-playing .relay-slot.filled .zsp-art{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
 body.zstack-playing .relay.zrv-trio{animation:zrvRelayTrio .62s ease!important;box-shadow:inset 0 0 24px #42e8ff33,0 0 18px #42e8ff22!important}
 .zrv-pulse{position:absolute;z-index:150;left:50%;bottom:128px;transform:translate(-50%,8px);opacity:0;padding:6px 9px;border-radius:999px;background:#0c1323ef;border:1px solid #4bdfff66;color:#eaffff;font-size:5.3px;font-weight:1000;letter-spacing:.35px;pointer-events:none;transition:.16s}
 .zrv-pulse.show{opacity:1;transform:translate(-50%,0)}.zrv-pulse[data-kind="send"]{border-color:#8b68ff77;color:#dbcfff}.zrv-pulse[data-kind="take"]{border-color:#45dfff77;color:#bdf7ff}.zrv-pulse[data-kind="trio"]{border-color:#ffd45f88;color:#ffe69b;box-shadow:0 0 14px #ffc94d2a}
 @keyframes zrvRelayTrio{0%{transform:scale(.985)}45%{transform:scale(1.012);filter:brightness(1.35)}100%{transform:scale(1);filter:brightness(1)}}
-@media(max-width:390px){body.zstack-playing .zrv-badge{left:7px;padding:3px 5px}.zrv-pulse{bottom:120px}}
+@media(max-width:390px){body.zstack-playing .relay-slot{height:48px!important;min-height:48px!important}.zrv-pulse{bottom:120px}}
 @media(prefers-reduced-motion:reduce){body.zstack-playing .relay.zrv-trio{animation:none!important}}
