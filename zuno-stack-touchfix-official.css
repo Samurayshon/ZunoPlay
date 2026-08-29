@@ -34,7 +34,6 @@ body.zstack-playing .tile{
   user-select:none!important;
   touch-action:manipulation;
 }
-/* O flash branco vinha do container quadrado sendo iluminado pelas animações de toque. */
 body.zstack-playing .tile.zso-pick,
 body.zstack-playing .tile.zsf-picked,
 body.zstack-playing .tile:active,
@@ -57,6 +56,24 @@ body.zstack-playing .tile .zsp-art{
   appearance:none!important;
   outline:none!important;
 }
+/* O voo da peça pode nascer de um button clonado. Neutraliza totalmente o chrome nativo. */
+.zsf-flight,
+button.zsf-flight,
+.zsf-flight:focus,
+.zsf-flight:active{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  padding:0!important;
+  margin:0!important;
+  color:inherit!important;
+  pointer-events:none!important;
+}
+.zsf-flight::before,.zsf-flight::after{outline:0!important;box-shadow:none!important}
 @keyframes zstTileTap{
   0%{transform:translateY(-2px) scale(1);filter:brightness(1)}
   45%{transform:translateY(1px) scale(.94);filter:brightness(1.22)}
