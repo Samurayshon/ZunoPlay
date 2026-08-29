@@ -1,42 +1,28 @@
-# Zuno Stack — Auditoria de Produção
+# Zuno Stack — Auditoria de Produção Atual
 
-## Status
-Roadmap funcional do Zuno Stack concluído até a Etapa 8.
+## Estado funcional
 
-## Gameplay validado
-- 90 peças por partida
-- 5 camadas procedurais
-- 10 famílias por partida
-- bandeja de 6 espaços com risco em 5/6
-- alvo de duração de 4–6 minutos
-- combo, Dica, Desfazer e Pulse Shift
-- modo solo e cooperação Realtime em sala
-- integração social, progressão e conteúdo rotativo
+O Zuno Stack é o único jogo ativo do catálogo. A geração atual usa 90 peças distribuídas em 5 camadas, bandeja de 7 espaços, risco a partir de 6/7, alvo de 4–6 minutos, combo, Dica, Desfazer, Pulse Shift, Relay e cooperação em tempo real quando existe contexto de sala.
 
-## Performance
-- runtime específico para Android/aparelhos modestos
-- modo leve automático
-- redução de efeitos pesados quando necessário
-- tabuleiro montado de forma incremental
-- peças em CSS leve sem reintrodução de filtros SVG pesados
+## Runtime atual
 
-## PWA e cache
-Os módulos de performance, visual premium, social, progressão e conteúdo precisam permanecer presentes em `nav.js` e no precache de `sw.js`. O workflow `Zuno Stack Production Audit` bloqueia regressões nesses pontos.
+O núcleo é `zuno-stack.js` + `zuno-stack-pieces.js/css`. A interface atual utiliza as camadas de lobby fullscreen/v2/closeout, gameplay state/v1/polish/immersive, identidade de marca e movimento de arena. Módulos de performance, social, progressão, conteúdo, mobile, objetivo cooperativo e Relay avançado são carregados pelo `nav.js`.
 
-## Backend de progressão
-`submit_zuno_stack_result` foi atualizado para o tabuleiro atual de 90 peças, limite de score de 25.000 e execução concedida somente a `authenticated`. A função valida `auth.uid()` antes de registrar o resultado.
+Os antigos sprites `zuno-stack-pieces.svg/webp` e as folhas `zuno-stack-layout-v1.css`, `zuno-stack-visual.css`, `zuno-stack-visual-final.css` e `zuno-stack-lobby.css` não pertencem mais à geração atual.
 
-## Supabase Advisors
-A auditoria do projeto detectou avisos globais de segurança para funções `SECURITY DEFINER` expostas a usuários autenticados e avisos de performance em tabelas de salas. Esses avisos abrangem módulos maiores do ZunoPlay e devem permanecer no backlog de auditoria de backend; não são regressões criadas pelo Stack.
+## PWA
 
-Referências de remediação:
-- Security Definer executable: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable
-- RLS initplan: https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan
-- Foreign keys sem índice: https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys
+A geração v279 usa precache tolerante a falhas, timeout de rede e fallback de cache. Falha de um asset não aborta mais toda a instalação do Service Worker. Scripts, CSS e navegações usam network-first com timeout; mídia usa cache-first. O clique em notificações do Service Worker voltou a navegar para o destino correto.
 
-## Critério de aceite da Etapa 8
+## Backend
+
+`submit_zuno_stack_result` permanece como endpoint autenticado de resultado. RPCs de sala necessárias ao fluxo atual permanecem autenticadas; funções internas de trigger não são executáveis diretamente por clientes.
+
+## Critérios de aceite
+
 - `ZunoPlay App Smoke` verde
 - `Zuno Stack Production Audit` verde
-- nenhuma referência ativa ao Zuno Core
-- geração de frontend e service worker consistente
-- módulos das Etapas 1–7 presentes, com sintaxe válida e precache correto
+- `ZunoPlay Repository Structure Audit` verde
+- nenhuma referência ativa a protótipos/arquivos removidos
+- geração `nav.js` / `zuno-current.js` / `sw.js` consistente
+- nenhuma credencial server-side no frontend
