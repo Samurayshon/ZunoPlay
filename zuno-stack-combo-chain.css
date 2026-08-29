@@ -1,0 +1,9 @@
+/* Combo = sequência temporária de jogadas. O contador legado nunca fica estático. */
+body.zstack-playing #zsoCombo{display:none!important}
+body.zstack-playing .zso-chain-counter{position:absolute;left:10px;top:36%;z-index:60;min-width:44px;display:grid;justify-items:start;gap:1px;opacity:0;transform:translateY(4px) scale(.94);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
+body.zstack-playing .zso-chain-counter.show{opacity:1;transform:translateY(0) scale(1)}
+body.zstack-playing .zso-chain-counter>b{font-size:22px;line-height:.9;color:#ffd34a;text-shadow:0 0 10px #ff9b3155;font-weight:1000}
+body.zstack-playing .zso-chain-counter>span{font-size:5px;letter-spacing:.55px;color:#e8c36c;font-weight:1000}
+body.zstack-playing .zso-chain-counter>i{display:block;width:0;height:2px;margin-top:2px;border-radius:99px;background:linear-gradient(90deg,#ffd34a,#ff7b55);box-shadow:0 0 7px #ffb13d55}
+@media(max-width:390px){body.zstack-playing .zso-chain-counter{left:8px}.zso-chain-counter>b{font-size:20px!important}}
+@media(prefers-reduced-motion:reduce){body.zstack-playing .zso-chain-counter{transition:none!important}.zso-chain-counter>i{transition:none!important}}
