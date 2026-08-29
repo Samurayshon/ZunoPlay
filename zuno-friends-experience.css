@@ -10,11 +10,14 @@
 .zuno-friends-home-card .zuno-friends-home-arrow,
 .zuno-friends-home-card .chevron,
 .zuno-friends-home-card [class*="chevron"],
-.zuno-friends-home-card [data-chevron]{display:none!important}
+.zuno-friends-home-card [data-chevron],
+.zuno-friends-home-card .z33-friend-mini{display:none!important}
 .zuno-friends-home-card::after,.zuno-friends-home-card::before{content:none!important;display:none!important}
 
-.zuno-friends-home-card>div{min-width:0!important;flex:1!important;padding-right:0!important}
-.zuno-friends-home-card .stat-label{margin-bottom:6px!important;white-space:nowrap!important;color:#c7c8d4!important;font-size:13px!important;font-weight:500!important;line-height:1.15!important}
+/* Mantém o conteúdo exatamente na posição final desde o primeiro frame. */
+.zuno-friends-home-card>div{min-width:0!important;flex:1!important;height:100%!important;padding:10px 0 8px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important}
+.zuno-friends-home-card .stat-label{margin:0 0 6px!important;white-space:nowrap!important;color:#c7c8d4!important;font-size:13px!important;font-weight:500!important;line-height:1.15!important}
+.zuno-friends-home-card #onlineCount{display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;min-height:18px!important;margin:0!important;font-size:11px!important;line-height:1.2!important;font-weight:450!important;color:#73788c!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .zuno-friends-home-avatars{display:flex!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;min-height:34px!important;width:auto!important;padding:0!important;margin:0!important;line-height:1!important;overflow:visible!important}
 .zuno-friends-home-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;margin-left:-8px;border:2px solid #121326;background:linear-gradient(145deg,#7437db,#17294b);color:#fff;font-size:12px;font-weight:900;box-shadow:0 0 0 1px rgba(139,61,255,.42),0 5px 14px rgba(0,0,0,.18)}
 .zuno-friends-home-avatar:first-child{margin-left:0}
