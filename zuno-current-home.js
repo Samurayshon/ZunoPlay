@@ -26,11 +26,8 @@
     'zunoplay-current-home-stats-style',
     'zunoplay-current-interactions-style'
   ];
-  let friendMiniSync=null,readyStartedAt=0,readySent=false;
+  let readyStartedAt=0,readySent=false;
 
-  function syncFriendMini(){
-    try{friendMiniSync?.()}catch(error){console.warn('ZunoPlay current friend sync',error)}
-  }
   function markCurrentHomeReady(){
     if(readySent)return;
     if(!readyStartedAt)readyStartedAt=performance.now();
@@ -112,28 +109,12 @@
     mountNavIcons();
     document.getElementById('activeRooms')?.closest('.section')?.classList.add('zuno-home-secondary-section');
 
-    const friends=document.getElementById('friendsStrip');
-    const onlinePill=document.getElementById('onlineCount')?.closest('.stat-pill');
-    if(friends&&onlinePill){
-      let mini=onlinePill.querySelector('.z33-friend-mini');
-      if(!mini){mini=document.createElement('div');mini.className='z33-friend-mini';onlinePill.appendChild(mini)}
-      friendMiniSync=()=>{
-        const candidates=[...friends.querySelectorAll('.friend:not(.invite)')].slice(0,3);
-        mini.innerHTML=candidates.map(friend=>{
-          const img=friend.querySelector('img');
-          const name=(friend.querySelector('.friend-name')?.textContent||'Z').trim();
-          if(img?.src)return `<span style="background-image:url('${img.src.replace(/'/g,'%27')}');background-size:cover;background-position:center" title="${name.replace(/"/g,'&quot;')}"></span>`;
-          return `<span title="${name.replace(/"/g,'&quot;')}">${(name[0]||'Z').toUpperCase()}</span>`;
-        }).join('');
-      };
-      syncFriendMini();
-      setTimeout(syncFriendMini,250);
-      setTimeout(syncFriendMini,900);
-    }
+    /* A experiência atual de Amigos controla sozinha os avatares online.
+       Remove qualquer mini-indicador legado que tenha sobrado no DOM. */
+    document.getElementById('friendsHomeCard')?.querySelectorAll('.z33-friend-mini').forEach(el=>el.remove());
 
     markCurrentHomeReady();
   }
 
-  ['zuno:presence:sync','zuno:presence:join','zuno:presence:leave'].forEach(name=>window.addEventListener(name,()=>setTimeout(syncFriendMini,0)));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
