@@ -77,7 +77,7 @@ body.zuno-secondary-shell input::placeholder,body.zuno-secondary-shell textarea:
 body.zuno-secondary-shell .btn,
 body.zuno-secondary-shell .enter-button,
 body.zuno-secondary-shell button.btn{
-  min-height:42px!important;
+  min-height:44px!important;
   border:0!important;
   border-radius:var(--z-radius-control)!important;
   padding:10px 14px!important;
