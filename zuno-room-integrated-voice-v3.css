@@ -1,0 +1,181 @@
+/* ZunoPlay — Integrated Voice Room v3
+   Composição limpa: 10 assentos em 5x2 via flex-wrap.
+   Remove posicionamentos legados e integra voz + mensagens em um único ambiente. */
+body.zuno-page-sala,
+body.zuno-page-sala #app.app,
+body.zuno-page-sala .main,
+body.zuno-page-sala .stage-shell,
+body.zuno-page-sala .room-stage,
+body.zuno-page-sala .chat-section,
+body.zuno-page-sala .messages,
+body.zuno-page-sala .composer-wrap{background:#000!important;background-image:none!important}
+
+body.zuno-page-sala .main{position:relative!important;min-height:0!important;overflow:hidden!important}
+
+/* Voz: faixa compacta, sem divisores e sem cenografia. */
+body.zuno-page-sala .stage-shell{
+  position:relative!important;
+  height:206px!important;
+  min-height:206px!important;
+  padding:10px 12px 2px!important;
+  margin:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  background:#000!important;
+}
+body.zuno-page-sala .room-stage{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-content:flex-start!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  gap:4px 0!important;
+  width:100%!important;
+  height:194px!important;
+  min-height:194px!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  background:#000!important;
+}
+
+/* Neutraliza TODO posicionamento legado, inclusive nth-child/grid. */
+body.zuno-page-sala .room-stage>:nth-child(n){
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  order:initial!important;
+  transform:none!important;
+  margin:0!important;
+  flex:0 0 20%!important;
+  width:20%!important;
+  max-width:20%!important;
+  min-width:20%!important;
+}
+body.zuno-page-sala .room-stage::before,
+body.zuno-page-sala .room-stage::after,
+body.zuno-page-sala .room-stage>:nth-child(n)::before,
+body.zuno-page-sala .room-stage>:nth-child(n)::after{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+
+body.zuno-page-sala .room-stage>.avatar-slot,
+body.zuno-page-sala .room-stage>.seat-empty{
+  height:92px!important;
+  min-height:92px!important;
+  padding:2px 0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  overflow:visible!important;
+  text-align:center!important;
+  z-index:2!important;
+}
+
+/* Todos os assentos têm a mesma escala. */
+body.zuno-page-sala .avatar-wrap{width:52px!important;height:52px!important;transition:transform .14s ease!important}
+body.zuno-page-sala .avatar{
+  width:48px!important;
+  height:48px!important;
+  border:1.5px solid #353943!important;
+  border-radius:50%!important;
+  background:#090a0d!important;
+  box-shadow:none!important;
+}
+body.zuno-page-sala .avatar-slot.me .avatar{border-color:#2bdc86!important}
+body.zuno-page-sala .avatar-slot.owner .avatar{border-color:#c8a24e!important}
+body.zuno-page-sala .avatar-slot.is-speaking .avatar,
+body.zuno-page-sala .avatar-slot[data-voice-state="speaking"] .avatar{
+  border-color:#31e88f!important;
+  box-shadow:0 0 0 3px rgba(49,232,143,.12),0 0 14px rgba(49,232,143,.22)!important;
+}
+body.zuno-page-sala .avatar-slot.is-speaking .avatar-wrap,
+body.zuno-page-sala .avatar-slot[data-voice-state="speaking"] .avatar-wrap{transform:scale(1.05)!important}
+body.zuno-page-sala .mic-dot{width:16px!important;height:16px!important;left:0!important;bottom:0!important;font-size:7px!important;background:#111318!important;border:1px solid #252832!important}
+body.zuno-page-sala .owner-crown{width:16px!important;height:16px!important;right:0!important;bottom:0!important;font-size:7px!important}
+body.zuno-page-sala .avatar-name{margin-top:3px!important;max-width:68px!important;font-size:8px!important;line-height:10px!important;font-weight:800!important;color:#f2f3f6!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.zuno-page-sala .avatar-role{display:none!important}
+body.zuno-page-sala .presence-status{margin-top:1px!important;font-size:6.4px!important;line-height:7px!important;color:#45d58a!important;opacity:.9!important}
+
+/* Vazio: menor, leve e legível. */
+body.zuno-page-sala .seat-empty{opacity:.86!important;cursor:pointer!important}
+body.zuno-page-sala .empty-circle{
+  width:46px!important;
+  height:46px!important;
+  border:1px solid #2c3039!important;
+  border-radius:50%!important;
+  background:#050609!important;
+  color:#717681!important;
+  font-size:24px!important;
+  box-shadow:none!important;
+}
+body.zuno-page-sala .empty-label{margin-top:5px!important;font-size:7px!important;line-height:8px!important;color:#7b8089!important;opacity:.86!important}
+body.zuno-page-sala .seat-empty:active .empty-circle{border-color:#707783!important;color:#b0b5bd!important;transform:scale(.96)!important}
+
+/* Chat começa imediatamente abaixo da voz e ocupa o restante. */
+body.zuno-page-sala .chat-section{
+  position:absolute!important;
+  left:0!important;right:0!important;
+  top:206px!important;
+  bottom:0!important;
+  min-height:0!important;
+  border:0!important;
+  background:#000!important;
+  overflow:hidden!important;
+}
+body.zuno-page-sala .messages{
+  height:100%!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  padding:10px 16px 18px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-items:flex-start!important;
+  gap:0!important;
+  scroll-padding-bottom:18px!important;
+  border:0!important;
+}
+body.zuno-page-sala .messages>.empty{margin:3px 0!important;padding:0!important;text-align:left!important;font-size:10px!important;color:#51545b!important}
+body.zuno-page-sala .chat-row{margin:2px 0!important;gap:7px!important;max-width:88%!important}
+body.zuno-page-sala .chat-avatar{width:28px!important;height:28px!important;border:1px solid #22262d!important;background:#08090d!important}
+body.zuno-page-sala .message-user{font-size:8px!important;line-height:9px!important;margin:0 3px 3px!important;color:#8d9099!important}
+body.zuno-page-sala .message{padding:8px 10px!important;border-radius:12px!important;border:1px solid #1e2027!important;background:#0a0a0d!important;box-shadow:none!important}
+body.zuno-page-sala .chat-row.me .message{background:#6e2dc2!important;border-color:#7b38cf!important}
+body.zuno-page-sala .message-text{font-size:12px!important;line-height:1.3!important}
+body.zuno-page-sala .message-time{display:none!important}
+
+/* Composer permanece funcional, sem painel visual extra. */
+body.zuno-page-sala .composer-wrap{border-top:1px solid #101010!important;box-shadow:0 -8px 18px rgba(0,0,0,.34)!important}
+body.zuno-page-sala .chat-input{background:#060606!important;border-color:#24262d!important}
+body.zuno-page-sala .speaker,
+body.zuno-page-sala .emoji-button,
+body.zuno-page-sala .zuno-composer-actions button{background:#07080b!important;border-color:#242731!important}
+
+@media(max-width:430px){
+  body.zuno-page-sala .stage-shell{height:198px!important;min-height:198px!important;padding:8px 6px 2px!important}
+  body.zuno-page-sala .room-stage{height:188px!important;min-height:188px!important}
+  body.zuno-page-sala .room-stage>.avatar-slot,body.zuno-page-sala .room-stage>.seat-empty{height:90px!important;min-height:90px!important}
+  body.zuno-page-sala .chat-section{top:198px!important}
+  body.zuno-page-sala .avatar-wrap{width:49px!important;height:49px!important}
+  body.zuno-page-sala .avatar{width:45px!important;height:45px!important}
+  body.zuno-page-sala .empty-circle{width:43px!important;height:43px!important}
+}
+@media(max-height:720px){
+  body.zuno-page-sala .stage-shell{height:180px!important;min-height:180px!important}
+  body.zuno-page-sala .room-stage{height:170px!important;min-height:170px!important}
+  body.zuno-page-sala .room-stage>.avatar-slot,body.zuno-page-sala .room-stage>.seat-empty{height:81px!important;min-height:81px!important}
+  body.zuno-page-sala .chat-section{top:180px!important}
+  body.zuno-page-sala .avatar-wrap{width:44px!important;height:44px!important}
+  body.zuno-page-sala .avatar{width:40px!important;height:40px!important}
+  body.zuno-page-sala .empty-circle{width:39px!important;height:39px!important}
+}
