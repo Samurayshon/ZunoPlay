@@ -7,7 +7,7 @@ on:
       - 'zuno-stack-power-authority.js'
       - 'zuno-stack-server-engine-guard.js'
       - 'zuno-stack-performance-official.js'
-      - 'supabase/migrations/*zuno_stack_fluxo_troca.sql'
+      - 'supabase/migrations/*zuno_stack_*powers.sql'
       - '.github/workflows/stack-power-authority.yml'
   push:
     branches: [main]
@@ -15,7 +15,7 @@ on:
       - 'zuno-stack-power-authority.js'
       - 'zuno-stack-server-engine-guard.js'
       - 'zuno-stack-performance-official.js'
-      - 'supabase/migrations/*zuno_stack_fluxo_troca.sql'
+      - 'supabase/migrations/*zuno_stack_*powers.sql'
       - '.github/workflows/stack-power-authority.yml'
 
 jobs:
@@ -26,25 +26,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Guard Fluxo and Troca server authority
+      - name: Guard board powers server authority
         shell: bash
         run: |
           set -euo pipefail
           node --check zuno-stack-power-authority.js
           node --check zuno-stack-server-engine-guard.js
-          f='supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql'
-          test -s "$f"
-          grep -q 'zuno_stack_server_power_loadout' "$f"
-          grep -q 'trg_zuno_stack_power_state_guard' "$f"
-          grep -q "p_power not in ('fluxo','troca')" "$f"
-          grep -q 'stack_power_not_selected' "$f"
-          grep -q 'stack_power_no_charge' "$f"
-          grep -q 'serverPowers' "$f"
-          grep -q 'security invoker' "$f"
-          grep -q 'revoke all on function public.zuno_stack_power' "$f"
+          base='supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql'
+          board='supabase/migrations/20260830035500_server_authoritative_zuno_stack_board_powers.sql'
+          test -s "$base"
+          test -s "$board"
+          grep -q 'zuno_stack_server_power_loadout' "$base"
+          grep -q 'trg_zuno_stack_power_state_guard' "$base"
+          grep -q "p_power not in ('fluxo','troca','explosion','elo','fase','vortice','ima')" "$board"
+          grep -q "p_power='explosion'" "$board"
+          grep -q "p_power in ('elo','fase','ima')" "$board"
+          grep -q "p_power='vortice'" "$board"
+          grep -q 'stack_power_not_selected' "$board"
+          grep -q 'stack_power_no_charge' "$board"
+          grep -q 'powerLockUntil' "$board"
           grep -q "sb.rpc('zuno_stack_power'" zuno-stack-power-authority.js
-          grep -Fq '/^(fluxo|troca)$/' zuno-stack-power-authority.js
+          grep -Fq '/^(fluxo|troca|explosion|elo|fase|vortice|ima)$/' zuno-stack-power-authority.js
           grep -q 'zuno-stack-power-authority.js?v=1' zuno-stack-performance-official.js
-          grep -q "k==='power_fluxo'||k==='power_troca'" zuno-stack-server-engine-guard.js
+          grep -Fq '/^power_(fluxo|troca|explosion|elo|fase|vortice|ima)$/' zuno-stack-server-engine-guard.js
           grep -q 'ZunoStackPowerAuthority?.request' zuno-stack-server-engine-guard.js
           grep -q "resync('power_server_required')" zuno-stack-server-engine-guard.js
