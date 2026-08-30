@@ -1,0 +1,36 @@
+name: Preview Backend Isolation Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - '**/*.js'
+      - 'vercel.json'
+      - 'scripts/vercel-preview-backend-guard.mjs'
+      - '.github/workflows/preview-backend-isolation-guard.yml'
+      - 'docs/ZUNOPLAY_ENVIRONMENTS.md'
+
+jobs:
+  isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Self-test fail-closed rules
+        run: node scripts/vercel-preview-backend-guard.mjs --self-test
+
+      - name: Inventory current production-backend coupling
+        run: node scripts/vercel-preview-backend-guard.mjs --audit-current
+
+      - name: Prove an unconfigured Vercel preview is blocked
+        shell: bash
+        run: |
+          set -euo pipefail
+          if VERCEL=1 VERCEL_ENV=preview node scripts/vercel-preview-backend-guard.mjs; then
+            echo 'Guard regression: an unconfigured preview was allowed.'
+            exit 1
+          fi
+          echo 'PASS: unconfigured preview fails closed.'
