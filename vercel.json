@@ -1,5 +1,19 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "node scripts/vercel-preview-backend-guard.mjs",
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "headers": [
+    {
+      "source": "/zuno-runtime-injected.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    },
+    {
+      "source": "/zuno-runtime-config.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    }
+  ]
 }
