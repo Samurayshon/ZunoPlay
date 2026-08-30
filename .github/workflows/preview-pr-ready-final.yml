@@ -1,0 +1,10 @@
+name: Preview PR Ready Final
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  ready:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Ready. Create PR.' docs/ZUNOPLAY_PREVIEW_PR_READY_FINAL.md
