@@ -1,0 +1,10 @@
+name: Preview PR Ready To Open
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  ready:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Ready to open.' docs/ZUNOPLAY_PREVIEW_PR_READY_TO_OPEN.md
