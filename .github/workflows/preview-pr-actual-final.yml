@@ -1,0 +1,10 @@
+name: Preview PR Actual Final
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  final:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Actual final marker. Create PR next.' docs/ZUNOPLAY_PREVIEW_PR_ACTUAL_FINAL.md
