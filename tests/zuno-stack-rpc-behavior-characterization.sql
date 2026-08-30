@@ -30,6 +30,14 @@ select jsonb_build_object(
   ));
 $$;
 
+create or replace function pg_temp.set_auth(p_user uuid)
+returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claim.sub',p_user::text,false);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',p_user::text,'role','authenticated')::text,false);
+end;
+$$;
+
 create or replace procedure pg_temp.reset_fixture(p_tray jsonb default '[]'::jsonb, p_energy int default 0, p_trio boolean default false)
 language plpgsql as $$
 declare u uuid := '00000000-0000-0000-0000-000000000001'; r uuid := '10000000-0000-0000-0000-000000000001';
@@ -43,7 +51,7 @@ begin
   insert into auth.users(id,instance_id,aud,role,email,encrypted_password,email_confirmed_at,raw_app_meta_data,raw_user_meta_data,created_at,updated_at)
   values(u,'00000000-0000-0000-0000-000000000000','authenticated','authenticated','stack-qa@local.invalid','',now(),'{}'::jsonb,jsonb_build_object('username','stack_qa'),now(),now());
   insert into public.rooms(id,owner_id,name) values(r,u,'Stack QA Local');
-  perform set_config('request.jwt.claim.sub',u::text,false);
+  perform pg_temp.set_auth(u);
   insert into public.room_members(room_id,user_id) values(r,u);
   insert into public.zuno_stack_match_state(room_id,revision,state,updated_by) values(r,1,pg_temp.stack_state(p_tray,p_energy,p_trio),u);
 end;
@@ -52,7 +60,7 @@ $$;
 -- Tile: real RPC mutates the authoritative row and writes one event.
 call pg_temp.reset_fixture();
 set role authenticated;
-select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select pg_temp.set_auth('00000000-0000-0000-0000-000000000001');
 do $$ declare s public.zuno_stack_match_state; begin
   s := public.zuno_stack_apply_tile('10000000-0000-0000-0000-000000000001',1,'qa-tile-0001','t85');
   if s.revision <> 2 or (s.state->'engine'->>'score')::int <> 25 or jsonb_array_length(s.state->'engine'->'tray') <> 1 then raise exception 'tile characterization failed'; end if;
@@ -62,7 +70,7 @@ reset role;
 -- Trio: preloaded pair + matching available tile resolves to empty tray, one match and energy +1.
 call pg_temp.reset_fixture('["qa-a","qa-a"]'::jsonb,0,true);
 set role authenticated;
-select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select pg_temp.set_auth('00000000-0000-0000-0000-000000000001');
 do $$ declare s public.zuno_stack_match_state; begin
   s := public.zuno_stack_apply_tile('10000000-0000-0000-0000-000000000001',1,'qa-trio-0001','t85');
   if jsonb_array_length(s.state->'engine'->'tray') <> 0 or (s.state->'engine'->>'matches')::int <> 1 or (s.state->'engine'->>'energy')::int <> 1 or (s.state->'engine'->>'score')::int <> 335 then raise exception 'trio characterization failed'; end if;
@@ -72,7 +80,7 @@ reset role;
 -- Relay send: moves tray index 0 to the first relay slot.
 call pg_temp.reset_fixture('["qa-a"]'::jsonb);
 set role authenticated;
-select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select pg_temp.set_auth('00000000-0000-0000-0000-000000000001');
 do $$ declare s public.zuno_stack_match_state; begin
   s := public.zuno_stack_relay_send('10000000-0000-0000-0000-000000000001',1,'qa-relay-0001',0);
   if jsonb_array_length(s.state->'engine'->'tray') <> 0 or s.state->'engine'->'relay'->>0 <> 'qa-a' then raise exception 'relay characterization failed'; end if;
@@ -82,7 +90,7 @@ reset role;
 -- Pulse Shift: energy 5 is consumed and two tray entries are removed in non-critical state.
 call pg_temp.reset_fixture('["qa-a","qa-b","qa-c"]'::jsonb,5);
 set role authenticated;
-select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select pg_temp.set_auth('00000000-0000-0000-0000-000000000001');
 do $$ declare s public.zuno_stack_match_state; begin
   s := public.zuno_stack_pulse_shift('10000000-0000-0000-0000-000000000001',1,'qa-pulse-0001');
   if (s.state->'engine'->>'energy')::int <> 0 or jsonb_array_length(s.state->'engine'->'tray') <> 1 or (s.state->'engine'->>'score')::int <> 160 then raise exception 'pulse characterization failed'; end if;
@@ -92,7 +100,7 @@ reset role;
 -- Idempotency: exact action replay returns the already-applied state without another revision/event.
 call pg_temp.reset_fixture();
 set role authenticated;
-select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select pg_temp.set_auth('00000000-0000-0000-0000-000000000001');
 do $$ declare a public.zuno_stack_match_state; b public.zuno_stack_match_state; n int; begin
   a := public.zuno_stack_apply_tile('10000000-0000-0000-0000-000000000001',1,'qa-idem-00001','t85');
   b := public.zuno_stack_apply_tile('10000000-0000-0000-0000-000000000001',1,'qa-idem-00001','t85');
@@ -104,7 +112,7 @@ reset role;
 -- Revision conflict: stale expected revision must be rejected and leave revision unchanged.
 call pg_temp.reset_fixture();
 set role authenticated;
-select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select pg_temp.set_auth('00000000-0000-0000-0000-000000000001');
 do $$ declare msg text; rev bigint; begin
   begin
     perform public.zuno_stack_apply_tile('10000000-0000-0000-0000-000000000001',2,'qa-revconf-01','t85');
