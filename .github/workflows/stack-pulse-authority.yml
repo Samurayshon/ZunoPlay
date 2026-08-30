@@ -18,8 +18,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --check zuno-stack-pulse-authority.js
-          node --check zuno-stack-server-engine-guard.js
+          node --check zuno-stack-actions-authority.js
           node --check zuno-stack-performance-official.js
           f='supabase/migrations/20260830030000_server_authoritative_zuno_stack_pulse_shift.sql'
           test -s "$f"
@@ -36,9 +35,8 @@ jobs:
           grep -q "'lastMatchAt',0" "$f"
           grep -q "'server_pulse_shift'" "$f"
           grep -q 'from public, anon' "$f"
-          grep -q "sb.rpc('zuno_stack_pulse_shift'" zuno-stack-pulse-authority.js
-          grep -q 'ZunoStackPulseAuthority' zuno-stack-pulse-authority.js
-          grep -q "zuno-stack-pulse-authority.js?v=1" zuno-stack-performance-official.js
-          grep -q "'pulse_shift'" zuno-stack-server-engine-guard.js
-          grep -q "ZunoStackPulseAuthority?.shift" zuno-stack-server-engine-guard.js
-          grep -q "power_server_required" zuno-stack-server-engine-guard.js
+          grep -q "zuno_stack_pulse_shift" zuno-stack-actions-authority.js
+          grep -q 'ZunoStackPulseAuthority' zuno-stack-actions-authority.js
+          grep -q "closest('#pulse')" zuno-stack-actions-authority.js
+          grep -q "k==='pulse_shift'" zuno-stack-actions-authority.js
+          grep -q "zuno-stack-actions-authority.js?v=1" zuno-stack-performance-official.js
