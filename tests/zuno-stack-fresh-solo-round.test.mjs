@@ -23,7 +23,9 @@ assert.match(migration,/r\.is_discoverable = false/,'abandon RPC must require no
 assert.match(migration,/security definer/,'private authoritative implementation must execute server-side');
 assert.match(migration,/create or replace function public\.zuno_stack_abandon_solo_round[\s\S]*?language sql[\s\S]*?set search_path = ''/,'public wrapper must remain security-invoker SQL');
 assert.match(restartMigration,/public\.zuno_stack_commit_state\(uuid,bigint,jsonb\)/,'fresh restart migration must target the canonical state commit RPC');
-assert.match(restartMigration,/if v_prev_active and jsonb_typeof\(v_prev_engine->''tiles''\) = ''array''/,'same-round tile identity guards must only compare against an active predecessor');
-assert.match(restartMigration,/stack_illegal_tile_restore/,'migration must document the reproduced inactive-to-fresh failure');
+assert.match(restartMigration,/v_old text := '    if jsonb_typeof\(v_prev_engine->''tiles''\) = ''array'''/,'patch must target the predecessor tile identity invariant');
+assert.match(restartMigration,/v_new text := '    if v_prev_active and jsonb_typeof\(v_prev_engine->''tiles''\) = ''array'''/,'patch must gate same-round tile identity checks on an active predecessor');
+assert.match(restartMigration,/position\(v_new in v_def\) > 0/,'patch must be idempotent when the canonical fix is already present');
+assert.match(restartMigration,/position\(v_old in v_def\) = 0/,'patch must fail closed if the expected invariant block is absent');
 
 console.log('zuno-stack fresh solo round guard: ok');
