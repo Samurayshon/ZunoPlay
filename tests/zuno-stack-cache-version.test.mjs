@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const html=fs.readFileSync('zuno-stack.html','utf8');
-assert.match(html,/zuno-stack-tile-bridge-v2\.js\?v=5/,'tile bridge must use current post-first-move cache-busted version');
-assert.match(html,/zuno-stack-solo-authority-bootstrap\.js\?v=11/,'authority bootstrap must use current fresh-round cache-busted version');
-assert.match(html,/zuno-stack-performance-official\.js\?v=roomrace1/,'performance loader must use room-race cache-busted version');
-console.log('Zuno Stack authority cache versions OK');
+const perf=fs.readFileSync('zuno-stack-performance-official.js','utf8');
+assert.match(html,/zuno-stack-solo-authority-bootstrap\.js\?v=12/,'bootstrap must use canonical lifecycle version');
+assert.match(html,/zuno-stack-performance-official\.js\?v=canonical1/,'runtime loader must use canonical cache version');
+assert.match(perf,/zuno-stack-authority-official\.js\?v=12/,'main authority must use canonical version');
+assert.match(perf,/zuno-stack-actions-authority\.js\?v=1/,'consolidated actions authority must be loaded');
+for(const dead of ['zuno-stack-tile-bridge-v2.js','zuno-stack-fresh-round-guard.js','zuno-stack-server-engine-guard.js','zuno-stack-relay-authority.js','zuno-stack-pulse-authority.js','zuno-stack-hint-authority.js','zuno-stack-power-authority.js','zuno-stack-lobby-closeout.js']) assert.doesNotMatch(html,new RegExp(dead.replaceAll('.','\\.')),'obsolete runtime layer still loaded: '+dead);
+console.log('Zuno Stack canonical cache/runtime versions OK');
