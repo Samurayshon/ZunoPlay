@@ -1,0 +1,25 @@
+name: XP UI Validation
+on:
+  pull_request:
+    paths:
+      - 'zuno-my-xp-v1.js'
+      - 'zuno-my-xp-v1.css'
+      - 'meu-xp.html'
+      - 'qa/xp-ui-validation.mjs'
+      - '.github/workflows/xp-ui-validation.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install jsdom
+        run: npm install --no-save jsdom@26
+      - name: Syntax
+        run: |
+          node --check zuno-my-xp-v1.js
+          node --check zuno-xp-ui-v1.js
+      - name: Functional UI harness
+        run: node qa/xp-ui-validation.mjs
