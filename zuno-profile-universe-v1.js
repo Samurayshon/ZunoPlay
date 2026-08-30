@@ -7,25 +7,9 @@ function session(){for(let i=0;i<localStorage.length;i++){const k=localStorage.k
 async function rest(path,opt={}){const s=session();if(!s)throw Error('not_authenticated');const r=await fetch(BASE+'/rest/v1/'+path,{...opt,cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',...(opt.headers||{})}});const t=await r.text();if(!r.ok)throw Error(t||'HTTP '+r.status);return t?JSON.parse(t):null}
 const get=(path)=>rest(path).catch(()=>[]);
 function online(p){if(!p||p.status!=='online'||!p.last_seen_at)return false;const age=Date.now()-new Date(p.last_seen_at).getTime();return age>=0&&age<=120000}
-function aura(level){level=Math.max(1,+level||1);if(level>=40)return['Lenda Zuno','Radiante'];if(level>=25)return['Ícone','Ascendente'];if(level>=15)return['Influente','Vibrante'];if(level>=7)return['Conector','Ativa'];return['Explorador','Inicial']}
 function avatar(p){return p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="">':esc((p.nickname||p.username||'Z').slice(0,1).toUpperCase())}
 function badgeName(id){const map={first_win:'Primeira vitória',first_game:'Primeira partida',ten_games:'10 partidas',ten_wins:'10 vitórias',perfect_game:'Partida perfeita',level_5:'Nível 5',level_10:'Nível 10'};return map[id]||String(id||'Conquista').replaceAll('_',' ')}
-function cleanupLegacyHeader(){
-  document.querySelector('.profile-v2-head')?.remove();
-  const root=document.getElementById('profileV2Root');
-  const main=root?.closest('main');
-  if(!main)return;
-  [...main.children].forEach(el=>{
-    if(el===root)return;
-    const text=(el.textContent||'').replace(/\s+/g,' ').trim();
-    if(/Aura de Zuno/i.test(text)&&/progress|identidade|conquista/i.test(text)) el.remove();
-  });
-  [...document.querySelectorAll('body *')].forEach(el=>{
-    if(el===root||root?.contains(el))return;
-    const text=(el.textContent||'').replace(/\s+/g,' ').trim();
-    if(text==='Aura de Zuno Sua progressão, identidade e conquistas vivem aqui.'||text==='Aura de Zuno Sua progressao, identidade e conquistas vivem aqui.') el.remove();
-  });
-}
+function cleanupLegacyHeader(){document.querySelector('.profile-v2-head')?.remove()}
 async function saveStatus(id,current){const next=prompt('Seu status no ZunoPlay',current||'');if(next===null)return;const clean=next.trim().slice(0,40);await rest('user_presence?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:id,custom_status:clean||null})});await render()}
 async function render(){cleanupLegacyHeader();const root=document.getElementById('profileV2Root'),s=session();if(!root)return;if(!s){location.replace('login.html?next='+encodeURIComponent('perfil.html'+location.search));return}const id=target||s.user.id,own=id===s.user.id;root.replaceChildren();root.setAttribute('aria-busy','true');
 try{
@@ -37,7 +21,7 @@ get('moments_posts?select=id,content,media_type,created_at&user_id=eq.'+id+'&ord
 get('game_progress?select=xp,game_level,total_games,total_wins,best_score&user_id=eq.'+id+'&limit=1'),
 get('game_achievements?select=achievement_id,unlocked_at&user_id=eq.'+id+'&order=unlocked_at.desc&limit=6'),
 get('community_members?select=community_id,communities(name)&user_id=eq.'+id+'&limit=6')]);
-const p=profiles[0];if(!p)throw Error('Perfil não encontrado');const pr=presences[0]||null,gp=progress[0]||null,on=online(pr),[auraName,auraState]=aura(p.level);const friendIds=friends.map(f=>f.user_id===id?f.friend_id:f.user_id);const friendProfiles=friendIds.length?await get('profiles?select=id,username,nickname,avatar_url&id=in.('+friendIds.join(',')+')&limit=8'):[];const xp=gp?.xp||0,xpTarget=Math.max(1000,Math.ceil((xp+1)/1000)*1000),pct=Math.min(100,Math.round(xp/xpTarget*100));
+const p=profiles[0];if(!p)throw Error('Perfil não encontrado');const pr=presences[0]||null,gp=progress[0]||null,on=online(pr);const friendIds=friends.map(f=>f.user_id===id?f.friend_id:f.user_id);const friendProfiles=friendIds.length?await get('profiles?select=id,username,nickname,avatar_url&id=in.('+friendIds.join(',')+')&limit=8'):[];
 const presenceMain=on?'Online no ZunoPlay':'Offline';const activity=pr?.custom_status||((on&&pr?.page)?'Explorando '+pr.page:'Nenhuma atividade compartilhada');
 const momentsHtml=moments.length?moments.map(m=>'<button class="zpu-moment" data-go="pulso.html">'+esc((m.content||'Momento no Pulso').slice(0,70))+'</button>').join(''):'<div class="zpu-empty" style="grid-column:1/-1">'+(own?'Você ainda não publicou nenhum Momento.':'Nenhum Momento público por aqui.')+'</div>';
 const badgesHtml=achievements.length?achievements.map(a=>'<div class="zpu-badge"><i>🏆</i><b>'+esc(badgeName(a.achievement_id))+'</b></div>').join(''):'<div class="zpu-empty" style="min-width:100%">Conquistas aparecerão aqui conforme você joga.</div>';
@@ -45,7 +29,6 @@ const communitiesHtml=memberships.length?memberships.map(m=>'<span class="zpu-ch
 const friendsHtml=friendProfiles.length?friendProfiles.map(f=>'<button class="zpu-friend" data-profile="'+f.id+'" title="'+esc(f.nickname||f.username||'Amigo')+'">'+avatar(f)+'</button>').join(''):'<span class="zpu-muted">Nenhum amigo para mostrar.</span>';
 root.innerHTML='<div class="zpu">'+
 '<section class="zpu-card zpu-hero"><div class="zpu-hero-top"><div class="zpu-avatar">'+avatar(p)+'</div><div class="zpu-who"><div class="zpu-name">'+esc(p.nickname||p.username||'ZunoPlayer')+'</div><div class="zpu-handle">@'+esc((p.zuno_id||p.username||'zunoplayer').toLowerCase().replace(/[^a-z0-9_]/g,''))+'</div><div class="zpu-presence"><i class="zpu-dot '+(on?'online':'')+'"></i>'+presenceMain+'</div></div></div><p class="zpu-bio '+(!p.bio?'empty':'')+'">'+esc(p.bio||'Adicione uma bio para contar quem você é no ZunoPlay.')+'</p><div class="zpu-actions">'+(own?'<button class="zpu-btn" data-edit>Editar perfil</button>':'<button class="zpu-btn" data-friends>Adicionar amigo</button><button class="zpu-btn secondary" data-message>Mensagem</button><button class="zpu-btn icon secondary" data-more>⋯</button>')+'</div><div class="zpu-stats"><button class="zpu-stat" data-go="amigos.html"><b>'+friends.length+'</b><span>Amigos</span></button><button class="zpu-stat" data-go="comunidades.html"><b>'+memberships.length+'</b><span>Comunidades</span></button><button class="zpu-stat" data-go="pulso.html"><b>'+moments.length+'</b><span>Momentos recentes</span></button></div></section>'+
-'<section class="zpu-card zpu-section"><div class="zpu-head"><div class="zpu-title">✦ Aura de Zuno</div></div><div class="zpu-aura"><div class="zpu-aura-mark">✦</div><div><div class="zpu-aura-name">'+auraName+' · Nível '+(+p.level||1)+'</div><div class="zpu-muted">'+auraState+'</div><div class="zpu-bar"><span style="width:'+pct+'%"></span></div><div class="zpu-muted">'+xp+' / '+xpTarget+' XP de jogo</div></div></div></section>'+
 '<section class="zpu-card zpu-section"><div class="zpu-head"><div class="zpu-title">Agora no ZunoPlay</div>'+(own?'<button class="zpu-link" data-status>Editar status</button>':'')+'</div><div class="zpu-status-card"><div class="zpu-status-icon">'+(on?'🟢':'🌙')+'</div><div class="zpu-status-copy"><b>'+presenceMain+'</b><span>'+esc(activity)+'</span></div></div></section>'+
 '<section class="zpu-card zpu-section"><div class="zpu-head"><div class="zpu-title">Momentos</div><button class="zpu-link" data-go="pulso.html">Ver todos</button></div><div class="zpu-moments">'+momentsHtml+'</div></section>'+
 '<section class="zpu-card zpu-section"><div class="zpu-head"><div class="zpu-title">Conquistas</div></div><div class="zpu-badges">'+badgesHtml+'</div></section>'+
