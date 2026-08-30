@@ -1,0 +1,10 @@
+name: Preview PR Last Marker
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  marker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Last marker before PR creation' docs/ZUNOPLAY_PREVIEW_PR_LAST.md
