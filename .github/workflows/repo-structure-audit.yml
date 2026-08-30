@@ -15,3 +15,5 @@ jobs:
           node-version: '22'
       - name: Audit repository references and duplicates
         run: node scripts/repo-audit.mjs
+      - name: Inventory cleanup candidates
+        run: node scripts/cleanup-candidates.mjs
