@@ -1,0 +1,22 @@
+name: Supabase Migration Reconciliation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Analyze production ledger against repository migrations
+        run: node scripts/supabase-migration-reconciliation.mjs --json | tee migration-reconciliation-report.json
+      - name: Upload reconciliation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-migration-reconciliation
+          path: migration-reconciliation-report.json
