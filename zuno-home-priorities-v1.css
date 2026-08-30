@@ -12,21 +12,22 @@ body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:338
 body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{bottom:16px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{bottom:27px!important}
 
-/* Aura: make it read as one complete progression card */
-body.zuno-official-home #homeScreen .zap-home-host{padding-bottom:10px!important}
+/* Aura: complete progression card with explicit separation from stats */
+body.zuno-official-home #homeScreen .zap-home-host{position:relative!important;z-index:3!important;padding-bottom:14px!important}
 body.zuno-official-home #homeScreen .zap-card.zap-compact{margin-bottom:0!important;padding:11px 13px!important;border-radius:17px!important}
 body.zuno-official-home #homeScreen .zap-compact .zap-track{margin-top:8px!important}
 body.zuno-official-home #homeScreen .zap-compact .zap-remaining{margin-top:4px!important}
 
-/* Coins + Amigos: independent row below Aura, no visual overlap */
-body.zuno-official-home #homeScreen .z33-stat-row{gap:8px!important;margin:0 16px 22px!important;transform:none!important}
-body.zuno-official-home #homeScreen .stat-pill{min-height:68px!important;padding:10px 12px!important;border-radius:18px!important}
-body.zuno-official-home #homeScreen .stat-icon{width:38px!important;height:38px!important;flex-basis:38px!important;font-size:17px!important}
-body.zuno-official-home #homeScreen .stat-label{font-size:9px!important}
-body.zuno-official-home #homeScreen .stat-value{font-size:19px!important}
-body.zuno-official-home #homeScreen #friendsHomeCard>.friends-home-copy{padding:10px 12px!important;justify-content:center!important}
-body.zuno-official-home #homeScreen #friendsHomeCard .stat-label{margin-bottom:4px!important}
-body.zuno-official-home #homeScreen #friendsHomePresence{min-height:0!important;font-size:9.5px!important;line-height:1.25!important;white-space:normal!important}
+/* Root cause fix: premium CSS applies margin-top:-38px to this runtime row.
+   Override the exact high-specificity selector so Coins/Friends can never overlap Aura. */
+body.zuno-official-home.zuno-official-v33 #homeScreen .z33-stat-row{position:relative!important;z-index:2!important;gap:8px!important;margin:0 16px 20px!important;transform:none!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .stat-pill{min-height:68px!important;padding:10px 12px!important;border-radius:18px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .stat-icon{width:38px!important;height:38px!important;flex-basis:38px!important;font-size:17px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .stat-label{font-size:9px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .stat-value{font-size:19px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen #friendsHomeCard>.friends-home-copy{padding:10px 12px!important;justify-content:center!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen #friendsHomeCard .stat-label{margin-bottom:4px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen #friendsHomePresence{min-height:0!important;font-size:9.5px!important;line-height:1.25!important;white-space:normal!important}
 
 /* Desafio: keep hierarchy, reduce unnecessary height */
 body.zuno-official-home #homeScreen .zhome-v2-mission{min-height:100px!important;padding-top:15px!important;padding-bottom:15px!important}
@@ -46,10 +47,11 @@ body.zuno-official-home #homeScreen .zhome-v2-title{margin-bottom:9px!important}
 body.zuno-official-home #homeScreen .zhome-v2-friends{margin-top:2px!important;margin-bottom:8px!important}
 body.zuno-official-home #homeScreen .footer{margin-top:4px!important}
 
-/* Last content must scroll fully above fixed canonical navigation */
-body.zuno-official-home #homeScreen{padding-bottom:max(var(--znav-reserved-space,96px),calc(88px + env(safe-area-inset-bottom)))!important}
-body.zuno-official-home #homeScreen .zhome-v2-bottom-spacer{height:4px!important;min-height:4px!important}
-body.zuno-official-home #homeScreen #zhomePopularGames{margin-bottom:6px!important}
+/* Root cause fix for fixed-nav collision: reserve enough actual scrollable space
+   after the last featured card, rather than relying on the tiny old spacer. */
+body.zuno-official-home #homeScreen{padding-bottom:0!important}
+body.zuno-official-home #homeScreen #zhomePopularGames{margin-bottom:10px!important}
+body.zuno-official-home #homeScreen .zhome-v2-bottom-spacer{display:block!important;width:100%!important;height:max(var(--znav-reserved-space,112px),calc(104px + env(safe-area-inset-bottom)))!important;min-height:max(var(--znav-reserved-space,112px),calc(104px + env(safe-area-inset-bottom)))!important;flex:0 0 auto!important;pointer-events:none!important}
 
 @media(max-width:620px){
   body.zuno-official-home.zuno-official-v33 #homeScreen .hero{min-height:330px!important;margin-top:9px!important;margin-bottom:12px!important}
@@ -59,15 +61,16 @@ body.zuno-official-home #homeScreen #zhomePopularGames{margin-bottom:6px!importa
   body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone{min-height:330px!important}
   body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:330px!important}
   body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:320px!important}
-  body.zuno-official-home #homeScreen .zap-home-host{padding-bottom:8px!important}
-  body.zuno-official-home #homeScreen .z33-stat-row{gap:7px!important;margin:0 12px 18px!important}
-  body.zuno-official-home #homeScreen .stat-pill{min-height:62px!important;padding:9px 10px!important;border-radius:16px!important}
-  body.zuno-official-home #homeScreen .stat-icon{width:34px!important;height:34px!important;flex-basis:34px!important;font-size:15px!important}
+  body.zuno-official-home #homeScreen .zap-home-host{padding-bottom:12px!important}
+  body.zuno-official-home.zuno-official-v33 #homeScreen .z33-stat-row{gap:7px!important;margin:0 12px 18px!important}
+  body.zuno-official-home.zuno-official-v33 #homeScreen .stat-pill{min-height:62px!important;padding:9px 10px!important;border-radius:16px!important}
+  body.zuno-official-home.zuno-official-v33 #homeScreen .stat-icon{width:34px!important;height:34px!important;flex-basis:34px!important;font-size:15px!important}
   body.zuno-official-home #homeScreen .zhome-v2-mission{min-height:94px!important;padding-top:14px!important;padding-bottom:14px!important}
   body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]{min-height:120px!important;padding:14px 15px!important;border-radius:21px!important}
   body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]:before{right:29px!important;top:20px!important;width:68px!important;height:68px!important}
   body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"] h2{margin-top:18px!important;font-size:19px!important}
   body.zuno-official-home #homeScreen .zhome-v2-section{margin-bottom:14px!important}
+  body.zuno-official-home #homeScreen .zhome-v2-bottom-spacer{height:max(var(--znav-reserved-space,118px),calc(110px + env(safe-area-inset-bottom)))!important;min-height:max(var(--znav-reserved-space,118px),calc(110px + env(safe-area-inset-bottom)))!important}
 }
 
 @media(max-width:390px){
@@ -76,6 +79,6 @@ body.zuno-official-home #homeScreen #zhomePopularGames{margin-bottom:6px!importa
   body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone{min-height:315px!important}
   body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:315px!important}
   body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:307px!important}
-  body.zuno-official-home #homeScreen #friendsHomePresence{font-size:9px!important}
+  body.zuno-official-home.zuno-official-v33 #homeScreen #friendsHomePresence{font-size:9px!important}
   body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]:after{right:12px!important;bottom:12px!important}
 }
