@@ -2,6 +2,10 @@ package com.zunoplay.app;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -9,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -27,14 +32,31 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
-    private static final String BUILD_ID = "android-v0-boot-v3";
-    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_boot_v3";
+    private static final String BUILD_ID = "android-v0-screenoff-v1";
+    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_screenoff_v1";
     private static final int PERMISSION_REQUEST = 7001;
     private static final long BOOT_TIMEOUT_MS = 12000L;
 
     private WebView webView;
     private final Handler bootHandler = new Handler(Looper.getMainLooper());
     private int bootRecoveryAttempts = 0;
+    private boolean screenOff = false;
+    private boolean activityResumed = false;
+    private boolean screenStateReceiverRegistered = false;
+
+    private final BroadcastReceiver screenStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent != null ? intent.getAction() : null;
+            if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                screenOff = true;
+                keepWebViewRunningForScreenOff();
+            } else if (Intent.ACTION_SCREEN_ON.equals(action)) {
+                screenOff = false;
+                if (!activityResumed) pauseWebViewForBackground();
+            }
+        }
+    };
 
     private final Runnable bootWatchdog = new Runnable() {
         @Override
@@ -54,11 +76,13 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         configureEdgeToEdge();
+        registerScreenStateReceiver();
 
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(7, 8, 23));
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setFitsSystemWindows(false);
+        webView.setKeepScreenOn(false);
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -134,6 +158,40 @@ public class MainActivity extends Activity {
         loadFreshHome();
     }
 
+    private void registerScreenStateReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(screenStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(screenStateReceiver, filter);
+        }
+        screenStateReceiverRegistered = true;
+    }
+
+    private boolean isScreenActuallyOff() {
+        if (screenOff) return true;
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (powerManager == null) return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            return !powerManager.isInteractive();
+        }
+        return !powerManager.isScreenOn();
+    }
+
+    private void keepWebViewRunningForScreenOff() {
+        if (webView == null) return;
+        webView.onResume();
+        webView.resumeTimers();
+    }
+
+    private void pauseWebViewForBackground() {
+        if (webView == null) return;
+        webView.onPause();
+        webView.pauseTimers();
+    }
+
     private void purgeLegacyServiceWorkerOnce(WebView view) {
         String js = "(function(){try{" +
                 "var k='" + SW_RESET_KEY + "';" +
@@ -196,6 +254,7 @@ public class MainActivity extends Activity {
 
     private void configureEdgeToEdge() {
         Window window = getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         window.setStatusBarColor(Color.TRANSPARENT);
         window.setNavigationBarColor(Color.rgb(4, 5, 12));
 
@@ -234,9 +293,9 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
-        if (webView != null) {
-            webView.onPause();
-            webView.pauseTimers();
+        activityResumed = false;
+        if (!isScreenActuallyOff()) {
+            pauseWebViewForBackground();
         }
         super.onPause();
     }
@@ -244,6 +303,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        activityResumed = true;
+        screenOff = false;
         if (webView != null) {
             webView.onResume();
             webView.resumeTimers();
@@ -259,6 +320,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         bootHandler.removeCallbacksAndMessages(null);
+        if (screenStateReceiverRegistered) {
+            try {
+                unregisterReceiver(screenStateReceiver);
+            } catch (IllegalArgumentException ignored) {
+            }
+            screenStateReceiverRegistered = false;
+        }
         if (webView != null) {
             webView.loadUrl("about:blank");
             webView.stopLoading();
