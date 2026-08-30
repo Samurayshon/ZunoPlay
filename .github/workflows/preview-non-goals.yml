@@ -1,0 +1,16 @@
+name: Preview Non Goals
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_NON_GOALS.md'
+
+jobs:
+  non-goals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'Não migrar produção para Vercel' docs/ZUNOPLAY_PREVIEW_NON_GOALS.md
+          grep -q 'Não copiar dados de produção para staging' docs/ZUNOPLAY_PREVIEW_NON_GOALS.md
