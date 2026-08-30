@@ -1,0 +1,10 @@
+name: Preview PR Go Final
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'GO FINAL: create PR.' docs/ZUNOPLAY_PREVIEW_PR_GO_FINAL.md
