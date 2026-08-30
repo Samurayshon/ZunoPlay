@@ -1,0 +1,10 @@
+name: Preview PR Freeze
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Branch frozen for PR inspection' docs/ZUNOPLAY_PREVIEW_PR_FREEZE.md
