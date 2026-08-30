@@ -21,35 +21,25 @@ function walk(dir, out = []) {
   }
   return out;
 }
-
 function relative(file) { return path.relative(ROOT, file).replaceAll('\\', '/'); }
-
 function findProductionBackendRefs() {
   return walk(ROOT).flatMap((file) => {
     const rel = relative(file);
     if (ALLOWED_PRODUCTION_REF_FILES.has(rel)) return [];
     const content = fs.readFileSync(file, 'utf8');
-    if (!content.includes(PROD_REF) && !content.includes(PROD_URL)) return [];
-    return [rel];
+    return content.includes(PROD_REF) || content.includes(PROD_URL) ? [rel] : [];
   });
 }
-
 function productionPublishableKeys() {
   const content = fs.readFileSync(AUTHORITY_PATH, 'utf8');
   return [...new Set(content.match(/sb_publishable_[A-Za-z0-9_-]+/g) || [])];
 }
-
-function isPublishableKey(value) {
-  if (!value) return false;
-  return value.startsWith('sb_publishable_') || value.startsWith('eyJ');
-}
-
+function isPublishableKey(value) { return !!value && (value.startsWith('sb_publishable_') || value.startsWith('eyJ')); }
 function projectRefFromUrl(url) {
   const match = String(url || '').match(/^https:\/\/([a-z0-9-]+)\.supabase\.co$/i);
   if (!match) throw new Error('Unable to derive Supabase project ref from Preview URL.');
   return match[1];
 }
-
 function readPreviewConfig(env = process.env) {
   const vercelEnv = String(env.VERCEL_ENV || '').toLowerCase();
   if (vercelEnv === 'production') throw new Error('Vercel production is forbidden: GitHub Pages is the canonical ZunoPlay production host.');
@@ -64,7 +54,6 @@ function readPreviewConfig(env = process.env) {
   if (ref === PROD_REF) throw new Error('Preview/Staging project ref must differ from production.');
   return { url, key, ref };
 }
-
 function rewriteLegacyPreviewCoupling({ url, key, ref }) {
   const prodKeys = productionPublishableKeys();
   let changed = 0;
@@ -72,16 +61,15 @@ function rewriteLegacyPreviewCoupling({ url, key, ref }) {
     const rel = relative(file);
     if (ALLOWED_PRODUCTION_REF_FILES.has(rel)) continue;
     const original = fs.readFileSync(file, 'utf8');
-    let next = original.split(PROD_URL).join(url);
+    let next = original;
     for (const prodKey of prodKeys) next = next.split(prodKey).join(key);
-    next = next.split(PROD_REF).join(ref);
+    next = next.split(PROD_URL).join(url).split(PROD_REF).join(ref);
     if (next !== original) { fs.writeFileSync(file, next); changed += 1; }
   }
   const refs = findProductionBackendRefs();
   if (refs.length) throw new Error(`Preview rewrite left production Supabase coupling in: ${refs.join(', ')}`);
   console.log(`Preview build rewrote legacy backend coupling in ${changed} frontend file(s).`);
 }
-
 function generateRuntimeConfig(env = process.env) {
   const config = readPreviewConfig(env);
   rewriteLegacyPreviewCoupling(config);
@@ -89,7 +77,6 @@ function generateRuntimeConfig(env = process.env) {
   fs.writeFileSync(RUNTIME_PATH, `window.__ZUNO_RUNTIME_CONFIG__=Object.freeze(${JSON.stringify(payload)});\n`, { mode: 0o600 });
   console.log('Preview runtime config generated for isolated staging backend.');
 }
-
 function selfTest() {
   const expectFailure = (name, env, pattern) => {
     try { readPreviewConfig(env); } catch (error) {
@@ -106,7 +93,6 @@ function selfTest() {
   if (preview.ref !== 'preview-project') throw new Error('Self-test failed: Preview project ref was not derived from its URL.');
   console.log('PASS: Preview project ref is derived from runtime URL');
 }
-
 const mode = process.argv[2] || '--vercel-build';
 if (mode === '--self-test') { selfTest(); process.exit(0); }
 if (mode === '--audit-current') { console.log(JSON.stringify({ productionProjectRef: PROD_REF, frontendProductionReferences: findProductionBackendRefs() }, null, 2)); process.exit(0); }
