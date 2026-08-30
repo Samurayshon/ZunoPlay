@@ -1,0 +1,3 @@
+-- Compatibility marker for Supabase migration history.
+-- The column-ambiguity fix was consolidated into 20260830014156_aura_authority_server_engine.sql
+-- so a fresh database receives the corrected function directly.
