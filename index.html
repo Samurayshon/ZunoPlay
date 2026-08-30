@@ -14,23 +14,23 @@ html:not([data-zuno-auth-state="member"]) .zuno-global-topbar,html:not([data-zun
 @media(max-height:760px) and (max-width:620px){.welcome-screen{padding:24px 18px}.welcome-headline{font-size:30px}.welcome-tag{font-size:12px;margin:8px 0 12px}.welcome-card{padding:15px}.welcome-card p{margin-bottom:11px}.welcome-button{min-height:44px;margin-top:7px}.welcome-trust{margin-top:9px}}
 #friendsHomeCard{position:relative!important;display:block!important;padding:0!important;overflow:hidden!important;-webkit-tap-highlight-color:transparent!important;outline:none!important}#friendsHomeCard .stat-icon,#friendsHomeCard .online-icon,#friendsHomeCard .dot-online,#friendsHomeCard .z33-friend-mini{display:none!important}#friendsHomeCard:before,#friendsHomeCard:after{content:none!important;display:none!important}#friendsHomeCard>.friends-home-copy{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;padding:13px 14px 10px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;overflow:hidden!important}#friendsHomeCard .stat-label{display:block!important;flex:0 0 auto!important;margin:0 0 7px!important;padding:0!important;font-size:13px!important;font-weight:500!important;line-height:15px!important;color:#c7c8d4!important;white-space:nowrap!important;opacity:1!important;visibility:visible!important;transform:none!important}#friendsHomePresence{display:flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:flex-start!important;min-height:34px!important;max-width:100%!important;margin:0!important;padding:0!important;font-size:11px!important;line-height:14px!important;font-weight:450!important;color:#73788c!important;white-space:nowrap!important;overflow:hidden!important;transform:none!important}
 </style>
-<link id="zunoplay-design-system" rel="stylesheet" href="zuno-design-system.css?v=309">
-<link id="zunoplay-unified-style" rel="stylesheet" href="zuno-unified.css?v=309">
-<link id="zunoplay-current-base-style" rel="stylesheet" href="zuno-current-base.css?v=309">
-<link id="zunoplay-current-stage-style" rel="stylesheet" href="zuno-current-stage.css?v=309">
-<link id="zunoplay-current-home-style" rel="stylesheet" href="zuno-current-home.css?v=309">
-<link id="zunoplay-current-home-mobile-style" rel="stylesheet" href="zuno-current-home-mobile.css?v=309">
-<link id="zunoplay-current-home-stats-style" rel="stylesheet" href="zuno-current-home-stats.css?v=320">
-<link id="zunoplay-current-interactions-style" rel="stylesheet" href="zuno-current-interactions.css?v=309">
+<link id="zunoplay-design-system" rel="stylesheet" href="zuno-design-system.css?v=346">
+<link id="zunoplay-unified-style" rel="stylesheet" href="zuno-unified.css?v=346">
+<link id="zunoplay-current-base-style" rel="stylesheet" href="zuno-current-base.css?v=346">
+<link id="zunoplay-current-stage-style" rel="stylesheet" href="zuno-current-stage.css?v=346">
+<link id="zunoplay-current-home-style" rel="stylesheet" href="zuno-current-home.css?v=346">
+<link id="zunoplay-current-home-mobile-style" rel="stylesheet" href="zuno-current-home-mobile.css?v=346">
+<link id="zunoplay-current-home-stats-style" rel="stylesheet" href="zuno-current-home-stats.css?v=346">
+<link id="zunoplay-current-interactions-style" rel="stylesheet" href="zuno-current-interactions.css?v=346">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script id="zunoplay-unified-script" defer src="zuno-unified.js?v=309"></script>
-<script id="zunoplay-current-script" defer src="zuno-current.js?v=341"></script>
-<script id="zunoplay-current-home-script" defer src="zuno-current-home.js?v=320"></script>
-<script id="zunoplay-avatar-renderer" defer src="avatar-renderer.js?v=309"></script>
-<script id="zunoplay-avatar-home-sync" defer src="avatar-home-sync.js?v=309"></script>
-<script defer src="nav.js?v=344"></script>
-<script defer src="zuno-home-boot-guard-v321.js?v=321"></script>
-<script defer src="home-app.js?v=341"></script>
+<script id="zunoplay-unified-script" defer src="zuno-unified.js?v=346"></script>
+<script id="zunoplay-current-script" defer src="zuno-current.js?v=346"></script>
+<script id="zunoplay-current-home-script" defer src="zuno-current-home.js?v=346"></script>
+<script id="zunoplay-avatar-renderer" defer src="avatar-renderer.js?v=346"></script>
+<script id="zunoplay-avatar-home-sync" defer src="avatar-home-sync.js?v=346"></script>
+<script defer src="nav.js?v=346"></script>
+<script defer src="zuno-home-boot-guard-v321.js?v=346"></script>
+<script defer src="home-app.js?v=346"></script>
 </head>
 <body class="zuno-official-v31 zuno-official-v32 zuno-official-v33 zuno-official-home zuno-home-official">
 <div id="loading" class="loading" aria-label="Carregando" role="status"><span class="loading-spinner" aria-hidden="true"></span></div>
@@ -46,7 +46,7 @@ html:not([data-zuno-auth-state="member"]) .zuno-global-topbar,html:not([data-zun
     </div>
   </section>
   <section id="homeScreen" class="home-screen">
-    <section class="hero"><div class="hero-grid"><div class="hero-left"><div class="eyebrow">Bem-vindo de volta,</div><div class="hero-name"><span id="username">ZunoPlayer</span><span class="zuno-mark">Z</span></div><div class="aura-row"><div id="auraEmblem" class="aura-emblem" data-level="1"><span class="aura-flame">♦</span></div><div class="aura-info"><div class="aura-label">Aura de Zuno</div><div id="auraTitle" class="aura-title">Explorador</div><div class="progress"><span id="levelProgress" style="width:10%"></span></div><div id="levelProgressText" class="progress-text">Nível 1 de 10</div></div></div></div><div class="hero-avatar-zone"><div id="profileAvatarWrap" class="profile-avatar-wrap"><div class="profile-glow"></div></div></div><div class="hero-side"><div class="stat-pill"><span class="stat-icon coin-icon">$</span><div><div class="stat-label">Zuno Coins</div><div id="coinCount" class="stat-value">0</div></div></div><div id="friendsHomeCard" class="stat-pill"><div class="friends-home-copy"><div class="stat-label">Amigos</div><div id="friendsHomePresence"><span class="zuno-friends-home-empty">Ninguém online agora</span></div></div></div></div></div></section>
+    <section class="hero"><div class="hero-grid"><div class="hero-left"><div class="eyebrow">Bem-vindo de volta,</div><div class="hero-name"><span id="username">ZunoPlayer</span><span class="zuno-mark">Z</span></div></div><div class="hero-avatar-zone"><div id="profileAvatarWrap" class="profile-avatar-wrap"><div class="profile-glow"></div></div></div><div class="hero-side"><div class="stat-pill"><span class="stat-icon coin-icon">$</span><div><div class="stat-label">Zuno Coins</div><div id="coinCount" class="stat-value">0</div></div></div><div id="friendsHomeCard" class="stat-pill"><div class="friends-home-copy"><div class="stat-label">Amigos</div><div id="friendsHomePresence"><span class="zuno-friends-home-empty">Ninguém online agora</span></div></div></div></div></div></section>
     <section class="menu-grid" aria-label="Jogo em destaque"><button class="menu-card" style="--glow:#f59e0b" onclick="location.href='zuno-stack.html'"><span id="challengeBadge" class="card-badge" style="background:#b93454">N1</span><div class="menu-icon"></div><h2>Zuno Stack</h2><p>Jogar agora</p></button></section>
     <section class="section"><div class="section-head"><div class="section-title"><span class="dot-online"></span> Amigos online</div><a href="amigos.html" class="section-link">Ver todos</a></div><div id="friendsStrip" class="friends-strip"><div class="friend"><div class="friend-avatar-wrap skeleton"></div><div class="friend-name">...</div></div></div></section>
     <button id="logoutButton" class="logout">Sair da conta</button><div class="footer">ZunoPlay © 2026</div>
