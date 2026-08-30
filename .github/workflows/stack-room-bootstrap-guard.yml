@@ -22,7 +22,9 @@ jobs:
           node --check zuno-stack-solo-authority-bootstrap.js
           node --check zuno-stack-authority-official.js
           node --check zuno-stack-performance-official.js
+          node --check zuno-stack-tile-bridge-v2.js
           node tests/zuno-stack-cache-version.test.mjs
+          node tests/zuno-stack-tile-bridge-server-round.test.mjs
 
       - name: Reproduce and guard room publication race
         shell: bash
@@ -113,6 +115,7 @@ jobs:
           boot=Path('zuno-stack-solo-authority-bootstrap.js').read_text()
           perf=Path('zuno-stack-performance-official.js').read_text()
           auth=Path('zuno-stack-authority-official.js').read_text()
+          bridge=Path('zuno-stack-tile-bridge-v2.js').read_text()
           prefix=boot.split('async function ensureRoom()',1)[0]
           if 'persistRoom();' in prefix:
               raise SystemExit('candidate room is still persisted before validation')
@@ -130,5 +133,9 @@ jobs:
               raise SystemExit('authority loader is not waiting for room-ready event')
           if "window.__ZUNO_STACK_AUTHORITY_ROOM_ID__||q.get('room')" not in auth:
               raise SystemExit('authority runtime does not prioritize resolved room')
-          print('validated-room authority gate ok')
+          for token in ["async function serverRound", "from('zuno_stack_match_state')", "auth.applyTile?.(tileId)"]:
+              if token not in bridge: raise SystemExit(f'tile bridge lacks server-round handoff: {token}')
+          if "server=auth.getState?.()" in bridge:
+              raise SystemExit('tile bridge still assumes authority metadata contains engine state')
+          print('validated-room authority and tile bridge gates ok')
           PY
