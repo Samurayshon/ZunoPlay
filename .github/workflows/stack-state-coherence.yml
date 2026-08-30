@@ -15,7 +15,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          f='supabase/migrations/20260829214500_validate_zuno_stack_state_coherence.sql'
+          f='supabase/migrations/20260829164649_validate_zuno_stack_state_coherence.sql'
           test -s "$f"
           grep -q "invalid_stack_initial_kind" "$f"
           grep -q "invalid_stack_round_shape" "$f"
