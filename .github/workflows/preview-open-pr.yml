@@ -1,0 +1,14 @@
+name: Preview Open PR Marker
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_OPEN_PR.md'
+
+jobs:
+  marker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Open the PR' docs/ZUNOPLAY_PREVIEW_OPEN_PR.md
