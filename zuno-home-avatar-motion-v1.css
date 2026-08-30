@@ -1,41 +1,20 @@
-/* ZunoPlay Home — avatar scale + visible holographic platform motion.
+/* ZunoPlay Home — avatar scale + grounded holographic platform.
    Loaded after Home priority CSS so the final hero state is deterministic. */
-body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:286px!important;display:flex!important;align-items:flex-end!important;justify-content:center!important}
-body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:270px!important;max-height:270px!important;width:auto!important;object-fit:contain!important;object-position:center bottom!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone{position:relative!important;isolation:isolate!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:286px!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;position:relative!important;z-index:3!important;transform:translateY(-7px)!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:270px!important;max-height:270px!important;width:auto!important;object-fit:contain!important;object-position:center bottom!important;position:relative!important;z-index:3!important;filter:drop-shadow(0 8px 7px rgba(0,0,0,.20))!important}
 
-body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{
-  transform:translateX(-50%) scaleX(.94)!important;
-  transform-origin:center center!important;
-  animation:zunoAvatarPlatformOuter 2.4s ease-in-out infinite!important;
-}
-body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{
-  transform:translateX(-50%) scaleX(.88)!important;
-  transform-origin:center center!important;
-  animation:zunoAvatarPlatformInner 1.8s ease-in-out infinite!important;
-}
+/* The outer ring sits behind the shoes; its front glow remains visible around them. */
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{bottom:7px!important;width:58%!important;height:23px!important;z-index:1!important;transform:translateX(-50%) scaleX(.96)!important;transform-origin:center center!important;border-color:rgba(111,82,255,.72)!important;background:radial-gradient(ellipse at center,rgba(76,217,255,.28) 0,rgba(116,67,255,.22) 32%,rgba(91,53,255,.08) 57%,transparent 73%)!important;animation:zunoAvatarPlatformOuter 2.4s ease-in-out infinite!important}
+/* Inner light is directly below the soles, visually tying the avatar to the platform. */
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{bottom:10px!important;width:42%!important;height:11px!important;z-index:2!important;transform:translateX(-50%) scaleX(.92)!important;transform-origin:center center!important;border-color:rgba(71,222,255,.66)!important;background:radial-gradient(ellipse at center,rgba(112,231,255,.34),rgba(121,72,255,.15) 48%,transparent 74%)!important;animation:zunoAvatarPlatformInner 1.8s ease-in-out infinite!important}
 
-@keyframes zunoAvatarPlatformOuter{
-  0%,100%{transform:translateX(-50%) scaleX(.90) scaleY(.88)!important;opacity:.54!important;box-shadow:0 0 5px rgba(91,71,255,.16),0 0 11px rgba(45,205,255,.07),inset 0 0 5px rgba(134,74,255,.10)!important}
-  50%{transform:translateX(-50%) scaleX(1.08) scaleY(1.12)!important;opacity:1!important;box-shadow:0 0 13px rgba(91,71,255,.42),0 0 29px rgba(45,205,255,.24),inset 0 0 12px rgba(134,74,255,.27)!important}
-}
-@keyframes zunoAvatarPlatformInner{
-  0%,100%{transform:translateX(-50%) scaleX(1.04) scaleY(1.08)!important;opacity:.90!important;box-shadow:0 0 10px rgba(64,216,255,.31),0 0 17px rgba(132,63,255,.18)!important}
-  50%{transform:translateX(-50%) scaleX(.82) scaleY(.78)!important;opacity:.38!important;box-shadow:0 0 4px rgba(64,216,255,.10),0 0 8px rgba(132,63,255,.06)!important}
-}
+@keyframes zunoAvatarPlatformOuter{0%,100%{transform:translateX(-50%) scaleX(.91) scaleY(.88)!important;opacity:.66!important;box-shadow:0 0 7px rgba(91,71,255,.22),0 0 14px rgba(45,205,255,.10),inset 0 0 6px rgba(134,74,255,.14)!important}50%{transform:translateX(-50%) scaleX(1.07) scaleY(1.10)!important;opacity:1!important;box-shadow:0 0 14px rgba(91,71,255,.46),0 0 30px rgba(45,205,255,.25),inset 0 0 12px rgba(134,74,255,.28)!important}}
+@keyframes zunoAvatarPlatformInner{0%,100%{transform:translateX(-50%) scaleX(1.03) scaleY(1.05)!important;opacity:.94!important;box-shadow:0 0 11px rgba(64,216,255,.34),0 0 18px rgba(132,63,255,.19)!important}50%{transform:translateX(-50%) scaleX(.84) scaleY(.80)!important;opacity:.48!important;box-shadow:0 0 5px rgba(64,216,255,.13),0 0 9px rgba(132,63,255,.08)!important}}
 
-@media(max-width:620px){
-  body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:276px!important}
-  body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:258px!important;max-height:258px!important}
-}
-@media(max-width:390px){
-  body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:270px!important}
-  body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:250px!important;max-height:250px!important}
-}
+@media(max-width:620px){body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:276px!important;transform:translateY(-5px)!important}body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:258px!important;max-height:258px!important}body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{bottom:6px!important;width:60%!important;height:21px!important}body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{bottom:9px!important;width:43%!important;height:10px!important}}
+@media(max-width:390px){body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:270px!important;transform:translateY(-4px)!important}body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:250px!important;max-height:250px!important}body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{width:61%!important}body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{width:44%!important}}
 
-/* Keep the platform legible without spatial scaling for users who request reduced motion. */
-@media(prefers-reduced-motion:reduce){
-  body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{animation:zunoAvatarPlatformGlowOuter 2.8s ease-in-out infinite!important;transform:translateX(-50%)!important}
-  body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{animation:zunoAvatarPlatformGlowInner 2.2s ease-in-out infinite!important;transform:translateX(-50%)!important}
-}
-@keyframes zunoAvatarPlatformGlowOuter{0%,100%{opacity:.58!important}50%{opacity:.92!important}}
-@keyframes zunoAvatarPlatformGlowInner{0%,100%{opacity:.82!important}50%{opacity:.42!important}}
+@media(prefers-reduced-motion:reduce){body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{animation:zunoAvatarPlatformGlowOuter 2.8s ease-in-out infinite!important;transform:translateX(-50%)!important}body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{animation:zunoAvatarPlatformGlowInner 2.2s ease-in-out infinite!important;transform:translateX(-50%)!important}}
+@keyframes zunoAvatarPlatformGlowOuter{0%,100%{opacity:.66!important}50%{opacity:.96!important}}
+@keyframes zunoAvatarPlatformGlowInner{0%,100%{opacity:.92!important}50%{opacity:.50!important}}
