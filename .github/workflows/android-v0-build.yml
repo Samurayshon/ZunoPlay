@@ -15,7 +15,7 @@ permissions:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -50,77 +50,59 @@ jobs:
           grep -q "package: name='com.zunoplay.app' versionCode='4' versionName='0.0.3'" android-apk-badging.txt
           grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
 
-      - name: Install Android 14 emulator image
+      - name: Enable KVM for Android emulator
         run: |
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager 'emulator' 'system-images;android-34;google_apis;x86_64'
-          echo no | avdmanager create avd \
-            --force \
-            --name zunoplay-ci \
-            --package 'system-images;android-34;google_apis;x86_64' \
-            --device 'pixel_6'
-
-      - name: Start Android 14 emulator
-        run: |
-          nohup "${ANDROID_HOME}/emulator/emulator" \
-            -avd zunoplay-ci \
-            -no-window \
-            -no-audio \
-            -no-boot-anim \
-            -no-snapshot \
-            -gpu swiftshader_indirect \
-            > android-emulator.log 2>&1 &
-          adb wait-for-device
-          for i in $(seq 1 120); do
-            BOOTED="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
-            if [ "$BOOTED" = '1' ]; then
-              break
-            fi
-            sleep 2
-          done
-          test "$(adb shell getprop sys.boot_completed | tr -d '\r')" = '1'
-          adb shell settings put global window_animation_scale 0
-          adb shell settings put global transition_animation_scale 0
-          adb shell settings put global animator_duration_scale 0
-
-      - name: Runtime smoke test on Android 14
-        run: |
-          set -euo pipefail
-          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
-          adb install -r "$APK"
-          adb logcat -c
-
-          for ATTEMPT in 1 2 3; do
-            adb shell am force-stop com.zunoplay.app
-            START_OUTPUT="$(adb shell am start -W -n com.zunoplay.app/.MainActivity | tr -d '\r')"
-            echo "$START_OUTPUT"
-            echo "$START_OUTPUT" | grep -q 'Status: ok'
-            sleep 8
-            PID="$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
-            test -n "$PID"
-          done
-
-          adb shell input keyevent 223
-          sleep 3
-          test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
-          adb shell input keyevent 224
-          adb shell wm dismiss-keyguard || true
-          sleep 5
-          test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
-
-          adb logcat -d -v threadtime > android-runtime-logcat.txt
-          if grep -A12 'FATAL EXCEPTION' android-runtime-logcat.txt | grep -q 'Process: com.zunoplay.app'; then
-            echo 'Fatal ZunoPlay process crash detected in logcat.' >&2
-            exit 1
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
           fi
 
-      - name: Collect runtime diagnostics
-        if: always()
-        run: |
-          adb logcat -d -v threadtime > android-runtime-logcat.txt 2>/dev/null || true
-          adb shell dumpsys package com.zunoplay.app > android-package.txt 2>/dev/null || true
-          adb shell dumpsys activity activities > android-activities.txt 2>/dev/null || true
-          adb emu kill || true
+      - name: Runtime smoke test on Android 14
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          script: |
+            set -euo pipefail
+            APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
+            adb install -r "$APK"
+            adb logcat -c
+
+            for ATTEMPT in 1 2 3; do
+              adb shell am force-stop com.zunoplay.app
+              START_OUTPUT="$(adb shell am start -W -n com.zunoplay.app/.MainActivity | tr -d '\r')"
+              echo "$START_OUTPUT"
+              echo "$START_OUTPUT" | grep -q 'Status: ok'
+              sleep 8
+              PID="$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
+              test -n "$PID"
+            done
+
+            adb shell input keyevent 223
+            sleep 3
+            test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
+            adb shell input keyevent 224
+            adb shell wm dismiss-keyguard || true
+            sleep 5
+            test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
+
+            adb logcat -d -v threadtime > android-runtime-logcat.txt
+            adb shell dumpsys package com.zunoplay.app > android-package.txt
+            adb shell dumpsys activity activities > android-activities.txt
+
+            python3 - <<'PY'
+            from pathlib import Path
+            log = Path('android-runtime-logcat.txt').read_text(errors='replace')
+            blocks = log.split('FATAL EXCEPTION')
+            fatal_for_app = any('Process: com.zunoplay.app' in block[:4000] for block in blocks[1:])
+            if fatal_for_app:
+                raise SystemExit('Fatal ZunoPlay process crash detected in logcat.')
+            PY
+
+            test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
 
       - name: Upload runtime diagnostics
         if: always()
@@ -129,7 +111,6 @@ jobs:
           name: ZunoPlay-android-runtime-diagnostics
           path: |
             android-apk-badging.txt
-            android-emulator.log
             android-runtime-logcat.txt
             android-package.txt
             android-activities.txt
