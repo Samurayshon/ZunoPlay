@@ -5,11 +5,13 @@ on:
     branches: [main]
     paths:
       - 'supabase/migrations/*zuno_stack*.sql'
+      - 'scripts/check-stack-terminal-security.mjs'
       - '.github/workflows/stack-security-surface.yml'
   push:
     branches: [main]
     paths:
       - 'supabase/migrations/*zuno_stack*.sql'
+      - 'scripts/check-stack-terminal-security.mjs'
       - '.github/workflows/stack-security-surface.yml'
 
 jobs:
@@ -17,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Guard public wrappers and privileged internals
         shell: bash
         run: |
@@ -25,10 +30,7 @@ jobs:
           files=(supabase/migrations/*zuno_stack*.sql)
           test ${#files[@]} -gt 0
 
-          if grep -RIn --include='*zuno_stack*.sql' -E 'create[[:space:]]+or[[:space:]]+replace[[:space:]]+function[[:space:]]+public\.zuno_stack_[^(]+\([^;]*security[[:space:]]+definer' supabase/migrations; then
-            echo 'Public Zuno Stack SECURITY DEFINER wrapper detected'
-            exit 1
-          fi
+          node scripts/check-stack-terminal-security.mjs
 
           required=(zuno_stack_apply_tile zuno_stack_apply_undo zuno_stack_relay_send zuno_stack_relay_take zuno_stack_pulse_shift zuno_stack_hint zuno_stack_power zuno_stack_gelo zuno_stack_desfazer)
           for fn in "${required[@]}"; do
@@ -37,7 +39,7 @@ jobs:
 
           for f in \
             supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql \
-            supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql \
+            supabase/migrations/20260830034449_server_authoritative_zuno_stack_fluxo_troca.sql \
             supabase/migrations/20260830040257_server_authoritative_zuno_stack_gelo.sql \
             supabase/migrations/20260830041009_server_authoritative_zuno_stack_desfazer.sql; do
             test -s "$f"
@@ -55,7 +57,7 @@ jobs:
 
           for f in \
             supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql \
-            supabase/migrations/20260830035500_server_authoritative_zuno_stack_board_powers.sql \
+            supabase/migrations/20260830035506_server_authoritative_zuno_stack_board_powers.sql \
             supabase/migrations/20260830040257_server_authoritative_zuno_stack_gelo.sql \
             supabase/migrations/20260830041009_server_authoritative_zuno_stack_desfazer.sql; do
             grep -q 'auth.uid()' "$f" || { echo "auth.uid guard missing: $f"; exit 1; }
