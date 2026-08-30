@@ -6,8 +6,10 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const PROD_REF = 'rliymfbbhqoejgfvsbuu';
 const PROD_URL = `https://${PROD_REF}.supabase.co`;
+const RUNTIME_PATH = path.join(ROOT, 'zuno-runtime-injected.js');
 const SKIP_DIRS = new Set(['.git', '.github', '.vercel', 'android-v0', 'docs', 'node_modules', 'scripts', 'supabase']);
 const EXTENSIONS = new Set(['.html', '.js', '.mjs']);
+const ALLOWED_PRODUCTION_REF_FILES = new Set(['zuno-runtime-config.js']);
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -21,9 +23,11 @@ function walk(dir, out = []) {
 
 function findProductionBackendRefs() {
   return walk(ROOT).flatMap((file) => {
+    const relative = path.relative(ROOT, file).replaceAll('\\', '/');
+    if (ALLOWED_PRODUCTION_REF_FILES.has(relative)) return [];
     const content = fs.readFileSync(file, 'utf8');
     if (!content.includes(PROD_REF) && !content.includes(PROD_URL)) return [];
-    return [path.relative(ROOT, file)];
+    return [relative];
   });
 }
 
@@ -32,9 +36,10 @@ function isPublishableKey(value) {
   return value.startsWith('sb_publishable_') || value.startsWith('eyJ');
 }
 
-function validateVercelEnvironment(env = process.env) {
+function readPreviewConfig(env = process.env) {
   const vercelEnv = String(env.VERCEL_ENV || '').toLowerCase();
   if (vercelEnv === 'production') throw new Error('Vercel production is forbidden: GitHub Pages is the canonical ZunoPlay production host.');
+  if (vercelEnv !== 'preview') throw new Error('Only Vercel Preview deployments are allowed for the ZunoPlay staging frontend.');
   const url = String(env.ZUNO_SUPABASE_URL || '').trim();
   const key = String(env.ZUNO_SUPABASE_PUBLISHABLE_KEY || '').trim();
   if (!url || !key) throw new Error('Preview/Staging requires explicit ZUNO_SUPABASE_URL and ZUNO_SUPABASE_PUBLISHABLE_KEY.');
@@ -43,17 +48,26 @@ function validateVercelEnvironment(env = process.env) {
   if (!isPublishableKey(key)) throw new Error('Preview/Staging requires a publishable/anon-compatible client key, never a service-role/secret key.');
   const refs = findProductionBackendRefs();
   if (refs.length) throw new Error(`Frontend is still coupled to production Supabase in: ${refs.join(', ')}`);
+  return { url: url.replace(/\/$/, ''), key };
+}
+
+function generateRuntimeConfig(env = process.env) {
+  const { url, key } = readPreviewConfig(env);
+  const payload = { supabaseUrl: url, supabasePublishableKey: key, environment: 'preview' };
+  fs.writeFileSync(RUNTIME_PATH, `window.__ZUNO_RUNTIME_CONFIG__=Object.freeze(${JSON.stringify(payload)});\n`, { mode: 0o600 });
+  console.log('Preview runtime config generated for isolated staging backend.');
 }
 
 function selfTest() {
   const expectFailure = (name, env, pattern) => {
-    try { validateVercelEnvironment(env); } catch (error) {
+    try { readPreviewConfig(env); } catch (error) {
       if (!pattern.test(String(error?.message || error))) throw error;
       console.log(`PASS: ${name}`); return;
     }
     throw new Error(`Self-test unexpectedly passed: ${name}`);
   };
   expectFailure('Vercel production authority is rejected', { VERCEL_ENV: 'production', ZUNO_SUPABASE_URL: 'https://example.supabase.co', ZUNO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' }, /production is forbidden/i);
+  expectFailure('non-preview Vercel environment is rejected', { VERCEL_ENV: 'development', ZUNO_SUPABASE_URL: 'https://example.supabase.co', ZUNO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' }, /only vercel preview/i);
   expectFailure('missing staging backend fails closed', { VERCEL_ENV: 'preview' }, /requires explicit/i);
   expectFailure('production Supabase is rejected for preview', { VERCEL_ENV: 'preview', ZUNO_SUPABASE_URL: PROD_URL, ZUNO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' }, /must not use the production/i);
 }
@@ -63,5 +77,4 @@ if (mode === '--self-test') { selfTest(); process.exit(0); }
 const refs = findProductionBackendRefs();
 if (mode === '--audit-current') { console.log(JSON.stringify({ productionProjectRef: PROD_REF, frontendProductionReferences: refs }, null, 2)); process.exit(0); }
 if (process.env.VERCEL !== '1') throw new Error('This guard is intended for Vercel builds. Set VERCEL=1 only in the real Vercel build environment.');
-validateVercelEnvironment(process.env);
-console.log('Preview/Staging backend isolation guard passed.');
+generateRuntimeConfig(process.env);
