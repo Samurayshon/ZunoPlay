@@ -18,8 +18,12 @@ jobs:
           node-version: '22'
       - name: Enforce exact production migration ledger
         run: node scripts/supabase-migration-reconciliation.mjs --strict --json | tee migration-reconciliation-report.json
-      - name: Upload reconciliation report
+      - name: Reject stale workflow migration references
+        run: node scripts/check-ci-migration-references.mjs | tee ci-migration-reference-report.json
+      - name: Upload reconciliation reports
         uses: actions/upload-artifact@v4
         with:
           name: supabase-migration-reconciliation
-          path: migration-reconciliation-report.json
+          path: |
+            migration-reconciliation-report.json
+            ci-migration-reference-report.json
