@@ -5,7 +5,7 @@ on:
     paths:
       - 'jogos.html'
       - 'zuno-stack.html'
-      - 'zuno-stack-fresh-round-guard.js'
+      - 'zuno-stack-solo-authority-bootstrap.js'
       - 'supabase/migrations/**'
       - 'tests/zuno-stack-fresh-solo-round.test.mjs'
       - '.github/workflows/stack-fresh-solo-round.yml'
@@ -14,7 +14,7 @@ on:
     paths:
       - 'jogos.html'
       - 'zuno-stack.html'
-      - 'zuno-stack-fresh-round-guard.js'
+      - 'zuno-stack-solo-authority-bootstrap.js'
       - 'supabase/migrations/**'
       - 'tests/zuno-stack-fresh-solo-round.test.mjs'
       - '.github/workflows/stack-fresh-solo-round.yml'
@@ -30,4 +30,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node tests/zuno-stack-fresh-solo-round.test.mjs
+      - run: |
+          node --check zuno-stack-solo-authority-bootstrap.js
+          node tests/zuno-stack-fresh-solo-round.test.mjs
