@@ -25,6 +25,10 @@ A base do aplicativo está funcional e passa por estabilização para produção
 - PWA com manifest, shortcuts e cache das telas essenciais
 - Catálogo de Jogos reiniciado: **Zuno Stack é o único jogo ativo atualmente**
 
+### Conceitos oficiais de produto
+
+- **Aura e Autoridade:** sistema global de progressão por jogos aprovado para o ZunoPlay. A V1 possui 15 Auras, de Iniciante (0) a Eterno (2.000.000+), com Autoridade global, permanente, não comprável diretamente e protegida por validação server-side. Especificação completa: [`docs/ZUNOPLAY_AURA_SYSTEM_OFFICIAL.md`](docs/ZUNOPLAY_AURA_SYSTEM_OFFICIAL.md).
+
 ### Bloqueadores externos antes do lançamento público
 
 1. Configurar um provedor TURN de produção para redes onde conexão P2P direta não é possível.
@@ -36,6 +40,7 @@ A base do aplicativo está funcional e passa por estabilização para produção
 
 - Definir e construir o novo **jogo carro-chefe do ZunoPlay**
 - Evoluir o Zuno Stack de Alpha para cooperativo multiplayer real
+- Implementar tecnicamente o sistema de **Aura e Autoridade** conforme a especificação oficial
 - Loja/Zuno Coins com operações econômicas exclusivamente server-side
 - Conquistas e eventos
 - Consolidação dos módulos da sala e cobertura automatizada de regressão
