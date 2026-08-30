@@ -1,0 +1,10 @@
+name: Preview PR Open Now
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  open:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'OPEN PULL REQUEST NOW.' docs/ZUNOPLAY_PREVIEW_PR_OPEN_NOW.md
