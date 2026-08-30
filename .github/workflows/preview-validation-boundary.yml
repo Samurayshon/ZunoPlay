@@ -1,0 +1,14 @@
+name: Preview Validation Boundary
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_VALIDATION.md'
+
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'deploy Preview, URL, logs, smoke' docs/ZUNOPLAY_PREVIEW_VALIDATION.md
