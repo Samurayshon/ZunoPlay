@@ -8,8 +8,11 @@ on:
     paths:
       - 'supabase/**'
       - 'tests/zuno-stack-90-5-characterization.test.mjs'
+      - 'tests/zuno-stack-reconciliation-characterization.test.mjs'
       - 'tests/zuno-stack-rpc-behavior-characterization.sql'
       - 'tests/zuno-stack-rpc-concurrency.sh'
+      - 'zuno-stack-authority-official.js'
+      - 'zuno-stack-tile-bridge-v2.js'
       - '.github/workflows/stack-local-supabase-characterization.yml'
   workflow_dispatch:
 
@@ -49,6 +52,11 @@ jobs:
         run: |
           set -euo pipefail
           node --test tests/zuno-stack-90-5-characterization.test.mjs
+      - name: Characterize authority reconciliation and retry
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/zuno-stack-reconciliation-characterization.test.mjs
       - name: Verify deployed Zuno Stack database contracts
         shell: bash
         run: |
