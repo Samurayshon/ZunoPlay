@@ -1,0 +1,17 @@
+name: Preview Evidence Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_EVIDENCE.md'
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'URL real do deploy Preview' docs/ZUNOPLAY_PREVIEW_EVIDENCE.md
+          grep -q 'logs de build/deploy' docs/ZUNOPLAY_PREVIEW_EVIDENCE.md
+          grep -q 'smoke do frontend hospedado' docs/ZUNOPLAY_PREVIEW_EVIDENCE.md
