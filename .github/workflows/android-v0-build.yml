@@ -143,3 +143,5 @@ jobs:
           else
             gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste. Build, metadados e smoke test de runtime em Android 14 validados pelo CI antes da publicação."
           fi
+
+# runtime-validation-trigger
