@@ -1,0 +1,10 @@
+name: Preview PR Next Is PR
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  next:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Next is PR creation.' docs/ZUNOPLAY_PREVIEW_PR_NEXT_IS_PR.md
