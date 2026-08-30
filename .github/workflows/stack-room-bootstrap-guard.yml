@@ -15,18 +15,19 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate Stack authority room scripts
+      - name: Validate canonical Stack runtime scripts
         shell: bash
         run: |
           set -euo pipefail
           node --check zuno-stack-solo-authority-bootstrap.js
           node --check zuno-stack-authority-official.js
+          node --check zuno-stack-actions-authority.js
           node --check zuno-stack-performance-official.js
-          node --check zuno-stack-tile-bridge-v2.js
           node tests/zuno-stack-cache-version.test.mjs
-          node tests/zuno-stack-tile-bridge-server-round.test.mjs
+          node tests/zuno-stack-canonical-runtime.test.mjs
+          node tests/zuno-stack-fresh-solo-round.test.mjs
 
-      - name: Reproduce and guard room publication race
+      - name: Reproduce validated room publication race
         shell: bash
         run: |
           set -euo pipefail
@@ -37,76 +38,26 @@ jobs:
           const candidate='8abf4b48-fc59-4a8a-b447-9fef32994a3f';
           const active='99a7f21b-0f22-4aec-a97e-33465946b022';
           const userId='11111111-1111-4111-8111-111111111111';
-          const store=new Map();
-          const start={disabled:false,textContent:'JOGAR AGORA'};
-          const events=[];
+          const store=new Map(),events=[];
+          const start={disabled:false,textContent:'JOGAR AGORA',setAttribute(){},removeAttribute(){}};
+          const board={style:{}};
           let authorityInjectedFor='';
           const location={href:'https://app.example/zuno-stack.html',search:'',pathname:'/zuno-stack.html',hash:''};
           const history={state:null,replaceState(){}};
-
-          function roomsQuery(){
-            const filters={};
-            const api={
-              select(){return api},eq(k,v){filters[k]=v;return api},order(){return api},limit(){return api},
-              async maybeSingle(){
-                if(filters.owner_id===userId&&filters.status==='active'&&filters.description==='__zuno_stack_solo_authority__'&&filters.visibility==='private'&&filters.is_discoverable===false){
-                  await new Promise(r=>setTimeout(r,20));
-                  return {data:{id:active},error:null};
-                }
-                return {data:null,error:null};
-              },
-              async insert(){return {error:{code:'23505',message:'duplicate active room'}}}
-            };
-            return api;
-          }
-          const sb={
-            auth:{async getSession(){return {data:{session:{user:{id:userId}}}}}},
-            from(name){
-              if(name==='rooms')return roomsQuery();
-              if(name==='room_members')return {select(){return this},eq(){return this},async maybeSingle(){return {data:null,error:null}}};
-              throw new Error(`unexpected table ${name}`);
-            }
-          };
-          const document={
-            readyState:'complete',
-            getElementById(id){return id==='start'?start:null},
-            querySelector(){return null},
-            addEventListener(){},
-            dispatchEvent(e){events.push(e)},
-            createElement(){return {dataset:{},addEventListener(){}}},
-            head:{appendChild(el){
-              if(String(el.src||'').includes('zuno-stack-authority-official.js')){
-                authorityInjectedFor=window.__ZUNO_STACK_AUTHORITY_ROOM_ID__||'';
-                window.ZunoStackAuthority={getState(){return {roomId:authorityInjectedFor}}};
-              }
-            }}
-          };
+          function roomsQuery(){const filters={};const api={select(){return api},eq(k,v){filters[k]=v;return api},order(){return api},limit(){return api},async maybeSingle(){if(filters.owner_id===userId&&filters.status==='active'&&filters.description==='__zuno_stack_solo_authority__'&&filters.visibility==='private'&&filters.is_discoverable===false){await new Promise(r=>setTimeout(r,20));return {data:{id:active},error:null}}return {data:null,error:null}},async insert(){return {error:{code:'23505',message:'duplicate active room'}}}};return api}
+          const sb={auth:{async getSession(){return {data:{session:{user:{id:userId}}}}}},from(name){if(name==='rooms')return roomsQuery();if(name==='room_members')return {select(){return this},eq(){return this},async maybeSingle(){return {data:null,error:null}}};if(name==='zuno_stack_match_state')return {select(){return this},eq(){return this},async maybeSingle(){return {data:null,error:null}}};throw new Error(`unexpected table ${name}`)}};
+          const document={readyState:'complete',documentElement:{dataset:{}},getElementById(id){return id==='start'?start:id==='board'?board:null},querySelector(){return null},addEventListener(){},removeEventListener(){},dispatchEvent(e){events.push(e)},createElement(){return {dataset:{},addEventListener(){}}},head:{appendChild(el){if(String(el.src||'').includes('zuno-stack-authority-official.js')){authorityInjectedFor=window.__ZUNO_STACK_AUTHORITY_ROOM_ID__||'';window.ZunoStackAuthority={getState(){return {roomId:authorityInjectedFor}}}}}}};
           const window={ZunoSupabaseClient:sb,addEventListener(){}};
           const crypto={randomUUID(){return candidate}};
           function CustomEvent(type,opts={}){this.type=type;this.detail=opts.detail}
-          const context={window,document,location,history,sessionStorage:{setItem(k,v){store.set(k,v)},getItem(k){return store.get(k)||null},removeItem(k){store.delete(k)}},URL,URLSearchParams,crypto,console,setTimeout,clearTimeout,Promise,queueMicrotask,CustomEvent};
-          context.globalThis=context;
-          vm.createContext(context);
+          const context={window,document,location,history,sessionStorage:{setItem(k,v){store.set(k,v)},getItem(k){return store.get(k)||null},removeItem(k){store.delete(k)}},URL,URLSearchParams,crypto,console,setTimeout,clearTimeout,Promise,CustomEvent};context.globalThis=context;vm.createContext(context);
           vm.runInContext(fs.readFileSync('zuno-stack-solo-authority-bootstrap.js','utf8'),context);
-
-          assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_READY__,false,'room must start unresolved');
-          assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_ID__,undefined,'unvalidated candidate room must never be published');
-          assert.equal(store.get('zunoplay_room_id'),undefined,'unvalidated candidate room must never enter session storage');
-          assert.equal(authorityInjectedFor,'','authority must not load before room validation');
-
-          setTimeout(()=>{
-            assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_ID__,active,'resolved room mismatch');
-            assert.equal(store.get('zunoplay_room_id'),active,'resolved safe Solo room was not persisted');
-            assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_READY__,true,'room was not marked ready');
-            assert.equal(authorityInjectedFor,active,'authority loaded with a stale/random room');
-            assert.ok(events.some(e=>e.type==='zuno:stack-authority-room-ready'&&e.detail?.roomId===active),'room-ready event missing or wrong');
-            assert.equal(start.disabled,false,'start button remained disabled after authority recovery');
-            assert.equal(start.textContent,'JOGAR AGORA','start label mismatch');
-            console.log('authority room race guard ok');
-          },100);
+          assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_READY__,false);
+          assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_ID__,undefined,'candidate room published before validation');
+          setTimeout(()=>{assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_ID__,active);assert.equal(store.get('zunoplay_room_id'),active);assert.equal(window.__ZUNO_STACK_AUTHORITY_ROOM_READY__,true);assert.equal(authorityInjectedFor,active);assert.ok(events.some(e=>e.type==='zuno:stack-authority-room-ready'&&e.detail?.roomId===active));assert.equal(start.disabled,false);console.log('canonical authority room race guard ok')},150);
           NODE
 
-      - name: Guard authority modules behind validated room
+      - name: Guard canonical authority boundaries
         shell: bash
         run: |
           set -euo pipefail
@@ -115,27 +66,16 @@ jobs:
           boot=Path('zuno-stack-solo-authority-bootstrap.js').read_text()
           perf=Path('zuno-stack-performance-official.js').read_text()
           auth=Path('zuno-stack-authority-official.js').read_text()
-          bridge=Path('zuno-stack-tile-bridge-v2.js').read_text()
+          actions=Path('zuno-stack-actions-authority.js').read_text()
           prefix=boot.split('async function canUseRoom',1)[0]
-          if 'persistRoom();' in prefix:
-              raise SystemExit('candidate room is still persisted before validation')
-          required_boot=[
-              "window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=false",
-              "window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=true",
-              "zuno:stack-authority-room-ready",
-              "window.ZunoStackLoadAuthorityModules?.()",
-          ]
-          for token in required_boot:
-              if token not in boot: raise SystemExit(f'missing bootstrap room gate: {token}')
-          if "if(!window.__ZUNO_STACK_AUTHORITY_ROOM_READY__||!window.__ZUNO_STACK_AUTHORITY_ROOM_ID__)return false" not in perf:
-              raise SystemExit('authority modules are not gated by validated room')
-          if "document.addEventListener('zuno:stack-authority-room-ready',loadAuthorityModules,{once:true})" not in perf:
-              raise SystemExit('authority loader is not waiting for room-ready event')
-          if "window.__ZUNO_STACK_AUTHORITY_ROOM_ID__||q.get('room')" not in auth:
-              raise SystemExit('authority runtime does not prioritize resolved room')
-          for token in ["async function serverRound", "from('zuno_stack_match_state')", "auth.applyTile?.(tileId)"]:
-              if token not in bridge: raise SystemExit(f'tile bridge lacks server-round handoff: {token}')
-          if "server=auth.getState?.()" in bridge:
-              raise SystemExit('tile bridge still assumes authority metadata contains engine state')
-          print('validated-room authority and tile bridge gates ok')
+          if 'persistRoom();' in prefix: raise SystemExit('candidate room persisted before validation')
+          for token in ["window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=false","window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=true","zuno:stack-authority-room-ready","zuno_stack_abandon_solo_round","captureStart","waitServerActive"]:
+              if token not in boot: raise SystemExit(f'missing canonical bootstrap gate: {token}')
+          if "if(!window.__ZUNO_STACK_AUTHORITY_ROOM_READY__||!window.__ZUNO_STACK_AUTHORITY_ROOM_ID__)return false" not in perf: raise SystemExit('authority modules not gated by validated room')
+          if "zuno-stack-actions-authority.js?v=1" not in perf: raise SystemExit('consolidated actions authority not loaded')
+          if "window.__ZUNO_STACK_AUTHORITY_ROOM_ID__||q.get('room')" not in auth: raise SystemExit('main authority does not prioritize resolved room')
+          if "document.addEventListener('click',capture,true)" not in actions: raise SystemExit('canonical actions capture missing')
+          for old in ['tile-bridge','fresh-round-guard','server-engine-guard','relay-authority.js','pulse-authority.js','hint-authority.js','power-authority.js']:
+              if old in perf: raise SystemExit(f'obsolete authority layer referenced: {old}')
+          print('canonical room, start and action authority gates ok')
           PY
