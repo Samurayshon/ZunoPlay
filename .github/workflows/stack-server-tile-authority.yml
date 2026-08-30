@@ -34,4 +34,4 @@ jobs:
           grep -q 'function applyUndo' zuno-stack-authority-official.js
           grep -q 'function serverActionCapture' zuno-stack-authority-official.js
           grep -q "kind==='tile'" zuno-stack-authority-official.js
-          grep -q 'version:5' zuno-stack-authority-official.js
+          grep -q 'version:6' zuno-stack-authority-official.js
