@@ -1,76 +1,87 @@
 # ZunoPlay
 
-Aplicativo social de chat, salas de voz, comunidades e jogos.
+Aplicativo social/gaming mobile-first com perfis, amigos, mensagens, salas de voz, Pulso, jogos e progressão.
 
-## Estado de lançamento
+## Estado oficial
 
-A base do aplicativo está funcional e passa por estabilização para produção.
+O projeto está na **Etapa 19 — Segurança, estabilidade e testes**.
 
-### Concluído
+A existência de código, tabelas, migrations, interfaces ou workflows não equivale a funcionalidade validada. O status oficial segue:
 
-- Supabase Auth + perfis protegidos por RLS
-- Campos sensíveis de progressão/economia (`level` e `coins`) protegidos contra alteração direta pelo cliente
-- Usernames case-insensitive protegidos por índice único; não há duplicados legados no banco atual
-- Não há perfis órfãos no banco atual
-- Realtime global com Presence, Broadcast e Postgres Changes separados por finalidade
-- Tópicos privados de sala autorizados para mensagens, voz, reações/Pulse e presentes
-- Presence reservado para presença/entrada/saída; estados rápidos de voz (`speaking`, `listening`, `muted`) usam Broadcast
-- Conversas e mensagens de sala via canais privados
-- Integridade de mensagens e notificações protegida: o cliente só pode alterar estado de leitura
-- Assentos protegidos: participante só atualiza heartbeat; dono só move assentos de outros participantes
-- Salas de voz WebRTC P2P
-- Reconexão de ICE, reconexão de canal Realtime e recuperação após queda de rede
-- Limpeza de assentos abandonados integrada ao fluxo de entrada
-- Cadastro de usuários
-- PWA com manifest, shortcuts e cache das telas essenciais
-- Catálogo de Jogos reiniciado: **Zuno Stack é o único jogo ativo atualmente**
+- ✅ **VALIDADO** — testado com evidência suficiente;
+- 🟡 **IMPLEMENTADO, NÃO VALIDADO** — existe, mas a comprovação funcional ainda é insuficiente;
+- 🟠 **PARCIAL** — funciona apenas em parte ou ainda possui dependências importantes;
+- 🔴 **QUEBRADO** — falha funcional comprovada;
+- ⚫ **NÃO IMPLEMENTADO** — não existe de forma suficiente;
+- 🔒 **BLOQUEADO** — não foi possível verificar ou executar por dependência/acesso/ferramenta.
 
-### Conceitos oficiais de produto
+## Produção atual
 
-- **Aura e Autoridade:** sistema global de progressão por jogos aprovado para o ZunoPlay. A V1 possui 15 Auras, de Iniciante (0) a Eterno (2.000.000+), com Autoridade global, permanente, não comprável diretamente e protegida por validação server-side. Especificação completa: [`docs/ZUNOPLAY_AURA_SYSTEM_OFFICIAL.md`](docs/ZUNOPLAY_AURA_SYSTEM_OFFICIAL.md).
+O frontend consumido pelo aplicativo Android aponta para **GitHub Pages**:
 
-### Bloqueadores externos antes do lançamento público
+`https://samurayshon.github.io/ZunoPlay/`
 
-1. Configurar um provedor TURN de produção para redes onde conexão P2P direta não é possível.
-2. Ativar **Leaked Password Protection** no Supabase Auth.
-3. Executar teste final em Android, iPhone, Wi-Fi residencial e rede móvel.
-4. Fazer o reset dos dados de teste somente quando houver decisão explícita de lançamento.
+O `MainActivity.java` do Android usa esse endereço como `START_URL`. Vercel não deve ser tratado como o host de produção atual sem uma nova mudança de arquitetura e validação correspondente.
 
-### Trabalho de produto ainda pendente
+## Evidência técnica já existente
 
-- Definir e construir o novo **jogo carro-chefe do ZunoPlay**
-- Evoluir o Zuno Stack de Alpha para cooperativo multiplayer real
-- Implementar tecnicamente o sistema de **Aura e Autoridade** conforme a especificação oficial
-- Loja/Zuno Coins com operações econômicas exclusivamente server-side
-- Conquistas e eventos
-- Consolidação dos módulos da sala e cobertura automatizada de regressão
+### Segurança e dados
+
+- RLS habilitado nas tabelas públicas auditadas do produto.
+- Supabase Auth e perfis integrados ao backend.
+- Campos sensíveis de progressão/economia protegidos contra alteração direta comum pelo cliente.
+- Usernames case-insensitive protegidos por unicidade no banco atual.
+- Não há perfis órfãos conhecidos no banco auditado.
+- Mensagens possuem proteção de campos estruturais e autorização por participação.
+- Storage `message-media` é privado; teste cross-user no banco confirmou que participante autorizado enxerga o objeto e usuário de fora da conversa não.
+- O fluxo legado de `game_scores` teve o `INSERT` direto de `anon`/`authenticated` revogado como contenção para pontuação client-authoritative.
+- Pulso impede no banco `visibility='friends'` com `media_path` enquanto o bucket `moments` continuar público, evitando que nova mídia privada seja publicada por URL pública.
+- Transferência de ownership de grupos exige conversa do tipo `group`, autenticação, lock da conversa e possui proteção estrutural contra múltiplos owners.
+
+### Realtime e salas
+
+- Presence, Broadcast e Postgres Changes são usados com responsabilidades separadas.
+- Tópicos privados de sala e regras server-side possuem cobertura automatizada relevante.
+- Há implementação WebRTC P2P e lógica de reconexão.
+- Assentos, host/moderação, entrada/saída e recompensas já receberam diversas correções de autorização e idempotência.
+
+### Jogos
+
+- **Zuno Stack é o jogo ativo principal no catálogo atual.**
+- O Stack possui guards automatizados para autoridade, estado, relay, tile, host e coerência.
+- O fluxo legado do Desafio Zuno não deve voltar a aceitar conclusão/pontuação confiada ao cliente.
+
+### Aura e Autoridade
+
+O conceito oficial de Aura e Autoridade está definido em [`docs/ZUNOPLAY_AURA_SYSTEM_OFFICIAL.md`](docs/ZUNOPLAY_AURA_SYSTEM_OFFICIAL.md).
+
+A fundação técnica já existe no banco (`player_authority`, `authority_transactions`, `authority_match_claims`, progressão/transactions e resultados relacionados) e as superfícies auditadas mantêm escrita sensível server-side. Isso **não significa que o sistema esteja validado ponta a ponta**.
+
+Status atual: **🟡 IMPLEMENTADO, NÃO VALIDADO E2E**.
+
+## Pendências que impedem tratar a Etapa 19 como concluída
+
+- Finalizar a revisão individual da superfície de funções `SECURITY DEFINER` executáveis por usuários autenticados.
+- Implementar e validar conclusão server-authoritative/verificável para fluxos de jogos que geram progressão/recompensa.
+- Substituir a contenção temporária de mídia privada do Pulso por entrega realmente privada/autorizada (bucket privado ou mecanismo equivalente + URLs/requests autorizados).
+- Ativar **Leaked Password Protection** no Supabase Auth.
+- Configurar e validar TURN de produção para redes onde P2P direto falha.
+- Validar mensagens ponta a ponta em clientes reais, inclusive entregue/lido, anexos, grupos, realtime e reconexão.
+- Validar salas/voz com múltiplos clientes, redes diferentes, reconexão e TURN.
+- Validar notificações completas, incluindo preferências, realtime/push, badges e deep links.
+- Validar Avatar Studio e persistência/integridade de inventário/equipamento.
+- Validar sessão/Auth e ciclo de vida de conta ponta a ponta.
+- Executar smoke visual/mobile em Android e iPhone reais.
+- Fazer PostHog ingerir eventos reais de produção e validar observabilidade.
+
+Enquanto esses itens permanecerem sem evidência suficiente, **Etapa 20 / Release não deve ser declarada pronta**.
 
 ## TURN / WebRTC
 
 `voz-sala.js` nunca deve receber segredo permanente de TURN diretamente no GitHub Pages.
 
-O módulo aceita duas formas seguras de configuração.
-
-### Provider JavaScript
-
-```js
-window.ZunoVoiceICEProvider = async ({ roomId, userId, supabase }) => ({
-  iceServers: [{
-    urls: ["turn:turn.example.com:3478"],
-    username: "temporary-user",
-    credential: "temporary-password"
-  }]
-});
-```
-
-### Endpoint autenticado
-
-```js
-window.ZUNO_TURN_ENDPOINT = "https://backend.example.com/turn-credentials";
-```
-
-O ZunoPlay envia o JWT atual no header `Authorization: Bearer <token>` e espera credenciais TURN temporárias. Se TURN não estiver configurado ou estiver indisponível, a voz continua tentando conexão direta usando STUN.
+O módulo aceita configuração por provider JavaScript ou endpoint autenticado com credenciais temporárias. Se TURN estiver indisponível, a implementação pode tentar conexão direta por STUN, mas isso não substitui a validação de produção em redes restritas.
 
 ## Dados de teste
 
-Não executar limpeza destrutiva antes da decisão explícita de lançamento. Os dados atuais continuam sendo usados para testes funcionais e serão resetados apenas na etapa final de pré-lançamento.
+Não executar limpeza destrutiva antes da decisão explícita de lançamento. Os dados atuais continuam sendo usados para testes funcionais e devem ser resetados somente na etapa final de pré-lançamento, com análise de impacto e possibilidade de recuperação.
