@@ -1,0 +1,14 @@
+name: Preview PR Immediate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_PR_IMMEDIATE.md'
+
+jobs:
+  immediate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'No more auxiliary commits' docs/ZUNOPLAY_PREVIEW_PR_IMMEDIATE.md
