@@ -1,0 +1,61 @@
+name: One-shot retired visual cleanup
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cleanup-legacy-visual.yml'
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove retired visual selectors
+        shell: python
+        run: |
+          from pathlib import Path
+
+          targets = [Path('zuno-current-home.css'), Path('zuno-current-home-mobile.css')]
+
+          def clean_block(text):
+              out=[]; i=0; n=len(text)
+              while i<n:
+                  brace=text.find('{', i)
+                  if brace<0:
+                      out.append(text[i:]); break
+                  selector=text[i:brace]
+                  depth=1; j=brace+1
+                  while j<n and depth:
+                      if text[j]=='{': depth+=1
+                      elif text[j]=='}': depth-=1
+                      j+=1
+                  body=text[brace+1:j-1] if depth==0 else text[brace+1:]
+                  low=selector.lower()
+                  if '.aura-' in low or '#aura' in low:
+                      pass
+                  elif selector.lstrip().startswith('@') and '{' in text[brace:j]:
+                      out.append(selector+'{'+clean_block(body)+'}')
+                  else:
+                      out.append(selector+'{'+body+'}')
+                  i=j
+              return ''.join(out)
+
+          for path in targets:
+              if path.exists():
+                  before=path.read_text(encoding='utf-8')
+                  after=clean_block(before)
+                  path.write_text(after, encoding='utf-8')
+                  print(path, before.count('aura-'), '->', after.count('aura-'))
+
+          Path('.github/workflows/cleanup-legacy-visual.yml').unlink(missing_ok=True)
+      - name: Verify retired selectors are gone
+        run: |
+          ! grep -RniE '\.aura-|#aura' --include='*.css' .
+      - name: Commit cleanup
+        run: |
+          git config user.name 'ZunoPlay Cleanup Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'refactor: purge retired visual selectors' || exit 0
+          git push
