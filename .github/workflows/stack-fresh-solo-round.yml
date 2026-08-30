@@ -1,0 +1,33 @@
+name: Zuno Stack Fresh Solo Round
+
+on:
+  pull_request:
+    paths:
+      - 'jogos.html'
+      - 'zuno-stack.html'
+      - 'zuno-stack-fresh-round-guard.js'
+      - 'supabase/migrations/**'
+      - 'tests/zuno-stack-fresh-solo-round.test.mjs'
+      - '.github/workflows/stack-fresh-solo-round.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'jogos.html'
+      - 'zuno-stack.html'
+      - 'zuno-stack-fresh-round-guard.js'
+      - 'supabase/migrations/**'
+      - 'tests/zuno-stack-fresh-solo-round.test.mjs'
+      - '.github/workflows/stack-fresh-solo-round.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fresh-solo-round:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/zuno-stack-fresh-solo-round.test.mjs
