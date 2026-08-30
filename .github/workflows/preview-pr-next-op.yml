@@ -1,0 +1,10 @@
+name: Preview PR Next Operation
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  next:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'create_pull_request' docs/ZUNOPLAY_PREVIEW_PR_NEXT_OP.md
