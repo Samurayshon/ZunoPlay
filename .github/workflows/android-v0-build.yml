@@ -65,44 +65,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: |
-            set -eu
-            APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
-            adb install -r "$APK"
-            adb logcat -c
-
-            for ATTEMPT in 1 2 3; do
-              adb shell am force-stop com.zunoplay.app
-              START_OUTPUT="$(adb shell am start -W -n com.zunoplay.app/.MainActivity | tr -d '\r')"
-              echo "$START_OUTPUT"
-              echo "$START_OUTPUT" | grep -q 'Status: ok'
-              sleep 8
-              PID="$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
-              test -n "$PID"
-            done
-
-            adb shell input keyevent 223
-            sleep 3
-            test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
-            adb shell input keyevent 224
-            adb shell wm dismiss-keyguard || true
-            sleep 5
-            test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
-
-            adb logcat -d -v threadtime > android-runtime-logcat.txt
-            adb shell dumpsys package com.zunoplay.app > android-package.txt
-            adb shell dumpsys activity activities > android-activities.txt
-
-            python3 - <<'PY'
-            from pathlib import Path
-            log = Path('android-runtime-logcat.txt').read_text(errors='replace')
-            blocks = log.split('FATAL EXCEPTION')
-            fatal_for_app = any('Process: com.zunoplay.app' in block[:4000] for block in blocks[1:])
-            if fatal_for_app:
-                raise SystemExit('Fatal ZunoPlay process crash detected in logcat.')
-            PY
-
-            test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
+          script: bash android-v0/ci/runtime-smoke.sh
 
       - name: Upload runtime diagnostics
         if: always()
@@ -143,5 +106,3 @@ jobs:
           else
             gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste. Build, metadados e smoke test de runtime em Android 14 validados pelo CI antes da publicação."
           fi
-
-# runtime-validation-trigger
