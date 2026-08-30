@@ -1,0 +1,20 @@
+name: Preview Status Honesty Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_STATUS.md'
+      - 'docs/ZUNOPLAY_PREVIEW_GATE.md'
+
+jobs:
+  honesty:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prevent premature validation claim
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '🟠 PARCIAL' docs/ZUNOPLAY_PREVIEW_STATUS.md
+          grep -q 'não promover ZUN-47 para VALIDADO' docs/ZUNOPLAY_PREVIEW_STATUS.md
