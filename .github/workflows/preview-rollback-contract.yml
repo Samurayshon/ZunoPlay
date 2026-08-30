@@ -1,0 +1,16 @@
+name: Preview Rollback Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_ROLLBACK.md'
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'produção não é afetada' docs/ZUNOPLAY_PREVIEW_ROLLBACK.md
+          grep -q 'Não usar force-push da main' docs/ZUNOPLAY_PREVIEW_ROLLBACK.md
