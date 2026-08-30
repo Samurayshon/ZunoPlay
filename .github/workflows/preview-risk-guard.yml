@@ -1,0 +1,17 @@
+name: Preview Risk Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_RISK.md'
+      - 'scripts/vercel-preview-backend-guard.mjs'
+
+jobs:
+  risk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'Supabase de produção' docs/ZUNOPLAY_PREVIEW_RISK.md
+          node scripts/vercel-preview-backend-guard.mjs --self-test
