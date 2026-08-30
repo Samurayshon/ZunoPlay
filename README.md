@@ -23,6 +23,8 @@ O frontend consumido pelo aplicativo Android aponta para **GitHub Pages**:
 
 O `MainActivity.java` do Android usa esse endereço como `START_URL`. Vercel não deve ser tratado como o host de produção atual sem uma nova mudança de arquitetura e validação correspondente.
 
+O candidato de Preview/Staging usa a configuração raiz `vercel.json` apenas como barreira fail-closed; ela não altera a autoridade de produção do GitHub Pages.
+
 ## Evidência técnica já existente
 
 ### Segurança e dados
