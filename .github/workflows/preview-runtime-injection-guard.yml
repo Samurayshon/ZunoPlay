@@ -44,4 +44,8 @@ jobs:
         run: |
           node scripts/vercel-preview-backend-guard.mjs
           grep -q 'lqymrmionvvfbgfrdryo' zuno-runtime-injected.js
+          grep -q 'lqymrmionvvfbgfrdryo' zuno-room-app.js
+          grep -q 'lqymrmionvvfbgfrdryo' zuno-settings-center-v1.js
           ! grep -q 'rliymfbbhqoejgfvsbuu' zuno-runtime-injected.js
+          ! grep -q 'rliymfbbhqoejgfvsbuu' zuno-room-app.js
+          ! grep -q 'rliymfbbhqoejgfvsbuu' zuno-settings-center-v1.js
