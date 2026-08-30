@@ -1,0 +1,104 @@
+name: Pre-ledger Bootstrap Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/bootstrap/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/preledger-bootstrap-validation.yml'
+  workflow_dispatch:
+
+jobs:
+  fresh-database-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Inspect CLI surface
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase init --help >/dev/null
+          supabase start --help >/dev/null
+
+      - name: Initialize local Supabase config
+        run: |
+          set -euo pipefail
+          if [ ! -f supabase/config.toml ]; then
+            supabase init
+          fi
+          test -f supabase/config.toml
+
+      - name: Inject bootstrap before canonical ledger
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_VERSION='20260826130000'
+          BOOTSTRAP_NAME='preledger_baseline'
+          BOOTSTRAP_SOURCE="supabase/bootstrap/${BOOTSTRAP_VERSION}_${BOOTSTRAP_NAME}.sql"
+          BOOTSTRAP_TARGET="supabase/migrations/${BOOTSTRAP_VERSION}_${BOOTSTRAP_NAME}.sql"
+          test -f "$BOOTSTRAP_SOURCE"
+          test -f supabase/migrations/20260826135832_enable_room_messages_realtime.sql
+          cp "$BOOTSTRAP_SOURCE" "$BOOTSTRAP_TARGET"
+          test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 238
+
+      - name: Rebuild ZunoPlay database from zero
+        run: |
+          set -euo pipefail
+          supabase start
+
+      - name: Validate replay result
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 54322
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: |
+          set -euo pipefail
+
+          migrations="$(psql -Atc "select count(*) from supabase_migrations.schema_migrations where version between '20260826130000' and '20260830154207';")"
+          test "$migrations" -eq 238
+
+          canonical_exact="$(psql -Atc "select count(*) from supabase_migrations.schema_migrations where version between '20260826135832' and '20260830154207';")"
+          test "$canonical_exact" -eq 237
+
+          tables="$(psql -Atc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r';")"
+          test "$tables" -eq 58
+
+          rls="$(psql -Atc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity;")"
+          test "$rls" -eq 58
+
+          psql -v ON_ERROR_STOP=1 -Atc "
+            select case when
+              to_regclass('public.profiles') is not null and
+              to_regclass('public.rooms') is not null and
+              to_regclass('public.room_members') is not null and
+              to_regclass('public.room_messages') is not null and
+              to_regclass('public.friend_requests') is not null and
+              to_regclass('public.friendships') is not null and
+              to_regclass('public.messages') is not null and
+              to_regclass('public.notifications') is not null and
+              to_regclass('public.game_scores') is not null
+            then 'core-ok' else 'core-missing' end;
+          " | grep -qx 'core-ok'
+
+          psql -v ON_ERROR_STOP=1 -Atc "
+            select count(*)
+            from pg_trigger t
+            join pg_class c on c.oid=t.tgrelid
+            join pg_namespace n on n.oid=c.relnamespace
+            where not t.tgisinternal
+              and t.tgname in ('on_auth_user_created','on_auth_user_updated','trigger_friend_request_notification');
+          " | grep -qx '3'
+
+          echo "Fresh replay validated: 238 migrations (bootstrap + 237 canonical), 58 public tables, 58 with RLS."
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
