@@ -1,7 +1,7 @@
 # ZunoPlay — Ambientes Canônicos
 
 Última revisão: 2026-08-30
-Fase: 0.3
+Fase: 0.3.1
 
 ## Regra de autoridade
 
@@ -50,7 +50,7 @@ Um rollback ainda precisa ser validado funcionalmente antes da release final; a 
 
 ## Preview / Staging
 
-**Status: 🔒 BLOQUEADO / ⚫ NÃO IMPLEMENTADO COMO AMBIENTE HOSPEDADO CANÔNICO**
+**Status: 🔒 BLOQUEADO / 🟠 PREPARAÇÃO DE SEGURANÇA PARCIAL**
 
 ### Estado comprovado
 
@@ -58,6 +58,20 @@ Um rollback ainda precisa ser validado funcionalmente antes da release final; a 
 - Portanto não existe deploy Vercel do ZunoPlay que possa ser declarado preview, staging ou produção.
 - O GitHub Pages atual publica produção a partir de `main`.
 - O input `preview` de `actions/deploy-pages` continua documentado pelo próprio projeto da action como alpha e não disponível publicamente; ele não será usado como falsa solução de preview por PR.
+- A auditoria da Fase 0.3.1 confirmou que o frontend ainda contém referências diretas ao Supabase de produção `rliymfbbhqoejgfvsbuu`, inclusive em autenticação/onboarding. Logo, espelhar o código atual em outro host sem isolamento faria o preview falar com produção.
+
+### Fail-closed para Vercel
+
+Enquanto o backend de staging não estiver definido e o frontend não estiver desacoplado do project ref de produção:
+
+- `vercel.json` executa `scripts/vercel-preview-backend-guard.mjs` antes de qualquer deploy Vercel;
+- Vercel com `VERCEL_ENV=production` é rejeitado, pois GitHub Pages continua sendo a autoridade de produção;
+- Preview/Staging exige `ZUNO_SUPABASE_URL` e `ZUNO_SUPABASE_PUBLISHABLE_KEY` explícitos;
+- a URL de staging não pode conter o project ref de produção;
+- o source scan rejeita deploy se arquivos frontend ainda contiverem o project ref de produção;
+- o workflow `Preview Backend Isolation Guard` testa as regras e prova que um preview sem configuração falha fechado.
+
+Esse mecanismo é uma barreira de segurança. Ele **não** equivale a Preview/Staging implementado ou funcional.
 
 ### Autoridade planejada
 
@@ -71,7 +85,8 @@ Para ser promovido de candidato para ambiente canônico, precisa existir evidên
 4. configuração explícita para usar backend de teste/staging, nunca produção por acidente;
 5. logs de build/deploy acessíveis;
 6. smoke mínimo do frontend;
-7. ausência de alteração do origin de produção usado pelo Android.
+7. ausência de alteração do origin de produção usado pelo Android;
+8. frontend sem referências diretas ao project ref de produção nos artefatos servidos pelo preview.
 
 Até esses itens passarem, **nenhum `*.vercel.app` é ambiente oficial do ZunoPlay**.
 
@@ -90,13 +105,22 @@ Execuções locais, ambientes descartáveis de CI e bancos temporários servem p
 
 ### Preview/Staging
 
-Ainda não há backend canônico permanente validado para preview/staging. Um preview hospedado não deve apontar automaticamente para produção sem decisão e teste explícitos.
+Ainda não há backend canônico permanente validado para preview/staging.
+
+Durante a Fase 0.3.1 foram encontrados dois candidatos técnicos, nenhum promovido:
+
+- o projeto `ZunoPlay Phase0 Baseline Validation` (`gqynsjstcqktobhgembn`) existe, mas está `INACTIVE` e foi criado para validação do baseline, não para staging permanente;
+- Supabase oferece development branches/projetos novos, mas sua criação exige confirmação explícita de custo e organização.
+
+Nenhum dos dois pode ser promovido silenciosamente. Um preview hospedado deve permanecer bloqueado até existir backend isolado validado.
 
 ## Vercel
 
 **Status operacional atual: ⚫ NÃO IMPLEMENTADO para ZunoPlay nesta equipe.**
 
-A existência da integração Vercel ou da equipe `ZunoPlay` não é evidência de projeto/deployment. Na auditoria da Fase 0.3, `list_projects` retornou lista vazia.
+A existência da integração Vercel ou da equipe `ZunoPlay` não é evidência de projeto/deployment. Na auditoria da Fase 0.3.1, `list_projects` continuou retornando lista vazia.
+
+A integração disponível nesta execução não expõe ação parametrizada de criar/importar projeto a partir de `Samurayshon/ZunoPlay`; a CLI Vercel e automação de navegador também não estavam disponíveis/autenticadas no ambiente de execução. Por isso nenhum deploy genérico foi disparado.
 
 Migrar a produção para Vercel futuramente exigirá uma mudança deliberada de arquitetura e validação do Android, porque o app atual fixa `START_URL`, allowlist de host e trusted origin em `samurayshon.github.io`.
 
@@ -110,4 +134,6 @@ O workflow `Environment Authority Guard` protege as invariantes mínimas:
 - `samurayshon.github.io` continua na allowlist e como trusted origin;
 - não existe `.vercel/project.json` sem que este contrato seja deliberadamente atualizado.
 
-Se a arquitetura mudar, o guard deve ser alterado **na mesma PR** que muda a autoridade dos ambientes, com nova evidência funcional.
+O workflow `Preview Backend Isolation Guard` protege o fail-closed do candidato Vercel enquanto a separação de backend não foi concluída.
+
+Se a arquitetura mudar, os guards devem ser alterados **na mesma PR** que muda a autoridade dos ambientes, com nova evidência funcional.
