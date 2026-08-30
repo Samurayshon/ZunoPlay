@@ -1,0 +1,17 @@
+name: Preview Deploy Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_DEPLOY.md'
+
+jobs:
+  deploy-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'Samurayshon/ZunoPlay' docs/ZUNOPLAY_PREVIEW_DEPLOY.md
+          grep -q 'URL acessível' docs/ZUNOPLAY_PREVIEW_DEPLOY.md
+          grep -q 'logs' docs/ZUNOPLAY_PREVIEW_DEPLOY.md
