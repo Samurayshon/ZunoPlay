@@ -87,7 +87,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          f='supabase/migrations/20260829213000_harden_zuno_stack_rpc_surface.sql'
+          f='supabase/migrations/20260829162907_harden_zuno_stack_rpc_surface.sql'
           test -s "$f"
           grep -q "stack_actor_mismatch" "$f"
           grep -q "stack_state_too_large" "$f"
