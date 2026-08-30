@@ -1,0 +1,20 @@
+(()=>{
+  'use strict';
+  if(window.ZunoRuntimeConfig)return;
+  const PROD={url:'https://rliymfbbhqoejgfvsbuu.supabase.co',key:'sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0',environment:'production'};
+  const injected=window.__ZUNO_RUNTIME_CONFIG__||{};
+  const url=String(injected.supabaseUrl||'').trim();
+  const key=String(injected.supabasePublishableKey||'').trim();
+  const environment=String(injected.environment||'').trim().toLowerCase();
+  const hasInjected=!!(url&&key);
+  const host=String(location.hostname||'').toLowerCase();
+  const canonicalProductionHost=host==='samurayshon.github.io';
+  if(canonicalProductionHost&&hasInjected)throw new Error('runtime_config_override_forbidden_on_production');
+  if(!canonicalProductionHost&&!hasInjected)throw new Error('runtime_config_required_outside_canonical_production');
+  const config=canonicalProductionHost?PROD:{url,key,environment:environment||'preview'};
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url))throw new Error('invalid_supabase_runtime_url');
+  if(!config.key.startsWith('sb_publishable_')&&!config.key.startsWith('eyJ'))throw new Error('invalid_supabase_runtime_key');
+  if(!canonicalProductionHost&&config.url.includes('rliymfbbhqoejgfvsbuu'))throw new Error('production_backend_forbidden_outside_canonical_production');
+  Object.freeze(config);
+  Object.defineProperty(window,'ZunoRuntimeConfig',{value:config,writable:false,configurable:false});
+})();
