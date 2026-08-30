@@ -6,6 +6,36 @@ export PGPASSWORD=postgres
 ROOM='10000000-0000-0000-0000-000000000001'
 USER_ID='00000000-0000-0000-0000-000000000001'
 
+# The behavioral characterization intentionally mutates the shared disposable fixture.
+# Rebase only test state needed by this concurrency case so it is independent of test order.
+"${DB[@]}" <<SQL
+begin;
+delete from public.zuno_stack_game_events
+ where room_id='$ROOM'
+   and action_id in ('qa-concur-0001','qa-concur-0002');
+update public.zuno_stack_match_state
+set revision=1,
+    state=jsonb_set(
+      jsonb_set(
+        jsonb_set(state,'{engine,tray}','[]'::jsonb,false),
+        '{engine,active}','true'::jsonb,false
+      ),
+      '{engine,tiles}',
+      (
+        select jsonb_agg(
+          case when tile->>'id' in ('t85','t86')
+               then jsonb_set(tile,'{removed}','false'::jsonb,false)
+               else tile end
+          order by ord
+        )
+        from jsonb_array_elements(state->'engine'->'tiles') with ordinality e(tile,ord)
+      ),
+      false
+    )
+where room_id='$ROOM';
+commit;
+SQL
+
 run_action() {
   local action_id="$1" tile_id="$2" out="$3"
   "${DB[@]}" >"$out" 2>&1 <<SQL
