@@ -7,6 +7,7 @@ const ROOT = process.cwd();
 const PROD_REF = 'rliymfbbhqoejgfvsbuu';
 const PROD_URL = `https://${PROD_REF}.supabase.co`;
 const RUNTIME_PATH = path.join(ROOT, 'zuno-runtime-injected.js');
+const AUTHORITY_PATH = path.join(ROOT, 'zuno-runtime-config.js');
 const SKIP_DIRS = new Set(['.git', '.github', '.vercel', 'android-v0', 'docs', 'node_modules', 'scripts', 'supabase']);
 const EXTENSIONS = new Set(['.html', '.js', '.mjs']);
 const ALLOWED_PRODUCTION_REF_FILES = new Set(['zuno-runtime-config.js']);
@@ -21,14 +22,21 @@ function walk(dir, out = []) {
   return out;
 }
 
+function relative(file) { return path.relative(ROOT, file).replaceAll('\\', '/'); }
+
 function findProductionBackendRefs() {
   return walk(ROOT).flatMap((file) => {
-    const relative = path.relative(ROOT, file).replaceAll('\\', '/');
-    if (ALLOWED_PRODUCTION_REF_FILES.has(relative)) return [];
+    const rel = relative(file);
+    if (ALLOWED_PRODUCTION_REF_FILES.has(rel)) return [];
     const content = fs.readFileSync(file, 'utf8');
     if (!content.includes(PROD_REF) && !content.includes(PROD_URL)) return [];
-    return [relative];
+    return [rel];
   });
+}
+
+function productionPublishableKeys() {
+  const content = fs.readFileSync(AUTHORITY_PATH, 'utf8');
+  return [...new Set(content.match(/sb_publishable_[A-Za-z0-9_-]+/g) || [])];
 }
 
 function isPublishableKey(value) {
@@ -40,20 +48,35 @@ function readPreviewConfig(env = process.env) {
   const vercelEnv = String(env.VERCEL_ENV || '').toLowerCase();
   if (vercelEnv === 'production') throw new Error('Vercel production is forbidden: GitHub Pages is the canonical ZunoPlay production host.');
   if (vercelEnv !== 'preview') throw new Error('Only Vercel Preview deployments are allowed for the ZunoPlay staging frontend.');
-  const url = String(env.ZUNO_SUPABASE_URL || '').trim();
+  const url = String(env.ZUNO_SUPABASE_URL || '').trim().replace(/\/$/, '');
   const key = String(env.ZUNO_SUPABASE_PUBLISHABLE_KEY || '').trim();
   if (!url || !key) throw new Error('Preview/Staging requires explicit ZUNO_SUPABASE_URL and ZUNO_SUPABASE_PUBLISHABLE_KEY.');
   if (url.includes(PROD_REF)) throw new Error('Preview/Staging must not use the production Supabase project.');
-  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url)) throw new Error('ZUNO_SUPABASE_URL is not a valid Supabase project URL.');
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) throw new Error('ZUNO_SUPABASE_URL is not a valid Supabase project URL.');
   if (!isPublishableKey(key)) throw new Error('Preview/Staging requires a publishable/anon-compatible client key, never a service-role/secret key.');
+  return { url, key };
+}
+
+function rewriteLegacyPreviewCoupling({ url, key }) {
+  const prodKeys = productionPublishableKeys();
+  let changed = 0;
+  for (const file of walk(ROOT)) {
+    const rel = relative(file);
+    if (ALLOWED_PRODUCTION_REF_FILES.has(rel)) continue;
+    const original = fs.readFileSync(file, 'utf8');
+    let next = original.split(PROD_URL).join(url);
+    for (const prodKey of prodKeys) next = next.split(prodKey).join(key);
+    if (next !== original) { fs.writeFileSync(file, next); changed += 1; }
+  }
   const refs = findProductionBackendRefs();
-  if (refs.length) throw new Error(`Frontend is still coupled to production Supabase in: ${refs.join(', ')}`);
-  return { url: url.replace(/\/$/, ''), key };
+  if (refs.length) throw new Error(`Preview rewrite left production Supabase coupling in: ${refs.join(', ')}`);
+  console.log(`Preview build rewrote legacy backend coupling in ${changed} frontend file(s).`);
 }
 
 function generateRuntimeConfig(env = process.env) {
-  const { url, key } = readPreviewConfig(env);
-  const payload = { supabaseUrl: url, supabasePublishableKey: key, environment: 'preview' };
+  const config = readPreviewConfig(env);
+  rewriteLegacyPreviewCoupling(config);
+  const payload = { supabaseUrl: config.url, supabasePublishableKey: config.key, environment: 'preview' };
   fs.writeFileSync(RUNTIME_PATH, `window.__ZUNO_RUNTIME_CONFIG__=Object.freeze(${JSON.stringify(payload)});\n`, { mode: 0o600 });
   console.log('Preview runtime config generated for isolated staging backend.');
 }
@@ -74,7 +97,6 @@ function selfTest() {
 
 const mode = process.argv[2] || '--vercel-build';
 if (mode === '--self-test') { selfTest(); process.exit(0); }
-const refs = findProductionBackendRefs();
-if (mode === '--audit-current') { console.log(JSON.stringify({ productionProjectRef: PROD_REF, frontendProductionReferences: refs }, null, 2)); process.exit(0); }
+if (mode === '--audit-current') { console.log(JSON.stringify({ productionProjectRef: PROD_REF, frontendProductionReferences: findProductionBackendRefs() }, null, 2)); process.exit(0); }
 if (process.env.VERCEL !== '1') throw new Error('This guard is intended for Vercel builds. Set VERCEL=1 only in the real Vercel build environment.');
 generateRuntimeConfig(process.env);
