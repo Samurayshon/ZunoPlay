@@ -1,6 +1,6 @@
 (()=>{
-  if(window.__ZUNO_AVATAR_SIMPLE_V1__)return;
-  window.__ZUNO_AVATAR_SIMPLE_V1__=1;
+  if(window.__ZUNO_AVATAR_SIMPLE_V2__)return;
+  window.__ZUNO_AVATAR_SIMPLE_V2__=1;
   const STYLE='zuno-studio-v1';
   const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
   const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
@@ -21,12 +21,13 @@
   function show(msg){if(!toast)return;toast.textContent=msg;toast.classList.add('show');clearTimeout(show.t);show.t=setTimeout(()=>toast.classList.remove('show'),1700)}
   function setStatus(text,type=''){if(!status)return;status.textContent=text;status.className='avatar-status'+(type?' '+type:'')}
   function render(){
-    const r=renderer();if(!r?.mount)return;
+    const r=renderer();if(!r?.mount)return false;
     r.mount(preview,fixedConfig());
     r.mount($('#simpleMaleThumb'),miniConfig('masculino'));r.mount($('#simpleFemaleThumb'),miniConfig('feminino'));
     $$('.avatar-choice').forEach(b=>b.classList.toggle('is-active',b.dataset.model===model));
     $$('.mascot-option').forEach(b=>b.classList.toggle('is-active',Number(b.dataset.mascot)===mascot));
     const name=$('#simpleAvatarName');if(name)name.textContent=model==='feminino'?'Zuno Feminino':'Zuno Masculino';
+    return true;
   }
   function readLocal(){try{const raw=JSON.parse(localStorage.getItem('zunoAvatarPreset')||'null');if(raw?.style===STYLE){model=raw.model==='feminino'?'feminino':'masculino';mascot=Math.max(0,Math.min(3,Number(raw.selections?.Mascote)||0));return true}}catch(_){}return false}
   async function cloudClient(){if(sb)return sb;if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;if(window.supabase?.createClient){sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);return sb}return null}
@@ -46,7 +47,21 @@
     $$('.mascot-option').forEach(b=>b.addEventListener('click',()=>{mascot=Math.max(0,Math.min(3,Number(b.dataset.mascot)||0));render()}));
     save?.addEventListener('click',persist);
   }
-  function boot(){if(booted||!renderer()?.mount)return;booted=true;readLocal();bind();render();loadCloud().finally(()=>setStatus('Escolha seu avatar e mascote'))}
-  window.addEventListener('zuno-avatar-renderer-ready',boot);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0),{once:true});else setTimeout(boot,0);
+  function boot(){
+    if(booted)return true;
+    if(!renderer()?.mount)return false;
+    booted=true;readLocal();bind();render();loadCloud().finally(()=>setStatus('Escolha seu avatar e mascote'));
+    return true;
+  }
+  function bootGuard(){
+    if(boot())return;
+    setTimeout(()=>{
+      if(boot())return;
+      setStatus('Não foi possível carregar os avatares. Reabra esta tela.','err');
+      if(save)save.disabled=true;
+      console.error('Zuno Avatar Studio: renderer indisponível após o bootstrap');
+    },5000);
+  }
+  window.addEventListener('zuno-avatar-renderer-ready',bootGuard);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bootGuard,0),{once:true});else setTimeout(bootGuard,0);
 })();
