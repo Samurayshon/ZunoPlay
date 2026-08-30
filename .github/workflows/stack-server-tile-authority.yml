@@ -18,7 +18,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --check zuno-stack.js
           node --check zuno-stack-authority-official.js
+          node tests/zuno-stack-board-stability.test.mjs
           f='supabase/migrations/20260829221000_server_authoritative_zuno_stack_tile.sql'
           test -s "$f"
           grep -q 'stack_server_action_required' "$f"
