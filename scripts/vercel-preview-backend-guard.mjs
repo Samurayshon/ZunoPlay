@@ -8,7 +8,7 @@ const PROD_REF = 'rliymfbbhqoejgfvsbuu';
 const PROD_URL = `https://${PROD_REF}.supabase.co`;
 const RUNTIME_PATH = path.join(ROOT, 'zuno-runtime-injected.js');
 const AUTHORITY_PATH = path.join(ROOT, 'zuno-runtime-config.js');
-const SKIP_DIRS = new Set(['.git', '.github', '.vercel', 'android-v0', 'docs', 'node_modules', 'scripts', 'supabase']);
+const SKIP_DIRS = new Set(['.git', '.github', '.vercel', 'android-v0', 'docs', 'node_modules', 'qa', 'scripts', 'supabase']);
 const EXTENSIONS = new Set(['.html', '.js', '.mjs']);
 const ALLOWED_PRODUCTION_REF_FILES = new Set(['zuno-runtime-config.js']);
 
@@ -85,7 +85,7 @@ function rewriteLegacyPreviewCoupling({ url, key, ref }) {
 function generateRuntimeConfig(env = process.env) {
   const config = readPreviewConfig(env);
   rewriteLegacyPreviewCoupling(config);
-  const payload = { supabaseUrl: config.url, supabasePublishableKey: config.key, environment: 'preview' };
+  const payload = { supabaseUrl: config.url, supabasePublishableKey: config.key, supabaseProjectRef: config.ref, environment: 'preview' };
   fs.writeFileSync(RUNTIME_PATH, `window.__ZUNO_RUNTIME_CONFIG__=Object.freeze(${JSON.stringify(payload)});\n`, { mode: 0o600 });
   console.log('Preview runtime config generated for isolated staging backend.');
 }
@@ -102,6 +102,9 @@ function selfTest() {
   expectFailure('non-preview Vercel environment is rejected', { VERCEL_ENV: 'development', ZUNO_SUPABASE_URL: 'https://example.supabase.co', ZUNO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' }, /only vercel preview/i);
   expectFailure('missing staging backend fails closed', { VERCEL_ENV: 'preview' }, /requires explicit/i);
   expectFailure('production Supabase is rejected for preview', { VERCEL_ENV: 'preview', ZUNO_SUPABASE_URL: PROD_URL, ZUNO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' }, /must not use the production/i);
+  const preview = readPreviewConfig({ VERCEL_ENV: 'preview', ZUNO_SUPABASE_URL: 'https://preview-project.supabase.co', ZUNO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test' });
+  if (preview.ref !== 'preview-project') throw new Error('Self-test failed: Preview project ref was not derived from its URL.');
+  console.log('PASS: Preview project ref is derived from runtime URL');
 }
 
 const mode = process.argv[2] || '--vercel-build';
