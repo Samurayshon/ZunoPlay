@@ -9,10 +9,25 @@ const get=(path)=>rest(path).catch(()=>[]);
 function online(p){if(!p||p.status!=='online'||!p.last_seen_at)return false;const age=Date.now()-new Date(p.last_seen_at).getTime();return age>=0&&age<=120000}
 function aura(level){level=Math.max(1,+level||1);if(level>=40)return['Lenda Zuno','Radiante'];if(level>=25)return['Ícone','Ascendente'];if(level>=15)return['Influente','Vibrante'];if(level>=7)return['Conector','Ativa'];return['Explorador','Inicial']}
 function avatar(p){return p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="">':esc((p.nickname||p.username||'Z').slice(0,1).toUpperCase())}
-function initials(p){return esc((p.nickname||p.username||'Z').slice(0,1).toUpperCase())}
 function badgeName(id){const map={first_win:'Primeira vitória',first_game:'Primeira partida',ten_games:'10 partidas',ten_wins:'10 vitórias',perfect_game:'Partida perfeita',level_5:'Nível 5',level_10:'Nível 10'};return map[id]||String(id||'Conquista').replaceAll('_',' ')}
+function cleanupLegacyHeader(){
+  document.querySelector('.profile-v2-head')?.remove();
+  const root=document.getElementById('profileV2Root');
+  const main=root?.closest('main');
+  if(!main)return;
+  [...main.children].forEach(el=>{
+    if(el===root)return;
+    const text=(el.textContent||'').replace(/\s+/g,' ').trim();
+    if(/Aura de Zuno/i.test(text)&&/progress|identidade|conquista/i.test(text)) el.remove();
+  });
+  [...document.querySelectorAll('body *')].forEach(el=>{
+    if(el===root||root?.contains(el))return;
+    const text=(el.textContent||'').replace(/\s+/g,' ').trim();
+    if(text==='Aura de Zuno Sua progressão, identidade e conquistas vivem aqui.'||text==='Aura de Zuno Sua progressao, identidade e conquistas vivem aqui.') el.remove();
+  });
+}
 async function saveStatus(id,current){const next=prompt('Seu status no ZunoPlay',current||'');if(next===null)return;const clean=next.trim().slice(0,40);await rest('user_presence?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:id,custom_status:clean||null})});await render()}
-async function render(){const root=document.getElementById('profileV2Root'),s=session();if(!root)return;if(!s){location.replace('login.html?next='+encodeURIComponent('perfil.html'+location.search));return}const id=target||s.user.id,own=id===s.user.id;root.innerHTML='<div class="zpu-card zp-loading">Carregando seu universo Zuno...</div>';
+async function render(){cleanupLegacyHeader();const root=document.getElementById('profileV2Root'),s=session();if(!root)return;if(!s){location.replace('login.html?next='+encodeURIComponent('perfil.html'+location.search));return}const id=target||s.user.id,own=id===s.user.id;root.innerHTML='<div class="zpu-card zp-loading">Carregando seu universo Zuno...</div>';
 try{
 const [profiles,presences,friends,moments,progress,achievements,memberships]=await Promise.all([
 get('profiles?select=id,username,nickname,zuno_id,bio,level,created_at,avatar_url&id=eq.'+encodeURIComponent(id)+'&limit=1'),
@@ -40,5 +55,5 @@ root.innerHTML='<div class="zpu">'+
 (own?'<section class="zpu-card zpu-section"><div class="zpu-head"><div class="zpu-title">Meu Zuno</div></div><div class="zpu-tools"><button class="zpu-tool" data-go="avatar.html">Avatar Studio<small>Sua aparência no universo</small></button><button class="zpu-tool" disabled>Inventário<small>Em breve</small></button><button class="zpu-tool" disabled>Coleção<small>Em breve</small></button><button class="zpu-tool" data-settings>Configurações<small>Conta, privacidade e segurança</small></button></div></section>':'')+'</div>';
 root.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>location.href=b.dataset.go);root.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>location.href='perfil.html?user='+encodeURIComponent(b.dataset.profile));root.querySelector('[data-status]')?.addEventListener('click',()=>saveStatus(id,pr?.custom_status));root.querySelector('[data-edit]')?.addEventListener('click',()=>{const legacy=document.getElementById('zpEditToggle');if(legacy){legacy.click();legacy.scrollIntoView({behavior:'smooth',block:'center'})}else alert('Edição de perfil disponível nas configurações do perfil.')});root.querySelector('[data-settings]')?.addEventListener('click',()=>{if(window.ZunoSettingsCenter?.open)window.ZunoSettingsCenter.open();else document.dispatchEvent(new CustomEvent('zuno:open-settings'))});root.querySelector('[data-message]')?.addEventListener('click',()=>location.href='conversas.html?user='+encodeURIComponent(id));root.querySelector('[data-more]')?.addEventListener('click',()=>alert('Bloquear e denunciar estarão disponíveis neste menu.'));
 }catch(e){console.error('profile-universe',e);root.innerHTML='<div class="zpu-card zp-error">Não foi possível carregar o perfil social.<br><button class="zp-retry" onclick="location.reload()">Tentar novamente</button></div>'}}
-function start(){const root=document.getElementById('profileV2Root');if(!root)return;setTimeout(render,350);clearInterval(timer);timer=setInterval(render,30000)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+function start(){cleanupLegacyHeader();const root=document.getElementById('profileV2Root');if(!root)return;setTimeout(render,350);clearInterval(timer);timer=setInterval(render,30000)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
