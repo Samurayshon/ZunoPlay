@@ -1,0 +1,47 @@
+name: XP UI Guard
+
+on:
+  pull_request:
+    paths:
+      - 'nav.js'
+      - 'sw.js'
+      - 'zuno-xp-ui-v1.js'
+      - 'zuno-xp-ui-v1.css'
+      - 'zuno-mini-profile-v1.js'
+      - 'supabase/migrations/*xp*.sql'
+  push:
+    branches: [main]
+    paths:
+      - 'nav.js'
+      - 'sw.js'
+      - 'zuno-xp-ui-v1.js'
+      - 'zuno-xp-ui-v1.css'
+      - 'zuno-mini-profile-v1.js'
+      - 'supabase/migrations/*xp*.sql'
+
+jobs:
+  validate-xp-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check nav.js
+          node --check sw.js
+          node --check zuno-xp-ui-v1.js
+          node --check zuno-mini-profile-v1.js
+      - name: Guard XP and Aura separation
+        run: |
+          grep -q "user_xp_progression" zuno-xp-ui-v1.js
+          grep -q "zuno_public_global_xp_level" zuno-mini-profile-v1.js
+          if grep -q "function aura" zuno-mini-profile-v1.js; then
+            echo "Mini profile must not derive Aura from Level"
+            exit 1
+          fi
+          if grep -q "profiles?select=.*level" zuno-mini-profile-v1.js; then
+            echo "Mini profile must not use legacy profiles.level as global XP level"
+            exit 1
+          fi
