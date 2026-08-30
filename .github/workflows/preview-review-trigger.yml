@@ -1,0 +1,14 @@
+name: Preview Review Trigger
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_REVIEW_TRIGGER.md'
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'possibilidade de Preview cair em produção por fallback' docs/ZUNOPLAY_PREVIEW_REVIEW_TRIGGER.md
