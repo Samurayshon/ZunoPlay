@@ -50,6 +50,22 @@ jobs:
           grep -q "package: name='com.zunoplay.app' versionCode='4' versionName='0.0.3'" android-apk-badging.txt
           grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
 
+      - name: Resolve APK version
+        run: |
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
+          test -n "$VERSION_NAME"
+          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "APK_NAME=ZunoPlay-${VERSION_NAME}-debug.apk" >> "$GITHUB_ENV"
+          cp android-v0/app/build/outputs/apk/debug/app-debug.apk "ZunoPlay-${VERSION_NAME}-debug.apk"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZunoPlay-${{ env.VERSION_NAME }}-APK
+          path: ${{ env.APK_NAME }}
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Enable KVM for Android emulator
         run: |
           if [ -e /dev/kvm ]; then
@@ -79,22 +95,6 @@ jobs:
             android-activities.txt
           if-no-files-found: warn
           retention-days: 14
-
-      - name: Resolve APK version
-        run: |
-          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
-          test -n "$VERSION_NAME"
-          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
-          echo "APK_NAME=ZunoPlay-${VERSION_NAME}-debug.apk" >> "$GITHUB_ENV"
-          cp android-v0/app/build/outputs/apk/debug/app-debug.apk "ZunoPlay-${VERSION_NAME}-debug.apk"
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ZunoPlay-${{ env.VERSION_NAME }}-APK
-          path: ${{ env.APK_NAME }}
-          if-no-files-found: error
-          retention-days: 30
 
       - name: Publish APK release
         env:
