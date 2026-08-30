@@ -1,0 +1,17 @@
+name: Preview Production Invariant
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  invariant:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'https://samurayshon.github.io/ZunoPlay/' docs/ZUNOPLAY_PREVIEW_PRODUCTION_INVARIANT.md
+          grep -q 'rliymfbbhqoejgfvsbuu' docs/ZUNOPLAY_PREVIEW_PRODUCTION_INVARIANT.md
+          grep -q 'https://samurayshon.github.io/ZunoPlay/' android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java
