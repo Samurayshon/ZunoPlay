@@ -1,0 +1,11 @@
+(()=>{
+if(window.__ZUNO_STACK_PULSE_AUTHORITY__)return;window.__ZUNO_STACK_PULSE_AUTHORITY__=true;
+const q=new URLSearchParams(location.search),roomId=q.get('room')||sessionStorage.getItem('zunoplay_room_id')||'';
+if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(roomId||''))return;
+let busy=false,seq=0;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const toast=t=>{const e=document.getElementById('toast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1400)};
+async function deps(){for(let i=0;i<50;i++){if(window.ZunoSupabaseClient&&window.ZunoStackAuthority&&window.ZunoStackCore)return true;await sleep(80)}return false}
+function actionId(){const raw=crypto?.randomUUID?.()||`${Date.now()}-${++seq}`;return `pulse-${raw}`.slice(0,160)}
+async function shift(){if(busy)return false;if(!await deps()){toast('Pulse aguardando autoridade do servidor.');return false}const sb=window.ZunoSupabaseClient,a=window.ZunoStackAuthority,s=a.getState?.()||{},revision=Number(s.revision)||0;if(revision<1){await a.reconcile?.('server_pulse_missing_revision');return false}busy=true;try{const {error}=await sb.rpc('zuno_stack_pulse_shift',{p_room_id:roomId,p_expected_revision:revision,p_action_id:actionId()});if(error){const m=String(error.message||'');if(m.includes('revision_conflict')){await a.reconcile?.('server_pulse_revision_conflict');toast('Pulse ressincronizado.')}else if(m.includes('stack_pulse_not_ready')){await a.reconcile?.('server_pulse_not_ready');toast('Carregue o Pulse até 5/5.')}else if(m.includes('stack_round_not_active'))await a.reconcile?.('server_pulse_round_inactive');else if(m.includes('stack_action_id_conflict'))await a.reconcile?.('server_pulse_action_conflict');else toast('Pulse não confirmado pelo servidor.');return false}await a.reconcile?.('server_pulse_shift');return true}catch(_){toast('Pulse indisponível agora.');return false}finally{busy=false}}
+window.ZunoStackPulseAuthority={version:1,shift};document.dispatchEvent(new CustomEvent('zuno:stack-pulse-authority-ready'));
+})();
