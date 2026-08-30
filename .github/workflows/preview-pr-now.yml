@@ -1,0 +1,14 @@
+name: Preview PR Now
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_PR_NOW.md'
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Abrir a Pull Request limpa' docs/ZUNOPLAY_PREVIEW_PR_NOW.md
