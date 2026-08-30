@@ -1,0 +1,10 @@
+name: Preview PR Stop
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  stop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'STOP auxiliary work' docs/ZUNOPLAY_PREVIEW_PR_STOP.md
