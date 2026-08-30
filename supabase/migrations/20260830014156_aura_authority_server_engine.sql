@@ -52,10 +52,11 @@ begin
   returning id into v_tx_id;
 
   if v_tx_id is not null then
-    update public.player_authority
-       set authority = authority + p_amount, updated_at = now()
-     where user_id = p_user_id
-     returning player_authority.authority into v_authority;
+    update public.player_authority pa
+       set authority = pa.authority + p_amount,
+           updated_at = now()
+     where pa.user_id = p_user_id
+     returning pa.authority into v_authority;
     v_applied := true;
   else
     select at.id into v_tx_id from public.authority_transactions at where at.user_id = p_user_id and at.idempotency_key = btrim(p_idempotency_key);
