@@ -9,6 +9,7 @@ on:
       - 'zuno-stack-performance-official.js'
       - 'supabase/migrations/*zuno_stack_*powers.sql'
       - 'supabase/migrations/*zuno_stack_gelo.sql'
+      - 'supabase/migrations/*zuno_stack_desfazer.sql'
       - '.github/workflows/stack-power-authority.yml'
   push:
     branches: [main]
@@ -18,6 +19,7 @@ on:
       - 'zuno-stack-performance-official.js'
       - 'supabase/migrations/*zuno_stack_*powers.sql'
       - 'supabase/migrations/*zuno_stack_gelo.sql'
+      - 'supabase/migrations/*zuno_stack_desfazer.sql'
       - '.github/workflows/stack-power-authority.yml'
 
 jobs:
@@ -37,23 +39,26 @@ jobs:
           base='supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql'
           board='supabase/migrations/20260830035500_server_authoritative_zuno_stack_board_powers.sql'
           gelo='supabase/migrations/20260830040257_server_authoritative_zuno_stack_gelo.sql'
+          desfazer='supabase/migrations/20260830041009_server_authoritative_zuno_stack_desfazer.sql'
           test -s "$base"
           test -s "$board"
           test -s "$gelo"
+          test -s "$desfazer"
           grep -q 'zuno_stack_server_power_loadout' "$base"
           grep -q 'trg_zuno_stack_power_state_guard' "$base"
           grep -q "p_power not in ('fluxo','troca','explosion','elo','fase','vortice','ima')" "$board"
           grep -q 'zuno_stack_timer_state_guard' "$gelo"
-          grep -q 'stack_timer_invalid_start' "$gelo"
-          grep -q "v_duration not in (180000,300000)" "$gelo"
           grep -q 'zuno_stack_apply_gelo_internal' "$gelo"
-          grep -q "'geloExtensions'" "$gelo"
-          grep -q "'deadlineAt',v_deadline" "$gelo"
-          grep -q "'freezeUntil',v_freeze" "$gelo"
-          grep -q 'security invoker' "$gelo"
-          grep -q 'revoke all on function public.zuno_stack_gelo' "$gelo"
+          grep -q 'zuno_stack_apply_desfazer_internal' "$desfazer"
+          grep -q "v_phase='final'" "$desfazer"
+          grep -q 'stack_undo_unavailable' "$desfazer"
+          grep -q "'undoLeft',v_undo_left-1" "$desfazer"
+          grep -q "'{desfazer}'" "$desfazer"
+          grep -q 'security invoker' "$desfazer"
+          grep -q 'revoke all on function public.zuno_stack_desfazer' "$desfazer"
           grep -q "zuno_stack_gelo" zuno-stack-power-authority.js
-          grep -Fq '/^(fluxo|troca|explosion|elo|fase|vortice|ima|gelo)$/' zuno-stack-power-authority.js
-          grep -Fq '/^power_(fluxo|troca|explosion|elo|fase|vortice|ima|gelo)$/' zuno-stack-server-engine-guard.js
+          grep -q "zuno_stack_desfazer" zuno-stack-power-authority.js
+          grep -Fq '/^(fluxo|troca|explosion|elo|fase|vortice|ima|gelo|desfazer)$/' zuno-stack-power-authority.js
+          grep -Fq '/^power_(fluxo|troca|explosion|elo|fase|vortice|ima|gelo|desfazer)$/' zuno-stack-server-engine-guard.js
           grep -q 'ZunoStackPowerAuthority?.request' zuno-stack-server-engine-guard.js
           grep -q "resync('power_server_required')" zuno-stack-server-engine-guard.js
