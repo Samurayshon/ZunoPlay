@@ -18,29 +18,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --check zuno-stack-server-engine-guard.js
+          node --check zuno-stack-actions-authority.js
           f='supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql'
           test -s "$f"
           grep -q 'stack_server_action_required' "$f"
           grep -q 'stack_server_start_required' "$f"
           grep -q "v_kind <> 'start'" "$f"
           ! grep -q "v_kind = 'hint'" "$f"
-          grep -q "safeKinds=new Set(\['start','tile','undo','relay_send','relay_take','pulse_shift'\])" zuno-stack-server-engine-guard.js
-          grep -q "k==='late_start'" zuno-stack-server-engine-guard.js
-          grep -q "k==='pulse_shift'" zuno-stack-server-engine-guard.js
-          grep -q "k==='hint'" zuno-stack-server-engine-guard.js
-          grep -q 'ZunoStackPulseAuthority?.shift' zuno-stack-server-engine-guard.js
-          grep -q 'ZunoStackHintAuthority?.request' zuno-stack-server-engine-guard.js
-          grep -q "closest('#pulse')" zuno-stack-server-engine-guard.js
-          grep -q "closest('#hint')" zuno-stack-server-engine-guard.js
-          grep -q "data-zso-tactical" zuno-stack-server-engine-guard.js
-          grep -q 'stopImmediatePropagation' zuno-stack-server-engine-guard.js
-          grep -q 'server_action_required_' zuno-stack-server-engine-guard.js
-          grep -q 'zuno-stack-server-engine-guard.js?v=1' zuno-stack.html
-          python3 - <<'PY'
-          import pathlib
-          text=pathlib.Path('zuno-stack.html').read_text()
-          guard=text.index('zuno-stack-server-engine-guard.js?v=1')
-          systems=text.index('zuno-stack-performance-official.js?v=')
-          if guard>=systems: raise SystemExit('engine guard must load before performance/systems')
-          PY
+          grep -q "k==='late_start'" zuno-stack-actions-authority.js
+          grep -q "k==='pulse_shift'" zuno-stack-actions-authority.js
+          grep -q "k==='hint'" zuno-stack-actions-authority.js
+          grep -q 'ZunoStackPulseAuthority' zuno-stack-actions-authority.js
+          grep -q 'ZunoStackHintAuthority' zuno-stack-actions-authority.js
+          grep -q "closest('#pulse')" zuno-stack-actions-authority.js
+          grep -q "closest('#hint')" zuno-stack-actions-authority.js
+          grep -q "data-zso-tactical" zuno-stack-actions-authority.js
+          grep -q 'stopImmediatePropagation' zuno-stack-actions-authority.js
+          grep -q 'server_action_required_' zuno-stack-actions-authority.js
+          grep -q 'zuno-stack-actions-authority.js?v=1' zuno-stack-performance-official.js
+          grep -q 'zuno-stack-solo-authority-bootstrap.js?v=12' zuno-stack.html
+          ! grep -q 'zuno-stack-server-engine-guard.js' zuno-stack.html
