@@ -21,6 +21,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.PermissionRequest;
@@ -42,8 +43,8 @@ import java.util.Map;
 public class MainActivity extends Activity {
     private static final String TAG = "ZunoPlayAndroid";
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
-    private static final String BUILD_ID = "android-v0-stability-v3";
-    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_stability_v3";
+    private static final String BUILD_ID = "android-v0-stability-v4";
+    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_stability_v4";
     private static final int PERMISSION_REQUEST = 7001;
     private static final long BOOT_TIMEOUT_MS = 12000L;
     private static final int MAX_RENDERER_RECOVERIES = 2;
@@ -130,7 +131,7 @@ public class MainActivity extends Activity {
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
             settings.setDisplayZoomControls(false);
-            settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.3 " + BUILD_ID);
+            settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.4 " + BUILD_ID);
 
             newWebView.setWebViewClient(createStableWebViewClient());
             newWebView.setWebChromeClient(new WebChromeClient() {
@@ -431,7 +432,7 @@ public class MainActivity extends Activity {
         try {
             Window window = getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            window.setStatusBarColor(Color.TRANSPARENT);
+            window.setStatusBarColor(Color.rgb(4, 5, 12));
             window.setNavigationBarColor(Color.rgb(4, 5, 12));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -449,9 +450,53 @@ public class MainActivity extends Activity {
                                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
             }
+
+            applySafeAreaInsets();
         } catch (RuntimeException error) {
-            Log.w(TAG, "Edge-to-edge configuration failed; continuing with system defaults", error);
+            Log.w(TAG, "Safe-area configuration failed; continuing with system defaults", error);
         }
+    }
+
+    private void applySafeAreaInsets() {
+        if (rootView == null) return;
+
+        rootView.setOnApplyWindowInsetsListener((view, insets) -> {
+            int left;
+            int top;
+            int right;
+            int bottom;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                android.graphics.Insets safeInsets = insets.getInsets(
+                        WindowInsets.Type.systemBars()
+                                | WindowInsets.Type.displayCutout()
+                                | WindowInsets.Type.mandatorySystemGestures());
+                left = safeInsets.left;
+                top = safeInsets.top;
+                right = safeInsets.right;
+                bottom = safeInsets.bottom;
+            } else {
+                left = insets.getSystemWindowInsetLeft();
+                top = insets.getSystemWindowInsetTop();
+                right = insets.getSystemWindowInsetRight();
+                bottom = insets.getSystemWindowInsetBottom();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && insets.getDisplayCutout() != null) {
+                    left = Math.max(left, insets.getDisplayCutout().getSafeInsetLeft());
+                    top = Math.max(top, insets.getDisplayCutout().getSafeInsetTop());
+                    right = Math.max(right, insets.getDisplayCutout().getSafeInsetRight());
+                    bottom = Math.max(bottom, insets.getDisplayCutout().getSafeInsetBottom());
+                }
+            }
+
+            view.setPadding(left, top, right, bottom);
+            Log.d(TAG, "Applied system safe area: left=" + left
+                    + " top=" + top
+                    + " right=" + right
+                    + " bottom=" + bottom);
+            return insets;
+        });
+        rootView.requestApplyInsets();
     }
 
     private boolean hasMediaPermissions() {
