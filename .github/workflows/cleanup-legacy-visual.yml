@@ -15,43 +15,32 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          import re
 
-          targets = [Path('zuno-current-home.css'), Path('zuno-current-home-mobile.css')]
+          leaf = re.compile(r'[^{}]*(?:\.aura-|#aura)[^{}]*\{[^{}]*\}', re.I)
+          keyframes = re.compile(r'@(?:-webkit-)?keyframes\s+zunoAura\s*\{(?:[^{}]|\{[^{}]*\})*\}', re.I)
 
-          def clean_block(text):
-              out=[]; i=0; n=len(text)
-              while i<n:
-                  brace=text.find('{', i)
-                  if brace<0:
-                      out.append(text[i:]); break
-                  selector=text[i:brace]
-                  depth=1; j=brace+1
-                  while j<n and depth:
-                      if text[j]=='{': depth+=1
-                      elif text[j]=='}': depth-=1
-                      j+=1
-                  body=text[brace+1:j-1] if depth==0 else text[brace+1:]
-                  low=selector.lower()
-                  if '.aura-' in low or '#aura' in low:
-                      pass
-                  elif selector.lstrip().startswith('@') and '{' in text[brace:j]:
-                      out.append(selector+'{'+clean_block(body)+'}')
-                  else:
-                      out.append(selector+'{'+body+'}')
-                  i=j
-              return ''.join(out)
-
-          for path in targets:
-              if path.exists():
-                  before=path.read_text(encoding='utf-8')
-                  after=clean_block(before)
+          changed = []
+          for path in Path('.').rglob('*.css'):
+              if '.git' in path.parts:
+                  continue
+              before = path.read_text(encoding='utf-8')
+              after = before
+              while True:
+                  next_text = leaf.sub('', after)
+                  if next_text == after:
+                      break
+                  after = next_text
+              after = keyframes.sub('', after)
+              if after != before:
                   path.write_text(after, encoding='utf-8')
-                  print(path, before.count('aura-'), '->', after.count('aura-'))
+                  changed.append(str(path))
+          print('changed:', ', '.join(changed) if changed else 'none')
 
           Path('.github/workflows/cleanup-legacy-visual.yml').unlink(missing_ok=True)
       - name: Verify retired selectors are gone
         run: |
-          ! grep -RniE '\.aura-|#aura' --include='*.css' .
+          ! grep -RniE '\.aura-|#aura|zunoAura' --include='*.css' .
       - name: Commit cleanup
         run: |
           git config user.name 'ZunoPlay Cleanup Bot'
