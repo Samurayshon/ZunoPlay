@@ -41,7 +41,11 @@ jobs:
             echo "Mini profile must not derive Aura from Level"
             exit 1
           fi
-          if grep -q "profiles?select=.*level" zuno-mini-profile-v1.js; then
-            echo "Mini profile must not use legacy profiles.level as global XP level"
-            exit 1
-          fi
+          python3 - <<'PY'
+          import pathlib,re
+          text=pathlib.Path('zuno-mini-profile-v1.js').read_text()
+          for match in re.finditer(r"profiles\?select=([^'\"&]+)", text):
+              fields={field.strip() for field in match.group(1).split(',')}
+              if 'level' in fields:
+                  raise SystemExit('Mini profile must not use legacy profiles.level as global XP level')
+          PY

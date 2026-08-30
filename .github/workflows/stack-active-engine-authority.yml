@@ -27,8 +27,10 @@ jobs:
           grep -q "v_kind = 'hint'" "$f"
           grep -q "v_new_engine - 'hintsLeft'" "$f"
           grep -q "v_kind <> 'start'" "$f"
-          grep -q "safeKinds=new Set(\['start','hint','tile','undo','relay_send','relay_take'\])" zuno-stack-server-engine-guard.js
+          grep -q "safeKinds=new Set(\['start','hint','tile','undo','relay_send','relay_take','pulse_shift'\])" zuno-stack-server-engine-guard.js
           grep -q "k==='late_start'" zuno-stack-server-engine-guard.js
+          grep -q "k==='pulse_shift'" zuno-stack-server-engine-guard.js
+          grep -q 'ZunoStackPulseAuthority?.shift' zuno-stack-server-engine-guard.js
           grep -q "closest('#pulse')" zuno-stack-server-engine-guard.js
           grep -q "data-zso-tactical" zuno-stack-server-engine-guard.js
           grep -q 'stopImmediatePropagation' zuno-stack-server-engine-guard.js
