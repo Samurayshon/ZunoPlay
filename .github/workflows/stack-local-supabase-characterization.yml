@@ -25,13 +25,23 @@ jobs:
         with:
           version: latest
 
+      - name: Inject proven pre-ledger baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_SOURCE='supabase/bootstrap/20260826130000_preledger_baseline.sql'
+          BOOTSTRAP_TARGET='supabase/migrations/20260826130000_preledger_baseline.sql'
+          test -f "$BOOTSTRAP_SOURCE"
+          test ! -e "$BOOTSTRAP_TARGET"
+          cp "$BOOTSTRAP_SOURCE" "$BOOTSTRAP_TARGET"
+
       - name: Start disposable local Supabase
         shell: bash
         run: |
           set -euo pipefail
           supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector
 
-      - name: Rebuild database from repository migrations
+      - name: Rebuild database from baseline and repository migrations
         shell: bash
         run: |
           set -euo pipefail
