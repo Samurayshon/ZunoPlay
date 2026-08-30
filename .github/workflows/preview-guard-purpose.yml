@@ -1,0 +1,14 @@
+name: Preview Guard Purpose
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_GUARD_PURPOSE.md'
+
+jobs:
+  purpose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'não substituem testes funcionais' docs/ZUNOPLAY_PREVIEW_GUARD_PURPOSE.md
