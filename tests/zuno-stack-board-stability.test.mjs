@@ -3,6 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const src=fs.readFileSync('zuno-stack.js','utf8');
+const html=fs.readFileSync('zuno-stack.html','utf8');
 const helperLine=src.split('\n').find(line=>line.startsWith('function sameBoardIdentity'));
 assert.ok(helperLine,'sameBoardIdentity helper must exist');
 const ctx={};
@@ -25,5 +26,6 @@ assert.match(src,/previousTiles=tiles/,'applyState must retain the prior board i
 assert.match(src,/preserveBoard=sameBoardIdentity\(previousTiles,nextTiles\)/,'applyState must decide whether the board DOM can be preserved');
 assert.match(src,/if\(b&&!preserveBoard\)\{b\.dataset\.zunoMounted='0';b\.replaceChildren\(\)\}/,'board destruction must be conditional on an actual layout or identity change');
 assert.doesNotMatch(src,/active=!!s\.active;riskAnnounced=false;const b=\$\('board'\);if\(b\)\{b\.dataset\.zunoMounted='0';b\.replaceChildren\(\)\}/,'authoritative state updates must not unconditionally rebuild all 90 pieces');
+assert.match(html,/zuno-stack\.js\?v=226/,'production HTML must bust the cached core after board stability changes');
 
 console.log('zuno-stack board stability: ok');
