@@ -1,0 +1,10 @@
+name: Preview PR Final Action
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Final action: open pull request.' docs/ZUNOPLAY_PREVIEW_PR_FINAL_ACTION.md
