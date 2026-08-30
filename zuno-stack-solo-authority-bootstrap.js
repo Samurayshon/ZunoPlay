@@ -1,63 +1,32 @@
 (()=>{
 if(window.__ZUNO_STACK_SOLO_AUTH_BOOT__)return;window.__ZUNO_STACK_SOLO_AUTH_BOOT__=true;
-const q=new URLSearchParams(location.search),valid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v||''),queryRoom=q.get('room')||'';
-let solo=!valid(queryRoom),roomId=solo?(crypto?.randomUUID?.()||''):queryRoom;
+const q=new URLSearchParams(location.search),valid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v||''),queryRoom=q.get('room')||'',freshIntent=q.get('new')==='1';
+let solo=!valid(queryRoom),roomId=solo?(crypto?.randomUUID?.()||''):queryRoom,runtimeReady=false,startBusy=false,allowCoreStart=false,sdkPromise=null;
 if(!valid(roomId))return;
 window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=false;
-const persistRoom=()=>{window.__ZUNO_STACK_AUTHORITY_ROOM_ID__=roomId;try{sessionStorage.setItem('zunoplay_room_id',roomId)}catch(_){}};
-const clearRoomParam=()=>{try{const u=new URL(location.href);u.searchParams.delete('room');history.replaceState(history.state,'',`${u.pathname}${u.search}${u.hash}`)}catch(_){}};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co',SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
-const SOLO_MARKER='__zuno_stack_solo_authority__';
-let sdkPromise=null;
+const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co',SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0',SOLO_MARKER='__zuno_stack_solo_authority__';
+const persistRoom=()=>{window.__ZUNO_STACK_AUTHORITY_ROOM_ID__=roomId;try{sessionStorage.setItem('zunoplay_room_id',roomId)}catch(_){}};
+function rewriteUrl(remove){try{const u=new URL(location.href);for(const key of remove)u.searchParams.delete(key);history.replaceState(history.state,'',`${u.pathname}${u.search}${u.hash}`)}catch(_){}}
 function loadSdk(){if(window.supabase?.createClient)return Promise.resolve(true);if(sdkPromise)return sdkPromise;sdkPromise=new Promise(resolve=>{let s=document.getElementById('zuno-stack-supabase-sdk');const done=()=>resolve(!!window.supabase?.createClient);if(s){s.addEventListener('load',done,{once:true});s.addEventListener('error',()=>resolve(false),{once:true});return}s=document.createElement('script');s.id='zuno-stack-supabase-sdk';s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';s.onload=done;s.onerror=()=>resolve(false);document.head.appendChild(s)});return sdkPromise}
 async function ensureClient(){if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;for(let i=0;i<20;i++){if(window.ZunoSupabaseClient)return window.ZunoSupabaseClient;if(window.supabase?.createClient)break;await sleep(100)}if(!window.supabase?.createClient&&!(await loadSdk()))return null;if(!window.ZunoSupabaseClient){try{const canonical=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});window.ZunoSupabaseClient=canonical;window.__zunoSupabaseClient=canonical}catch(e){console.error('Zuno Stack: falha ao inicializar Supabase',e);return null}}return window.ZunoSupabaseClient}
-async function canUseRoom(sb,u,id){
-  const {data:room,error}=await sb.from('rooms').select('id,owner_id,status').eq('id',id).maybeSingle();
-  if(error||!room||room.status!=='active')return false;
-  if(room.owner_id===u.id)return true;
-  const {data:member,error:memberError}=await sb.from('room_members').select('room_id').eq('room_id',id).eq('user_id',u.id).maybeSingle();
-  return !memberError&&member?.room_id===id
-}
-async function reusableSoloRoom(sb,u){
-  const {data,error}=await sb.from('rooms').select('id').eq('owner_id',u.id).eq('status','active').eq('description',SOLO_MARKER).eq('visibility','private').eq('is_discoverable',false).order('created_at',{ascending:false}).limit(1).maybeSingle();
-  return !error&&valid(data?.id)?data.id:''
-}
-async function createSoloRoom(sb,u){
-  if(!valid(roomId))roomId=crypto?.randomUUID?.()||'';
-  if(!valid(roomId))return false;
-  const {error}=await sb.from('rooms').insert({id:roomId,owner_id:u.id,name:'Zuno Stack Solo',description:SOLO_MARKER,category:'jogos',visibility:'private',status:'active',max_audience:8,mic_access:'invite_only',is_discoverable:false});
-  if(!error){persistRoom();return true}
-  if(String(error.code||'')==='23505'){
-    const existing=await reusableSoloRoom(sb,u);
-    if(valid(existing)){roomId=existing;persistRoom();return true}
-  }
-  console.error('Zuno Stack: falha ao preparar sala segura',error);return false
-}
-async function ensureRoom(){
-  const sb=await ensureClient();if(!sb)return false;
-  const {data:s}=await sb.auth.getSession(),u=s?.session?.user;if(!u)return false;
-  if(!solo){
-    if(await canUseRoom(sb,u,roomId)){persistRoom();return true}
-    console.warn('Zuno Stack: sala solicitada não existe ou não pertence à sessão; recuperando sala segura');
-    solo=true;clearRoomParam();
-    const existing=await reusableSoloRoom(sb,u);
-    if(valid(existing)){roomId=existing;persistRoom();return true}
-    roomId=crypto?.randomUUID?.()||'';
-  }
-  return createSoloRoom(sb,u)
-}
-async function load(){
-  window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=true;
-  document.dispatchEvent(new CustomEvent('zuno:stack-authority-room-ready',{detail:{roomId}}));
-  try{window.ZunoStackLoadAuthorityModules?.()}catch(_){}
-  if(!window.__ZUNO_STACK_AUTHORITY_OFFICIAL__&&!document.querySelector('script[data-zso-authority]')){
-    const s=document.createElement('script');s.src='zuno-stack-authority-official.js?v=10';s.dataset.zsoAuthority='1';document.head.appendChild(s)
-  }
-  for(let i=0;i<80&&!window.ZunoStackAuthority;i++)await sleep(100);
-  return !!window.ZunoStackAuthority
-}
-async function boot(){const b=document.getElementById('start'),label=b?.textContent||'JOGAR AGORA';if(b){b.disabled=true;b.textContent='PREPARANDO PARTIDA SEGURA…'}const ok=await ensureRoom();if(ok)await load();if(b){b.disabled=!window.ZunoStackAuthority;b.textContent=window.ZunoStackAuthority?label:'SERVIDOR INDISPONÍVEL'}}
+async function canUseRoom(sb,u,id){const {data:room,error}=await sb.from('rooms').select('id,owner_id,status').eq('id',id).maybeSingle();if(error||!room||room.status!=='active')return false;if(room.owner_id===u.id)return true;const {data:member,error:memberError}=await sb.from('room_members').select('room_id').eq('room_id',id).eq('user_id',u.id).maybeSingle();return !memberError&&member?.room_id===id}
+async function reusableSoloRoom(sb,u){const {data,error}=await sb.from('rooms').select('id').eq('owner_id',u.id).eq('status','active').eq('description',SOLO_MARKER).eq('visibility','private').eq('is_discoverable',false).order('created_at',{ascending:false}).limit(1).maybeSingle();return !error&&valid(data?.id)?data.id:''}
+async function createSoloRoom(sb,u){if(!valid(roomId))roomId=crypto?.randomUUID?.()||'';if(!valid(roomId))return false;const {error}=await sb.from('rooms').insert({id:roomId,owner_id:u.id,name:'Zuno Stack Solo',description:SOLO_MARKER,category:'jogos',visibility:'private',status:'active',max_audience:8,mic_access:'invite_only',is_discoverable:false});if(!error){persistRoom();return true}if(String(error.code||'')==='23505'){const existing=await reusableSoloRoom(sb,u);if(valid(existing)){roomId=existing;persistRoom();return true}}console.error('Zuno Stack: falha ao preparar sala segura',error);return false}
+async function ensureRoom(sb,u){if(!solo){if(await canUseRoom(sb,u,roomId)){persistRoom();return true}console.warn('Zuno Stack: sala solicitada inválida para a sessão; recuperando sala Solo segura');solo=true;rewriteUrl(['room']);const existing=await reusableSoloRoom(sb,u);if(valid(existing)){roomId=existing;persistRoom();return true}roomId=crypto?.randomUUID?.()||''}return createSoloRoom(sb,u)}
+async function fetchMatch(sb){const {data,error}=await sb.from('zuno_stack_match_state').select('room_id,revision,state').eq('room_id',roomId).maybeSingle();return error?null:data}
+function actionId(){const raw=crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;return `abandon-${raw}`.slice(0,160)}
+async function retirePreviousSoloRound(sb){if(!solo||!freshIntent)return true;let row=await fetchMatch(sb);if(!row?.state?.engine?.active){rewriteUrl(['new']);return true}for(let attempt=0;attempt<2;attempt++){const {error}=await sb.rpc('zuno_stack_abandon_solo_round',{p_room_id:roomId,p_expected_revision:Number(row.revision)||0,p_action_id:actionId()});if(!error)break;if(!String(error.message||'').includes('revision_conflict'))return false;row=await fetchMatch(sb);if(!row?.state?.engine?.active){rewriteUrl(['new']);return true}}for(let i=0;i<30;i++){const verify=await fetchMatch(sb);if(verify&&!verify.state?.engine?.active){rewriteUrl(['new']);return true}await sleep(100)}return false}
+function startButton(){return document.getElementById('start')}
+function setStart(disabled,text,busy=false){const b=startButton();if(!b)return;b.disabled=!!disabled;if(text)b.textContent=text;if(busy)b.setAttribute('aria-busy','true');else b.removeAttribute('aria-busy')}
+function setBoardLocked(locked){const b=document.getElementById('board');if(b)b.style.pointerEvents=locked?'none':'';document.documentElement.dataset.zstackRoundGate=locked?'locked':'ready'}
+function restoreLobby(){document.getElementById('overlay')?.classList.remove('hide');const title=document.getElementById('overlayTitle'),text=document.getElementById('overlayText'),features=document.getElementById('features'),result=document.getElementById('resultGrid');if(title)title.textContent='Zuno Stack';if(text)text.textContent='Puzzle cooperativo do ZunoPlay.';if(features)features.style.display='grid';if(result)result.hidden=true;document.body.classList.remove('zstack-playing');document.body.classList.add('zstack-lobby-v2')}
+function toast(t){const e=document.getElementById('toast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1600)}
+async function loadAuthority(){window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=true;document.dispatchEvent(new CustomEvent('zuno:stack-authority-room-ready',{detail:{roomId}}));try{window.ZunoStackLoadAuthorityModules?.()}catch(_){}if(!window.__ZUNO_STACK_AUTHORITY_OFFICIAL__&&!document.querySelector('script[data-zso-authority]')){const s=document.createElement('script');s.src='zuno-stack-authority-official.js?v=12';s.dataset.zsoAuthority='1';document.head.appendChild(s)}for(let i=0;i<100&&!window.ZunoStackAuthority;i++)await sleep(80);return !!window.ZunoStackAuthority}
+async function waitServerActive(sb,expectedSeed){for(let i=0;i<70;i++){const row=await fetchMatch(sb),engine=row?.state?.engine;if(engine?.active&&Array.isArray(engine.tiles)&&engine.tiles.length===90&&(expectedSeed==null||Number(engine.seed)===Number(expectedSeed)))return row;await sleep(100)}return null}
+async function secureStart(){if(startBusy||!runtimeReady)return;const sb=window.ZunoSupabaseClient,a=window.ZunoStackAuthority,core=window.ZunoStackCore,b=startButton();if(!sb||!a||!core||!b)return;startBusy=true;setBoardLocked(true);setStart(true,'CONFIRMANDO PARTIDA…',true);try{const prepared=await a.prepareStart?.();if(prepared===true){const row=await waitServerActive(sb,null);if(row){await a.reconcile?.('secure_start_resume');setBoardLocked(false);return}throw new Error('start_not_confirmed')}allowCoreStart=true;setStart(false,'INICIANDO…',true);b.click();setStart(true,'CONFIRMANDO PARTIDA…',true);const local=core.getState?.(),row=await waitServerActive(sb,local?.seed);if(!row)throw new Error('start_not_confirmed');await a.reconcile?.('secure_start_confirmed');setBoardLocked(false)}catch(e){console.warn('Zuno Stack: início autoritativo não confirmado',e);try{await a.reconcile?.('secure_start_failed')}catch(_){}restoreLobby();setBoardLocked(false);toast('A partida não foi confirmada pelo servidor. Tente novamente.')}finally{allowCoreStart=false;startBusy=false;if(document.getElementById('overlay')?.classList.contains('hide'))setStart(false,'JOGAR AGORA',false);else setStart(false,'JOGAR AGORA',false)}}
+function captureStart(e){const target=e.target instanceof Element?e.target.closest('#start'):null;if(!target)return;if(allowCoreStart){allowCoreStart=false;return}e.preventDefault();e.stopImmediatePropagation();if(runtimeReady&&!startBusy)secureStart()}
+async function boot(){document.addEventListener('click',captureStart,true);setBoardLocked(true);setStart(true,'PREPARANDO PARTIDA SEGURA…',true);const sb=await ensureClient();if(!sb)return setStart(true,'SERVIDOR INDISPONÍVEL');const {data:s}=await sb.auth.getSession(),u=s?.session?.user;if(!u)return setStart(true,'ENTRE NA CONTA PARA JOGAR');const roomOk=await ensureRoom(sb,u);if(!roomOk)return setStart(true,'SERVIDOR INDISPONÍVEL');const freshOk=await retirePreviousSoloRound(sb);if(!freshOk)return setStart(true,'NÃO FOI POSSÍVEL PREPARAR A PARTIDA');if(freshIntent)restoreLobby();const authorityOk=await loadAuthority();runtimeReady=authorityOk;setBoardLocked(!authorityOk);setStart(!authorityOk,authorityOk?'JOGAR AGORA':'SERVIDOR INDISPONÍVEL',false);if(authorityOk)document.dispatchEvent(new CustomEvent('zuno:stack-secure-runtime-ready',{detail:{roomId,solo}}))}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-window.addEventListener('pagehide',()=>{if(solo)try{sessionStorage.removeItem('zunoplay_room_id')}catch(_){}})
+window.addEventListener('pagehide',()=>{document.removeEventListener('click',captureStart,true);if(solo)try{sessionStorage.removeItem('zunoplay_room_id')}catch(_){}})
 })();
