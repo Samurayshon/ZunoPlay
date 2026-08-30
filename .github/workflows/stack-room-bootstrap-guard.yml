@@ -116,7 +116,7 @@ jobs:
           perf=Path('zuno-stack-performance-official.js').read_text()
           auth=Path('zuno-stack-authority-official.js').read_text()
           bridge=Path('zuno-stack-tile-bridge-v2.js').read_text()
-          prefix=boot.split('async function ensureRoom()',1)[0]
+          prefix=boot.split('async function canUseRoom',1)[0]
           if 'persistRoom();' in prefix:
               raise SystemExit('candidate room is still persisted before validation')
           required_boot=[
