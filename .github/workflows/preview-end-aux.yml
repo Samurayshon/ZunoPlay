@@ -1,0 +1,14 @@
+name: Preview End Auxiliary Preparation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_END_AUX.md'
+
+jobs:
+  end:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Auxiliary preparation ends here' docs/ZUNOPLAY_PREVIEW_END_AUX.md
