@@ -1,6 +1,10 @@
 /* ZunoPlay Home — final mobile hierarchy polish
    Content only. Header and canonical bottom navigation remain untouched. */
 
+/* Intuitive hierarchy: remove redundant helper labels such as
+   "Zuno recomenda" and "Jogue agora" while preserving section titles. */
+body.zuno-official-home #homeScreen .zhome-v2-kicker{display:none!important}
+
 /* Hero: preserve avatar prominence while recovering first-fold space */
 body.zuno-official-home.zuno-official-v33 #homeScreen .hero{min-height:350px!important;margin-bottom:14px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .hero-grid{min-height:350px!important}
