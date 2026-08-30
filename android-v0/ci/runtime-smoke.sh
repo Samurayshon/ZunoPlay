@@ -53,11 +53,28 @@ adb shell dumpsys activity activities > android-activities.txt
 
 python3 - <<'PY'
 from pathlib import Path
+import re
+
 log = Path('android-runtime-logcat.txt').read_text(errors='replace')
+
 blocks = log.split('FATAL EXCEPTION')
 fatal_for_app = any('Process: com.zunoplay.app' in block[:4000] for block in blocks[1:])
 if fatal_for_app:
     raise SystemExit('Fatal ZunoPlay process crash detected in logcat.')
+
+matches = re.findall(
+    r'Applied system safe area: left=(\d+) top=(\d+) right=(\d+) bottom=(\d+)',
+    log,
+)
+if not matches:
+    raise SystemExit('No ZunoPlay safe-area application was recorded in logcat.')
+
+left, top, right, bottom = map(int, matches[-1])
+print(f'Validated safe area: left={left} top={top} right={right} bottom={bottom}')
+if top <= 0:
+    raise SystemExit(f'Invalid top safe-area inset: {top}. Status-bar protection was not proven.')
+if bottom <= 0:
+    raise SystemExit(f'Invalid bottom safe-area inset: {bottom}. Navigation-area protection was not proven.')
 PY
 
 PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
