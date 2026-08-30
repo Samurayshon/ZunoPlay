@@ -1,0 +1,17 @@
+name: Preview Branch Lineage Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_BRANCH.md'
+
+jobs:
+  lineage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert clean lineage record
+        run: |
+          grep -q 'phase0/preview-backend-isolation-v2' docs/ZUNOPLAY_PREVIEW_BRANCH.md
+          grep -q '855bb862a5bd08bb46dfb44ab52069261dcc10e8' docs/ZUNOPLAY_PREVIEW_BRANCH.md
