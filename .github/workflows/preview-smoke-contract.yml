@@ -1,0 +1,16 @@
+name: Preview Smoke Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_SMOKE.md'
+
+jobs:
+  smoke-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'lqymrmionvvfbgfrdryo' docs/ZUNOPLAY_PREVIEW_SMOKE.md
+          grep -q 'rliymfbbhqoejgfvsbuu' docs/ZUNOPLAY_PREVIEW_SMOKE.md
