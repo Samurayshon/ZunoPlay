@@ -1,0 +1,10 @@
+name: Preview PR Absolute Final
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  final:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Absolute final marker before PR' docs/ZUNOPLAY_PREVIEW_PR_ABSOLUTE_FINAL.md
