@@ -8,13 +8,16 @@
 .za-entry .za-universe,.za-login .za-universe{margin-bottom:40px}
 
 /* Guest home inside index.html must follow the same canonical auth shell. */
-.welcome-screen.za-shell{width:100%!important;height:100dvh!important;min-height:100dvh!important;align-items:stretch!important;justify-content:flex-start!important;padding:max(10px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))!important;background:radial-gradient(circle at 18% 12%,rgba(139,61,255,.22),transparent 28%),radial-gradient(circle at 82% 88%,rgba(49,211,255,.13),transparent 30%),linear-gradient(180deg,#090b20 0%,#07091a 48%,#050712 100%)!important;overflow:hidden!important}
-#welcomeScreen .za-header{display:flex!important}
-#welcomeScreen .za-content{width:100%!important;max-width:620px!important;margin:0 auto!important;padding-top:clamp(14px,3.2dvh,34px)!important;text-align:left!important}
-#welcomeScreen .za-hero{margin:0!important}
-#welcomeScreen .za-entry-actions{margin-top:clamp(20px,3dvh,30px)!important}
-#welcomeScreen .za-universe{display:block!important;margin-top:auto!important;margin-bottom:40px!important;padding-top:18px!important}
-#welcomeScreen .za-legal{display:flex!important}
+html[data-zuno-auth-state="guest"],html[data-zuno-auth-state="guest"] body{width:100%!important;height:100%!important;min-height:100%!important;overflow:hidden!important;overscroll-behavior:none!important;background:#050712!important}
+html[data-zuno-auth-state="guest"] #app{position:fixed!important;inset:0!important;width:100%!important;max-width:none!important;height:100dvh!important;min-height:100dvh!important;margin:0!important;overflow:hidden!important}
+.welcome-screen.za-shell{position:absolute!important;inset:0!important;width:100%!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;align-items:stretch!important;justify-content:flex-start!important;padding:max(10px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))!important;background:radial-gradient(circle at 18% 12%,rgba(139,61,255,.22),transparent 28%),radial-gradient(circle at 82% 88%,rgba(49,211,255,.13),transparent 30%),linear-gradient(180deg,#090b20 0%,#07091a 48%,#050712 100%)!important;overflow:hidden!important;overscroll-behavior:none!important}
+#welcomeScreen .za-header{display:flex!important;flex:0 0 38px!important;height:38px!important;margin:0 0 11px!important;visibility:visible!important;opacity:1!important}
+#welcomeScreen .za-accent{display:flex!important;flex:0 0 4px!important;margin:0 0 clamp(28px,5dvh,52px)!important;visibility:visible!important;opacity:1!important}
+#welcomeScreen .za-content{display:flex!important;flex:1 1 auto!important;width:100%!important;max-width:620px!important;min-height:0!important;margin:0 auto!important;padding-top:clamp(14px,3.2dvh,34px)!important;text-align:left!important;overflow:hidden!important}
+#welcomeScreen .za-hero{margin:0!important;flex:0 0 auto!important}
+#welcomeScreen .za-entry-actions{margin-top:clamp(20px,3dvh,30px)!important;flex:0 0 auto!important}
+#welcomeScreen .za-universe{display:block!important;margin-top:clamp(28px,4dvh,42px)!important;margin-bottom:0!important;padding-top:0!important;flex:0 0 auto!important}
+#welcomeScreen .za-legal{display:flex!important;position:absolute!important;left:0!important;right:0!important;bottom:max(12px,calc(env(safe-area-inset-bottom) + 6px))!important;margin:0!important;z-index:5!important}
 
 .zo-shell{padding:max(10px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}
 .zo-header{height:38px;flex-basis:38px;margin:0 0 11px}
@@ -38,7 +41,7 @@
 .zo-step.active .zo-legal{bottom:max(12px,calc(env(safe-area-inset-bottom) + 6px))}
 
 @media(min-height:820px){.zo-step.active .zo-universe-preview{display:flex;flex-direction:column}.zo-step.active .zo-legal{display:flex;position:fixed;left:0;right:0;z-index:5;margin:0}}
-@media(min-height:920px){.zo-progress{margin-bottom:clamp(36px,5.5dvh,58px)}.zo-universe-preview{padding-top:22px}#welcomeScreen .za-universe{padding-top:22px!important}}
-@media(max-height:760px){.za-entry .za-content,.za-login .za-content,.zo-card{padding-top:8px}#welcomeScreen .za-content{padding-top:8px!important}.za-entry-actions{margin-top:15px}.zo-progress{margin-bottom:20px}.zo-field{margin-top:11px}.zo-input{height:43px}.zo-btn{min-height:43px}.zo-universe-preview{padding-top:10px}.zo-universe-orbit{height:78px}.zo-universe-people{top:53px}.zo-step.active .zo-legal{bottom:max(8px,calc(env(safe-area-inset-bottom) + 3px))}}
+@media(min-height:920px){.zo-progress{margin-bottom:clamp(36px,5.5dvh,58px)}.zo-universe-preview{padding-top:22px}}
+@media(max-height:760px){.za-entry .za-content,.za-login .za-content,.zo-card{padding-top:8px}#welcomeScreen .za-content{padding-top:8px!important}.za-entry-actions{margin-top:15px}.zo-progress{margin-bottom:20px}.zo-field{margin-top:11px}.zo-input{height:43px}.zo-btn{min-height:43px}.zo-universe-preview{padding-top:10px}.zo-universe-orbit{height:78px}.zo-universe-people{top:53px}.zo-step.active .zo-legal{bottom:max(8px,calc(env(safe-area-inset-bottom) + 3px))}#welcomeScreen .za-universe{margin-top:22px!important}}
 @media(max-height:670px){.za-entry .za-title,.zo-step h1{font-size:21px}.za-entry .za-copy,.zo-desc{font-size:10.5px}.za-entry-actions{margin-top:12px}.zo-progress{margin-bottom:13px}.zo-universe-preview{display:none!important}#welcomeScreen .za-universe{display:none!important}}
 @media(max-width:390px){.zo-shell,.welcome-screen.za-shell{padding-left:18px!important;padding-right:18px!important}.zo-card{padding-left:0;padding-right:0}.zo-universe-rooms{left:0}.zo-universe-games{right:0}}
