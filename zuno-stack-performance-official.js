@@ -23,6 +23,7 @@ function loadOfficialModules(){
  loadJs('zuno-stack-authority-official.js?v=12a3532','zsoAuthority');
  loadJs('zuno-stack-relay-authority.js?v=1','zsoRelayAuthority');
  loadJs('zuno-stack-pulse-authority.js?v=1','zsoPulseAuthority');
+ loadJs('zuno-stack-hint-authority.js?v=1','zsoHintAuthority');
  loadJs('zuno-stack-integrity-official.js?v=673cd4f','zsoIntegrity');
 }
 loadOfficialModules();document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));

@@ -1,0 +1,38 @@
+name: Zuno Stack Hint Authority
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  hint-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate server-authoritative hint path
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-hint-authority.js
+          node --check zuno-stack-server-engine-guard.js
+          grep -q "zuno_stack_hint" zuno-stack-hint-authority.js
+          grep -q "p_expected_revision" zuno-stack-hint-authority.js
+          grep -q "server_hint_revision_conflict" zuno-stack-hint-authority.js
+          grep -q "zuno-stack-hint-authority.js?v=1" zuno-stack-performance-official.js
+          grep -q "closest('#hint')" zuno-stack-server-engine-guard.js
+          grep -q "ZunoStackHintAuthority?.request" zuno-stack-server-engine-guard.js
+          f='supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql'
+          test -s "$f"
+          grep -q "security definer" "$f"
+          grep -q "set search_path = ''" "$f"
+          grep -q "stack_room_membership_required" "$f"
+          grep -q "stack_hint_unavailable" "$f"
+          grep -q "server_hint" "$f"
+          grep -q "revoke execute on function public.zuno_stack_hint" "$f"
+          grep -q "grant execute on function public.zuno_stack_hint" "$f"
+          grep -q "order by hint_score desc, ord asc" "$f"

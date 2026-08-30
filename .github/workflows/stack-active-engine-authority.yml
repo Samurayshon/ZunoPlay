@@ -19,19 +19,20 @@ jobs:
         run: |
           set -euo pipefail
           node --check zuno-stack-server-engine-guard.js
-          f='supabase/migrations/20260829230500_lock_zuno_stack_active_engine_writes.sql'
+          f='supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql'
           test -s "$f"
           grep -q 'stack_server_action_required' "$f"
           grep -q 'stack_server_start_required' "$f"
-          grep -q 'trg_zuno_stack_server_engine_required' "$f"
-          grep -q "v_kind = 'hint'" "$f"
-          grep -q "v_new_engine - 'hintsLeft'" "$f"
           grep -q "v_kind <> 'start'" "$f"
-          grep -q "safeKinds=new Set(\['start','hint','tile','undo','relay_send','relay_take','pulse_shift'\])" zuno-stack-server-engine-guard.js
+          ! grep -q "v_kind = 'hint'" "$f"
+          grep -q "safeKinds=new Set(\['start','tile','undo','relay_send','relay_take','pulse_shift'\])" zuno-stack-server-engine-guard.js
           grep -q "k==='late_start'" zuno-stack-server-engine-guard.js
           grep -q "k==='pulse_shift'" zuno-stack-server-engine-guard.js
+          grep -q "k==='hint'" zuno-stack-server-engine-guard.js
           grep -q 'ZunoStackPulseAuthority?.shift' zuno-stack-server-engine-guard.js
+          grep -q 'ZunoStackHintAuthority?.request' zuno-stack-server-engine-guard.js
           grep -q "closest('#pulse')" zuno-stack-server-engine-guard.js
+          grep -q "closest('#hint')" zuno-stack-server-engine-guard.js
           grep -q "data-zso-tactical" zuno-stack-server-engine-guard.js
           grep -q 'stopImmediatePropagation' zuno-stack-server-engine-guard.js
           grep -q 'server_action_required_' zuno-stack-server-engine-guard.js
