@@ -13,7 +13,8 @@
     const r=renderer();
     const base=clone(r?.official?.[nextModel]||r?.defaults||{style:STYLE,model:nextModel,selections:{},colors:{}});
     base.style=STYLE;base.model=nextModel;base.mode='Corpo inteiro';base.rotation=0;base.zoom=1;base.updatedAt=null;
-    base.selections={...(base.selections||{}),Acessórios:0,Mascote:Number(nextMascot)||0,Efeitos:1};
+    base.selections={...(base.selections||{}),Acessórios:0,Mascote:Number(nextMascot)||0};
+    delete base.selections.Efeitos;
     return r?.normalize?.(base)||base;
   }
   function miniConfig(nextModel){const c=fixedConfig(nextModel,0);c.mode='Corpo inteiro';return renderer()?.normalize?.(c)||c}
