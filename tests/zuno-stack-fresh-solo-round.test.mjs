@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 const games=fs.readFileSync('jogos.html','utf8');
 const html=fs.readFileSync('zuno-stack.html','utf8');
 const guard=fs.readFileSync('zuno-stack-fresh-round-guard.js','utf8');
-const migration=fs.readFileSync('supabase/migrations/20260830131500_add_stack_abandon_solo_round.sql','utf8');
-const restartMigration=fs.readFileSync('supabase/migrations/20260830152500_allow_stack_new_round_after_inactive_state.sql','utf8');
+const migration=fs.readFileSync('supabase/migrations/20260830130714_add_stack_abandon_solo_round.sql','utf8');
+const restartMigration=fs.readFileSync('supabase/migrations/20260830152333_allow_stack_new_round_after_inactive_state.sql','utf8');
 
 assert.match(games,/fromRoom=qp\.get\('from'\)==='sala',queryRoom=qp\.get\('room'\)\|\|'',roomId=queryRoom\|\|\(fromRoom\?sessionStorage\.getItem\('zunoplay_room_id'\)\|\|'':''\)/,'ordinary Games launches must ignore stale solo room session storage');
 assert.match(games,/if\(roomId\)\{u\.searchParams\.set\('room',roomId\);if\(fromRoom\)u\.searchParams\.set\('from','sala'\)\}else\{u\.searchParams\.set\('new','1'\)\}/,'catalog launch must mark only non-room games as fresh');
