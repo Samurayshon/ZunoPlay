@@ -1,0 +1,14 @@
+name: Preview PR Boundary
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_PR_BOUNDARY.md'
+
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'CI real disparado pela Pull Request' docs/ZUNOPLAY_PREVIEW_PR_BOUNDARY.md
