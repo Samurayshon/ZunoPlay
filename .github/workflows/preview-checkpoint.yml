@@ -1,0 +1,14 @@
+name: Preview Checkpoint
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_CHECKPOINT.md'
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q '855bb862a5bd08bb46dfb44ab52069261dcc10e8' docs/ZUNOPLAY_PREVIEW_CHECKPOINT.md
