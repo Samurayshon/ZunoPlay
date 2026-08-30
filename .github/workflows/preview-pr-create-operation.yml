@@ -1,0 +1,10 @@
+name: Preview PR Create Operation
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  operation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Operation: create PR.' docs/ZUNOPLAY_PREVIEW_PR_CREATE_OPERATION.md
