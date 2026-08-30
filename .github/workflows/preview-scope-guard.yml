@@ -1,0 +1,16 @@
+name: Preview Scope Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_SCOPE.md'
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'Fora de escopo: novas features' docs/ZUNOPLAY_PREVIEW_SCOPE.md
+          grep -q 'alteração do origin Android' docs/ZUNOPLAY_PREVIEW_SCOPE.md
