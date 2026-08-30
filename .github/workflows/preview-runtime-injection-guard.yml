@@ -1,0 +1,44 @@
+name: Preview Runtime Injection Guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  preview-runtime-injection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard self-tests
+        run: node scripts/vercel-preview-backend-guard.mjs --self-test
+      - name: Audit production coupling
+        run: node scripts/vercel-preview-backend-guard.mjs --audit-current
+      - name: Verify runtime load order and cache isolation
+        run: |
+          node --input-type=module <<'EOF'
+          import fs from 'node:fs';
+          for (const file of ['index.html','login.html','cadastro.html']) {
+            const html=fs.readFileSync(file,'utf8');
+            const injected=html.indexOf('zuno-runtime-injected.js');
+            const authority=html.indexOf('zuno-runtime-config.js');
+            if (injected < 0 || authority < 0 || injected > authority) throw new Error(`${file}: runtime injection must load before runtime authority`);
+          }
+          const sw=fs.readFileSync('sw.js','utf8');
+          if (!sw.includes("'zuno-runtime-injected.js','zuno-runtime-config.js'")) throw new Error('Service Worker must classify runtime config as network-only');
+          const placeholder=fs.readFileSync('zuno-runtime-injected.js','utf8');
+          if (/supabase\.co|sb_publishable_|eyJ/.test(placeholder)) throw new Error('Committed runtime placeholder must not contain backend credentials/config');
+          EOF
+      - name: Generate isolated preview runtime
+        env:
+          VERCEL: '1'
+          VERCEL_ENV: preview
+          ZUNO_SUPABASE_URL: https://lqymrmionvvfbgfrdryo.supabase.co
+          ZUNO_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+        run: |
+          node scripts/vercel-preview-backend-guard.mjs
+          grep -q 'lqymrmionvvfbgfrdryo' zuno-runtime-injected.js
+          ! grep -q 'rliymfbbhqoejgfvsbuu' zuno-runtime-injected.js
