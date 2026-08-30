@@ -1,0 +1,6 @@
+create or replace function public.zuno_notification_defaults() returns trigger language plpgsql set search_path=public as $$ begin
+  if new.category is null or new.category='' or new.category='system' then new.category := case new.type when 'friend_request' then 'social' when 'friend_accepted' then 'social' when 'message' then 'social' when 'room_invite' then 'rooms' when 'room_activity' then 'rooms' when 'game_invite' then 'games' when 'challenge' then 'games' when 'achievement' then 'rewards' when 'reward' then 'rewards' when 'coins' then 'rewards' when 'avatar' then 'rewards' else 'system' end; end if;
+  if new.action_url is null then new.action_url := case new.type when 'friend_request' then 'amigos.html' when 'friend_accepted' then 'amigos.html' when 'message' then 'conversas.html' when 'room_invite' then 'salas.html' when 'room_activity' then 'salas.html' when 'game_invite' then 'jogos.html' when 'challenge' then 'jogos.html' when 'achievement' then 'historico.html' when 'reward' then 'historico.html' when 'coins' then 'historico.html' when 'avatar' then 'avatar.html' else 'index.html' end; end if;
+  if new.dedupe_key is null and new.related_id is not null then new.dedupe_key := new.type || ':' || new.related_id::text; end if;
+  return new;
+end $$;

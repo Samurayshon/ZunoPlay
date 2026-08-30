@@ -1,0 +1,22 @@
+create table if not exists public.communities (id uuid primary key default gen_random_uuid(), owner_id uuid not null references auth.users(id) on delete cascade, name text not null check (char_length(btrim(name)) between 3 and 60), description text, created_at timestamptz not null default now());
+create table if not exists public.community_members (id uuid primary key default gen_random_uuid(), community_id uuid not null references public.communities(id) on delete cascade, user_id uuid not null references auth.users(id) on delete cascade, joined_at timestamptz not null default now(), unique(community_id,user_id));
+create index if not exists communities_owner_id_idx on public.communities(owner_id);
+create index if not exists community_members_user_id_idx on public.community_members(user_id);
+create index if not exists community_members_community_id_idx on public.community_members(community_id);
+alter table public.communities enable row level security;
+alter table public.community_members enable row level security;
+drop policy if exists communities_select_authenticated on public.communities;
+create policy communities_select_authenticated on public.communities for select to authenticated using (true);
+drop policy if exists communities_insert_owner on public.communities;
+create policy communities_insert_owner on public.communities for insert to authenticated with check (owner_id = (select auth.uid()));
+drop policy if exists communities_update_owner on public.communities;
+create policy communities_update_owner on public.communities for update to authenticated using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
+drop policy if exists communities_delete_owner on public.communities;
+create policy communities_delete_owner on public.communities for delete to authenticated using (owner_id = (select auth.uid()));
+drop policy if exists community_members_select_authenticated on public.community_members;
+create policy community_members_select_authenticated on public.community_members for select to authenticated using (true);
+drop policy if exists community_members_insert_self on public.community_members;
+create policy community_members_insert_self on public.community_members for insert to authenticated with check (user_id = (select auth.uid()));
+drop policy if exists community_members_delete_self_or_owner on public.community_members;
+create policy community_members_delete_self_or_owner on public.community_members for delete to authenticated using (user_id = (select auth.uid()) or exists (select 1 from public.communities c where c.id=community_members.community_id and c.owner_id=(select auth.uid())));
+

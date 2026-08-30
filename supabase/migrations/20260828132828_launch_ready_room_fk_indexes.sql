@@ -1,0 +1,9 @@
+create index if not exists room_bans_banned_by_idx on public.room_bans(banned_by);
+create index if not exists room_bans_user_idx on public.room_bans(user_id);
+create index if not exists room_follows_user_idx on public.room_follows(user_id);
+create index if not exists room_moderation_actor_idx on public.room_moderation_actions(actor_id);
+create index if not exists room_moderation_target_idx on public.room_moderation_actions(target_id);
+create index if not exists room_reactions_user_idx on public.room_reactions(user_id);
+create index if not exists room_seat_requests_resolved_by_idx on public.room_seat_requests(resolved_by);
+create index if not exists room_seat_requests_user_idx on public.room_seat_requests(user_id);
+create index if not exists room_voice_reward_claims_user_idx on public.room_voice_reward_claims(user_id);

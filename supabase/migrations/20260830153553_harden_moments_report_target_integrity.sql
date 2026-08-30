@@ -1,5 +1,4 @@
 drop policy if exists moments_reports_insert_own on public.moments_reports;
-
 create policy moments_reports_insert_own
 on public.moments_reports
 for insert
