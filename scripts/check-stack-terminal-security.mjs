@@ -19,19 +19,39 @@ const publicFunctions = [
 ];
 
 function terminalDefinition(fn) {
-  const needle = new RegExp(`function\\s+public\\.${fn}\\s*\\(`, 'ig');
+  const createNeedle = new RegExp(`create\\s+(?:or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'ig');
+  const alterNeedle = new RegExp(`alter\\s+function\\s+public\\.${fn}\\s*\\([^;]*?\\)\\s+(security\\s+(?:invoker|definer))`, 'ig');
   let terminal = null;
+
   for (const file of files) {
     const sql = fs.readFileSync(path.join(dir, file), 'utf8');
     let match;
-    while ((match = needle.exec(sql)) !== null) {
-      const start = match.index;
-      const remaining = sql.slice(start);
+
+    while ((match = createNeedle.exec(sql)) !== null) {
+      const remaining = sql.slice(match.index);
       const asMatch = remaining.match(/\bas\s+\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$/i);
       const header = asMatch ? remaining.slice(0, asMatch.index) : remaining.slice(0, 1600);
-      terminal = { file, header };
+      terminal = {
+        file,
+        offset: match.index,
+        mode: /security\s+definer/i.test(header) ? 'definer' : 'invoker',
+        source: 'create',
+      };
+    }
+
+    while ((match = alterNeedle.exec(sql)) !== null) {
+      const candidate = {
+        file,
+        offset: match.index,
+        mode: /security\s+definer/i.test(match[1]) ? 'definer' : 'invoker',
+        source: 'alter',
+      };
+      if (!terminal || terminal.file.localeCompare(file) < 0 || (terminal.file === file && terminal.offset < candidate.offset)) {
+        terminal = candidate;
+      }
     }
   }
+
   return terminal;
 }
 
@@ -39,10 +59,10 @@ const report = [];
 for (const fn of publicFunctions) {
   const terminal = terminalDefinition(fn);
   if (!terminal) throw new Error(`missing terminal definition for public.${fn}`);
-  if (/security\s+definer/i.test(terminal.header)) {
+  if (terminal.mode === 'definer') {
     throw new Error(`terminal public RPC remains SECURITY DEFINER: ${fn} in ${terminal.file}`);
   }
-  report.push({ function: fn, source: terminal.file, mode: /security\s+invoker/i.test(terminal.header) ? 'explicit_invoker' : 'default_invoker' });
+  report.push({ function: fn, source: terminal.file, mode: 'invoker', sourceKind: terminal.source });
 }
 
 console.log(JSON.stringify({ checked: report.length, publicFunctions: report }, null, 2));
