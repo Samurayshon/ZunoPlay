@@ -32,8 +32,8 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
-    private static final String BUILD_ID = "android-v0-screenoff-v1";
-    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_screenoff_v1";
+    private static final String BUILD_ID = "android-v0-screenoff-v2";
+    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_screenoff_v2";
     private static final int PERMISSION_REQUEST = 7001;
     private static final long BOOT_TIMEOUT_MS = 12000L;
 
@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.1 " + BUILD_ID);
+        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.2 " + BUILD_ID);
 
         webView.clearCache(true);
 

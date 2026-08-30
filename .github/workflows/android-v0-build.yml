@@ -1,4 +1,4 @@
-name: Android 0.0.1 APK
+name: Android APK
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
       - '.github/workflows/android-v0-build.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -39,13 +39,29 @@ jobs:
       - name: Build debug APK
         run: gradle -p android-v0 assembleDebug --stacktrace
 
-      - name: Rename APK
-        run: cp android-v0/app/build/outputs/apk/debug/app-debug.apk ZunoPlay-0.0.1-debug.apk
+      - name: Resolve APK version
+        run: |
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
+          test -n "$VERSION_NAME"
+          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "APK_NAME=ZunoPlay-${VERSION_NAME}-debug.apk" >> "$GITHUB_ENV"
+          cp android-v0/app/build/outputs/apk/debug/app-debug.apk "ZunoPlay-${VERSION_NAME}-debug.apk"
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ZunoPlay-0.0.1-APK
-          path: ZunoPlay-0.0.1-debug.apk
+          name: ZunoPlay-${{ env.VERSION_NAME }}-APK
+          path: ${{ env.APK_NAME }}
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish APK release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="android-v${VERSION_NAME}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK_NAME" --clobber
+          else
+            gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste gerado automaticamente a partir da branch main."
+          fi
