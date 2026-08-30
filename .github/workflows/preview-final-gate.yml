@@ -1,0 +1,17 @@
+name: Preview Final Gate Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_FINAL_GATE.md'
+      - 'docs/ZUNOPLAY_PREVIEW_GATE.md'
+
+jobs:
+  final-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'Somente marcar VALIDADO' docs/ZUNOPLAY_PREVIEW_FINAL_GATE.md
+          grep -q 'Preview hospedado' docs/ZUNOPLAY_PREVIEW_FINAL_GATE.md
