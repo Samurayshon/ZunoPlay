@@ -1,0 +1,10 @@
+name: Preview Now Marker
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  marker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Create PR now' docs/ZUNOPLAY_PREVIEW_NOW.md
