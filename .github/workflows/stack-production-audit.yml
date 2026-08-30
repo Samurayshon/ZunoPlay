@@ -21,10 +21,10 @@ jobs:
           set -euo pipefail
           files=(
             zuno-stack.html zuno-stack.js zuno-stack-pieces.js zuno-stack-pieces.css
-            zuno-stack-lobby-fullscreen-v3.css zuno-stack-lobby-v2.css zuno-stack-lobby-v2.js zuno-stack-lobby-final-polish.css
-            zuno-stack-lobby-closeout.css zuno-stack-lobby-closeout.js zuno-stack-brand.css zuno-stack-brand.js zuno-stack-arena-motion.js
+            zuno-stack-lobby-fullscreen-v3.css zuno-stack-lobby-v2.css zuno-stack-lobby-final-polish.css
+            zuno-stack-lobby-closeout.css zuno-stack-brand.css zuno-stack-brand.js zuno-stack-arena-motion.js
             zuno-stack-gameplay-official.css zuno-stack-gameplay-official.js zuno-stack-modes-official.js
-            zuno-stack-progression-official.js zuno-stack-performance-official.js
+            zuno-stack-progression-official.js zuno-stack-performance-official.js zuno-stack-solo-authority-bootstrap.js
             zuno-stack-feel-official.css zuno-stack-feel-official.js zuno-stack-orders-official.css zuno-stack-coop-official.css
             zuno-stack-pressure-official.css zuno-stack-pressure-official.js zuno-stack-touchfix-official.css
             zuno-stack-rhythm-official.css zuno-stack-rhythm-official.js zuno-stack-settings-official.css zuno-stack-settings-official.js
@@ -32,10 +32,12 @@ jobs:
             zuno-stack-final-compose.css zuno-stack-final-polish.css zuno-stack-intuitive-final.css
             zuno-stack-combo-chain.css zuno-stack-combo-chain.js
             zuno-stack-relay-v2-official.css zuno-stack-relay-v2-official.js
-            zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-integrity-official.js
+            zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-actions-authority.js zuno-stack-integrity-official.js
           )
           for file in "${files[@]}"; do test -s "$file" || { echo "Missing canonical Stack runtime file: $file"; exit 1; }; done
           for file in zuno-stack*.js; do node --check "$file"; done
+          node tests/zuno-stack-canonical-runtime.test.mjs
+          node tests/zuno-stack-cache-version.test.mjs
 
       - name: Validate Stack boot graph
         shell: bash
@@ -44,13 +46,14 @@ jobs:
           direct=(
             zuno-stack-pieces.css zuno-stack-lobby-fullscreen-v3.css zuno-stack-lobby-v2.css zuno-stack-lobby-final-polish.css
             zuno-stack-lobby-closeout.css zuno-stack-brand.css zuno-stack-gameplay-official.css
-            zuno-stack-pieces.js zuno-stack-modes-official.js zuno-stack.js zuno-stack-gameplay-official.js
-            zuno-stack-progression-official.js zuno-stack-performance-official.js zuno-stack-brand.js zuno-stack-arena-motion.js
-            zuno-stack-lobby-closeout.js
+            zuno-stack-pieces.js zuno-stack-modes-official.js zuno-stack.js zuno-stack-solo-authority-bootstrap.js
+            zuno-stack-gameplay-official.js zuno-stack-progression-official.js zuno-stack-performance-official.js
+            zuno-stack-brand.js zuno-stack-arena-motion.js
           )
           for asset in "${direct[@]}"; do grep -q "$asset" zuno-stack.html || { echo "Stack direct boot asset missing: $asset"; exit 1; }; done
 
-          grep -q 'zuno-stack-lobby-v2.js' nav.js || { echo 'Canonical Stack lobby injection missing'; exit 1; }
+          grep -q 'zuno-room-game-return.js' nav.js || { echo 'Stack room return integration missing'; exit 1; }
+          ! grep -q 'zuno-stack-lobby-v2.js' nav.js || { echo 'Removed Stack lobby runtime is still injected by nav.js'; exit 1; }
 
           official=(
             zuno-stack-feel-official.css zuno-stack-feel-official.js zuno-stack-orders-official.css zuno-stack-coop-official.css
@@ -60,7 +63,7 @@ jobs:
             zuno-stack-final-compose.css zuno-stack-final-polish.css zuno-stack-intuitive-final.css
             zuno-stack-combo-chain.css zuno-stack-combo-chain.js
             zuno-stack-relay-v2-official.css zuno-stack-relay-v2-official.js
-            zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-integrity-official.js
+            zuno-stack-systems-official.js zuno-stack-authority-official.js zuno-stack-actions-authority.js zuno-stack-integrity-official.js
           )
           for asset in "${official[@]}"; do grep -q "$asset" zuno-stack-performance-official.js || { echo "Stack official composition asset missing: $asset"; exit 1; }; done
 
@@ -81,6 +84,7 @@ jobs:
           grep -q 'window.ZunoStackSystems' zuno-stack-systems-official.js
           grep -q 'zuno_stack_commit_state' zuno-stack-authority-official.js
           grep -q 'revision_conflict' zuno-stack-authority-official.js
+          grep -q 'ZunoStackActionsAuthority' zuno-stack-actions-authority.js
           grep -q 'window.ZunoStackIntegrity' zuno-stack-integrity-official.js
 
       - name: Guard Stack RPC least privilege
@@ -110,7 +114,9 @@ jobs:
             zuno-stack-performance.js zuno-stack-social.js zuno-stack-progression.js zuno-stack-content.js zuno-stack-mobile-shell.js
             zuno-stack-objective.js zuno-stack-objective.css zuno-stack-relay-advanced.js zuno-stack-relay-advanced.css
             zuno-stack-powers-official.js zuno-stack-powers-official.css zuno-stack-orders-official.js zuno-stack-coop-official.js
-            zuno-stack-mechanics-official.js
+            zuno-stack-mechanics-official.js zuno-stack-lobby-v2.js zuno-stack-lobby-closeout.js
+            zuno-stack-fresh-round-guard.js zuno-stack-tile-bridge-v2.js zuno-stack-server-engine-guard.js
+            zuno-stack-relay-authority.js zuno-stack-pulse-authority.js zuno-stack-hint-authority.js zuno-stack-power-authority.js
           )
           for old in "${obsolete[@]}"; do test ! -e "$old" || { echo "Obsolete Stack asset returned: $old"; exit 1; }; done
           for old in "${obsolete[@]}"; do
