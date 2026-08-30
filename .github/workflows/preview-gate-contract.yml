@@ -1,0 +1,29 @@
+name: Preview Gate Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_GATE.md'
+      - 'docs/ZUNOPLAY_STAGING.md'
+      - 'vercel.json'
+      - 'scripts/vercel-preview-backend-guard.mjs'
+  push:
+    branches: [main]
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify preview contract files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f docs/ZUNOPLAY_PREVIEW_GATE.md
+          test -f docs/ZUNOPLAY_STAGING.md
+          test -f vercel.json
+          test -f scripts/vercel-preview-backend-guard.mjs
+          grep -q 'Samurayshon/ZunoPlay' docs/ZUNOPLAY_PREVIEW_GATE.md
+          grep -q 'lqymrmionvvfbgfrdryo' docs/ZUNOPLAY_PREVIEW_GATE.md
+          grep -q 'GitHub Pages' docs/ZUNOPLAY_PREVIEW_GATE.md
