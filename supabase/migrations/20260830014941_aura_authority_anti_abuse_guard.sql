@@ -41,6 +41,7 @@ alter table public.authority_match_claims enable row level security;
 revoke all privileges on table public.authority_game_rules from anon, authenticated;
 revoke all privileges on table public.authority_match_claims from anon, authenticated;
 
+-- Raw balance mutation becomes internal-only. The guarded game API below is the only service-role game entrypoint.
 revoke execute on function public.award_authority(uuid,bigint,text,text,text,text,text,text,jsonb) from service_role;
 
 create or replace function public.award_game_authority(
@@ -91,41 +92,71 @@ begin
   if coalesce(length(p_game_id),0) > 80 or coalesce(length(p_match_id),0) > 200 or length(p_reason) > 120 then raise exception 'authority_input_too_long' using errcode='22023'; end if;
   if p_opponent_id = p_user_id then raise exception 'self_opponent_not_allowed' using errcode='22023'; end if;
 
-  select r.* into v_rule from public.authority_game_rules r where r.game_id = btrim(p_game_id);
+  select r.* into v_rule
+  from public.authority_game_rules r
+  where r.game_id = btrim(p_game_id);
+
   if not found or not v_rule.enabled then raise exception 'authority_game_not_enabled' using errcode='42501'; end if;
   if p_base_amount > v_rule.max_base_authority then raise exception 'base_authority_exceeds_game_limit' using errcode='22023'; end if;
   if not p_completed or p_abandoned or p_afk then raise exception 'match_not_eligible_for_authority' using errcode='22023'; end if;
   if p_participation_seconds < v_rule.min_participation_seconds then raise exception 'insufficient_participation' using errcode='22023'; end if;
 
+  -- Serialize awards for this player to make repeat-opponent counting deterministic under concurrency.
   perform pg_advisory_xact_lock(hashtextextended(p_user_id::text || ':' || btrim(p_game_id), 0));
 
-  if exists (select 1 from public.authority_match_claims c where c.user_id=p_user_id and c.game_id=btrim(p_game_id) and c.match_id=btrim(p_match_id)) then
-    select c.awarded_amount, c.multiplier, c.repeat_count into v_awarded, v_multiplier, v_repeat_count
-    from public.authority_match_claims c where c.user_id=p_user_id and c.game_id=btrim(p_game_id) and c.match_id=btrim(p_match_id);
+  if exists (
+    select 1 from public.authority_match_claims c
+    where c.user_id=p_user_id and c.game_id=btrim(p_game_id) and c.match_id=btrim(p_match_id)
+  ) then
+    select c.authority_transaction_id, c.awarded_amount, c.multiplier, c.repeat_count
+      into v_claim_id, v_awarded, v_multiplier, v_repeat_count
+    from public.authority_match_claims c
+    where c.user_id=p_user_id and c.game_id=btrim(p_game_id) and c.match_id=btrim(p_match_id);
 
+    select pa.authority into v_result from public.player_authority pa where pa.user_id=p_user_id;
     return query
-      select false,c.authority_transaction_id,pa.authority,cur.tier,cur.name,nxt.tier,nxt.name,nxt.min_authority,c.awarded_amount,c.multiplier,c.repeat_count
-      from public.authority_match_claims c
-      join public.player_authority pa on pa.user_id=c.user_id
+      select false,
+             (select c.authority_transaction_id from public.authority_match_claims c where c.user_id=p_user_id and c.game_id=btrim(p_game_id) and c.match_id=btrim(p_match_id)),
+             pa.authority,
+             cur.tier,
+             cur.name,
+             nxt.tier,
+             nxt.name,
+             nxt.min_authority,
+             v_awarded,
+             v_multiplier,
+             v_repeat_count
+      from public.player_authority pa
       join lateral (select t.tier,t.name from public.aura_tiers t where t.min_authority<=pa.authority order by t.min_authority desc limit 1) cur on true
       left join lateral (select t.tier,t.name,t.min_authority from public.aura_tiers t where t.min_authority>pa.authority order by t.min_authority asc limit 1) nxt on true
-      where c.user_id=p_user_id and c.game_id=btrim(p_game_id) and c.match_id=btrim(p_match_id);
+      where pa.user_id=p_user_id;
     return;
   end if;
 
   if p_opponent_id is not null then
-    select count(*)::integer into v_repeat_count from public.authority_match_claims c
-    where c.user_id=p_user_id and c.game_id=btrim(p_game_id) and c.opponent_id=p_opponent_id
+    select count(*)::integer into v_repeat_count
+    from public.authority_match_claims c
+    where c.user_id=p_user_id
+      and c.game_id=btrim(p_game_id)
+      and c.opponent_id=p_opponent_id
       and c.created_at >= now() - make_interval(mins => v_rule.repeat_window_minutes);
-    v_multiplier := coalesce(v_rule.repeat_multipliers[least(v_repeat_count + 1, cardinality(v_rule.repeat_multipliers))],0);
+
+    v_multiplier := coalesce(
+      v_rule.repeat_multipliers[least(v_repeat_count + 1, cardinality(v_rule.repeat_multipliers))],
+      0
+    );
   end if;
 
   v_awarded := floor(p_base_amount * v_multiplier)::bigint;
 
   if v_awarded <= 0 then
-    insert into public.authority_match_claims(user_id,game_id,match_id,opponent_id,completed,abandoned,afk,participation_seconds,base_amount,repeat_count,multiplier,awarded_amount,authority_transaction_id)
-    values (p_user_id,btrim(p_game_id),btrim(p_match_id),p_opponent_id,p_completed,p_abandoned,p_afk,p_participation_seconds,p_base_amount,v_repeat_count,v_multiplier,0,null)
-    returning id into v_claim_id;
+    insert into public.authority_match_claims(
+      user_id,game_id,match_id,opponent_id,completed,abandoned,afk,participation_seconds,
+      base_amount,repeat_count,multiplier,awarded_amount,authority_transaction_id
+    ) values (
+      p_user_id,btrim(p_game_id),btrim(p_match_id),p_opponent_id,p_completed,p_abandoned,p_afk,p_participation_seconds,
+      p_base_amount,v_repeat_count,v_multiplier,0,null
+    ) returning id into v_claim_id;
 
     return query
       select true,null::uuid,pa.authority,cur.tier,cur.name,nxt.tier,nxt.name,nxt.min_authority,0::bigint,v_multiplier,v_repeat_count
@@ -138,17 +169,38 @@ begin
 
   v_idempotency := 'game:' || btrim(p_game_id) || ':match:' || btrim(p_match_id);
 
-  select * into v_result from public.award_authority(
-    p_user_id,v_awarded,p_reason,'game_match',v_idempotency,btrim(p_game_id),btrim(p_match_id),btrim(p_match_id),
-    coalesce(p_metadata,'{}'::jsonb) || jsonb_build_object('base_amount',p_base_amount,'participation_seconds',p_participation_seconds,'opponent_id',p_opponent_id,'anti_farm_multiplier',v_multiplier,'repeat_count',v_repeat_count)
+  select * into v_result
+  from public.award_authority(
+    p_user_id,
+    v_awarded,
+    p_reason,
+    'game_match',
+    v_idempotency,
+    btrim(p_game_id),
+    btrim(p_match_id),
+    btrim(p_match_id),
+    coalesce(p_metadata,'{}'::jsonb) || jsonb_build_object(
+      'base_amount',p_base_amount,
+      'participation_seconds',p_participation_seconds,
+      'opponent_id',p_opponent_id,
+      'anti_farm_multiplier',v_multiplier,
+      'repeat_count',v_repeat_count
+    )
   );
 
-  insert into public.authority_match_claims(user_id,game_id,match_id,opponent_id,completed,abandoned,afk,participation_seconds,base_amount,repeat_count,multiplier,awarded_amount,authority_transaction_id)
-  values (p_user_id,btrim(p_game_id),btrim(p_match_id),p_opponent_id,p_completed,p_abandoned,p_afk,p_participation_seconds,p_base_amount,v_repeat_count,v_multiplier,v_awarded,v_result.transaction_id);
+  insert into public.authority_match_claims(
+    user_id,game_id,match_id,opponent_id,completed,abandoned,afk,participation_seconds,
+    base_amount,repeat_count,multiplier,awarded_amount,authority_transaction_id
+  ) values (
+    p_user_id,btrim(p_game_id),btrim(p_match_id),p_opponent_id,p_completed,p_abandoned,p_afk,p_participation_seconds,
+    p_base_amount,v_repeat_count,v_multiplier,v_awarded,v_result.transaction_id
+  );
 
-  return query select v_result.applied,v_result.transaction_id,v_result.authority,v_result.aura_tier,v_result.aura_name,v_result.next_tier,v_result.next_aura_name,v_result.next_threshold,v_awarded,v_multiplier,v_repeat_count;
+  return query select v_result.applied,v_result.transaction_id,v_result.authority,v_result.aura_tier,v_result.aura_name,
+                      v_result.next_tier,v_result.next_aura_name,v_result.next_threshold,v_awarded,v_multiplier,v_repeat_count;
 end;
 $$;
 
 revoke all on function public.award_game_authority(uuid,text,text,bigint,text,integer,boolean,boolean,boolean,uuid,jsonb) from public, anon, authenticated;
 grant execute on function public.award_game_authority(uuid,text,text,bigint,text,integer,boolean,boolean,boolean,uuid,jsonb) to service_role;
+

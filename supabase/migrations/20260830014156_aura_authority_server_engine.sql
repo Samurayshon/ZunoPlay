@@ -35,51 +35,121 @@ declare
   v_next_threshold bigint;
   v_applied boolean := false;
 begin
-  if p_user_id is null then raise exception 'user_id_required' using errcode = '22004'; end if;
-  if p_amount is null or p_amount <= 0 then raise exception 'authority_amount_must_be_positive' using errcode = '22023'; end if;
-  if p_reason is null or btrim(p_reason) = '' then raise exception 'reason_required' using errcode = '22023'; end if;
-  if p_source_type is null or btrim(p_source_type) = '' then raise exception 'source_type_required' using errcode = '22023'; end if;
-  if p_idempotency_key is null or btrim(p_idempotency_key) = '' then raise exception 'idempotency_key_required' using errcode = '22023'; end if;
-  if length(p_reason) > 120 or length(p_source_type) > 64 or length(p_idempotency_key) > 200 or coalesce(length(p_game_id),0) > 80 or coalesce(length(p_match_id),0) > 200 or coalesce(length(p_source_id),0) > 200 then raise exception 'authority_input_too_long' using errcode = '22023'; end if;
-  if not exists (select 1 from auth.users u where u.id = p_user_id) then raise exception 'authority_user_not_found' using errcode = '23503'; end if;
+  if p_user_id is null then
+    raise exception 'user_id_required' using errcode = '22004';
+  end if;
+
+  if p_amount is null or p_amount <= 0 then
+    raise exception 'authority_amount_must_be_positive' using errcode = '22023';
+  end if;
+
+  if p_reason is null or btrim(p_reason) = '' then
+    raise exception 'reason_required' using errcode = '22023';
+  end if;
+
+  if p_source_type is null or btrim(p_source_type) = '' then
+    raise exception 'source_type_required' using errcode = '22023';
+  end if;
+
+  if p_idempotency_key is null or btrim(p_idempotency_key) = '' then
+    raise exception 'idempotency_key_required' using errcode = '22023';
+  end if;
+
+  if length(p_reason) > 120 or length(p_source_type) > 64 or length(p_idempotency_key) > 200
+     or coalesce(length(p_game_id), 0) > 80 or coalesce(length(p_match_id), 0) > 200
+     or coalesce(length(p_source_id), 0) > 200 then
+    raise exception 'authority_input_too_long' using errcode = '22023';
+  end if;
+
+  if not exists (select 1 from auth.users u where u.id = p_user_id) then
+    raise exception 'authority_user_not_found' using errcode = '23503';
+  end if;
 
   insert into public.player_authority as pa (user_id, authority, updated_at)
-  values (p_user_id, 0, now()) on conflict (user_id) do nothing;
+  values (p_user_id, 0, now())
+  on conflict (user_id) do nothing;
 
-  insert into public.authority_transactions (user_id, game_id, match_id, source_type, source_id, amount, reason, idempotency_key, metadata, created_at)
-  values (p_user_id, nullif(btrim(p_game_id), ''), nullif(btrim(p_match_id), ''), btrim(p_source_type), nullif(btrim(p_source_id), ''), p_amount, btrim(p_reason), btrim(p_idempotency_key), coalesce(p_metadata, '{}'::jsonb), now())
+  insert into public.authority_transactions (
+    user_id, game_id, match_id, source_type, source_id,
+    amount, reason, idempotency_key, metadata, created_at
+  ) values (
+    p_user_id,
+    nullif(btrim(p_game_id), ''),
+    nullif(btrim(p_match_id), ''),
+    btrim(p_source_type),
+    nullif(btrim(p_source_id), ''),
+    p_amount,
+    btrim(p_reason),
+    btrim(p_idempotency_key),
+    coalesce(p_metadata, '{}'::jsonb),
+    now()
+  )
   on conflict (user_id, idempotency_key) do nothing
   returning id into v_tx_id;
 
   if v_tx_id is not null then
-    update public.player_authority pa
-       set authority = pa.authority + p_amount,
+    update public.player_authority
+       set authority = authority + p_amount,
            updated_at = now()
-     where pa.user_id = p_user_id
-     returning pa.authority into v_authority;
+     where user_id = p_user_id
+     returning player_authority.authority into v_authority;
     v_applied := true;
   else
-    select at.id into v_tx_id from public.authority_transactions at where at.user_id = p_user_id and at.idempotency_key = btrim(p_idempotency_key);
-    select pa.authority into v_authority from public.player_authority pa where pa.user_id = p_user_id;
+    select at.id
+      into v_tx_id
+      from public.authority_transactions at
+     where at.user_id = p_user_id
+       and at.idempotency_key = btrim(p_idempotency_key);
+
+    select pa.authority
+      into v_authority
+      from public.player_authority pa
+     where pa.user_id = p_user_id;
   end if;
 
-  select t.tier, t.name into v_tier, v_name from public.aura_tiers t where t.min_authority <= v_authority order by t.min_authority desc limit 1;
-  select t.tier, t.name, t.min_authority into v_next_tier, v_next_name, v_next_threshold from public.aura_tiers t where t.min_authority > v_authority order by t.min_authority asc limit 1;
+  select t.tier, t.name
+    into v_tier, v_name
+    from public.aura_tiers t
+   where t.min_authority <= v_authority
+   order by t.min_authority desc
+   limit 1;
 
-  return query select v_applied, v_tx_id, v_authority, v_tier, v_name, v_next_tier, v_next_name, v_next_threshold;
+  select t.tier, t.name, t.min_authority
+    into v_next_tier, v_next_name, v_next_threshold
+    from public.aura_tiers t
+   where t.min_authority > v_authority
+   order by t.min_authority asc
+   limit 1;
+
+  return query
+  select v_applied, v_tx_id, v_authority, v_tier, v_name,
+         v_next_tier, v_next_name, v_next_threshold;
 end;
 $$;
 
-revoke all on function public.award_authority(uuid,bigint,text,text,text,text,text,text,jsonb) from public, anon, authenticated;
+revoke all on function public.award_authority(uuid,bigint,text,text,text,text,text,text,jsonb) from public;
+revoke all on function public.award_authority(uuid,bigint,text,text,text,text,text,text,jsonb) from anon;
+revoke all on function public.award_authority(uuid,bigint,text,text,text,text,text,text,jsonb) from authenticated;
 grant execute on function public.award_authority(uuid,bigint,text,text,text,text,text,text,jsonb) to service_role;
 
+-- New accounts always receive a zeroed global Authority row.
 create or replace function public.initialize_player_authority()
-returns trigger language plpgsql security definer set search_path = '' as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
-  insert into public.player_authority (user_id, authority) values (new.id, 0) on conflict (user_id) do nothing;
+  insert into public.player_authority (user_id, authority)
+  values (new.id, 0)
+  on conflict (user_id) do nothing;
   return new;
 end;
 $$;
+
 revoke all on function public.initialize_player_authority() from public, anon, authenticated;
-drop trigger if exists trg_initialize_player_authority on auth.users;
-create trigger trg_initialize_player_authority after insert on auth.users for each row execute function public.initialize_player_authority();
+
+DROP TRIGGER IF EXISTS trg_initialize_player_authority ON auth.users;
+create trigger trg_initialize_player_authority
+after insert on auth.users
+for each row execute function public.initialize_player_authority();

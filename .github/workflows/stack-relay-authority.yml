@@ -20,8 +20,8 @@ jobs:
           set -euo pipefail
           node --check zuno-stack-relay-authority.js
           node --check zuno-stack-performance-official.js
-          f='supabase/migrations/20260829223500_server_authoritative_zuno_stack_relay.sql'
-          hard='supabase/migrations/20260829223600_block_legacy_zuno_stack_relay_requests.sql'
+          f='supabase/migrations/20260829173758_server_authoritative_zuno_stack_relay.sql'
+          hard='supabase/migrations/20260829174514_block_legacy_zuno_stack_relay_requests.sql'
           test -s "$f"
           test -s "$hard"
           grep -q 'stack_server_relay_required' "$f"

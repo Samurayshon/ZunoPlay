@@ -1,5 +1,3 @@
--- Etapa 6: claim interno server-side para Zuno Stack.
--- Somente service_role pode executar. Browser/app não recebe primitive de recompensa.
 create or replace function zuno_private.claim_zuno_stack_authority_internal(p_user_id uuid,p_room_id uuid)
 returns table(applied boolean,transaction_id uuid,authority bigint,aura_tier smallint,aura_name text,next_tier smallint,next_aura_name text,next_threshold bigint,awarded_amount bigint)
 language plpgsql security definer set search_path=''
@@ -24,4 +22,5 @@ begin
 end;$$;
 revoke all on function zuno_private.claim_zuno_stack_authority_internal(uuid,uuid) from public,anon,authenticated;
 grant execute on function zuno_private.claim_zuno_stack_authority_internal(uuid,uuid) to service_role;
-drop function if exists public.claim_zuno_stack_authority(uuid);
+drop function public.claim_zuno_stack_authority(uuid);
+

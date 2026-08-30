@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 const games=fs.readFileSync('jogos.html','utf8');
 const html=fs.readFileSync('zuno-stack.html','utf8');
 const guard=fs.readFileSync('zuno-stack-fresh-round-guard.js','utf8');
-const migration=fs.readFileSync('supabase/migrations/20260830131500_add_stack_abandon_solo_round.sql','utf8');
-const restartMigration=fs.readFileSync('supabase/migrations/20260830152500_allow_stack_new_round_after_inactive_state.sql','utf8');
+const migration=fs.readFileSync('supabase/migrations/20260830130714_add_stack_abandon_solo_round.sql','utf8');
+const restartMigration=fs.readFileSync('supabase/migrations/20260830152333_allow_stack_new_round_after_inactive_state.sql','utf8');
 
 assert.match(games,/fromRoom=qp\.get\('from'\)==='sala',queryRoom=qp\.get\('room'\)\|\|'',roomId=queryRoom\|\|\(fromRoom\?sessionStorage\.getItem\('zunoplay_room_id'\)\|\|'':''\)/,'ordinary Games launches must ignore stale solo room session storage');
 assert.match(games,/if\(roomId\)\{u\.searchParams\.set\('room',roomId\);if\(fromRoom\)u\.searchParams\.set\('from','sala'\)\}else\{u\.searchParams\.set\('new','1'\)\}/,'catalog launch must mark only non-room games as fresh');
@@ -23,7 +23,9 @@ assert.match(migration,/r\.is_discoverable = false/,'abandon RPC must require no
 assert.match(migration,/security definer/,'private authoritative implementation must execute server-side');
 assert.match(migration,/create or replace function public\.zuno_stack_abandon_solo_round[\s\S]*?language sql[\s\S]*?set search_path = ''/,'public wrapper must remain security-invoker SQL');
 assert.match(restartMigration,/public\.zuno_stack_commit_state\(uuid,bigint,jsonb\)/,'fresh restart migration must target the canonical state commit RPC');
-assert.match(restartMigration,/if v_prev_active and jsonb_typeof\(v_prev_engine->''tiles''\) = ''array''/,'same-round tile identity guards must only compare against an active predecessor');
-assert.match(restartMigration,/stack_illegal_tile_restore/,'migration must document the reproduced inactive-to-fresh failure');
+assert.match(restartMigration,/v_old text := '    if jsonb_typeof\(v_prev_engine->''tiles''\) = ''array'''/,'patch must target the predecessor tile identity invariant');
+assert.match(restartMigration,/v_new text := '    if v_prev_active and jsonb_typeof\(v_prev_engine->''tiles''\) = ''array'''/,'patch must gate same-round tile identity checks on an active predecessor');
+assert.match(restartMigration,/position\(v_new in v_def\) > 0/,'patch must be idempotent when the canonical fix is already present');
+assert.match(restartMigration,/position\(v_old in v_def\) = 0/,'patch must fail closed if the expected invariant block is absent');
 
 console.log('zuno-stack fresh solo round guard: ok');

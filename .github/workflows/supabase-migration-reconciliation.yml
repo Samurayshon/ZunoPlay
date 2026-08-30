@@ -1,0 +1,36 @@
+name: Supabase Migration Reconciliation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enforce exact production migration ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/supabase-migration-reconciliation.mjs --strict --json | tee migration-reconciliation-report.json
+      - name: Reject stale workflow migration references
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/check-ci-migration-references.mjs | tee ci-migration-reference-report.json
+      - name: Upload reconciliation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-migration-reconciliation
+          path: |
+            migration-reconciliation-report.json
+            ci-migration-reference-report.json

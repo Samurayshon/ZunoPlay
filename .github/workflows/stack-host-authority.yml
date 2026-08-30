@@ -19,9 +19,9 @@ jobs:
         run: |
           set -euo pipefail
           node --check zuno-stack-authority-official.js
-          f='supabase/migrations/20260829220000_enforce_zuno_stack_host_authority.sql'
-          fix='supabase/migrations/20260829220500_fix_zuno_stack_action_idempotency.sql'
-          server='supabase/migrations/20260829221000_server_authoritative_zuno_stack_tile.sql'
+          f='supabase/migrations/20260829170306_enforce_zuno_stack_host_authority.sql'
+          fix='supabase/migrations/20260829170550_fix_zuno_stack_action_idempotency.sql'
+          server='supabase/migrations/20260829171857_server_authoritative_zuno_stack_tile.sql'
           test -s "$f"
           test -s "$fix"
           test -s "$server"
