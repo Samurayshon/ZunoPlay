@@ -1,0 +1,14 @@
+name: Preview PR Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_PR.md'
+
+jobs:
+  pr-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'PR #194' docs/ZUNOPLAY_PREVIEW_PR.md
