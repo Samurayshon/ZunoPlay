@@ -15,32 +15,66 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          import re
 
-          leaf = re.compile(r'[^{}]*(?:\.aura-|#aura|data-pulse-mode=["\']aura["\'])[^{}]*\{[^{}]*\}', re.I)
-          keyframes = re.compile(r'@(?:-webkit-)?keyframes\s+zunoAura\s*\{(?:[^{}]|\{[^{}]*\})*\}', re.I)
+          def should_drop(selector):
+              s = selector.lower()
+              return ('.aura-' in s or '#aura' in s or 'data-pulse-mode="aura"' in s or "data-pulse-mode='aura'" in s or s.strip().startswith('@keyframes zunoaura') or s.strip().startswith('@-webkit-keyframes zunoaura'))
+
+          def clean(text):
+              out = []
+              i = 0
+              n = len(text)
+              while i < n:
+                  brace = text.find('{', i)
+                  if brace < 0:
+                      out.append(text[i:])
+                      break
+                  selector = text[i:brace]
+                  depth = 1
+                  j = brace + 1
+                  while j < n and depth:
+                      if text[j] == '{':
+                          depth += 1
+                      elif text[j] == '}':
+                          depth -= 1
+                      j += 1
+                  if depth:
+                      out.append(text[i:])
+                      break
+                  body = text[brace + 1:j - 1]
+                  stripped = selector.lstrip().lower()
+                  if should_drop(selector):
+                      pass
+                  elif stripped.startswith('@media') or stripped.startswith('@supports') or stripped.startswith('@layer'):
+                      out.append(selector + '{' + clean(body) + '}')
+                  else:
+                      out.append(selector + '{' + body + '}')
+                  i = j
+              return ''.join(out)
 
           changed = []
           for path in Path('.').rglob('*.css'):
               if '.git' in path.parts:
                   continue
               before = path.read_text(encoding='utf-8')
-              after = before
-              while True:
-                  next_text = leaf.sub('', after)
-                  if next_text == after:
-                      break
-                  after = next_text
-              after = keyframes.sub('', after)
+              after = clean(before)
               if after != before:
                   path.write_text(after, encoding='utf-8')
                   changed.append(str(path))
           print('changed:', ', '.join(changed) if changed else 'none')
 
+          leftovers = []
+          needles = ('.aura-', '#aura', 'zunoaura', 'data-pulse-mode="aura"', "data-pulse-mode='aura'")
+          for path in Path('.').rglob('*.css'):
+              if '.git' in path.parts:
+                  continue
+              text = path.read_text(encoding='utf-8').lower()
+              if any(n in text for n in needles):
+                  leftovers.append(str(path))
+          if leftovers:
+              raise SystemExit('legacy aura CSS remains: ' + ', '.join(leftovers))
+
           Path('.github/workflows/cleanup-legacy-visual.yml').unlink(missing_ok=True)
-      - name: Verify retired selectors are gone
-        run: |
-          ! grep -RniE '\.aura-|#aura|zunoAura|data-pulse-mode=["'"']aura["'"']' --include='*.css' .
       - name: Commit cleanup
         run: |
           git config user.name 'ZunoPlay Cleanup Bot'
