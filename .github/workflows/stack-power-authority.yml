@@ -43,7 +43,7 @@ jobs:
           grep -q 'security invoker' "$f"
           grep -q 'revoke all on function public.zuno_stack_power' "$f"
           grep -q "sb.rpc('zuno_stack_power'" zuno-stack-power-authority.js
-          grep -q "^(fluxo|troca)$" zuno-stack-power-authority.js
+          grep -Fq '/^(fluxo|troca)$/' zuno-stack-power-authority.js
           grep -q 'zuno-stack-power-authority.js?v=1' zuno-stack-performance-official.js
           grep -q "k==='power_fluxo'||k==='power_troca'" zuno-stack-server-engine-guard.js
           grep -q 'ZunoStackPowerAuthority?.request' zuno-stack-server-engine-guard.js
