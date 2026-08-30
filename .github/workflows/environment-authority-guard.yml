@@ -1,0 +1,45 @@
+name: Environment Authority Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/ZUNOPLAY_ENVIRONMENTS.md'
+      - 'android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java'
+      - '.vercel/**'
+      - '.github/workflows/environment-authority-guard.yml'
+
+jobs:
+  authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enforce canonical production host
+        shell: bash
+        run: |
+          set -euo pipefail
+          prod='https://samurayshon.github.io/ZunoPlay/'
+          android='android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java'
+          contract='docs/ZUNOPLAY_ENVIRONMENTS.md'
+
+          test -s "$contract"
+          grep -Fq -- '- Plataforma: **GitHub Pages**' "$contract"
+          grep -Fq -- "- URL canônica: \`$prod\`" "$contract"
+          grep -Fq -- 'O frontend consumido pelo aplicativo Android aponta para **GitHub Pages**' README.md
+          grep -Fq -- "$prod" README.md
+          grep -Fq -- "private static final String START_URL = \"$prod\";" "$android"
+          grep -Fq -- 'normalized.equals("samurayshon.github.io")' "$android"
+          grep -Fq -- '"samurayshon.github.io".equalsIgnoreCase(origin.getHost())' "$android"
+
+      - name: Reject implicit Vercel authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test -f .vercel/project.json; then
+            echo 'A Vercel project binding exists but the canonical environment contract still marks Vercel as non-canonical. Update and validate docs/guard in the same change.'
+            exit 1
+          fi
