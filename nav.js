@@ -21,7 +21,7 @@ if(social.includes(page)){css('zunoplay-social-style','./zuno-social.css');js('z
 if(page==='amigos.html'){loadFriendsExperience();loadFriendRequests()}
 if(page==='perfil.html')loadFriendRequests();
 if(games.includes(page)){css('zunoplay-game-progression-style','./zuno-game-progression.css');js('zunoplay-game-progression','./zuno-game-progression.js');css('zunoplay-games-stage7-style','./zuno-games-stage7.css');js('zunoplay-games-stage7-script','./zuno-games-stage7.js')}
-if(page==='zuno-stack.html'){js('zunoplay-room-game-return','./zuno-room-game-return.js');js('zunoplay-stack-lobby-v2','./zuno-stack-lobby-v2.js')}
+if(page==='zuno-stack.html')js('zunoplay-room-game-return','./zuno-room-game-return.js');
 if(!home&&!pub.has(page)&&!moments)css('zunoplay-ui-components','./zuno-ui-components.css');
 if(profile.includes(page)){css('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');js('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js')}
 if(!home)js('zunoplay-realtime-global','./realtime-global.js');else{const loadHomeRealtime=()=>{if(document.documentElement.dataset.zunoAuthState==='member')js('zunoplay-realtime-global','./realtime-global.js')};loadHomeRealtime();new MutationObserver(loadHomeRealtime).observe(document.documentElement,{attributes:true,attributeFilter:['data-zuno-auth-state']})}
