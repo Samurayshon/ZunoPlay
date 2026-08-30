@@ -24,11 +24,8 @@ function loadOfficialModules(){
 }
 function loadAuthorityModules(){
  if(!window.__ZUNO_STACK_AUTHORITY_ROOM_READY__||!window.__ZUNO_STACK_AUTHORITY_ROOM_ID__)return false;
- loadJs('zuno-stack-authority-official.js?v=10','zsoAuthority');
- loadJs('zuno-stack-relay-authority.js?v=1','zsoRelayAuthority');
- loadJs('zuno-stack-pulse-authority.js?v=1','zsoPulseAuthority');
- loadJs('zuno-stack-hint-authority.js?v=1','zsoHintAuthority');
- loadJs('zuno-stack-power-authority.js?v=1','zsoPowerAuthority');
+ loadJs('zuno-stack-authority-official.js?v=12','zsoAuthority');
+ loadJs('zuno-stack-actions-authority.js?v=1','zsoActionsAuthority');
  return true
 }
 window.ZunoStackLoadAuthorityModules=loadAuthorityModules;
