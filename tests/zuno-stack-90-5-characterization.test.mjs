@@ -12,11 +12,15 @@ const pulse=fs.readFileSync('supabase/migrations/20260830031937_server_authorita
 const hint=fs.readFileSync('supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql','utf8');
 const events=fs.readFileSync('supabase/migrations/20260829133154_zuno_stack_game_events.sql','utf8');
 
-// SQL formatting is not gameplay behavior. Normalize whitespace around operators so
-// the guard freezes semantics without failing on harmless formatting differences.
-const compactSql = (source) => source.replace(/\s+/g,' ').replace(/\s*([+\-%<>=])\s*/g,'$1');
+// SQL formatting is not gameplay behavior. Normalize whitespace around operators and
+// PL/pgSQL assignment so guards freeze semantics without failing on harmless formatting.
+const compactSql = (source) => source
+  .replace(/\s+/g,' ')
+  .replace(/\s*:=\s*/g,':=')
+  .replace(/\s*([+\-%<>=])\s*/g,'$1');
 const tileCompact=compactSql(tile);
 const relayCompact=compactSql(relay);
+const pulseCompact=compactSql(pulse);
 
 // 90/5 + tray/relay shape.
 assert.match(core,/TOTAL_TILES=90,LAYER_COUNTS=\[36,24,15,10,5\]/,'client baseline must remain 90 tiles / 5 layers');
@@ -60,11 +64,11 @@ assert.match(relayCompact,/v_energy:=least\(5,v_energy\+1\)/,'relay-take trio en
 assert.match(relayCompact,/if v_matches%5=0 then/,'relay-take automatic Pulse cycle changed');
 
 // Manual Pulse Shift is a separate authoritative action and must preserve its current contract.
-assert.match(pulse,/if v_energy<>5 then raise exception 'stack_pulse_not_ready'/,'manual Pulse must require energy=5');
-assert.match(pulse,/v_critical:=jsonb_array_length\(v_tray\)>=6/,'Pulse critical threshold changed');
-assert.match(pulse,/v_remove_count:=case when v_critical then 3 else 2 end/,'Pulse removal count changed');
-assert.match(pulse,/v_gain:=case when v_critical then 260 else 160 end/,'Pulse scoring changed');
-assert.match(pulse,/'tray',v_tray,'energy',0,'score',least\(25000,v_score\+v_gain\),'combo',0,'lastMatchAt',0/,'Pulse reset/result contract changed');
+assert.match(pulseCompact,/if v_energy<>5 then raise exception 'stack_pulse_not_ready'/,'manual Pulse must require energy=5');
+assert.match(pulseCompact,/v_critical:=jsonb_array_length\(v_tray\)>=6/,'Pulse critical threshold changed');
+assert.match(pulseCompact,/v_remove_count:=case when v_critical then 3 else 2 end/,'Pulse removal count changed');
+assert.match(pulseCompact,/v_gain:=case when v_critical then 260 else 160 end/,'Pulse scoring changed');
+assert.match(pulseCompact,/'tray',v_tray,'energy',0,'score',least\(25000,v_score\+v_gain\),'combo',0,'lastMatchAt',0/,'Pulse reset/result contract changed');
 
 // Hint is authoritative, consumes one hint, and advances revision without mutating board/tray/score.
 assert.match(hint,/if v_hints <= 0 then raise exception 'stack_hint_unavailable'/,'hint availability guard changed');
