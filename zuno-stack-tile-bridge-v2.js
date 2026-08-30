@@ -10,8 +10,9 @@ async function serverRound(auth){
 }
 function activeRound(r){return !!r?.engine?.active&&Array.isArray(r.engine?.tiles)&&r.engine.tiles.length===90}
 async function confirmStart(auth){
+  let round=await serverRound(auth);
+  if(activeRound(round)){await auth.reconcile?.('tile_bridge_v2_active_round');return true}
   const local=window.ZunoStackCore?.getState?.();if(!pristine(local))return false;
-  let round=await serverRound(auth);if(activeRound(round)){await auth.reconcile?.('tile_bridge_v2_active_round');return true}
   const baseline=Number(round?.revision)||Number(auth.getState?.()?.revision)||0;
   for(let i=0;i<10;i++){
     await sleep(60);
