@@ -1,0 +1,14 @@
+name: Preview Handoff
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_HANDOFF.md'
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'inventário atual das referências Supabase' docs/ZUNOPLAY_PREVIEW_HANDOFF.md
