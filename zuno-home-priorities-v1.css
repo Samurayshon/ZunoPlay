@@ -1,0 +1,53 @@
+/* ZunoPlay Home — priorities 3–7 polish
+   Content only. Header and canonical bottom navigation remain untouched. */
+
+/* 3. Coins + Amigos: denser, aligned and useful even when empty */
+body.zuno-official-home #homeScreen .z33-stat-row{gap:8px!important;margin-bottom:20px!important}
+body.zuno-official-home #homeScreen .stat-pill{min-height:68px!important;padding:10px 12px!important;border-radius:18px!important}
+body.zuno-official-home #homeScreen .stat-icon{width:38px!important;height:38px!important;flex-basis:38px!important;font-size:17px!important}
+body.zuno-official-home #homeScreen .stat-label{font-size:9px!important}
+body.zuno-official-home #homeScreen .stat-value{font-size:19px!important}
+body.zuno-official-home #homeScreen #friendsHomeCard>.friends-home-copy{padding:10px 12px!important;justify-content:center!important}
+body.zuno-official-home #homeScreen #friendsHomeCard .stat-label{margin-bottom:4px!important}
+body.zuno-official-home #homeScreen #friendsHomePresence{min-height:0!important;font-size:9.5px!important;line-height:1.25!important;white-space:normal!important}
+
+/* 4. Zuno Stack: true featured-game identity without generated artwork */
+body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]{position:relative!important;min-height:142px!important;padding:18px 18px 17px!important;overflow:hidden!important;border:1px solid rgba(76,218,255,.24)!important;border-radius:24px!important;background:radial-gradient(circle at 82% 22%,rgba(55,221,255,.22),transparent 28%),radial-gradient(circle at 70% 105%,rgba(153,67,255,.32),transparent 45%),linear-gradient(135deg,rgba(19,24,58,.98),rgba(8,10,28,.99) 60%)!important;box-shadow:0 17px 40px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.04)!important;text-align:left!important}
+body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]:before{content:"Z"!important;position:absolute!important;right:22px!important;top:50%!important;transform:translateY(-52%) rotate(-8deg)!important;color:rgba(108,219,255,.12)!important;font-size:92px!important;line-height:1!important;font-weight:1000!important;letter-spacing:-8px!important;text-shadow:0 0 28px rgba(125,73,255,.18)!important;pointer-events:none!important}
+body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]:after{content:"ABRIR JOGO"!important;position:absolute!important;right:16px!important;bottom:15px!important;padding:6px 9px!important;border:1px solid rgba(63,218,255,.22)!important;border-radius:999px!important;background:rgba(52,217,255,.06)!important;color:#82e8ff!important;font-size:7px!important;font-weight:950!important;letter-spacing:.12em!important;pointer-events:none!important}
+body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"] .card-badge{position:relative!important;z-index:2!important}
+body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"] h2{position:relative!important;z-index:2!important;margin-top:25px!important;margin-bottom:5px!important;font-size:22px!important;letter-spacing:-.55px!important}
+body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"] p{position:relative!important;z-index:2!important;margin:0!important;color:#9da5bf!important;font-size:10px!important}
+
+/* 5. Empty room states: compact information instead of oversized blanks */
+body.zuno-official-home #homeScreen .zhome-v2-world-rail:has(.zhome-world-empty){min-height:0!important;padding-bottom:3px!important}
+body.zuno-official-home #homeScreen .zhome-world-empty{min-height:58px!important;padding:11px 14px!important;border-radius:17px!important;font-size:9.5px!important}
+body.zuno-official-home #homeScreen .zhome-world-block{margin-bottom:13px!important}
+body.zuno-official-home #homeScreen .zhome-world-head{margin-bottom:7px!important}
+
+/* 6. Vertical rhythm: more useful content per mobile viewport */
+body.zuno-official-home #homeScreen .zhome-v2-section{margin-bottom:18px!important}
+body.zuno-official-home #homeScreen .zhome-v2-title{margin-bottom:9px!important}
+body.zuno-official-home #homeScreen #zhomeWorld{margin-bottom:14px!important}
+body.zuno-official-home #homeScreen .zhome-v2-friends{margin-top:4px!important;margin-bottom:10px!important}
+body.zuno-official-home #homeScreen .footer{margin-top:6px!important}
+
+/* 7. Safe clearance above fixed canonical navigation */
+body.zuno-official-home #homeScreen{padding-bottom:max(var(--znav-reserved-space,96px),calc(84px + env(safe-area-inset-bottom)))!important}
+body.zuno-official-home #homeScreen .zhome-v2-bottom-spacer{height:10px!important;min-height:10px!important}
+
+@media(max-width:620px){
+  body.zuno-official-home #homeScreen .z33-stat-row{gap:7px!important;margin-left:12px!important;margin-right:12px!important;margin-bottom:16px!important}
+  body.zuno-official-home #homeScreen .stat-pill{min-height:62px!important;padding:9px 10px!important;border-radius:16px!important}
+  body.zuno-official-home #homeScreen .stat-icon{width:34px!important;height:34px!important;flex-basis:34px!important;font-size:15px!important}
+  body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]{min-height:126px!important;padding:15px!important;border-radius:21px!important}
+  body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]:before{right:18px!important;font-size:78px!important}
+  body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"] h2{margin-top:20px!important;font-size:19px!important}
+  body.zuno-official-home #homeScreen .zhome-world-empty{min-height:52px!important;padding:10px 12px!important;border-radius:15px!important}
+  body.zuno-official-home #homeScreen .zhome-v2-section{margin-bottom:15px!important}
+}
+
+@media(max-width:390px){
+  body.zuno-official-home #homeScreen #friendsHomePresence{font-size:9px!important}
+  body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]:after{right:12px!important;bottom:12px!important}
+}
