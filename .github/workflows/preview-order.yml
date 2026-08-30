@@ -1,0 +1,16 @@
+name: Preview Order
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_ORDER.md'
+
+jobs:
+  order:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'Auditar todas as inicializações Supabase' docs/ZUNOPLAY_PREVIEW_ORDER.md
+          grep -q 'Só então considerar ZUN-47 VALIDADO' docs/ZUNOPLAY_PREVIEW_ORDER.md
