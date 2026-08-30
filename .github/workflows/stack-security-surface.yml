@@ -54,7 +54,7 @@ jobs:
             supabase/migrations/20260830040257_server_authoritative_zuno_stack_gelo.sql \
             supabase/migrations/20260830041009_server_authoritative_zuno_stack_desfazer.sql; do
             test -s "$f"
-            grep -qi 'revoke all on function public.zuno_stack_' "$f" || { echo "public/anon revoke missing: $f"; exit 1; }
+            grep -Eqi 'revoke[[:space:]]+(all|execute)[[:space:]]+on[[:space:]]+function[[:space:]]+public\.zuno_stack_' "$f" || { echo "public/anon revoke missing: $f"; exit 1; }
           done
 
           # Privileged mutation implementations stay out of the public API schema.
@@ -76,7 +76,7 @@ jobs:
             grep -q 'auth.uid()' "$f" || { echo "auth.uid guard missing: $f"; exit 1; }
             grep -q 'room_members' "$f" || { echo "room membership guard missing: $f"; exit 1; }
             grep -q 'owner_id' "$f" || { echo "room owner guard missing: $f"; exit 1; }
-            grep -q "set search_path=''" "$f" || { echo "fixed search_path missing: $f"; exit 1; }
+            grep -Eqi "set[[:space:]]+search_path[[:space:]]*=[[:space:]]*''" "$f" || { echo "fixed search_path missing: $f"; exit 1; }
           done
 
           echo 'Zuno Stack RPC security surface guarded'
