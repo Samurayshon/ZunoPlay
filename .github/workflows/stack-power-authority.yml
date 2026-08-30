@@ -4,8 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'zuno-stack-power-authority.js'
-      - 'zuno-stack-server-engine-guard.js'
+      - 'zuno-stack-actions-authority.js'
       - 'zuno-stack-performance-official.js'
       - 'supabase/migrations/*zuno_stack_*powers.sql'
       - 'supabase/migrations/*zuno_stack_gelo.sql'
@@ -14,8 +13,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'zuno-stack-power-authority.js'
-      - 'zuno-stack-server-engine-guard.js'
+      - 'zuno-stack-actions-authority.js'
       - 'zuno-stack-performance-official.js'
       - 'supabase/migrations/*zuno_stack_*powers.sql'
       - 'supabase/migrations/*zuno_stack_gelo.sql'
@@ -34,8 +32,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --check zuno-stack-power-authority.js
-          node --check zuno-stack-server-engine-guard.js
+          node --check zuno-stack-actions-authority.js
           base='supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql'
           board='supabase/migrations/20260830035500_server_authoritative_zuno_stack_board_powers.sql'
           gelo='supabase/migrations/20260830040257_server_authoritative_zuno_stack_gelo.sql'
@@ -56,9 +53,9 @@ jobs:
           grep -q "'{desfazer}'" "$desfazer"
           grep -q 'security invoker' "$desfazer"
           grep -q 'revoke all on function public.zuno_stack_desfazer' "$desfazer"
-          grep -q "zuno_stack_gelo" zuno-stack-power-authority.js
-          grep -q "zuno_stack_desfazer" zuno-stack-power-authority.js
-          grep -Fq '/^(fluxo|troca|explosion|elo|fase|vortice|ima|gelo|desfazer)$/' zuno-stack-power-authority.js
-          grep -Fq '/^power_(fluxo|troca|explosion|elo|fase|vortice|ima|gelo|desfazer)$/' zuno-stack-server-engine-guard.js
-          grep -q 'ZunoStackPowerAuthority?.request' zuno-stack-server-engine-guard.js
-          grep -q "resync('power_server_required')" zuno-stack-server-engine-guard.js
+          grep -q "zuno_stack_gelo" zuno-stack-actions-authority.js
+          grep -q "zuno_stack_desfazer" zuno-stack-actions-authority.js
+          grep -Fq '/^(fluxo|troca|explosion|elo|fase|vortice|ima|gelo|desfazer)$/' zuno-stack-actions-authority.js
+          grep -Fq '/^power_(fluxo|troca|explosion|elo|fase|vortice|ima|gelo|desfazer)$/' zuno-stack-actions-authority.js
+          grep -q 'ZunoStackPowerAuthority' zuno-stack-actions-authority.js
+          grep -q "server_action_required_" zuno-stack-actions-authority.js
