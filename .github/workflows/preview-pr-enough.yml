@@ -1,0 +1,10 @@
+name: Preview PR Enough
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  enough:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Enough. PR now.' docs/ZUNOPLAY_PREVIEW_PR_ENOUGH.md
