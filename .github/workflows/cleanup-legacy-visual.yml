@@ -17,7 +17,7 @@ jobs:
           from pathlib import Path
           import re
 
-          leaf = re.compile(r'[^{}]*(?:\.aura-|#aura)[^{}]*\{[^{}]*\}', re.I)
+          leaf = re.compile(r'[^{}]*(?:\.aura-|#aura|data-pulse-mode=["\']aura["\'])[^{}]*\{[^{}]*\}', re.I)
           keyframes = re.compile(r'@(?:-webkit-)?keyframes\s+zunoAura\s*\{(?:[^{}]|\{[^{}]*\})*\}', re.I)
 
           changed = []
@@ -40,7 +40,7 @@ jobs:
           Path('.github/workflows/cleanup-legacy-visual.yml').unlink(missing_ok=True)
       - name: Verify retired selectors are gone
         run: |
-          ! grep -RniE '\.aura-|#aura|zunoAura' --include='*.css' .
+          ! grep -RniE '\.aura-|#aura|zunoAura|data-pulse-mode=["'"']aura["'"']' --include='*.css' .
       - name: Commit cleanup
         run: |
           git config user.name 'ZunoPlay Cleanup Bot'
