@@ -6,6 +6,7 @@ const root=process.cwd();
 const sourceExt=new Set(['.html','.js','.mjs','.css','.json']);
 const runtimeExt=new Set(['.html','.js','.mjs','.css','.svg','.webp','.png','.json','.txt']);
 const ignoreDirs=new Set(['.git','node_modules']);
+const infrastructureRootFiles=new Set(['vercel.json']);
 const canonicalRoots=new Set(['index.html','entrada.html','login.html','cadastro.html','perfil.html','avatar.html','amigos.html','conversas.html','notificacoes.html','comunidades.html','salas.html','sala.html','jogos.html','historico.html','zuno-stack.html','manifest.json','sw.js','nav.js','icon-192.png','zuno-app-icon.svg']);
 const reachabilityRoots=new Set(['index.html']);
 const nonFrontendPrefixes=['.github/','scripts/','tests/','qa/','supabase/','android-v0/','docs/'];
@@ -18,8 +19,8 @@ const cssUrl=/url\(\s*["']?([^"')\s]+)["']?\s*\)/gi;
 const loaders=[/(?:src|href)\s*=\s*["']([^"']+)["']/gi,/(?:location\.(?:href|replace)|window\.location\.href)\s*(?:=|\()\s*["']([^"']+)["']/gi,/new\s+URL\(\s*["']([^"']+)["']/gi,/(?:\.src|\.href)\s*=\s*["']([^"']+)["']/gi,/(?:fetch|import)\(\s*["']([^"']+)["']/gi,/\b(?:js|css|load)\(\s*["'][^"']*["']\s*,\s*["']([^"']+)["']/gi,cssUrl];
 function recordEdge(from,target){if(!fileSet.has(target))return;outbound.get(from)?.add(target);inboundAll.get(target)?.add(from);if(from!=='sw.js')inbound.get(target)?.add(from)}
 for(const f of files){const ext=path.extname(f).toLowerCase();if(!sourceExt.has(ext)||f.startsWith('.github/')||f.startsWith('scripts/'))continue;let text='';try{text=fs.readFileSync(path.join(root,f),'utf8')}catch{continue}for(const re of [quoted,cssUrl]){re.lastIndex=0;let m;while((m=re.exec(text))){const raw=m[1],target=norm(f,raw);if(!target)continue;if(/\?v=\d+/i.test(raw))versionedRefs.add(`${f} -> ${raw}`);recordEdge(f,target)}}for(const re of loaders){re.lastIndex=0;let m;while((m=re.exec(text))){const target=norm(f,m[1]);if(target&&runtimeExt.has(path.extname(target).toLowerCase())&&!fileSet.has(target))broken.add(`${f} -> ${target}`)}}const rpc=/\.rpc\(\s*["']([^"']+)["']/g;let rm;while((rm=rpc.exec(text)))addUse(rpcCalls,rm[1],f);const storage=/\.storage\.from\(\s*["']([a-z0-9_-]+)["']/gi;let sm;while((sm=storage.exec(text)))addUse(storageCalls,sm[1],f);const table=/\.from\(\s*["']([a-z][a-z0-9_]{1,63})["']/gi;let tm;while((tm=table.exec(text))){const before=text.slice(Math.max(0,tm.index-16),tm.index);if(/storage\s*$/i.test(before))continue;addUse(tableCalls,tm[1],f)}const rest=/\brest\(\s*["']([a-z][a-z0-9_]{1,63})(?:\?|["'])/gi;let re;while((re=rest.exec(text)))addUse(tableCalls,re[1],f)}
-const rootRuntime=files.filter(f=>!f.includes('/')&&runtimeExt.has(path.extname(f).toLowerCase()));
-const frontendRuntime=files.filter(f=>runtimeExt.has(path.extname(f).toLowerCase())&&!nonFrontendPrefixes.some(prefix=>f.startsWith(prefix)));
+const rootRuntime=files.filter(f=>!f.includes('/')&&runtimeExt.has(path.extname(f).toLowerCase())&&!infrastructureRootFiles.has(f));
+const frontendRuntime=files.filter(f=>runtimeExt.has(path.extname(f).toLowerCase())&&!infrastructureRootFiles.has(f)&&!nonFrontendPrefixes.some(prefix=>f.startsWith(prefix)));
 const orphanRoot=rootRuntime.filter(f=>!canonicalRoots.has(f)&&(inbound.get(f)?.size||0)===0).sort();
 function reach(roots,{ignoreServiceWorkerPrecache=true}={}){const seen=new Set(),queue=[...roots].filter(x=>fileSet.has(x));while(queue.length){const current=queue.shift();if(seen.has(current))continue;seen.add(current);if(ignoreServiceWorkerPrecache&&current==='sw.js')continue;for(const target of outbound.get(current)||[]){if(!seen.has(target))queue.push(target)}}return seen}
 const reachableFromApp=reach(reachabilityRoots);
