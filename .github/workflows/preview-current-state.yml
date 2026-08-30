@@ -1,0 +1,14 @@
+name: Preview Current State
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_CURRENT.md'
+
+jobs:
+  state:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q '🟠 PARCIAL' docs/ZUNOPLAY_PREVIEW_CURRENT.md
