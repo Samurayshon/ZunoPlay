@@ -44,6 +44,12 @@ function isPublishableKey(value) {
   return value.startsWith('sb_publishable_') || value.startsWith('eyJ');
 }
 
+function projectRefFromUrl(url) {
+  const match = String(url || '').match(/^https:\/\/([a-z0-9-]+)\.supabase\.co$/i);
+  if (!match) throw new Error('Unable to derive Supabase project ref from Preview URL.');
+  return match[1];
+}
+
 function readPreviewConfig(env = process.env) {
   const vercelEnv = String(env.VERCEL_ENV || '').toLowerCase();
   if (vercelEnv === 'production') throw new Error('Vercel production is forbidden: GitHub Pages is the canonical ZunoPlay production host.');
@@ -54,10 +60,12 @@ function readPreviewConfig(env = process.env) {
   if (url.includes(PROD_REF)) throw new Error('Preview/Staging must not use the production Supabase project.');
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) throw new Error('ZUNO_SUPABASE_URL is not a valid Supabase project URL.');
   if (!isPublishableKey(key)) throw new Error('Preview/Staging requires a publishable/anon-compatible client key, never a service-role/secret key.');
-  return { url, key };
+  const ref = projectRefFromUrl(url);
+  if (ref === PROD_REF) throw new Error('Preview/Staging project ref must differ from production.');
+  return { url, key, ref };
 }
 
-function rewriteLegacyPreviewCoupling({ url, key }) {
+function rewriteLegacyPreviewCoupling({ url, key, ref }) {
   const prodKeys = productionPublishableKeys();
   let changed = 0;
   for (const file of walk(ROOT)) {
@@ -66,6 +74,7 @@ function rewriteLegacyPreviewCoupling({ url, key }) {
     const original = fs.readFileSync(file, 'utf8');
     let next = original.split(PROD_URL).join(url);
     for (const prodKey of prodKeys) next = next.split(prodKey).join(key);
+    next = next.split(PROD_REF).join(ref);
     if (next !== original) { fs.writeFileSync(file, next); changed += 1; }
   }
   const refs = findProductionBackendRefs();
