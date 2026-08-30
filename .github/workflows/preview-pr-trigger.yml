@@ -1,0 +1,14 @@
+name: Preview PR Trigger Marker
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_PR_TRIGGER.md'
+
+jobs:
+  marker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Create PR against main' docs/ZUNOPLAY_PREVIEW_PR_TRIGGER.md
