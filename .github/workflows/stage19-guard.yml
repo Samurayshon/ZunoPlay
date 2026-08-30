@@ -43,29 +43,29 @@ jobs:
           grep -q 'ZunoVoiceICEProvider' zuno-turn-provider.js
           grep -q 'voice-turn' zuno-turn-provider.js
 
-      - name: Guard database stabilization migration
+      - name: Guard database stabilization in canonical ledger
         shell: bash
         run: |
           set -euo pipefail
-          f='supabase/migrations/20260829195500_etapa19_security_stability.sql'
-          test -s "$f"
-          grep -q 'max_speakers = 8' "$f"
-          grep -q "room_access_denied" "$f"
-          grep -q 'room_members_select_authorized' "$f"
-          grep -q 'rooms_select_authorized' "$f"
-          grep -q 'zunoplay:voice-reward:' "$f"
-          grep -q 'zunoplay:presence-reward:' "$f"
-          grep -q 'speaker_required' "$f"
-          grep -q 'submit_zuno_stack_result' "$f"
-          grep -q "new.game !~" "$f"
+          d='supabase/migrations'
+          test -d "$d"
+          grep -Rq 'max_speakers = 8' "$d"
+          grep -Rq 'room_access_denied' "$d"
+          grep -Rq 'room_members_select_authorized' "$d"
+          grep -Rq 'rooms_select_authorized' "$d"
+          grep -Rq 'zunoplay:voice-reward:' "$d"
+          grep -Rq 'zunoplay:presence-reward:' "$d"
+          grep -Rq 'speaker_required' "$d"
+          grep -Rq 'submit_zuno_stack_result' "$d"
+          grep -Rq 'new.game !~' "$d"
 
       - name: Guard P1 room and voice hardening
         shell: bash
         run: |
           set -euo pipefail
-          f='supabase/migrations/20260829223000_harden_rooms_voice_access.sql'
-          g='supabase/migrations/20260829223100_guard_voice_answer_direction.sql'
-          h='supabase/migrations/20260829223200_reject_membership_in_inactive_room.sql'
+          f='supabase/migrations/20260829173258_harden_rooms_voice_access.sql'
+          g='supabase/migrations/20260829173312_guard_voice_answer_direction.sql'
+          h='supabase/migrations/20260829173319_reject_membership_in_inactive_room.sql'
           test -s "$f"
           test -s "$g"
           test -s "$h"
@@ -92,7 +92,7 @@ jobs:
           set -euo pipefail
           grep -q "from('messages').insert" zuno-messages.js
           grep -q "zuno_get_or_create_direct_conversation" zuno-messages.js
-          reward_guard='supabase/migrations/20260829202500_contain_unverified_zuno_stack_rewards.sql'
+          reward_guard='supabase/migrations/20260829154748_contain_unverified_zuno_stack_rewards.sql'
           test -s "$reward_guard"
           grep -q 'revoke execute on function public.submit_zuno_stack_result' "$reward_guard"
           grep -q 'zunoplay_zuno_stack_last_result' zuno-stack.js
