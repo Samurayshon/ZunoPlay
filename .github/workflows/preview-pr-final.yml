@@ -1,0 +1,14 @@
+name: Preview PR Final Marker
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_PR_FINAL.md'
+
+jobs:
+  marker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Não equivale a gate concluído' docs/ZUNOPLAY_PREVIEW_PR_FINAL.md
