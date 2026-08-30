@@ -1,0 +1,16 @@
+name: Preview Authority Summary
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_AUTHORITY.md'
+
+jobs:
+  authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'Produção: GitHub Pages' docs/ZUNOPLAY_PREVIEW_AUTHORITY.md
+          grep -q 'Preview host: ainda não validado' docs/ZUNOPLAY_PREVIEW_AUTHORITY.md
