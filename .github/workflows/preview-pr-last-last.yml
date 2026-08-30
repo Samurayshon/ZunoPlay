@@ -1,0 +1,10 @@
+name: Preview PR Last Last
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  terminal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'No more. PR.' docs/ZUNOPLAY_PREVIEW_PR_LAST_LAST.md
