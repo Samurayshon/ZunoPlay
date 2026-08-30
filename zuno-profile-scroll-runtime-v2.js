@@ -1,6 +1,6 @@
 (()=>{
-  if(window.__ZUNO_PROFILE_SCROLL_RUNTIME_V2__) return;
-  window.__ZUNO_PROFILE_SCROLL_RUNTIME_V2__=true;
+  if(window.__ZUNO_PROFILE_SCROLL_RUNTIME_V3__) return;
+  window.__ZUNO_PROFILE_SCROLL_RUNTIME_V3__=true;
 
   const isProfile=()=>((location.pathname.split('/').pop()||'').toLowerCase()==='perfil.html');
   if(!isProfile()) return;
@@ -9,7 +9,7 @@
     const html=document.documentElement,body=document.body;
     if(!body) return;
     html.dataset.zunoPage='perfil';
-    const set=(el,p,v)=>el.style.setProperty(p,v,'important');
+    const set=(el,p,v)=>{ if(el.style.getPropertyValue(p)!==v || el.style.getPropertyPriority(p)!=='important') el.style.setProperty(p,v,'important'); };
     [['height','auto'],['min-height','100%'],['max-height','none'],['overflow-x','hidden'],['overflow-y','auto'],['overscroll-behavior-y','auto'],['touch-action','pan-y']].forEach(([p,v])=>set(html,p,v));
     [['position','static'],['height','auto'],['min-height','100dvh'],['max-height','none'],['overflow-x','hidden'],['overflow-y','auto'],['overscroll-behavior-y','auto'],['touch-action','pan-y']].forEach(([p,v])=>set(body,p,v));
     for(const el of document.querySelectorAll('.profile-v2,#profileV2Root,.profile-shell,.zpu')){
@@ -20,38 +20,15 @@
     }
   }
 
-  let startY=0,lastY=0,dragging=false;
-  const blockedTarget=t=>!!t?.closest?.('input,textarea,select,[contenteditable="true"],.zs-overlay.open,.zp-concept-edit-modal.open,#zunoGlobalSearch.open,.zuno-canonical-nav');
-
-  document.addEventListener('touchstart',e=>{
-    if(e.touches.length!==1||blockedTarget(e.target)) return;
-    forceScrollable();
-    startY=lastY=e.touches[0].clientY;
-    dragging=true;
-  },{capture:true,passive:true});
-
-  document.addEventListener('touchmove',e=>{
-    if(!dragging||e.touches.length!==1||blockedTarget(e.target)) return;
-    const y=e.touches[0].clientY,dy=lastY-y;
-    lastY=y;
-    if(Math.abs(y-startY)>3 && Math.abs(dy)>0){
-      window.scrollBy(0,dy);
-      if(e.cancelable) e.preventDefault();
-    }
-  },{capture:true,passive:false});
-
-  document.addEventListener('touchend',()=>{dragging=false},{capture:true,passive:true});
-  document.addEventListener('touchcancel',()=>{dragging=false},{capture:true,passive:true});
-
   const start=()=>{
     forceScrollable();
     requestAnimationFrame(forceScrollable);
     setTimeout(forceScrollable,250);
     setTimeout(forceScrollable,900);
-    const obs=new MutationObserver(()=>forceScrollable());
-    obs.observe(document.documentElement,{attributes:true,childList:true,subtree:true,attributeFilter:['class','style','data-zuno-page']});
-    window.addEventListener('pageshow',forceScrollable);
-    window.addEventListener('resize',forceScrollable);
+    window.addEventListener('pageshow',forceScrollable,{passive:true});
+    window.addEventListener('resize',forceScrollable,{passive:true});
+    window.addEventListener('orientationchange',()=>setTimeout(forceScrollable,80),{passive:true});
   };
+
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 })();
