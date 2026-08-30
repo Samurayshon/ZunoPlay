@@ -1,0 +1,72 @@
+name: ZunoPlay Canonical Auth Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  canonical-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require canonical authentication surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            entrada.html
+            login.html
+            cadastro.html
+            zuno-auth-canonical.css
+            zuno-brand-official.css
+            zuno-brand-official.js
+            zuno-onboarding.js
+            zuno-onboarding-guard.js
+          )
+          for file in "${required[@]}"; do
+            test -s "$file" || { echo "Missing canonical auth file: $file"; exit 1; }
+          done
+
+      - name: Block retired authentication layers
+        shell: bash
+        run: |
+          set -euo pipefail
+          retired=(
+            zuno-auth-public.css
+            zuno-auth-icons.css
+            zuno-onboarding.css
+          )
+          for file in "${retired[@]}"; do
+            if test -e "$file"; then
+              echo "Retired auth file returned: $file"
+              exit 1
+            fi
+          done
+
+      - name: Reject stale auth references
+        shell: bash
+        run: |
+          set -euo pipefail
+          stale='zuno-auth-public\.css|zuno-auth-icons\.css|zuno-onboarding\.css'
+          if grep -RInE "$stale" --include='*.html' --include='*.css' --include='*.js' --exclude-dir=.git .; then
+            echo 'Stale authentication reference found.'
+            exit 1
+          fi
+
+      - name: Verify current login and signup contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'zuno-auth-canonical.css' entrada.html
+          grep -Fq 'zuno-auth-canonical.css' login.html
+          grep -Fq 'zuno-auth-canonical.css' cadastro.html
+          grep -Fq 'zuno-brand-official.css' entrada.html
+          grep -Fq 'zuno-brand-official.css' login.html
+          grep -Fq 'zuno-brand-official.css' cadastro.html
+          grep -Fq 'signInWithPassword' login.html
+          grep -Fq 'signUp' zuno-onboarding.js
+          grep -Fq 'complete_zuno_identity' zuno-onboarding.js
+          grep -Fq 'Login aprovado é a matriz visual' zuno-auth-canonical.css
