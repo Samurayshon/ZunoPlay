@@ -1,0 +1,35 @@
+/* Login is the canonical visual reference for the public auth flow. */
+.za-entry .za-content{padding-top:clamp(14px,3.2dvh,34px)}
+.za-entry .za-hero{margin-bottom:0}
+.za-entry .za-title{font-size:24px;max-width:none}
+.za-entry .za-copy{max-width:none;font-size:12px}
+.za-entry-actions{margin-top:clamp(20px,3dvh,30px)}
+.za-entry .za-secondary{min-height:36px;margin-top:9px;color:#a1a7b8;font-size:10.5px;font-weight:800;background:transparent}
+.za-entry .za-universe,.za-login .za-universe{margin-bottom:40px}
+
+.zo-shell{padding:max(10px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}
+.zo-header{height:38px;flex-basis:38px;margin:0 0 11px}
+.zo-progress{margin:0 0 clamp(28px,5dvh,52px)}
+.zo-card{width:100%;max-width:620px;margin:0 auto;padding:clamp(14px,3.2dvh,34px) 0 10px;background:transparent;border:0;box-shadow:none}
+.zo-step h1{margin:6px 0 5px;font-size:24px;line-height:1.08;letter-spacing:-.7px}
+.zo-desc{margin:0;color:#aeb3c4;font-size:12px;line-height:1.45}
+.zo-field{margin-top:clamp(15px,2dvh,22px)}
+.zo-field label{margin-bottom:7px;font-size:10.8px}
+.zo-input{height:clamp(46px,5.4dvh,52px);font-size:15px}
+.zo-btn{min-height:clamp(46px,5.5dvh,52px);margin-top:clamp(14px,1.8dvh,20px);font-size:13px}
+.zo-secondary{min-height:36px;margin-top:9px;background:transparent;color:#b6bbca;font-size:10.5px}
+.zo-link{min-height:36px;margin-top:9px;display:flex;align-items:center;justify-content:center;color:#a1a7b8;font-size:10.5px}
+.zo-universe-preview{margin-top:auto;padding-top:18px;margin-bottom:40px}
+.zo-universe-title{font-size:10px}
+.zo-universe-orbit{height:92px;max-width:360px;margin-top:6px}
+.zo-universe-core{width:34px;height:34px;top:21px}
+.zo-universe-icon{height:28px;min-width:28px}
+.zo-universe-item b{font-size:8.5px}
+.zo-universe-rooms{left:4%;top:19px}.zo-universe-games{right:4%;top:19px}.zo-universe-people{left:50%;top:59px}
+.zo-step.active .zo-legal{bottom:max(12px,calc(env(safe-area-inset-bottom) + 6px))}
+
+@media(min-height:820px){.zo-step.active .zo-universe-preview{display:flex;flex-direction:column}.zo-step.active .zo-legal{display:flex;position:fixed;left:0;right:0;z-index:5;margin:0}}
+@media(min-height:920px){.zo-progress{margin-bottom:clamp(36px,5.5dvh,58px)}.zo-universe-preview{padding-top:22px}}
+@media(max-height:760px){.za-entry .za-content,.za-login .za-content,.zo-card{padding-top:8px}.za-entry-actions{margin-top:15px}.zo-progress{margin-bottom:20px}.zo-field{margin-top:11px}.zo-input{height:43px}.zo-btn{min-height:43px}.zo-universe-preview{padding-top:10px}.zo-universe-orbit{height:78px}.zo-universe-people{top:53px}.zo-step.active .zo-legal{bottom:max(8px,calc(env(safe-area-inset-bottom) + 3px))}}
+@media(max-height:670px){.za-entry .za-title,.zo-step h1{font-size:21px}.za-entry .za-copy,.zo-desc{font-size:10.5px}.za-entry-actions{margin-top:12px}.zo-progress{margin-bottom:13px}.zo-universe-preview{display:none!important}}
+@media(max-width:390px){.zo-shell{padding-left:18px;padding-right:18px}.zo-card{padding-left:0;padding-right:0}.zo-universe-rooms{left:0}.zo-universe-games{right:0}}
