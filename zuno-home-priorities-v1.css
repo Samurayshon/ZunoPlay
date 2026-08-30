@@ -11,8 +11,9 @@ body.zuno-official-home.zuno-official-v33 #homeScreen .hero-name{margin-bottom:2
 body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone{min-height:320px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:320px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:310px!important}
-body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{bottom:14px!important}
-body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{bottom:24px!important}
+/* Holographic avatar platform: compact, layered and secondary to the character. */
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{content:""!important;position:absolute!important;left:50%!important;bottom:15px!important;width:54%!important;height:19px!important;transform:translateX(-50%)!important;border:1px solid rgba(126,82,255,.62)!important;border-radius:50%!important;background:radial-gradient(ellipse at center,rgba(70,213,255,.16) 0,rgba(114,64,255,.13) 32%,rgba(103,53,255,.04) 58%,transparent 72%)!important;box-shadow:0 0 8px rgba(91,71,255,.24),0 0 18px rgba(45,205,255,.10),inset 0 0 8px rgba(134,74,255,.16)!important;opacity:.82!important;filter:none!important;pointer-events:none!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{content:""!important;position:absolute!important;left:50%!important;bottom:19px!important;width:38%!important;height:9px!important;transform:translateX(-50%)!important;border:1px solid rgba(69,218,255,.48)!important;border-radius:50%!important;background:radial-gradient(ellipse at center,rgba(93,220,255,.20),rgba(109,67,255,.08) 48%,transparent 72%)!important;box-shadow:0 0 7px rgba(64,216,255,.20),0 0 13px rgba(132,63,255,.12)!important;opacity:.76!important;filter:none!important;pointer-events:none!important}
 
 /* Authority */
 body.zuno-official-home #homeScreen .zap-home-host{position:relative!important;z-index:3!important;padding-bottom:10px!important}
@@ -72,6 +73,8 @@ body.zuno-official-home.zuno-official-v33 #homeScreen .hero-name{margin-bottom:1
 body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone{min-height:300px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:300px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:292px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{width:56%!important;height:17px!important;bottom:14px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{width:39%!important;height:8px!important;bottom:18px!important}
 body.zuno-official-home #homeScreen .zap-home-host{padding-bottom:9px!important}
 body.zuno-official-home #homeScreen .zap-card.zap-compact{padding:8px 11px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .z33-stat-row{gap:7px!important;margin:0 12px 16px!important}
@@ -92,6 +95,8 @@ body.zuno-official-home.zuno-official-v33 #homeScreen .hero-grid{min-height:292p
 body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone{min-height:292px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar-wrap{height:292px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen .profile-avatar{height:285px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:before{width:58%!important;height:16px!important}
+body.zuno-official-home.zuno-official-v33 #homeScreen .hero-avatar-zone:after{width:40%!important;height:7px!important}
 body.zuno-official-home.zuno-official-v33 #homeScreen #friendsHomePresence{font-size:9px!important}
 body.zuno-official-home #homeScreen #zhomePopularGames .menu-card[data-home-role="featured"]:after{right:12px!important;bottom:12px!important}
 }
