@@ -1,0 +1,10 @@
+name: Preview PR Fin
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  fin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'FIN. PR.' docs/ZUNOPLAY_PREVIEW_PR_FIN.md
