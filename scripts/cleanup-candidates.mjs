@@ -10,7 +10,7 @@ const texts=new Map();
 for(const f of files){if(!sourceExt.has(path.extname(f).toLowerCase())&&!['Dockerfile'].includes(path.basename(f)))continue;try{texts.set(f,fs.readFileSync(path.join(root,f),'utf8'))}catch{}}
 function countToken(token){let n=0,refs=[];for(const [f,t] of texts){const esc=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),m=t.match(new RegExp(esc,'g'));if(m?.length){n+=m.length;refs.push(`${f}:${m.length}`)}}return{n,refs}}
 const emptyPlaceholders=[];
-for(const [f,t] of texts){if(!f.endsWith('.html'))continue;const re=/<(style|script)\b([^>]*\bid=["']([^"']+)["'][^>]*)>\s*<\/\1>/gi;let m;while((m=re.exec(t))){const id=m[3],usage=countToken(id);if(usage.n===1)emptyPlaceholders.push(`${f} :: ${m[1]}#${id} :: only occurrence`)}}
+for(const [f,t] of texts){if(!f.endsWith('.html'))continue;const re=/<(style|script)\b([^>]*\bid=["']([^"']+)["'][^>]*)>\s*<\/\1>/gi;let m;while((m=re.exec(t))){const tag=m[1].toLowerCase(),attrs=m[2];if(tag==='script'&&/\bsrc\s*=/i.test(attrs))continue;const id=m[3],usage=countToken(id);if(usage.n===1)emptyPlaceholders.push(`${f} :: ${tag}#${id} :: only occurrence`)}}
 const zeroByte=files.filter(f=>{try{return fs.statSync(path.join(root,f)).size===0}catch{return false}}).sort();
 const suspiciousNames=files.filter(f=>/(?:^|[-_.])(old|backup|bak|copy|temp|tmp|deprecated|legacy|final2)(?:[-_.]|$)/i.test(path.basename(f))).sort();
 const consoleLogs=[];
