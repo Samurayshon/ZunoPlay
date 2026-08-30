@@ -1,0 +1,50 @@
+name: Zuno Stack Power Authority
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'zuno-stack-power-authority.js'
+      - 'zuno-stack-server-engine-guard.js'
+      - 'zuno-stack-performance-official.js'
+      - 'supabase/migrations/*zuno_stack_fluxo_troca.sql'
+      - '.github/workflows/stack-power-authority.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'zuno-stack-power-authority.js'
+      - 'zuno-stack-server-engine-guard.js'
+      - 'zuno-stack-performance-official.js'
+      - 'supabase/migrations/*zuno_stack_fluxo_troca.sql'
+      - '.github/workflows/stack-power-authority.yml'
+
+jobs:
+  power-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard Fluxo and Troca server authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check zuno-stack-power-authority.js
+          node --check zuno-stack-server-engine-guard.js
+          f='supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql'
+          test -s "$f"
+          grep -q 'zuno_stack_server_power_loadout' "$f"
+          grep -q 'trg_zuno_stack_power_state_guard' "$f"
+          grep -q "p_power not in ('fluxo','troca')" "$f"
+          grep -q 'stack_power_not_selected' "$f"
+          grep -q 'stack_power_no_charge' "$f"
+          grep -q 'serverPowers' "$f"
+          grep -q 'security invoker' "$f"
+          grep -q 'revoke all on function public.zuno_stack_power' "$f"
+          grep -q "sb.rpc('zuno_stack_power'" zuno-stack-power-authority.js
+          grep -Fq '/^(fluxo|troca)$/' zuno-stack-power-authority.js
+          grep -q 'zuno-stack-power-authority.js?v=1' zuno-stack-performance-official.js
+          grep -q "k==='power_fluxo'||k==='power_troca'" zuno-stack-server-engine-guard.js
+          grep -q 'ZunoStackPowerAuthority?.request' zuno-stack-server-engine-guard.js
+          grep -q "resync('power_server_required')" zuno-stack-server-engine-guard.js
