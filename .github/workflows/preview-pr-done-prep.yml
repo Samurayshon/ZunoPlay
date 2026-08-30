@@ -1,0 +1,10 @@
+name: Preview PR Preparation Done
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  done:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Preparation done. PR creation next.' docs/ZUNOPLAY_PREVIEW_PR_DONE_PREP.md
