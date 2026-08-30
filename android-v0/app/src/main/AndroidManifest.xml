@@ -10,7 +10,7 @@
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:largeHeap="true"
-        android:label="ZunoPlay 0.0.1"
+        android:label="ZunoPlay"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
         <activity

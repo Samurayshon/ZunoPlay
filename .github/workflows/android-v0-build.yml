@@ -3,6 +3,8 @@ name: Android APK
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
       - 'android-v0/**'
       - '.github/workflows/android-v0-build.yml'
@@ -13,7 +15,7 @@ permissions:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -28,8 +30,8 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android 35 SDK
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Install Android build SDK
+        run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -38,6 +40,101 @@ jobs:
 
       - name: Build debug APK
         run: gradle -p android-v0 assembleDebug --stacktrace
+
+      - name: Verify APK metadata
+        run: |
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
+          "$AAPT" dump badging "$APK" | tee android-apk-badging.txt
+          grep -q "package: name='com.zunoplay.app' versionCode='4' versionName='0.0.3'" android-apk-badging.txt
+          grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
+
+      - name: Install Android 14 emulator image
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager 'emulator' 'system-images;android-34;google_apis;x86_64'
+          echo no | avdmanager create avd \
+            --force \
+            --name zunoplay-ci \
+            --package 'system-images;android-34;google_apis;x86_64' \
+            --device 'pixel_6'
+
+      - name: Start Android 14 emulator
+        run: |
+          nohup "${ANDROID_HOME}/emulator/emulator" \
+            -avd zunoplay-ci \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot \
+            -gpu swiftshader_indirect \
+            > android-emulator.log 2>&1 &
+          adb wait-for-device
+          for i in $(seq 1 120); do
+            BOOTED="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+            if [ "$BOOTED" = '1' ]; then
+              break
+            fi
+            sleep 2
+          done
+          test "$(adb shell getprop sys.boot_completed | tr -d '\r')" = '1'
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+
+      - name: Runtime smoke test on Android 14
+        run: |
+          set -euo pipefail
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
+          adb install -r "$APK"
+          adb logcat -c
+
+          for ATTEMPT in 1 2 3; do
+            adb shell am force-stop com.zunoplay.app
+            START_OUTPUT="$(adb shell am start -W -n com.zunoplay.app/.MainActivity | tr -d '\r')"
+            echo "$START_OUTPUT"
+            echo "$START_OUTPUT" | grep -q 'Status: ok'
+            sleep 8
+            PID="$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
+            test -n "$PID"
+          done
+
+          adb shell input keyevent 223
+          sleep 3
+          test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
+          adb shell input keyevent 224
+          adb shell wm dismiss-keyguard || true
+          sleep 5
+          test -n "$(adb shell pidof com.zunoplay.app | tr -d '\r' || true)"
+
+          adb logcat -d -v threadtime > android-runtime-logcat.txt
+          if grep -A12 'FATAL EXCEPTION' android-runtime-logcat.txt | grep -q 'Process: com.zunoplay.app'; then
+            echo 'Fatal ZunoPlay process crash detected in logcat.' >&2
+            exit 1
+          fi
+
+      - name: Collect runtime diagnostics
+        if: always()
+        run: |
+          adb logcat -d -v threadtime > android-runtime-logcat.txt 2>/dev/null || true
+          adb shell dumpsys package com.zunoplay.app > android-package.txt 2>/dev/null || true
+          adb shell dumpsys activity activities > android-activities.txt 2>/dev/null || true
+          adb emu kill || true
+
+      - name: Upload runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZunoPlay-android-runtime-diagnostics
+          path: |
+            android-apk-badging.txt
+            android-emulator.log
+            android-runtime-logcat.txt
+            android-package.txt
+            android-activities.txt
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Resolve APK version
         run: |
@@ -63,5 +160,5 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK_NAME" --clobber
           else
-            gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste gerado automaticamente a partir da branch main."
+            gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste. Build, metadados e smoke test de runtime em Android 14 validados pelo CI antes da publicação."
           fi
