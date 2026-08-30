@@ -36,8 +36,8 @@ jobs:
           set -euo pipefail
           node --check zuno-stack-power-authority.js
           node --check zuno-stack-server-engine-guard.js
-          base='supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql'
-          board='supabase/migrations/20260830035500_server_authoritative_zuno_stack_board_powers.sql'
+          base='supabase/migrations/20260830034449_server_authoritative_zuno_stack_fluxo_troca.sql'
+          board='supabase/migrations/20260830035506_server_authoritative_zuno_stack_board_powers.sql'
           gelo='supabase/migrations/20260830040257_server_authoritative_zuno_stack_gelo.sql'
           desfazer='supabase/migrations/20260830041009_server_authoritative_zuno_stack_desfazer.sql'
           test -s "$base"
