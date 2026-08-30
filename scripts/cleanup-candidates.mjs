@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root=process.cwd();
+const ignore=new Set(['.git','node_modules']);
+const sourceExt=new Set(['.html','.js','.mjs','.css','.json','.md','.yml','.yaml','.sql','.ts','.java','.xml','.gradle']);
+function walk(dir,rel=''){const out=[];for(const ent of fs.readdirSync(dir,{withFileTypes:true})){if(ignore.has(ent.name))continue;const r=path.posix.join(rel,ent.name),abs=path.join(dir,ent.name);if(ent.isDirectory())out.push(...walk(abs,r));else out.push(r)}return out}
+const files=walk(root);
+const texts=new Map();
+for(const f of files){if(!sourceExt.has(path.extname(f).toLowerCase())&&!['Dockerfile'].includes(path.basename(f)))continue;try{texts.set(f,fs.readFileSync(path.join(root,f),'utf8'))}catch{}}
+function countToken(token){let n=0,refs=[];for(const [f,t] of texts){const esc=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),m=t.match(new RegExp(esc,'g'));if(m?.length){n+=m.length;refs.push(`${f}:${m.length}`)}}return{n,refs}}
+const emptyPlaceholders=[];
+for(const [f,t] of texts){if(!f.endsWith('.html'))continue;const re=/<(style|script)\b([^>]*\bid=["']([^"']+)["'][^>]*)>\s*<\/\1>/gi;let m;while((m=re.exec(t))){const id=m[3],usage=countToken(id);if(usage.n===1)emptyPlaceholders.push(`${f} :: ${m[1]}#${id} :: only occurrence`)}}
+const zeroByte=files.filter(f=>{try{return fs.statSync(path.join(root,f)).size===0}catch{return false}}).sort();
+const suspiciousNames=files.filter(f=>/(?:^|[-_.])(old|backup|bak|copy|temp|tmp|deprecated|legacy|final2)(?:[-_.]|$)/i.test(path.basename(f))).sort();
+const consoleLogs=[];
+for(const [f,t] of texts){if(!/\.(?:js|mjs|ts)$/.test(f))continue;const n=(t.match(/\bconsole\.(?:log|debug)\s*\(/g)||[]).length;if(n)consoleLogs.push(`${f}: ${n}`)}
+function section(title,rows){console.log(`\n=== ${title} (${rows.length}) ===`);if(!rows.length)console.log('none');else rows.forEach(x=>console.log(x))}
+console.log(`Files scanned: ${files.length}`);
+section('EMPTY HTML STYLE/SCRIPT PLACEHOLDERS WITH NO OTHER ID REFERENCE',emptyPlaceholders);
+section('ZERO-BYTE FILES',zeroByte);
+section('SUSPICIOUS LEGACY/TEMP/BACKUP FILENAMES',suspiciousNames);
+section('CONSOLE.LOG/DEBUG COUNTS (REVIEW ONLY)',consoleLogs.sort());
