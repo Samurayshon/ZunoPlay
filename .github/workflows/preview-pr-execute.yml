@@ -1,0 +1,10 @@
+name: Preview PR Execute
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Execute PR creation' docs/ZUNOPLAY_PREVIEW_PR_EXECUTE.md
