@@ -1,0 +1,91 @@
+name: Zuno Stack Local Supabase Characterization
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - 'tests/zuno-stack-90-5-characterization.test.mjs'
+      - '.github/workflows/stack-local-supabase-characterization.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Inject proven pre-ledger baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_SOURCE='supabase/bootstrap/20260826130000_preledger_baseline.sql'
+          BOOTSTRAP_TARGET='supabase/migrations/20260826130000_preledger_baseline.sql'
+          test -f "$BOOTSTRAP_SOURCE"
+          test ! -e "$BOOTSTRAP_TARGET"
+          cp "$BOOTSTRAP_SOURCE" "$BOOTSTRAP_TARGET"
+
+      - name: Start disposable local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector
+
+      - name: Rebuild database from baseline and repository migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db reset --local --no-seed
+
+      - name: Run existing 90/5 source-contract characterization
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/zuno-stack-90-5-characterization.test.mjs
+
+      - name: Verify deployed Zuno Stack database contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          do $$
+          begin
+            if to_regprocedure('public.zuno_stack_apply_tile(uuid,bigint,text,text)') is null then
+              raise exception 'missing public.zuno_stack_apply_tile';
+            end if;
+            if to_regprocedure('public.zuno_stack_relay_send(uuid,bigint,text,integer)') is null then
+              raise exception 'missing public.zuno_stack_relay_send';
+            end if;
+            if to_regprocedure('public.zuno_stack_relay_take(uuid,bigint,text,integer)') is null then
+              raise exception 'missing public.zuno_stack_relay_take';
+            end if;
+            if to_regprocedure('public.zuno_stack_pulse_shift(uuid,bigint,text)') is null then
+              raise exception 'missing public.zuno_stack_pulse_shift';
+            end if;
+            if to_regprocedure('public.zuno_stack_hint(uuid,bigint,text)') is null then
+              raise exception 'missing public.zuno_stack_hint';
+            end if;
+            if to_regclass('public.zuno_stack_game_events') is null then
+              raise exception 'missing public.zuno_stack_game_events';
+            end if;
+          end
+          $$;
+          SQL
+
+      - name: Show local Supabase status on failure
+        if: failure()
+        run: supabase status || true
+
+      - name: Stop disposable local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
