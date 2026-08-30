@@ -1,0 +1,10 @@
+name: Preview PR The End
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  end:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'THE END. CREATE PR.' docs/ZUNOPLAY_PREVIEW_PR_THE_END.md
