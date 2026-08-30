@@ -1,0 +1,25 @@
+name: Preview Staging State Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_STAGING.md'
+      - 'scripts/vercel-preview-backend-guard.mjs'
+      - 'vercel.json'
+  push:
+    branches: [main]
+
+jobs:
+  staging-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert staging and production remain distinct
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'lqymrmionvvfbgfrdryo' docs/ZUNOPLAY_STAGING.md
+          grep -q 'rliymfbbhqoejgfvsbuu' docs/ZUNOPLAY_STAGING.md
+          if [ 'lqymrmionvvfbgfrdryo' = 'rliymfbbhqoejgfvsbuu' ]; then exit 1; fi
+          node scripts/vercel-preview-backend-guard.mjs --self-test
