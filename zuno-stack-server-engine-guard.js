@@ -3,7 +3,7 @@ if(window.__ZUNO_STACK_SERVER_ENGINE_GUARD__)return;window.__ZUNO_STACK_SERVER_E
 const q=new URLSearchParams(location.search),roomId=q.get('room')||sessionStorage.getItem('zunoplay_room_id')||'';
 if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(roomId||''))return;
 const safeKinds=new Set(['start','tile','undo','relay_send','relay_take','pulse_shift']);
-const serverPowerKind=/^power_(fluxo|troca|explosion|elo|fase|vortice|ima)$/;const serverPowerType=/^(fluxo|troca|explosion|elo|fase|vortice|ima)$/;
+const serverPowerKind=/^power_(fluxo|troca|explosion|elo|fase|vortice|ima|gelo)$/;const serverPowerType=/^(fluxo|troca|explosion|elo|fase|vortice|ima|gelo)$/;
 let wrapped=false,timer=0,lastNotice=0;
 function toast(t){const e=document.getElementById('toast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1500)}
 function notice(){const now=Date.now();if(now-lastNotice<1200)return;lastNotice=now;toast('Recurso avançado suspenso no coop até validação server-side.')}
