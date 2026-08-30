@@ -27,7 +27,7 @@ select jsonb_build_object(
    'active',true,'tiles',pg_temp.stack_tiles(p_trio),'tray',p_tray,'relay',jsonb_build_array(null,null,null),
    'score',0,'matches',0,'energy',p_energy,'seed',1,'startedAt',1,'undoLeft',1,'hintsLeft',2,
    'pulseEventCount',0,'doubleNext',false,'combo',0,'bestCombo',0,'lastMatchAt',0,'relayRev',0,'serverUndo',null
- ));
+  ));
 $$;
 
 create or replace procedure pg_temp.reset_fixture(p_tray jsonb default '[]'::jsonb, p_energy int default 0, p_trio boolean default false)
@@ -43,6 +43,7 @@ begin
   insert into auth.users(id,instance_id,aud,role,email,encrypted_password,email_confirmed_at,raw_app_meta_data,raw_user_meta_data,created_at,updated_at)
   values(u,'00000000-0000-0000-0000-000000000000','authenticated','authenticated','stack-qa@local.invalid','',now(),'{}'::jsonb,jsonb_build_object('username','stack_qa'),now(),now());
   insert into public.rooms(id,owner_id,name) values(r,u,'Stack QA Local');
+  perform set_config('request.jwt.claim.sub',u::text,true);
   insert into public.room_members(room_id,user_id) values(r,u);
   insert into public.zuno_stack_match_state(room_id,revision,state,updated_by) values(r,1,pg_temp.stack_state(p_tray,p_energy,p_trio),u);
 end;
