@@ -6,6 +6,7 @@ const html=fs.readFileSync('zuno-stack.html','utf8');
 const guard=fs.readFileSync('zuno-stack-fresh-round-guard.js','utf8');
 const migration=fs.readFileSync('supabase/migrations/20260830131500_add_stack_abandon_solo_round.sql','utf8');
 
+assert.match(games,/fromRoom=qp\.get\('from'\)==='sala',queryRoom=qp\.get\('room'\)\|\|'',roomId=queryRoom\|\|\(fromRoom\?sessionStorage\.getItem\('zunoplay_room_id'\)\|\|'':''\)/,'ordinary Games launches must ignore stale solo room session storage');
 assert.match(games,/if\(roomId\)\{u\.searchParams\.set\('room',roomId\);if\(fromRoom\)u\.searchParams\.set\('from','sala'\)\}else\{u\.searchParams\.set\('new','1'\)\}/,'catalog launch must mark only non-room games as fresh');
 assert.ok(html.indexOf('zuno-stack-fresh-round-guard.js?v=1')>0,'fresh round guard must be loaded');
 assert.ok(html.indexOf('zuno-stack-fresh-round-guard.js?v=1')<html.indexOf('zuno-stack-solo-authority-bootstrap.js?v=11'),'fresh guard must start before authority bootstrap completes');
