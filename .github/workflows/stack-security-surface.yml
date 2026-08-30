@@ -25,7 +25,6 @@ jobs:
           files=(supabase/migrations/*zuno_stack*.sql)
           test ${#files[@]} -gt 0
 
-          # Public Stack RPCs must never be introduced as SECURITY DEFINER.
           if grep -RIn --include='*zuno_stack*.sql' -E 'create[[:space:]]+or[[:space:]]+replace[[:space:]]+function[[:space:]]+public\.zuno_stack_[^(]+\([^;]*security[[:space:]]+definer' supabase/migrations; then
             echo 'Public Zuno Stack SECURITY DEFINER wrapper detected'
             exit 1
@@ -46,8 +45,6 @@ jobs:
             grep -Riq "function public\.${fn}" supabase/migrations || { echo "Missing public Stack RPC: $fn"; exit 1; }
           done
 
-          # Dedicated authority wrappers must revoke public/anon. SQL functions are INVOKER by default;
-          # explicit SECURITY INVOKER is accepted but not required.
           for f in \
             supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql \
             supabase/migrations/20260830034500_server_authoritative_zuno_stack_fluxo_troca.sql \
@@ -57,7 +54,6 @@ jobs:
             grep -Eqi 'revoke[[:space:]]+(all|execute)[[:space:]]+on[[:space:]]+function[[:space:]]+public\.zuno_stack_' "$f" || { echo "public/anon revoke missing: $f"; exit 1; }
           done
 
-          # Privileged mutation implementations stay out of the public API schema.
           grep -Riq 'function zuno_private.zuno_stack_apply_tile_internal' supabase/migrations
           grep -Riq 'function zuno_private.zuno_stack_apply_undo_internal' supabase/migrations
           grep -Riq 'function zuno_private.zuno_stack_apply_relay_internal' supabase/migrations
@@ -67,7 +63,6 @@ jobs:
           grep -Riq 'function zuno_private.zuno_stack_apply_gelo_internal' supabase/migrations
           grep -Riq 'function zuno_private.zuno_stack_apply_desfazer_internal' supabase/migrations
 
-          # Auth and room authorization must remain explicit in privileged action functions.
           for f in \
             supabase/migrations/20260830033601_server_authoritative_zuno_stack_hint.sql \
             supabase/migrations/20260830035500_server_authoritative_zuno_stack_board_powers.sql \
@@ -78,5 +73,15 @@ jobs:
             grep -q 'owner_id' "$f" || { echo "room owner guard missing: $f"; exit 1; }
             grep -Eqi "set[[:space:]]+search_path[[:space:]]*=[[:space:]]*''" "$f" || { echo "fixed search_path missing: $f"; exit 1; }
           done
+
+          reward_guard='supabase/migrations/20260830043411_block_client_zuno_stack_reward_state_mutation.sql'
+          test -s "$reward_guard"
+          grep -q 'reject_client_stack_reward_system_write' "$reward_guard"
+          grep -qi 'security invoker' "$reward_guard"
+          grep -q "stack_server_reward_state_required" "$reward_guard"
+          grep -q "metaDone" "$reward_guard"
+          grep -q "comboRewards" "$reward_guard"
+          grep -q "metaSurgeUntil" "$reward_guard"
+          grep -q 'trg_zuno_stack_reward_system_required' "$reward_guard"
 
           echo 'Zuno Stack RPC security surface guarded'
