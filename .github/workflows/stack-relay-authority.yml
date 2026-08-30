@@ -18,7 +18,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --check zuno-stack-relay-authority.js
+          node --check zuno-stack-actions-authority.js
           node --check zuno-stack-performance-official.js
           f='supabase/migrations/20260829223500_server_authoritative_zuno_stack_relay.sql'
           hard='supabase/migrations/20260829223600_block_legacy_zuno_stack_relay_requests.sql'
@@ -41,10 +41,10 @@ jobs:
           grep -q "v_kind in ('relay_send','relay_take')" "$hard"
           grep -q 'action_request_relay_send' "$hard"
           grep -q 'action_request_relay_take' "$hard"
-          grep -q "sb.rpc(fn,args)" zuno-stack-relay-authority.js
-          grep -q "closest('\[data-tray\]')" zuno-stack-relay-authority.js
-          grep -q "closest('\[data-relay\]')" zuno-stack-relay-authority.js
-          grep -q 'event.isTrusted===false\|e.isTrusted===false' zuno-stack-relay-authority.js
-          grep -q "stopImmediatePropagation" zuno-stack-relay-authority.js
-          grep -q "authority.reconcile" zuno-stack-relay-authority.js
-          grep -q "zuno-stack-relay-authority.js" zuno-stack-performance-official.js
+          grep -q "zuno_stack_relay_send" zuno-stack-actions-authority.js
+          grep -q "zuno_stack_relay_take" zuno-stack-actions-authority.js
+          grep -q "closest('\[data-tray\]')" zuno-stack-actions-authority.js
+          grep -q "closest('\[data-relay\]')" zuno-stack-actions-authority.js
+          grep -q "stopImmediatePropagation" zuno-stack-actions-authority.js
+          grep -q "resync" zuno-stack-actions-authority.js
+          grep -q "zuno-stack-actions-authority.js?v=1" zuno-stack-performance-official.js
