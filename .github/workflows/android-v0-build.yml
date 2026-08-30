@@ -41,22 +41,25 @@ jobs:
       - name: Build debug APK
         run: gradle -p android-v0 assembleDebug --stacktrace
 
-      - name: Verify APK metadata
+      - name: Verify APK metadata and resolve version
         run: |
           APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
+
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
+          VERSION_CODE=$(sed -n 's/.*versionCode \([0-9][0-9]*\).*/\1/p' android-v0/app/build.gradle | head -n 1)
+          test -n "$VERSION_NAME"
+          test -n "$VERSION_CODE"
+
           AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
           "$AAPT" dump badging "$APK" | tee android-apk-badging.txt
-          grep -q "package: name='com.zunoplay.app' versionCode='4' versionName='0.0.3'" android-apk-badging.txt
+          grep -q "package: name='com.zunoplay.app' versionCode='${VERSION_CODE}' versionName='${VERSION_NAME}'" android-apk-badging.txt
           grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
 
-      - name: Resolve APK version
-        run: |
-          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
-          test -n "$VERSION_NAME"
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
           echo "APK_NAME=ZunoPlay-${VERSION_NAME}-debug.apk" >> "$GITHUB_ENV"
-          cp android-v0/app/build/outputs/apk/debug/app-debug.apk "ZunoPlay-${VERSION_NAME}-debug.apk"
+          cp "$APK" "ZunoPlay-${VERSION_NAME}-debug.apk"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -104,5 +107,5 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK_NAME" --clobber
           else
-            gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste. Build, metadados e smoke test de runtime em Android 14 validados pelo CI antes da publicação."
+            gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste. Build, metadados, safe areas e smoke test de runtime em Android 14 validados pelo CI antes da publicação."
           fi
