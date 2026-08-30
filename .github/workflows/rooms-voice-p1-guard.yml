@@ -39,10 +39,10 @@ jobs:
       - name: Guard private invite and host lifecycle migrations
         run: |
           set -euo pipefail
-          f='supabase/migrations/20260829223000_harden_rooms_voice_access.sql'
-          g='supabase/migrations/20260829223100_guard_voice_answer_direction.sql'
-          h='supabase/migrations/20260829223200_reject_membership_in_inactive_room.sql'
-          i='supabase/migrations/20260829223300_fix_room_join_trigger_for_invites.sql'
+          f='supabase/migrations/20260829173258_harden_rooms_voice_access.sql'
+          g='supabase/migrations/20260829173312_guard_voice_answer_direction.sql'
+          h='supabase/migrations/20260829173319_reject_membership_in_inactive_room.sql'
+          i='supabase/migrations/20260829173535_fix_room_join_trigger_for_invites.sql'
           test -s "$f"
           test -s "$g"
           test -s "$h"
