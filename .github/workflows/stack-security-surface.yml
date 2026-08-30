@@ -30,17 +30,7 @@ jobs:
             exit 1
           fi
 
-          required=(
-            zuno_stack_apply_tile
-            zuno_stack_apply_undo
-            zuno_stack_relay_send
-            zuno_stack_relay_take
-            zuno_stack_pulse_shift
-            zuno_stack_hint
-            zuno_stack_power
-            zuno_stack_gelo
-            zuno_stack_desfazer
-          )
+          required=(zuno_stack_apply_tile zuno_stack_apply_undo zuno_stack_relay_send zuno_stack_relay_take zuno_stack_pulse_shift zuno_stack_hint zuno_stack_power zuno_stack_gelo zuno_stack_desfazer)
           for fn in "${required[@]}"; do
             grep -Riq "function public\.${fn}" supabase/migrations || { echo "Missing public Stack RPC: $fn"; exit 1; }
           done
@@ -75,13 +65,26 @@ jobs:
           done
 
           reward_guard='supabase/migrations/20260830043411_block_client_zuno_stack_reward_state_mutation.sql'
-          test -s "$reward_guard"
-          grep -q 'reject_client_stack_reward_system_write' "$reward_guard"
-          grep -qi 'security invoker' "$reward_guard"
-          grep -q "stack_server_reward_state_required" "$reward_guard"
-          grep -q "metaDone" "$reward_guard"
-          grep -q "comboRewards" "$reward_guard"
-          grep -q "metaSurgeUntil" "$reward_guard"
+          power_guard='supabase/migrations/20260830043810_block_client_zuno_stack_power_state_mutation.sql'
+          timer_guard='supabase/migrations/20260830043900_block_client_zuno_stack_timer_state_mutation.sql'
+          for f in "$reward_guard" "$power_guard" "$timer_guard"; do
+            test -s "$f"
+            grep -qi 'security invoker' "$f"
+          done
+          grep -q 'stack_server_reward_state_required' "$reward_guard"
+          grep -q 'metaDone' "$reward_guard"
+          grep -q 'comboRewards' "$reward_guard"
+          grep -q 'metaSurgeUntil' "$reward_guard"
           grep -q 'trg_zuno_stack_reward_system_required' "$reward_guard"
+          grep -q 'stack_server_power_state_required' "$power_guard"
+          grep -q "serverPowers" "$power_guard"
+          grep -q "selected" "$power_guard"
+          grep -q "charges" "$power_guard"
+          grep -q 'trg_zuno_stack_power_system_required' "$power_guard"
+          grep -q 'stack_server_timer_state_required' "$timer_guard"
+          grep -q "serverTimer" "$timer_guard"
+          grep -q "deadlineAt" "$timer_guard"
+          grep -q "freezeUntil" "$timer_guard"
+          grep -q 'trg_zuno_stack_timer_system_required' "$timer_guard"
 
           echo 'Zuno Stack RPC security surface guarded'
