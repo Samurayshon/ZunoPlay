@@ -32,3 +32,22 @@ jobs:
         run: |
           if [ -n "$SUPABASE_ACCESS_TOKEN" ]; then echo "access_token_present=yes"; else echo "access_token_present=no"; fi
           if [ -n "$SUPABASE_DB_PASSWORD" ]; then echo "db_password_present=yes"; else echo "db_password_present=no"; fi
+
+  ledger-rest-capability:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://rliymfbbhqoejgfvsbuu.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0
+    steps:
+      - name: Test migration ledger REST exposure
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl -sS -o /tmp/ledger-response.txt -w '%{http_code}' \
+            "$SUPABASE_URL/rest/v1/schema_migrations?select=version,name&limit=1" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY" \
+            -H 'Accept-Profile: supabase_migrations')
+          echo "http_status=$status"
+          head -c 500 /tmp/ledger-response.txt || true
+          echo
