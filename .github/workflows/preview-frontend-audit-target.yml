@@ -1,0 +1,17 @@
+name: Preview Frontend Audit Target
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_FRONTEND.md'
+
+jobs:
+  audit-target:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'home-app.js' docs/ZUNOPLAY_PREVIEW_FRONTEND.md
+          grep -q 'login.html' docs/ZUNOPLAY_PREVIEW_FRONTEND.md
+          grep -q 'zuno-onboarding.js' docs/ZUNOPLAY_PREVIEW_FRONTEND.md
