@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: read
-  contents: write
+  contents: read
 
 jobs:
   reconcile:
@@ -17,59 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Analyze production ledger against repository migrations
-        run: node scripts/supabase-migration-reconciliation.mjs --json | tee migration-reconciliation-report.json
+      - name: Enforce exact production migration ledger
+        run: node scripts/supabase-migration-reconciliation.mjs --strict --json | tee migration-reconciliation-report.json
       - name: Upload reconciliation report
         uses: actions/upload-artifact@v4
         with:
           name: supabase-migration-reconciliation
           path: migration-reconciliation-report.json
-
-  materialize-production-ledger:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'phase0/migration-ledger-reconciliation'
-    runs-on: ubuntu-latest
-    env:
-      SUPABASE_URL: https://rliymfbbhqoejgfvsbuu.supabase.co
-      SUPABASE_PUBLISHABLE_KEY: sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Export production migration ledger through authenticated bridge
-        shell: bash
-        run: |
-          set -euo pipefail
-          status=$(curl -sS -o migration-ledger-export.json -w '%{http_code}' \
-            -X POST "$SUPABASE_URL/functions/v1/phase02-export-migration-ledger" \
-            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
-            -H "x-github-token: $GH_TOKEN" \
-            -H "x-github-run-id: $GITHUB_RUN_ID" \
-            -H "x-github-sha: ${{ github.event.pull_request.head.sha }}")
-          if [ "$status" != "200" ]; then
-            echo "ledger export failed with HTTP $status"
-            cat migration-ledger-export.json
-            exit 1
-          fi
-          node -e "const p=require('./migration-ledger-export.json'); if(p.count!==237) throw new Error('unexpected export count '+p.count); console.log('exported_migrations='+p.count)"
-      - name: Materialize exact production migrations
-        run: node scripts/materialize-supabase-production-migrations.mjs migration-ledger-export.json
-      - name: Enforce zero migration drift
-        run: node scripts/supabase-migration-reconciliation.mjs --strict --json | tee migration-reconciliation-strict.json
-      - name: Commit canonical migrations to reconciliation branch
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add supabase/migrations
-          if git diff --cached --quiet; then
-            echo 'canonical migrations already materialized'
-            exit 0
-          fi
-          git commit -m 'chore(db): restore canonical production migration ledger'
-          git push origin "HEAD:${GITHUB_HEAD_REF}"
