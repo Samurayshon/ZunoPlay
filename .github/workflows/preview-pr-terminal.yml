@@ -1,0 +1,10 @@
+name: Preview PR Terminal Marker
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  terminal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -q 'Terminal marker. PR next.' docs/ZUNOPLAY_PREVIEW_PR_TERMINAL.md
