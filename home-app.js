@@ -1,7 +1,9 @@
 (()=>{
   'use strict';
-  const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co';
-  const SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
+  const runtime=window.ZunoRuntimeConfig;
+  if(!runtime)throw new Error('zuno_runtime_config_missing');
+  const SUPABASE_URL=runtime.url;
+  const SUPABASE_KEY=runtime.key;
   const BOOT_TIMEOUT_MS=8000;
   const $=id=>document.getElementById(id);
   const loading=$('loading'),app=$('app'),welcomeScreen=$('welcomeScreen'),homeScreen=$('homeScreen');
