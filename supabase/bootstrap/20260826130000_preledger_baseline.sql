@@ -97,6 +97,20 @@ alter table public.messages enable row level security;
 alter table public.notifications enable row level security;
 alter table public.game_scores enable row level security;
 
+-- 20260826192646 later removes messages from supabase_realtime without any
+-- canonical migration adding it first. That makes this publication membership
+-- a proven pre-ledger dependency. room_messages/room_members are intentionally
+-- omitted here because 20260826135832/35838 add them explicitly.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname='supabase_realtime' and schemaname='public' and tablename='messages'
+  ) then
+    alter publication supabase_realtime add table public.messages;
+  end if;
+end $$;
+
 -- Compatibility shims for pre-ledger trigger functions referenced by the first
 -- hardening migration. Their historical bodies are not present in Git, so the
 -- bootstrap defines only the required signatures. Later canonical migrations
