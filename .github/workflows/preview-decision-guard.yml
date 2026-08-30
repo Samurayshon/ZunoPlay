@@ -1,0 +1,18 @@
+name: Preview Decision Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ZUNOPLAY_PREVIEW_DECISION.md'
+      - 'android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java'
+
+jobs:
+  decision:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          grep -q 'GitHub Pages como produção' docs/ZUNOPLAY_PREVIEW_DECISION.md
+          grep -q 'lqymrmionvvfbgfrdryo' docs/ZUNOPLAY_PREVIEW_DECISION.md
+          grep -q 'https://samurayshon.github.io/ZunoPlay/' android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java
