@@ -31,6 +31,9 @@ jobs:
           if (!sw.includes("'zuno-runtime-injected.js','zuno-runtime-config.js'")) throw new Error('Service Worker must classify runtime config as network-only');
           const placeholder=fs.readFileSync('zuno-runtime-injected.js','utf8');
           if (/supabase\.co|sb_publishable_|eyJ/.test(placeholder)) throw new Error('Committed runtime placeholder must not contain backend credentials/config');
+          const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'));
+          const protectedSources=new Set((vercel.headers||[]).filter(rule=>(rule.headers||[]).some(h=>h.key.toLowerCase()==='cache-control'&&/no-store/i.test(h.value))).map(rule=>rule.source));
+          for (const source of ['/zuno-runtime-injected.js','/zuno-runtime-config.js']) if(!protectedSources.has(source)) throw new Error(`${source}: Vercel response must be no-store`);
           EOF
       - name: Generate isolated preview runtime
         env:
