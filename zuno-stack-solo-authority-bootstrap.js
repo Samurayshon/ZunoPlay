@@ -3,7 +3,8 @@ if(window.__ZUNO_STACK_SOLO_AUTH_BOOT__)return;window.__ZUNO_STACK_SOLO_AUTH_BOO
 const q=new URLSearchParams(location.search),valid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v||''),queryRoom=q.get('room')||'';
 let solo=!valid(queryRoom),roomId=solo?(crypto?.randomUUID?.()||''):queryRoom;
 if(!valid(roomId))return;
-const persistRoom=()=>{window.__ZUNO_STACK_AUTHORITY_ROOM_ID__=roomId;try{sessionStorage.setItem('zunoplay_room_id',roomId)}catch(_){}};persistRoom();
+window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=false;
+const persistRoom=()=>{window.__ZUNO_STACK_AUTHORITY_ROOM_ID__=roomId;try{sessionStorage.setItem('zunoplay_room_id',roomId)}catch(_){}};
 const clearRoomParam=()=>{try{const u=new URL(location.href);u.searchParams.delete('room');history.replaceState(history.state,'',`${u.pathname}${u.search}${u.hash}`)}catch(_){}};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const SUPABASE_URL='https://rliymfbbhqoejgfvsbuu.supabase.co',SUPABASE_KEY='sb_publishable_E4go4X7yZ6d-aXnKAT-fWw_Y8uHIJT0';
@@ -46,8 +47,17 @@ async function ensureRoom(){
   }
   return createSoloRoom(sb,u)
 }
-function load(){return new Promise(resolve=>{if(window.__ZUNO_STACK_AUTHORITY_OFFICIAL__)return resolve(true);const s=document.createElement('script');s.src='zuno-stack-authority-official.js?v=9';s.onload=()=>resolve(true);s.onerror=()=>resolve(false);document.head.appendChild(s)})}
-async function boot(){const b=document.getElementById('start'),label=b?.textContent||'JOGAR AGORA';if(b){b.disabled=true;b.textContent='PREPARANDO PARTIDA SEGURA…'}const ok=await ensureRoom();if(ok)await load();for(let i=0;i<80&&!window.ZunoStackAuthority;i++)await sleep(100);if(b){b.disabled=!window.ZunoStackAuthority;b.textContent=window.ZunoStackAuthority?label:'SERVIDOR INDISPONÍVEL'}}
+async function load(){
+  window.__ZUNO_STACK_AUTHORITY_ROOM_READY__=true;
+  document.dispatchEvent(new CustomEvent('zuno:stack-authority-room-ready',{detail:{roomId}}));
+  try{window.ZunoStackLoadAuthorityModules?.()}catch(_){}
+  if(!window.__ZUNO_STACK_AUTHORITY_OFFICIAL__&&!document.querySelector('script[data-zso-authority]')){
+    const s=document.createElement('script');s.src='zuno-stack-authority-official.js?v=10';s.dataset.zsoAuthority='1';document.head.appendChild(s)
+  }
+  for(let i=0;i<80&&!window.ZunoStackAuthority;i++)await sleep(100);
+  return !!window.ZunoStackAuthority
+}
+async function boot(){const b=document.getElementById('start'),label=b?.textContent||'JOGAR AGORA';if(b){b.disabled=true;b.textContent='PREPARANDO PARTIDA SEGURA…'}const ok=await ensureRoom();if(ok)await load();if(b){b.disabled=!window.ZunoStackAuthority;b.textContent=window.ZunoStackAuthority?label:'SERVIDOR INDISPONÍVEL'}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 window.addEventListener('pagehide',()=>{if(solo)try{sessionStorage.removeItem('zunoplay_room_id')}catch(_){}})
 })();

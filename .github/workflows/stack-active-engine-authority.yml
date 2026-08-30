@@ -41,6 +41,6 @@ jobs:
           import pathlib
           text=pathlib.Path('zuno-stack.html').read_text()
           guard=text.index('zuno-stack-server-engine-guard.js?v=1')
-          systems=text.index('zuno-stack-performance-official.js?v=88d9e80')
+          systems=text.index('zuno-stack-performance-official.js?v=')
           if guard>=systems: raise SystemExit('engine guard must load before performance/systems')
           PY

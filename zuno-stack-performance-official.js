@@ -20,12 +20,19 @@ function loadOfficialModules(){
  loadCss('zuno-stack-combo-chain.css?v=d391dac','zsoComboChain');loadJs('zuno-stack-combo-chain.js?v=6cb6e95','zsoComboChain');
  loadCss('zuno-stack-relay-v2-official.css?v=435e897','zsoRelayV2');loadJs('zuno-stack-relay-v2-official.js?v=e035b07','zsoRelayV2');
  loadJs('zuno-stack-systems-official.js?v=43fac9d','zsoSystems');
- loadJs('zuno-stack-authority-official.js?v=12a3532','zsoAuthority');
+ loadJs('zuno-stack-integrity-official.js?v=673cd4f','zsoIntegrity');
+}
+function loadAuthorityModules(){
+ if(!window.__ZUNO_STACK_AUTHORITY_ROOM_READY__||!window.__ZUNO_STACK_AUTHORITY_ROOM_ID__)return false;
+ loadJs('zuno-stack-authority-official.js?v=10','zsoAuthority');
  loadJs('zuno-stack-relay-authority.js?v=1','zsoRelayAuthority');
  loadJs('zuno-stack-pulse-authority.js?v=1','zsoPulseAuthority');
  loadJs('zuno-stack-hint-authority.js?v=1','zsoHintAuthority');
  loadJs('zuno-stack-power-authority.js?v=1','zsoPowerAuthority');
- loadJs('zuno-stack-integrity-official.js?v=673cd4f','zsoIntegrity');
+ return true
 }
-loadOfficialModules();document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));
+window.ZunoStackLoadAuthorityModules=loadAuthorityModules;
+loadOfficialModules();
+if(!loadAuthorityModules())document.addEventListener('zuno:stack-authority-room-ready',loadAuthorityModules,{once:true});
+document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('zso-paused',document.hidden));
 })();
