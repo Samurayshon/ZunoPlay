@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const ledgerPath = path.join(root, 'supabase/reconciliation/production-migrations-20260830.csv');
+const reconciliationDir = path.join(root, 'supabase/reconciliation');
 const migrationsDir = path.join(root, 'supabase/migrations');
 const strict = process.argv.includes('--strict');
 const jsonOnly = process.argv.includes('--json');
@@ -30,15 +30,27 @@ function parseMigrationFilename(file) {
   return { file, version: match[1], name: match[2] };
 }
 
-if (!fs.existsSync(ledgerPath)) throw new Error(`missing ledger: ${ledgerPath}`);
+if (!fs.existsSync(reconciliationDir)) throw new Error(`missing reconciliation directory: ${reconciliationDir}`);
 if (!fs.existsSync(migrationsDir)) throw new Error(`missing migrations directory: ${migrationsDir}`);
 
-const production = parseCsv(fs.readFileSync(ledgerPath, 'utf8'));
+const ledgerPaths = fs.readdirSync(reconciliationDir)
+  .filter((file) => /^production-migrations-\d{8}\.csv$/.test(file))
+  .sort()
+  .map((file) => path.join(reconciliationDir, file));
+if (!ledgerPaths.length) throw new Error(`missing production migration ledger in ${reconciliationDir}`);
+
+const production = ledgerPaths
+  .flatMap((ledgerPath) => parseCsv(fs.readFileSync(ledgerPath, 'utf8')))
+  .sort((a, b) => a.version.localeCompare(b.version));
 const localFiles = fs.readdirSync(migrationsDir).filter((file) => file.endsWith('.sql')).sort();
 const local = localFiles.map(parseMigrationFilename);
 const invalidFilenames = localFiles.filter((_, index) => !local[index]);
 const parsedLocal = local.filter(Boolean);
 
+const duplicateProductionVersions = production
+  .map((row) => row.version)
+  .filter((version, index, all) => all.indexOf(version) !== index)
+  .filter((version, index, all) => all.indexOf(version) === index);
 const productionByVersion = new Map(production.map((row) => [row.version, row]));
 const localByVersion = new Map(parsedLocal.map((row) => [row.version, row]));
 const productionByName = new Map();
@@ -82,6 +94,7 @@ const summary = {
     count: production.length,
     firstVersion: production.at(0)?.version ?? null,
     lastVersion: production.at(-1)?.version ?? null,
+    files: ledgerPaths.map((ledgerPath) => path.basename(ledgerPath)),
   },
   localDirectory: { count: parsedLocal.length },
   classifications: {
@@ -93,6 +106,7 @@ const summary = {
     productionMissingExactFile: productionMissingExactFile.length,
     invalidFilenames: invalidFilenames.length,
     duplicateLocalVersions: duplicateLocalVersions.length,
+    duplicateProductionVersions: duplicateProductionVersions.length,
   },
   details: {
     versionNameMismatch,
@@ -102,6 +116,7 @@ const summary = {
     productionMissingExactFile,
     invalidFilenames,
     duplicateLocalVersions,
+    duplicateProductionVersions,
   },
 };
 
@@ -114,7 +129,7 @@ if (jsonOnly) {
 
 if (strict) {
   const c = summary.classifications;
-  const drift = c.versionNameMismatch + c.retimestampedUniqueName + c.retimestampedAmbiguousName + c.localOnly + c.productionMissingExactFile + c.invalidFilenames + c.duplicateLocalVersions;
+  const drift = c.versionNameMismatch + c.retimestampedUniqueName + c.retimestampedAmbiguousName + c.localOnly + c.productionMissingExactFile + c.invalidFilenames + c.duplicateLocalVersions + c.duplicateProductionVersions;
   if (drift > 0) {
     console.error(`Migration ledger drift detected (${drift} classified discrepancies).`);
     process.exit(1);
