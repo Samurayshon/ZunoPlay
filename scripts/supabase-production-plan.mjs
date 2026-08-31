@@ -142,8 +142,7 @@ for (const migration of local) {
 }
 
 for (const row of production) {
-  const localMatch = localByVersion.get(row.version);
-  if (!localMatch) {
+  if (!localByVersion.has(row.version)) {
     drift.push({
       type: 'production_migration_missing_local_file',
       version: row.version,
@@ -170,7 +169,7 @@ for (const migration of pending) {
   if (!/^\s*commit\s*;/im.test(sql)) {
     safetyErrors.push({ type: 'missing_commit', file: migration.file });
   }
-  if (/(^|[^[:alnum:]_])(drop[[:space:]]+(table|schema|database)|truncate[[:space:]]+table)/i.test(sql)) {
+  if (/(^|[^A-Za-z0-9_])(drop\s+(table|schema|database)|truncate\s+table)/i.test(sql)) {
     safetyErrors.push({ type: 'destructive_operation', file: migration.file });
   }
 }
@@ -181,11 +180,7 @@ if (remoteVersions) {
   const remoteSet = new Set(remoteVersions);
   const ledgerMissingRemotely = [...productionVersions].filter((version) => !remoteSet.has(version)).sort();
   const remoteMissingFromLedger = remoteVersions.filter((version) => !productionVersions.has(version)).sort();
-  remote = {
-    count: remoteVersions.length,
-    ledgerMissingRemotely,
-    remoteMissingFromLedger,
-  };
+  remote = { count: remoteVersions.length, ledgerMissingRemotely, remoteMissingFromLedger };
   for (const version of ledgerMissingRemotely) drift.push({ type: 'ledger_version_missing_remotely', version });
   for (const version of remoteMissingFromLedger) drift.push({ type: 'remote_version_missing_from_ledger', version });
 }
@@ -235,9 +230,7 @@ if (jsonOnly) {
   console.log(`Unknown approvals: ${unknownApprovals.length}`);
   console.log(`Drift: ${drift.length}`);
   console.log(`Safety errors: ${safetyErrors.length}`);
-  if (remote) {
-    console.log(`Remote versions: ${remote.count}`);
-  }
+  if (remote) console.log(`Remote versions: ${remote.count}`);
 }
 
 if (check && blockerCount > 0) {
