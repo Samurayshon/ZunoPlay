@@ -62,6 +62,7 @@ jobs:
               print('Duplicate entries in approved migration manifest.')
               sys.exit(31)
 
+          versions = []
           for name in entries:
               if not re.fullmatch(r'\d{14}_[A-Za-z0-9_-]+\.sql', name):
                   print(f'Invalid approved migration filename: {name}')
@@ -70,8 +71,15 @@ jobs:
               if not path.is_file() or path.stat().st_size == 0:
                   print(f'Approved migration is missing or empty: {name}')
                   sys.exit(33)
+              versions.append(name[:14])
 
-          changed_migrations = []
+          if len(versions) != len(set(versions)):
+              print('Duplicate migration version in approved manifest.')
+              sys.exit(36)
+          if versions != sorted(versions):
+              print('Approved migration manifest must be in ascending version order.')
+              sys.exit(37)
+
           if os.environ.get('EVENT_NAME') == 'pull_request':
               base = os.environ.get('BASE_SHA', '')
               head = os.environ.get('HEAD_SHA', '')
@@ -127,7 +135,7 @@ jobs:
           set -euo pipefail
           supabase db push --dry-run 2>&1 | tee supabase-production-dry-run.log
 
-      - name: Fail closed on any unapproved pending migration
+      - name: Require exact approved pending migration set
         if: steps.gate.outputs.release_required == 'true'
         shell: bash
         run: |
@@ -142,30 +150,21 @@ jobs:
               line = raw.strip()
               if line and not line.startswith('#'):
                   approved_names.append(line)
-          approved_versions = {name[:14]: name for name in approved_names}
+          approved_versions = [name[:14] for name in approved_names]
+
           text = Path('supabase-production-dry-run.log').read_text(errors='replace')
-          observed_versions = []
+          observed = []
           for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', text):
-              if version not in observed_versions:
-                  observed_versions.append(version)
+              if version not in observed:
+                  observed.append(version)
 
-          unapproved = [v for v in observed_versions if v not in approved_versions]
-          pending_approved = [v for v in observed_versions if v in approved_versions]
-
-          if unapproved:
-              print('FAIL-CLOSED: dry-run contains migration version(s) not in the approved manifest:')
-              for version in unapproved:
-                  print(f'  - {version}')
+          if observed != approved_versions:
+              print('FAIL-CLOSED: dry-run does not match the approved manifest exactly.')
+              print('Approved:', ', '.join(approved_versions) if approved_versions else '<none>')
+              print('Observed:', ', '.join(observed) if observed else '<none>')
               sys.exit(40)
 
-          if not pending_approved:
-              print('No approved pending migration versions were detected in the dry-run.')
-              sys.exit(41)
-
-          print('Approved pending migration versions detected:')
-          for version in pending_approved:
-              print(f'  - {approved_versions[version]}')
-          print('supabase_production_dry_run_approved_only_ok')
+          print('supabase_production_dry_run_exact_approved_set_ok')
           PY
 
       - name: Upload dry-run evidence
