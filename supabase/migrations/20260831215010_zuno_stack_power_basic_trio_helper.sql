@@ -45,8 +45,9 @@ begin
   end if;
   v_def := v_new;
 
-  -- troca: after the deterministic tile/tray type swap, resolve any resulting
-  -- trio through the same canonical helper used by tile and relay engines.
+  -- Both characterized Board Power tray-trio sites have the same normalized
+  -- function text. PostgreSQL replace() is global, so one fail-closed rewrite
+  -- must replace both occurrences at once; verify exactly two helper calls.
   v_old := $old$    select count(*) into v_type_count from jsonb_array_elements_text(v_tray) e(val) where e.val=v_incoming;
     if v_type_count>=3 then
       select array_agg(s.ord::integer) into v_remove_ord from (select e.ord from jsonb_array_elements_text(v_tray) with ordinality e(val,ord) where e.val=v_incoming order by e.ord desc limit 3) s;
@@ -60,29 +61,10 @@ begin
       v_match_delta:=1; v_score:=zuno_private.zuno_stack_cap_score(v_score+310);
     end if;$new$;
   v_new := replace(v_def, v_old, v_replacement);
-  if v_new = v_def then
-    raise exception 'stack_power_basic_trio_troca_anchor_missing';
-  end if;
-  v_def := v_new;
-
-  -- elo/fase/ima: after the selected tile type enters the tray, resolve the
-  -- resulting trio through the same helper. Target selection and tile removal
-  -- stay untouched in this caller.
-  v_old := $old$    select count(*) into v_type_count from jsonb_array_elements_text(v_tray) e(val) where e.val=v_incoming;
-    if v_type_count>=3 then
-      select array_agg(s.ord::integer) into v_remove_ord from (select e.ord from jsonb_array_elements_text(v_tray) with ordinality e(val,ord) where e.val=v_incoming order by e.ord desc limit 3) s;
-      select coalesce(jsonb_agg(to_jsonb(e.val) order by e.ord),'[]'::jsonb) into v_tray from jsonb_array_elements_text(v_tray) with ordinality e(val,ord) where not (e.ord::integer=any(v_remove_ord));
-      v_match_delta:=1; v_energy:=least(5,v_energy+1); v_score:=zuno_private.zuno_stack_cap_score(v_score+310);
-    end if;$old$;
-  v_replacement := $new$    select r->'tray',(r->>'matches')::integer,(r->>'energy')::integer,(r->>'combo')::integer,(r->>'bestCombo')::integer,(r->>'lastMatchAt')::bigint,(r->>'matched')::boolean
-      into v_tray,v_matches,v_energy,v_combo,v_best,v_last,v_basic_trio_resolved
-      from (select zuno_private.zuno_stack_resolve_basic_trio(v_tray,v_incoming,v_matches,v_energy,v_combo,v_best,v_last,v_now) r) q;
-    if v_basic_trio_resolved then
-      v_match_delta:=1; v_score:=zuno_private.zuno_stack_cap_score(v_score+310);
-    end if;$new$;
-  v_new := replace(v_def, v_old, v_replacement);
-  if v_new = v_def then
-    raise exception 'stack_power_basic_trio_board_power_anchor_missing';
+  if v_new = v_def
+     or regexp_count(v_new, 'if v_type_count>=3 then') <> 0
+     or regexp_count(v_new, 'zuno_private\.zuno_stack_resolve_basic_trio\(') <> 2 then
+    raise exception 'stack_power_basic_trio_trio_anchors_invalid';
   end if;
   v_def := v_new;
 
