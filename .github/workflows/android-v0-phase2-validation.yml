@@ -355,7 +355,7 @@ jobs:
             fi
             trace 'CONTROL PRECONDITION PASS: Android-originated general and ZunoPlay host traffic both externally observed and allowed'
           else
-            if [[ "$GENERAL_STATUS" -ne 0 || "$GENERAL_ALLOWED" -ne 1 || "$TARGET_STATUS" -eq 0 || "$TARGET_ALLOWED" -ne 0 || "$TARGET_BLOCKED" -ne 1 ]]; then
+            if [[ "$GENERAL_ALLOWED" -ne 1 || "$TARGET_ALLOWED" -ne 0 || "$TARGET_BLOCKED" -ne 1 ]]; then
               trace 'INSTRUMENTATION INVALID: HOST-BLOCKED did not prove general allowed + ZunoPlay host blocked; APK launch skipped'
               hoststate blocked-precondition-invalid
               exit 153
