@@ -28,7 +28,7 @@ begin
     raise exception 'power_basic_trio_catalog_helper_count';
   end if;
 
-  if regexp_count(v_def, "zuno_stack_resolve_basic_trio\(v_tray,v_incoming,v_matches,v_energy,v_combo,v_best,v_last,v_now\)") <> 2 then
+  if regexp_count(v_def, 'zuno_stack_resolve_basic_trio\(v_tray,v_incoming,v_matches,v_energy,v_combo,v_best,v_last,v_now\)') <> 2 then
     raise exception 'power_basic_trio_catalog_helper_scope';
   end if;
 
@@ -37,7 +37,7 @@ begin
     raise exception 'power_basic_trio_catalog_explosion_separation';
   end if;
 
-  if position("elsif p_power='explosion' then" in v_def) = 0
+  if position($needle$elsif p_power='explosion' then$needle$ in v_def) = 0
      or position('v_match_delta:=1; v_energy:=least(5,v_energy+1); v_score:=zuno_private.zuno_stack_cap_score(v_score+450);' in v_def) = 0 then
     raise exception 'power_basic_trio_catalog_explosion_contract';
   end if;
