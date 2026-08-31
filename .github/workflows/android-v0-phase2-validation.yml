@@ -14,7 +14,7 @@ permissions:
 jobs:
   validate-android-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout exact Phase 2 SHA
         uses: actions/checkout@v4
@@ -80,9 +80,155 @@ jobs:
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
 
-      - name: Prepare repaired host-isolation probe
+      - name: Prepare runner-observed network isolation probe
         shell: bash
         run: |
+          cat > /tmp/zunoplay-proxy.py <<'PY'
+          import argparse
+          import asyncio
+          from datetime import datetime, timezone
+
+          parser = argparse.ArgumentParser()
+          parser.add_argument('--mode', choices=['control', 'host-blocked'], required=True)
+          parser.add_argument('--port', type=int, default=8899)
+          parser.add_argument('--log', required=True)
+          args = parser.parse_args()
+
+          TARGET = 'samurayshon.github.io'
+
+          def log(message):
+              stamp = datetime.now(timezone.utc).isoformat()
+              with open(args.log, 'a', encoding='utf-8') as fh:
+                  fh.write(f'{stamp} | {message}\n')
+                  fh.flush()
+
+          async def tunnel(reader_a, writer_a, reader_b, writer_b):
+              async def pump(reader, writer):
+                  try:
+                      while True:
+                          data = await reader.read(65536)
+                          if not data:
+                              break
+                          writer.write(data)
+                          await writer.drain()
+                  except Exception:
+                      pass
+                  finally:
+                      try:
+                          writer.close()
+                      except Exception:
+                          pass
+              await asyncio.gather(
+                  pump(reader_a, writer_b),
+                  pump(reader_b, writer_a),
+                  return_exceptions=True,
+              )
+
+          async def handle(client_reader, client_writer):
+              peer = client_writer.get_extra_info('peername')
+              try:
+                  first = await asyncio.wait_for(client_reader.readline(), timeout=10)
+                  if not first:
+                      client_writer.close()
+                      return
+                  line = first.decode('latin1', 'replace').strip()
+                  parts = line.split()
+                  if len(parts) < 2:
+                      log(f'INVALID peer={peer} line={line!r}')
+                      client_writer.close()
+                      return
+                  method, target = parts[0].upper(), parts[1]
+                  headers = []
+                  while True:
+                      raw = await asyncio.wait_for(client_reader.readline(), timeout=10)
+                      if not raw or raw in (b'\r\n', b'\n'):
+                          break
+                      headers.append(raw)
+
+                  if method == 'CONNECT':
+                      host, _, port_text = target.rpartition(':')
+                      if not host:
+                          host, port_text = target, '443'
+                      port = int(port_text or '443')
+                      blocked = args.mode == 'host-blocked' and host.lower() == TARGET
+                      if blocked:
+                          log(f'CONNECT BLOCK peer={peer} host={host} port={port}')
+                          client_writer.write(b'HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
+                          await client_writer.drain()
+                          client_writer.close()
+                          return
+                      try:
+                          upstream_reader, upstream_writer = await asyncio.wait_for(
+                              asyncio.open_connection(host, port), timeout=10
+                          )
+                      except Exception as exc:
+                          log(f'CONNECT UPSTREAM_FAIL peer={peer} host={host} port={port} error={type(exc).__name__}:{exc}')
+                          client_writer.write(b'HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n')
+                          await client_writer.drain()
+                          client_writer.close()
+                          return
+                      log(f'CONNECT ALLOW peer={peer} host={host} port={port}')
+                      client_writer.write(b'HTTP/1.1 200 Connection Established\r\n\r\n')
+                      await client_writer.drain()
+                      await tunnel(client_reader, client_writer, upstream_reader, upstream_writer)
+                      return
+
+                  log(f'HTTP UNSUPPORTED peer={peer} method={method} target={target}')
+                  client_writer.write(b'HTTP/1.1 501 Not Implemented\r\nConnection: close\r\n\r\n')
+                  await client_writer.drain()
+                  client_writer.close()
+              except Exception as exc:
+                  log(f'CLIENT_ERROR peer={peer} error={type(exc).__name__}:{exc}')
+                  try:
+                      client_writer.close()
+                  except Exception:
+                      pass
+
+          async def main():
+              server = await asyncio.start_server(handle, '0.0.0.0', args.port)
+              log(f'PROXY_READY mode={args.mode} port={args.port} target={TARGET}')
+              async with server:
+                  await server.serve_forever()
+
+          asyncio.run(main())
+          PY
+
+          cat > /tmp/NetProbe.java <<'JAVA'
+          import java.net.HttpURLConnection;
+          import java.net.URL;
+
+          public final class NetProbe {
+              public static void main(String[] args) throws Exception {
+                  if (args.length != 1) throw new IllegalArgumentException("url required");
+                  System.setProperty("http.proxyHost", "10.0.2.2");
+                  System.setProperty("http.proxyPort", "8899");
+                  System.setProperty("https.proxyHost", "10.0.2.2");
+                  System.setProperty("https.proxyPort", "8899");
+                  URL url = new URL(args[0]);
+                  HttpURLConnection c = (HttpURLConnection) url.openConnection();
+                  c.setConnectTimeout(8000);
+                  c.setReadTimeout(8000);
+                  c.setInstanceFollowRedirects(false);
+                  c.setRequestProperty("User-Agent", "ZunoPlay-Phase2-NetProbe/1");
+                  try {
+                      int code = c.getResponseCode();
+                      System.out.println("NETPROBE_OK url=" + args[0] + " code=" + code);
+                  } catch (Throwable t) {
+                      System.out.println("NETPROBE_FAIL url=" + args[0] + " type=" + t.getClass().getName() + " message=" + t.getMessage());
+                      throw t;
+                  } finally {
+                      c.disconnect();
+                  }
+              }
+          }
+          JAVA
+
+          mkdir -p /tmp/netprobe-classes /tmp/netprobe-dex
+          javac -source 8 -target 8 -d /tmp/netprobe-classes /tmp/NetProbe.java
+          "${ANDROID_HOME}/build-tools/35.0.0/d8" --output /tmp/netprobe-dex /tmp/netprobe-classes/NetProbe.class
+          (cd /tmp/netprobe-dex && zip -q /tmp/netprobe.jar classes.dex)
+          test -s /tmp/netprobe.jar
+
           cat > /tmp/zunoplay-host-probe.sh <<'BASH'
           #!/usr/bin/env bash
           set -uo pipefail
@@ -91,25 +237,25 @@ jobs:
           APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           PACKAGE='com.zunoplay.app'
           ACTIVITY='com.zunoplay.app/.MainActivity'
-          HOST='samurayshon.github.io'
-          GENERAL_HOST='example.com'
-          PREFIX="android-host-${MODE}"
+          GENERAL_URL='https://example.com/'
+          TARGET_URL='https://samurayshon.github.io/ZunoPlay/'
+          TARGET_HOST='samurayshon.github.io'
+          PREFIX="android-proxy-${MODE}"
           TRACE="${PREFIX}-trace.txt"
           LIVE="${PREFIX}-liveness.txt"
           LOGCAT="${PREFIX}-logcat-continuous.txt"
           WEBVIEW="${PREFIX}-webview-state.txt"
-          NETWORK="${PREFIX}-network-state.txt"
-          METHOD_FILE='android-host-connectivity-method.txt'
+          PROXY_LOG="${PREFIX}-runner-proxy.txt"
+          NETPROBE_LOG="${PREFIX}-android-netprobe.txt"
+          PROXY_PID=''
           LOGCAT_PID=''
-          BLOCKED_V4=''
-          BLOCKED_V6=''
 
           trace(){ printf '%s | %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$TRACE"; }
 
           cleanup(){
             [[ -n "$LOGCAT_PID" ]] && kill "$LOGCAT_PID" >/dev/null 2>&1 || true
-            for ip in $BLOCKED_V4; do sudo iptables -D OUTPUT -d "$ip" -j REJECT >/dev/null 2>&1 || true; done
-            for ip in $BLOCKED_V6; do sudo ip6tables -D OUTPUT -d "$ip" -j REJECT >/dev/null 2>&1 || true; done
+            [[ -n "$PROXY_PID" ]] && kill "$PROXY_PID" >/dev/null 2>&1 || true
+            timeout 5s adb shell settings put global http_proxy :0 >/dev/null 2>&1 || true
           }
           trap cleanup EXIT
 
@@ -144,73 +290,24 @@ jobs:
             {
               echo '=== UTC ==='; date -u
               echo '=== qemu ==='; pgrep -af 'qemu-system|emulator.*-avd' || true
-              echo '=== listeners ==='; ss -ltnp 2>/dev/null | grep -E ':(5037|5554)\b' || true
+              echo '=== listeners ==='; ss -ltnp 2>/dev/null | grep -E ':(5037|5554|8899)\b' || true
               echo '=== adb ==='; timeout 5s adb devices -l || true
               echo '=== adb get-state ==='; timeout 5s adb get-state || true
               echo '=== adb shell ==='; timeout 5s adb shell true; echo "exit=$?"
+              echo '=== system proxy ==='; timeout 5s adb shell settings get global http_proxy || true
               echo '=== coredumps ==='; coredumpctl --no-pager list 2>&1 | tail -n 80 || true
               echo '=== qemu coredump ==='; coredumpctl --no-pager info qemu-system-x86_64-headless 2>&1 | tail -n 180 || true
             } > "$out" 2>&1
           }
 
-          guest_has(){ timeout 5s adb shell "command -v $1" >/dev/null 2>&1; }
-
-          connectivity_probe(){
-            local method="$1" host="$2"
-            case "$method" in
-              curl_https)
-                timeout 12s adb shell curl -fsS --connect-timeout 5 --max-time 8 "https://${host}/" >/dev/null 2>&1
-                ;;
-              wget_https)
-                timeout 12s adb shell wget -q -T 8 -O /dev/null "https://${host}/" >/dev/null 2>&1
-                ;;
-              toybox_wget_https)
-                timeout 12s adb shell toybox wget -q -T 8 -O /dev/null "https://${host}/" >/dev/null 2>&1
-                ;;
-              ping)
-                timeout 10s adb shell ping -c 1 -W 5 "$host" >/dev/null 2>&1
-                ;;
-              *)
-                return 2
-                ;;
-            esac
-          }
-
-          select_connectivity_method(){
-            local method
-            for method in curl_https wget_https toybox_wget_https ping; do
-              case "$method" in
-                curl_https) guest_has curl || continue ;;
-                wget_https) guest_has wget || continue ;;
-                toybox_wget_https) timeout 5s adb shell toybox --help 2>&1 | grep -qw wget || continue ;;
-                ping) guest_has ping || continue ;;
-              esac
-              trace "connectivity candidate=$method general=${GENERAL_HOST}"
-              connectivity_probe "$method" "$GENERAL_HOST" || continue
-              trace "connectivity candidate=$method target=${HOST}"
-              connectivity_probe "$method" "$HOST" || continue
-              printf '%s\n' "$method" > "$METHOD_FILE"
-              trace "connectivity method validated=$method (general+target both reachable in CONTROL)"
-              return 0
-            done
-            trace 'INSTRUMENTATION INVALID: no guest connectivity method could prove both general internet and target reachability'
-            return 1
-          }
-
-          network_check(){
-            local label="$1" method="${2:-}"
-            {
-              echo "=== $(date -u +%FT%TZ) $label ==="
-              echo '--- guest route ---'; timeout 5s adb shell ip route 2>&1 || true
-              echo '--- connectivity capabilities ---'
-              timeout 5s adb shell 'command -v curl; command -v wget; command -v ping; toybox --help 2>&1 | head -n 5' 2>&1 || true
-              echo "--- method=${method:-none} general=${GENERAL_HOST} ---"
-              if [[ -n "$method" ]]; then connectivity_probe "$method" "$GENERAL_HOST"; echo "exit=$?"; fi
-              echo "--- method=${method:-none} target=${HOST} ---"
-              if [[ -n "$method" ]]; then connectivity_probe "$method" "$HOST"; echo "exit=$?"; fi
-              echo '--- host resolved target ---'; getent ahosts "$HOST" 2>&1 || true
-              echo '--- iptables target rules ---'; sudo iptables -S OUTPUT 2>&1 | grep -F "$HOST" || true
-            } >> "$NETWORK" 2>&1
+          run_android_probe(){
+            local label="$1" url="$2" output status
+            set +e
+            output="$(timeout 20s adb shell "CLASSPATH=/data/local/tmp/netprobe.jar app_process /system/bin NetProbe '$url'" 2>&1 | tr -d '\r')"
+            status=$?
+            set -e
+            printf '%s | label=%s status=%s | %s\n' "$(date -u +%FT%TZ)" "$label" "$status" "$output" | tee -a "$NETPROBE_LOG"
+            return "$status"
           }
 
           trace "BEGIN mode=$MODE exact APK SHA 214010598fdf6fabc3bffd31a35f0381cdf449da"
@@ -219,45 +316,51 @@ jobs:
           timeout 30s adb wait-for-device
           timeout 10s adb shell true
           adb install -r "$APK" | tee -a "$TRACE"
+          adb push /tmp/netprobe.jar /data/local/tmp/netprobe.jar >/dev/null
           probe pre-network
 
-          METHOD=''
+          python3 /tmp/zunoplay-proxy.py --mode "$MODE" --port 8899 --log "$PROXY_LOG" &
+          PROXY_PID=$!
+          for _ in $(seq 1 30); do
+            ss -ltn 2>/dev/null | grep -qE ':8899\b' && break
+            sleep 0.2
+          done
+          ss -ltn 2>/dev/null | grep -qE ':8899\b' || { trace 'INSTRUMENTATION INVALID: runner proxy did not start'; exit 150; }
+          trace "runner proxy ready pid=$PROXY_PID mode=$MODE"
+
+          timeout 5s adb shell settings put global http_proxy 10.0.2.2:8899
+          PROXY_VALUE="$(timeout 5s adb shell settings get global http_proxy 2>/dev/null | tr -d '\r')"
+          trace "guest system proxy=$PROXY_VALUE"
+          [[ "$PROXY_VALUE" == '10.0.2.2:8899' ]] || { trace 'INSTRUMENTATION INVALID: guest system proxy not applied'; exit 151; }
+
+          GENERAL_STATUS=0
+          TARGET_STATUS=0
+          run_android_probe general "$GENERAL_URL" || GENERAL_STATUS=$?
+          run_android_probe target "$TARGET_URL" || TARGET_STATUS=$?
+          sleep 1
+
+          GENERAL_ALLOWED=0
+          TARGET_ALLOWED=0
+          TARGET_BLOCKED=0
+          grep -q 'CONNECT ALLOW .*host=example.com port=443' "$PROXY_LOG" && GENERAL_ALLOWED=1 || true
+          grep -q 'CONNECT ALLOW .*host=samurayshon.github.io port=443' "$PROXY_LOG" && TARGET_ALLOWED=1 || true
+          grep -q 'CONNECT BLOCK .*host=samurayshon.github.io port=443' "$PROXY_LOG" && TARGET_BLOCKED=1 || true
+          trace "prelaunch external proof general_status=$GENERAL_STATUS target_status=$TARGET_STATUS general_allowed=$GENERAL_ALLOWED target_allowed=$TARGET_ALLOWED target_blocked=$TARGET_BLOCKED"
+
           if [[ "$MODE" == 'control' ]]; then
-            if ! select_connectivity_method; then
-              network_check control-instrumentation-invalid ''
-              hoststate control-instrumentation-invalid
-              exit 140
+            if [[ "$GENERAL_STATUS" -ne 0 || "$TARGET_STATUS" -ne 0 || "$GENERAL_ALLOWED" -ne 1 || "$TARGET_ALLOWED" -ne 1 || "$TARGET_BLOCKED" -ne 0 ]]; then
+              trace 'INSTRUMENTATION INVALID: CONTROL did not prove Android-originated general+target connectivity through runner observer; APK launch skipped'
+              hoststate control-precondition-invalid
+              exit 152
             fi
-            METHOD="$(cat "$METHOD_FILE")"
-            network_check control-prelaunch "$METHOD"
-            connectivity_probe "$METHOD" "$GENERAL_HOST" || { trace 'INSTRUMENTATION INVALID: CONTROL general internet not reachable'; exit 141; }
-            connectivity_probe "$METHOD" "$HOST" || { trace 'INSTRUMENTATION INVALID: CONTROL target not reachable'; exit 142; }
-            trace "CONTROL PRECONDITION PASS method=$METHOD general=reachable target=reachable"
+            trace 'CONTROL PRECONDITION PASS: Android-originated general and ZunoPlay host traffic both externally observed and allowed'
           else
-            [[ -s "$METHOD_FILE" ]] || { trace 'INSTRUMENTATION INVALID: validated CONTROL method file missing'; hoststate method-missing; exit 143; }
-            METHOD="$(cat "$METHOD_FILE")"
-            connectivity_probe "$METHOD" "$GENERAL_HOST" || { trace 'INSTRUMENTATION INVALID: HOST-BLOCKED general internet not reachable before filtering'; network_check blocked-before-filter-invalid "$METHOD"; exit 144; }
-            connectivity_probe "$METHOD" "$HOST" || { trace 'INSTRUMENTATION INVALID: HOST-BLOCKED target not reachable before filtering'; network_check blocked-before-filter-invalid "$METHOD"; exit 145; }
-
-            mapfile -t V4 < <(getent ahostsv4 "$HOST" | awk '{print $1}' | sort -u)
-            mapfile -t V6 < <(getent ahostsv6 "$HOST" | awk '{print $1}' | sort -u)
-            ((${#V4[@]} > 0)) || { trace 'INSTRUMENTATION INVALID: no IPv4 addresses resolved'; exit 146; }
-            for ip in "${V4[@]}"; do sudo iptables -I OUTPUT 1 -d "$ip" -j REJECT; BLOCKED_V4+=" $ip"; done
-            for ip in "${V6[@]}"; do sudo ip6tables -I OUTPUT 1 -d "$ip" -j REJECT 2>/dev/null && BLOCKED_V6+=" $ip" || true; done
-            trace "HOST-BLOCKED rules installed IPv4:${BLOCKED_V4} IPv6:${BLOCKED_V6}"
-            network_check blocked-prelaunch "$METHOD"
-
-            GENERAL_STATUS=0
-            TARGET_STATUS=0
-            connectivity_probe "$METHOD" "$GENERAL_HOST" || GENERAL_STATUS=$?
-            connectivity_probe "$METHOD" "$HOST" || TARGET_STATUS=$?
-            trace "HOST-BLOCKED prelaunch proof method=$METHOD general_status=$GENERAL_STATUS target_status=$TARGET_STATUS"
-            if [[ "$GENERAL_STATUS" -ne 0 || "$TARGET_STATUS" -eq 0 ]]; then
-              trace 'INSTRUMENTATION INVALID: required general=reachable and target=blocked precondition not demonstrated; APK launch skipped'
+            if [[ "$GENERAL_STATUS" -ne 0 || "$GENERAL_ALLOWED" -ne 1 || "$TARGET_STATUS" -eq 0 || "$TARGET_ALLOWED" -ne 0 || "$TARGET_BLOCKED" -ne 1 ]]; then
+              trace 'INSTRUMENTATION INVALID: HOST-BLOCKED did not prove general allowed + ZunoPlay host blocked; APK launch skipped'
               hoststate blocked-precondition-invalid
-              exit 147
+              exit 153
             fi
-            trace "HOST-BLOCKED PRECONDITION PASS method=$METHOD general=reachable target=blocked"
+            trace 'HOST-BLOCKED PRECONDITION PASS: general internet allowed and only ZunoPlay host explicitly blocked by runner proxy'
           fi
 
           adb logcat -c || true
@@ -281,7 +384,7 @@ jobs:
             webview "post-launch-${SECOND}s"
             if ! shell_ok; then
               FREEZE=1
-              trace "freeze detected at iteration=${SECOND}; host/QEMU/ADB evidence captured independently"
+              trace "freeze detected at iteration=${SECOND}; QEMU/port/ADB state captured independently"
               hoststate "freeze-${SECOND}s"
               break
             fi
@@ -290,8 +393,8 @@ jobs:
           sleep 2
           probe final
           webview final
-          network_check final "$METHOD"
           hoststate final
+          cp "$PROXY_LOG" "${PREFIX}-runner-proxy-final.txt" || true
           tar -czf "${PREFIX}-crashdata.tgz" /tmp/android-runner 2>/dev/null || true
           if shell_ok; then timeout 10s adb logcat -d -v threadtime > "${PREFIX}-logcat-snapshot.txt" || true; fi
 
@@ -302,34 +405,35 @@ jobs:
           BASH
           chmod +x /tmp/zunoplay-host-probe.sh
           bash -n /tmp/zunoplay-host-probe.sh
+          python3 -m py_compile /tmp/zunoplay-proxy.py
 
-      - name: CONTROL ONLINE - validate connectivity then probe
+      - name: CONTROL ONLINE - externally prove Android traffic then probe
         id: control_probe
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 9
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          emulator-build: '15261927'
+          emulator-build: 15261927
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
           script: bash /tmp/zunoplay-host-probe.sh control
 
-      - name: HOST-BLOCKED - require valid isolation then probe
+      - name: HOST-BLOCKED - externally prove selective block then probe
         id: blocked_probe
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 9
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          emulator-build: '15261927'
+          emulator-build: 15261927
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
@@ -339,25 +443,21 @@ jobs:
         if: always()
         shell: bash
         run: |
-          printf 'control=%s\nhost_blocked=%s\n' '${{ steps.control_probe.outcome }}' '${{ steps.blocked_probe.outcome }}' | tee android-host-matrix-outcomes.txt
-          if [ -s android-host-connectivity-method.txt ]; then
-            printf 'connectivity_method=%s\n' "$(cat android-host-connectivity-method.txt)" | tee -a android-host-matrix-outcomes.txt
-          else
-            echo 'connectivity_method=UNVALIDATED' | tee -a android-host-matrix-outcomes.txt
-          fi
+          printf 'control=%s\nhost_blocked=%s\n' '${{ steps.control_probe.outcome }}' '${{ steps.blocked_probe.outcome }}' | tee android-proxy-matrix-outcomes.txt
 
-      - name: Enforce probe execution
+      - name: Enforce valid preconditions and probe execution
+        if: always()
         shell: bash
         run: |
           CONTROL='${{ steps.control_probe.outcome }}'
           BLOCKED='${{ steps.blocked_probe.outcome }}'
           echo "control=$CONTROL host_blocked=$BLOCKED"
-          if grep -Rqs 'INSTRUMENTATION INVALID' android-host-*-trace.txt 2>/dev/null; then
-            echo 'Host isolation instrumentation was invalid; no product conclusion is allowed.' >&2
+          if grep -Rqs 'INSTRUMENTATION INVALID' android-proxy-*-trace.txt 2>/dev/null; then
+            echo 'Network-isolation instrumentation was invalid; no product conclusion is allowed.' >&2
             exit 2
           fi
           if [ "$CONTROL" = success ] && [ "$BLOCKED" = success ]; then exit 0; fi
-          echo 'At least one valid host-isolation runtime probe failed; inspect diagnostics.' >&2
+          echo 'At least one valid runtime probe failed; inspect diagnostics.' >&2
           exit 1
 
       - name: Upload runtime diagnostics
@@ -367,9 +467,8 @@ jobs:
           name: ZunoPlay-Phase2-android-runtime-diagnostics
           path: |
             android-apk-badging.txt
-            android-host-connectivity-method.txt
-            android-host-matrix-outcomes.txt
-            android-host-*.txt
-            android-host-*.tgz
+            android-proxy-matrix-outcomes.txt
+            android-proxy-*.txt
+            android-proxy-*.tgz
           if-no-files-found: warn
           retention-days: 7
