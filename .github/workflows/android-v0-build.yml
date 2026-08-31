@@ -81,7 +81,7 @@ jobs:
           test -e /dev/kvm
           ls -l /dev/kvm
 
-      - name: Runtime smoke test on Android 14 (Ubuntu 22.04 KVM)
+      - name: Runtime smoke test on Android 14 (Ubuntu 22.04 KVM, Emulator 36.6.11)
         timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -89,6 +89,7 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          emulator-build: 15507667
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -memory 2048
           script: bash android-v0/ci/runtime-smoke.sh
@@ -99,6 +100,9 @@ jobs:
           {
             echo '=== adb devices -l ==='
             timeout 10s adb devices -l || true
+            echo
+            echo '=== emulator binary ==='
+            "$ANDROID_HOME/emulator/emulator" -version 2>&1 || true
             echo
             echo '=== emulator processes ==='
             ps -ef | grep -E '[e]mulator|[q]emu' || true
