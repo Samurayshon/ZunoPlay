@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             settings.setCacheMode(WebSettings.LOAD_DEFAULT);
             settings.setUseWideViewPort(true);
-            settings.setLoadWithOverviewMode(true);
+            settings.setLoadWithOverviewMode(false);
             settings.setSupportZoom(false);
             settings.setBuiltInZoomControls(false);
             settings.setDisplayZoomControls(false);
