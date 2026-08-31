@@ -103,6 +103,7 @@ const summary = {
     retimestampedUniqueName: retimestampedUniqueName.length,
     retimestampedAmbiguousName: retimestampedAmbiguousName.length,
     localOnly: localOnly.length,
+    genuinelyPending: localOnly.length,
     productionMissingExactFile: productionMissingExactFile.length,
     invalidFilenames: invalidFilenames.length,
     duplicateLocalVersions: duplicateLocalVersions.length,
@@ -113,6 +114,7 @@ const summary = {
     retimestampedUniqueName,
     retimestampedAmbiguousName,
     localOnly,
+    genuinelyPending: localOnly,
     productionMissingExactFile,
     invalidFilenames,
     duplicateLocalVersions,
@@ -129,9 +131,18 @@ if (jsonOnly) {
 
 if (strict) {
   const c = summary.classifications;
-  const drift = c.versionNameMismatch + c.retimestampedUniqueName + c.retimestampedAmbiguousName + c.localOnly + c.productionMissingExactFile + c.invalidFilenames + c.duplicateLocalVersions + c.duplicateProductionVersions;
-  if (drift > 0) {
-    console.error(`Migration ledger drift detected (${drift} classified discrepancies).`);
+  const structuralDrift = c.versionNameMismatch
+    + c.retimestampedUniqueName
+    + c.retimestampedAmbiguousName
+    + c.productionMissingExactFile
+    + c.invalidFilenames
+    + c.duplicateLocalVersions
+    + c.duplicateProductionVersions;
+  if (structuralDrift > 0) {
+    console.error(`Migration ledger drift detected (${structuralDrift} structural discrepancy/discrepancies).`);
     process.exit(1);
+  }
+  if (c.genuinelyPending > 0 && !jsonOnly) {
+    console.log(`Pending migrations outside the production ledger: ${c.genuinelyPending}.`);
   }
 }
