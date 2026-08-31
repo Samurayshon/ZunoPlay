@@ -1,0 +1,76 @@
+name: Android Phase 2 APK Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-android-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact Phase 2 SHA
+        uses: actions/checkout@v4
+        with:
+          ref: 214010598fdf6fabc3bffd31a35f0381cdf449da
+          persist-credentials: false
+
+      - name: Prove checked out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "214010598fdf6fabc3bffd31a35f0381cdf449da"
+          git rev-parse HEAD
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: android-v0/**/*.gradle*
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile validation APK
+        working-directory: android-v0
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew --no-daemon clean assembleDebug
+
+      - name: Validate APK metadata and provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android-v0/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          echo "source_sha=$(git rev-parse HEAD)"
+          echo "apk_sha256=$(sha256sum "$APK" | awk '{print $1}')"
+          ls -lh "$APK"
+
+      - name: Android 14 smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            set -euo pipefail
+            adb install -r android-v0/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -W -n com.zunoplay.app/.MainActivity
+            sleep 5
+            adb shell pidof com.zunoplay.app
+            adb shell dumpsys activity activities | grep -F 'com.zunoplay.app/.MainActivity'
+
+      - name: Upload validation APK artifact only
+        uses: actions/upload-artifact@v4
+        with:
+          name: zunoplay-phase2-sha-214010598-apk
+          path: android-v0/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
