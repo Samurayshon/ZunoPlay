@@ -1,0 +1,27 @@
+name: Supabase Stack Ledger Equivalence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/zuno-stack-ledger-equivalences.json'
+      - 'scripts/supabase-migration-reconciliation.mjs'
+      - 'supabase/migrations/**'
+      - 'supabase/reconciliation/**'
+      - 'tests/supabase-stack-ledger-equivalence.test.mjs'
+      - '.github/workflows/supabase-stack-ledger-equivalence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate canonical Stack ledger equivalences
+        run: node --test tests/supabase-stack-ledger-equivalence.test.mjs
+      - name: Reconcile migration ledger strictly
+        run: node scripts/supabase-migration-reconciliation.mjs --strict
