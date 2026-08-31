@@ -3,27 +3,54 @@ name: Android Phase 2 APK Validation
 on:
   workflow_dispatch:
   push:
-    branches:
-      - fix/mobile-scroll-p1-phase2-v350
-    paths:
-      - '.github/workflows/android-v0-phase2-validation.yml'
+    branches: [fix/mobile-scroll-p1-phase2-v350]
+    paths: ['.github/workflows/android-v0-phase2-validation.yml']
 
 permissions:
   contents: read
 
 jobs:
-  isolate-avatar-raster:
+  webview-resource-bisect:
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [control, no-avatar-js, no-home-dynamic, no-samehost-css, no-samehost-js]
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 20
+    env:
+      MODE: ${{ matrix.mode }}
     steps:
-      - name: Checkout exact Phase 2 SHA
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: 214010598fdf6fabc3bffd31a35f0381cdf449da
           persist-credentials: false
 
-      - name: Prove source
-        run: test "$(git rev-parse HEAD)" = "214010598fdf6fabc3bffd31a35f0381cdf449da"
+      - name: Prove source and apply transient resource filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "214010598fdf6fabc3bffd31a35f0381cdf449da"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          mode=os.environ['MODE']
+          p=Path('android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java')
+          s=p.read_text()
+          s=s.replace('import android.webkit.WebResourceRequest;\n', 'import android.webkit.WebResourceRequest;\nimport android.webkit.WebResourceResponse;\nimport java.io.ByteArrayInputStream;\n')
+          rules={
+            'control':'false',
+            'no-avatar-js':'path.endsWith("/avatar-renderer.js") || path.endsWith("/avatar-home-sync.js")',
+            'no-home-dynamic':'path.endsWith("/zuno-home-v2.js") || path.endsWith("/zuno-room-history-v1.js") || path.endsWith("/zuno-home-motion-v1.css") || path.endsWith("/zuno-home-avatar-motion-v1.css") || path.endsWith("/zuno-home-world-v1.css") || path.endsWith("/zuno-home-priorities-v1.css") || path.endsWith("/zuno-presence-official.js") || path.endsWith("/zuno-presence-official.css")',
+            'no-samehost-css':'path.endsWith(".css")',
+            'no-samehost-js':'path.endsWith(".js")',
+          }
+          rule=rules[mode]
+          needle='''        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {'''
+          insert=f'''        @Override\n        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {{\n            Uri uri = request != null ? request.getUrl() : null;\n            if (uri != null) {{\n                Log.i(TAG, "WEBREQ " + uri.toString());\n                String host = uri.getHost();\n                String path = uri.getPath() != null ? uri.getPath() : "";\n                if ("samurayshon.github.io".equalsIgnoreCase(host) && ({rule})) {{\n                    Log.i(TAG, "WEBBLOCK {mode} " + uri.toString());\n                    String mime = path.endsWith(".css") ? "text/css" : "application/javascript";\n                    return new WebResourceResponse(mime, "UTF-8", new ByteArrayInputStream(new byte[0]));\n                }}\n            }}\n            return super.shouldInterceptRequest(view, request);\n        }}\n\n        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {{'''
+          if needle not in s: raise SystemExit('patch anchor missing')
+          p.write_text(s.replace(needle, insert, 1))
+          PY
+          git diff -- android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java > "android-bisect-${MODE}-patch.diff"
 
       - uses: actions/setup-java@v4
         with:
@@ -34,62 +61,18 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Build diagnostic APK
+        run: gradle -p android-v0 assembleDebug --stacktrace
 
-      - name: Build CONTROL diagnostic APK with request logging only
+      - name: Verify APK
         shell: bash
         run: |
           set -euo pipefail
-          SRC='android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java'
-          cp "$SRC" /tmp/MainActivity.original.java
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java')
-          s=p.read_text()
-          s=s.replace('import android.webkit.WebResourceRequest;\n', 'import android.webkit.WebResourceRequest;\nimport android.webkit.WebResourceResponse;\n')
-          needle='''        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {'''
-          insert='''        @Override\n        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {\n            Uri uri = request != null ? request.getUrl() : null;\n            if (uri != null) Log.i(TAG, "WEBREQ " + uri.toString());\n            return super.shouldInterceptRequest(view, request);\n        }\n\n        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {'''
-          if needle not in s: raise SystemExit('control patch anchor missing')
-          p.write_text(s.replace(needle, insert, 1))
-          PY
-          gradle -p android-v0 assembleDebug --stacktrace
-          cp android-v0/app/build/outputs/apk/debug/app-debug.apk /tmp/zunoplay-control.apk
-          sha256sum /tmp/zunoplay-control.apk | tee android-avatar-control-apk-sha256.txt
-
-      - name: Build AVATAR-BLOCKED diagnostic APK
-        shell: bash
-        run: |
-          set -euo pipefail
-          SRC='android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java'
-          cp /tmp/MainActivity.original.java "$SRC"
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java')
-          s=p.read_text()
-          s=s.replace('import android.webkit.WebResourceRequest;\n', 'import android.webkit.WebResourceRequest;\nimport android.webkit.WebResourceResponse;\nimport java.io.ByteArrayInputStream;\n')
-          needle='''        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {'''
-          insert='''        @Override\n        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {\n            Uri uri = request != null ? request.getUrl() : null;\n            if (uri != null) {\n                Log.i(TAG, "WEBREQ " + uri.toString());\n                String host = uri.getHost();\n                String path = uri.getPath();\n                if ("samurayshon.github.io".equalsIgnoreCase(host) && path != null && path.contains("/assets/avatars/raster/")) {\n                    Log.i(TAG, "WEBBLOCK avatar-raster " + uri.toString());\n                    return new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream(new byte[0]));\n                }\n            }\n            return super.shouldInterceptRequest(view, request);\n        }\n\n        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {'''
-          if needle not in s: raise SystemExit('blocked patch anchor missing')
-          p.write_text(s.replace(needle, insert, 1))
-          PY
-          gradle -p android-v0 clean assembleDebug --stacktrace
-          cp android-v0/app/build/outputs/apk/debug/app-debug.apk /tmp/zunoplay-avatar-blocked.apk
-          sha256sum /tmp/zunoplay-avatar-blocked.apk | tee android-avatar-blocked-apk-sha256.txt
-          cp /tmp/MainActivity.original.java "$SRC"
-          git diff --exit-code -- "$SRC"
-
-      - name: Verify both APKs
-        shell: bash
-        run: |
-          set -euo pipefail
-          AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
-          for APK in /tmp/zunoplay-control.apk /tmp/zunoplay-avatar-blocked.apk; do
-            test -s "$APK"
-            "$AAPT" dump badging "$APK" | grep -q "package: name='com.zunoplay.app'"
-            "$AAPT" dump badging "$APK" | grep -q "application-label:'ZunoPlay'"
-          done
-          echo 'source_sha=214010598fdf6fabc3bffd31a35f0381cdf449da' | tee android-avatar-isolation-provenance.txt
-          echo 'control_patch=request logging only' | tee -a android-avatar-isolation-provenance.txt
-          echo 'blocked_patch=request logging + only /assets/avatars/raster/ intercepted' | tee -a android-avatar-isolation-provenance.txt
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          "${ANDROID_HOME}/build-tools/35.0.0/aapt" dump badging "$APK" | grep -q "package: name='com.zunoplay.app'"
+          sha256sum "$APK" | tee "android-bisect-${MODE}-apk-sha256.txt"
+          printf 'source_sha=214010598fdf6fabc3bffd31a35f0381cdf449da\nmode=%s\n' "$MODE" > "android-bisect-${MODE}-provenance.txt"
 
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
@@ -97,19 +80,18 @@ jobs:
       - name: Prepare runtime probe
         shell: bash
         run: |
-          cat > /tmp/avatar-isolation-probe.sh <<'BASH'
+          cat > /tmp/bisect-probe.sh <<'BASH'
           #!/usr/bin/env bash
           set -uo pipefail
-          LABEL="${1:?label}"
-          APK="${2:?apk}"
-          PACKAGE='com.zunoplay.app'
+          LABEL="${MODE}"
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           ACTIVITY='com.zunoplay.app/.MainActivity'
-          TRACE="android-avatar-${LABEL}-trace.txt"
-          LIVE="android-avatar-${LABEL}-liveness.txt"
-          LOGCAT="android-avatar-${LABEL}-logcat.txt"
-          WEBREQ="android-avatar-${LABEL}-webreq.txt"
-          WEBBLOCK="android-avatar-${LABEL}-webblock.txt"
-          HOST="android-avatar-${LABEL}-hoststate.txt"
+          TRACE="android-bisect-${LABEL}-trace.txt"
+          LIVE="android-bisect-${LABEL}-liveness.txt"
+          LOGCAT="android-bisect-${LABEL}-logcat.txt"
+          WEBREQ="android-bisect-${LABEL}-webreq.txt"
+          WEBBLOCK="android-bisect-${LABEL}-webblock.txt"
+          HOST="android-bisect-${LABEL}-hoststate.txt"
           trace(){ printf '%s | %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$TRACE"; }
           q(){ pgrep -af 'qemu-system|emulator.*-avd' >/dev/null 2>&1; }
           p(){ ss -ltn 2>/dev/null | grep -qE ':5554\b'; }
@@ -117,8 +99,8 @@ jobs:
           d(){ timeout 5s adb devices -l 2>/dev/null | grep -qE '^emulator-[0-9]+[[:space:]]+device\b'; }
           s(){ timeout 5s adb shell true >/dev/null 2>&1; }
           probe(){ local n="$1" a=0 b=0 c=0 e=0 f=0; q&&a=1||true; p&&b=1||true; g&&c=1||true; d&&e=1||true; s&&f=1||true; printf '%s | %s qemu=%s port5554=%s get_state=%s devices=%s shell=%s\n' "$(date -u +%FT%TZ)" "$n" "$a" "$b" "$c" "$e" "$f" | tee -a "$LIVE"; }
-          grep -E 'Pkg.Revision|Pkg.Path' "${ANDROID_HOME}/emulator/source.properties" | tee "android-avatar-${LABEL}-emulator-version.txt"
-          grep -q 'Pkg.Revision *= *36\.5\.11' "android-avatar-${LABEL}-emulator-version.txt" || exit 130
+          grep -E 'Pkg.Revision|Pkg.Path' "${ANDROID_HOME}/emulator/source.properties" > "android-bisect-${LABEL}-emulator-version.txt"
+          grep -q 'Pkg.Revision *= *36\.5\.11' "android-bisect-${LABEL}-emulator-version.txt" || exit 130
           timeout 30s adb wait-for-device || exit 131
           adb install -r "$APK" | tee -a "$TRACE" || exit 132
           adb logcat -c || true
@@ -132,7 +114,7 @@ jobs:
           trace "am-start exit=$RC"
           probe immediately-after-launch
           FREEZE=0
-          for i in $(seq 1 20); do
+          for i in $(seq 1 25); do
             sleep 1
             probe "post-launch-${i}"
             if ! s; then FREEZE=1; trace "freeze iteration=$i"; break; fi
@@ -147,14 +129,13 @@ jobs:
           } > "$HOST" 2>&1
           [[ "$RC" -eq 0 ]] || exit 120
           grep -q 'Status: ok' <<< "$OUT" || exit 121
-          if [[ "$FREEZE" -eq 1 ]]; then trace "RESULT freeze label=$LABEL"; exit 122; fi
-          trace "RESULT stable-for-20-iterations label=$LABEL"
-          exit 0
+          if [[ "$FREEZE" -eq 1 ]]; then trace "RESULT freeze mode=$LABEL"; exit 122; fi
+          trace "RESULT stable mode=$LABEL"
           BASH
-          chmod +x /tmp/avatar-isolation-probe.sh
+          chmod +x /tmp/bisect-probe.sh
 
-      - name: CONTROL online
-        id: control
+      - name: Run fresh Android 14 probe
+        id: probe
         continue-on-error: true
         timeout-minutes: 7
         uses: reactivecircus/android-emulator-runner@v2
@@ -167,35 +148,19 @@ jobs:
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: bash /tmp/avatar-isolation-probe.sh control /tmp/zunoplay-control.apk
+          script: bash /tmp/bisect-probe.sh
 
-      - name: AVATAR RASTER BLOCKED online
-        id: blocked
-        continue-on-error: true
-        timeout-minutes: 7
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          target: google_apis
-          arch: x86_64
-          profile: pixel_6
-          emulator-build: 15261927
-          emulator-boot-timeout: 300
-          disable-animations: true
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: bash /tmp/avatar-isolation-probe.sh blocked /tmp/zunoplay-avatar-blocked.apk
-
-      - name: Record matrix
+      - name: Record outcome
         if: always()
-        run: |
-          printf 'control=%s\navatar_raster_blocked=%s\n' '${{ steps.control.outcome }}' '${{ steps.blocked.outcome }}' | tee android-avatar-matrix.txt
+        run: echo "${MODE}=${{ steps.probe.outcome }}" | tee "android-bisect-${MODE}-outcome.txt"
 
       - name: Upload diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ZunoPlay-Phase2-avatar-raster-isolation
+          name: ZunoPlay-Phase2-bisect-${{ matrix.mode }}
           path: |
-            android-avatar-*.txt
+            android-bisect-${{ matrix.mode }}-*.txt
+            android-bisect-${{ matrix.mode }}-patch.diff
           if-no-files-found: warn
           retention-days: 7
