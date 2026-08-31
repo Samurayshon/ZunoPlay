@@ -1,0 +1,187 @@
+name: Supabase Production Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorization:
+        description: 'Type APPLY APPROVED MIGRATIONS to continue'
+        required: true
+        type: string
+      expected_sha:
+        description: 'Exact main commit SHA approved for production'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/main' && github.actor == 'Samurayshon'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_PROJECT_ID: rliymfbbhqoejgfvsbuu
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - name: Require explicit authorization phrase and exact commit
+        shell: bash
+        env:
+          AUTHORIZATION: ${{ inputs.authorization }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+          ACTUAL_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$AUTHORIZATION" = 'APPLY APPROVED MIGRATIONS' || { echo 'Explicit production authorization phrase is missing.'; exit 10; }
+          test "$EXPECTED_SHA" = "$ACTUAL_SHA" || { echo 'Approved SHA does not match the commit being deployed.'; exit 11; }
+          echo 'Explicit authorization, actor and commit pin verified.'
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Verify credentials without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo 'Missing SUPABASE_ACCESS_TOKEN'; exit 20; }
+          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo 'Missing SUPABASE_DB_PASSWORD'; exit 21; }
+          echo 'Supabase credentials are present.'
+
+      - name: Verify approved migration manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing.'; exit 30; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          entries = []
+          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+              line = raw.strip()
+              if line and not line.startswith('#'):
+                  entries.append(line)
+
+          if not entries:
+              print('No production migrations are explicitly approved. Refusing production apply.')
+              sys.exit(30)
+          if len(entries) != len(set(entries)):
+              print('Duplicate entries in approved migration manifest.')
+              sys.exit(31)
+
+          versions = []
+          for name in entries:
+              if not re.fullmatch(r'\d{14}_[A-Za-z0-9_-]+\.sql', name):
+                  print(f'Invalid approved migration filename: {name}')
+                  sys.exit(32)
+              path = Path('supabase/migrations') / name
+              if not path.is_file() or path.stat().st_size == 0:
+                  print(f'Approved migration is missing or empty: {name}')
+                  sys.exit(33)
+              versions.append(name[:14])
+
+          if len(versions) != len(set(versions)):
+              print('Duplicate migration version in approved manifest.')
+              sys.exit(34)
+          if versions != sorted(versions):
+              print('Approved migration manifest must be in ascending version order.')
+              sys.exit(35)
+
+          print(f'Approved manifest verified: {len(entries)} migration(s).')
+          PY
+
+      - name: Link CLI to production project
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      - name: Mandatory pre-apply dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push --dry-run 2>&1 | tee supabase-production-preapply-dry-run.log
+
+      - name: Require exact approved pending migration set
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          approved_names = []
+          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+              line = raw.strip()
+              if line and not line.startswith('#'):
+                  approved_names.append(line)
+          approved_versions = [name[:14] for name in approved_names]
+
+          text = Path('supabase-production-preapply-dry-run.log').read_text(errors='replace')
+          observed = []
+          for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', text):
+              if version not in observed:
+                  observed.append(version)
+
+          if observed != approved_versions:
+              print('FAIL-CLOSED: pre-apply dry-run does not match the approved manifest exactly.')
+              print('Approved:', ', '.join(approved_versions) if approved_versions else '<none>')
+              print('Observed:', ', '.join(observed) if observed else '<none>')
+              sys.exit(40)
+
+          print('Exact approved pending migration set verified.')
+          PY
+
+      - name: Apply approved migrations to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push 2>&1 | tee supabase-production-apply.log
+
+      - name: Post-apply verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push --dry-run 2>&1 | tee supabase-production-postapply-dry-run.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          text = Path('supabase-production-postapply-dry-run.log').read_text(errors='replace')
+          versions = []
+          for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', text):
+              if version not in versions:
+                  versions.append(version)
+          if versions:
+              print('Post-apply dry-run still reports migration version(s):')
+              for version in versions:
+                  print(f'  - {version}')
+              sys.exit(50)
+          print('Post-apply dry-run reports no remaining migration versions.')
+          PY
+
+      - name: Upload production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-production-apply-evidence
+          path: |
+            supabase-production-preapply-dry-run.log
+            supabase-production-apply.log
+            supabase-production-postapply-dry-run.log
+          if-no-files-found: ignore

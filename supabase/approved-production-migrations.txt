@@ -1,0 +1,3 @@
+# One approved migration filename per line.
+# Keep this file empty (comments only) when no production migration release is authorized.
+# Example: 20260101120000_example.sql
