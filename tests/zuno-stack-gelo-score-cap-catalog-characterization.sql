@@ -1,6 +1,6 @@
 \set ON_ERROR_STOP on
 
--- Eighth extraction final catalog verification: Gelo score cap only.
+-- Ninth extraction final catalog verification: Gelo score cap only.
 do $$
 declare
   v_def text;
