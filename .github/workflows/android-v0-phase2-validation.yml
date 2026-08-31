@@ -10,11 +10,21 @@ permissions:
   contents: read
 
 jobs:
-  webview-resource-bisect:
+  foundational-script-bisect:
     strategy:
       fail-fast: false
       matrix:
-        mode: [control, no-avatar-js, no-home-dynamic, no-samehost-css, no-samehost-js]
+        mode:
+          - control
+          - no-brand
+          - no-runtime-config
+          - no-runtime-injected
+          - no-current
+          - no-current-home
+          - no-nav
+          - no-boot-guard
+          - no-home-app
+          - no-authority
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -25,7 +35,7 @@ jobs:
           ref: 214010598fdf6fabc3bffd31a35f0381cdf449da
           persist-credentials: false
 
-      - name: Prove source and apply transient resource filter
+      - name: Prove source and apply one-script transient block
         shell: bash
         run: |
           set -euo pipefail
@@ -34,20 +44,27 @@ jobs:
           import os
           from pathlib import Path
           mode=os.environ['MODE']
+          targets={
+            'control': None,
+            'no-brand': '/zuno-brand-official.js',
+            'no-runtime-config': '/zuno-runtime-config.js',
+            'no-runtime-injected': '/zuno-runtime-injected.js',
+            'no-current': '/zuno-current.js',
+            'no-current-home': '/zuno-current-home.js',
+            'no-nav': '/nav.js',
+            'no-boot-guard': '/zuno-home-boot-guard-v321.js',
+            'no-home-app': '/home-app.js',
+            'no-authority': '/zuno-authority-progress-v1.js',
+          }
+          target=targets[mode]
           p=Path('android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java')
           s=p.read_text()
           s=s.replace('import android.webkit.WebResourceRequest;\n', 'import android.webkit.WebResourceRequest;\nimport android.webkit.WebResourceResponse;\nimport java.io.ByteArrayInputStream;\n')
-          rules={
-            'control':'false',
-            'no-avatar-js':'path.endsWith("/avatar-renderer.js") || path.endsWith("/avatar-home-sync.js")',
-            'no-home-dynamic':'path.endsWith("/zuno-home-v2.js") || path.endsWith("/zuno-room-history-v1.js") || path.endsWith("/zuno-home-motion-v1.css") || path.endsWith("/zuno-home-avatar-motion-v1.css") || path.endsWith("/zuno-home-world-v1.css") || path.endsWith("/zuno-home-priorities-v1.css") || path.endsWith("/zuno-presence-official.js") || path.endsWith("/zuno-presence-official.css")',
-            'no-samehost-css':'path.endsWith(".css")',
-            'no-samehost-js':'path.endsWith(".js")',
-          }
-          rule=rules[mode]
+          rule='false' if target is None else f'path.endsWith("{target}")'
           needle='''        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {'''
-          insert=f'''        @Override\n        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {{\n            Uri uri = request != null ? request.getUrl() : null;\n            if (uri != null) {{\n                Log.i(TAG, "WEBREQ " + uri.toString());\n                String host = uri.getHost();\n                String path = uri.getPath() != null ? uri.getPath() : "";\n                if ("samurayshon.github.io".equalsIgnoreCase(host) && ({rule})) {{\n                    Log.i(TAG, "WEBBLOCK {mode} " + uri.toString());\n                    String mime = path.endsWith(".css") ? "text/css" : "application/javascript";\n                    return new WebResourceResponse(mime, "UTF-8", new ByteArrayInputStream(new byte[0]));\n                }}\n            }}\n            return super.shouldInterceptRequest(view, request);\n        }}\n\n        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {{'''
-          if needle not in s: raise SystemExit('patch anchor missing')
+          insert=f'''        @Override\n        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {{\n            Uri uri = request != null ? request.getUrl() : null;\n            if (uri != null) {{\n                Log.i(TAG, "WEBREQ " + uri.toString());\n                String host = uri.getHost();\n                String path = uri.getPath() != null ? uri.getPath() : "";\n                if ("samurayshon.github.io".equalsIgnoreCase(host) && ({rule})) {{\n                    Log.i(TAG, "WEBBLOCK {mode} " + uri.toString());\n                    return new WebResourceResponse("application/javascript", "UTF-8", new ByteArrayInputStream(new byte[0]));\n                }}\n            }}\n            return super.shouldInterceptRequest(view, request);\n        }}\n\n        @Override\n        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {{'''
+          if needle not in s:
+              raise SystemExit('patch anchor missing')
           p.write_text(s.replace(needle, insert, 1))
           PY
           git diff -- android-v0/app/src/main/java/com/zunoplay/app/MainActivity.java > "android-bisect-${MODE}-patch.diff"
@@ -64,7 +81,7 @@ jobs:
       - name: Build diagnostic APK
         run: gradle -p android-v0 assembleDebug --stacktrace
 
-      - name: Verify APK
+      - name: Verify APK provenance
         shell: bash
         run: |
           set -euo pipefail
@@ -158,7 +175,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ZunoPlay-Phase2-bisect-${{ matrix.mode }}
+          name: ZunoPlay-Phase2-foundational-${{ matrix.mode }}
           path: |
             android-bisect-${{ matrix.mode }}-*.txt
             android-bisect-${{ matrix.mode }}-patch.diff
