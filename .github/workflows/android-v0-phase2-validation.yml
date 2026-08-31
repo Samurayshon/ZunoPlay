@@ -95,10 +95,33 @@ jobs:
           cat > /tmp/zunoplay-phase2-smoke-wrapper.sh <<'BASH'
           #!/usr/bin/env bash
           set -uo pipefail
+
+          wait_for_adb() {
+            local RECOVERY_ATTEMPT
+            for RECOVERY_ATTEMPT in 1 2 3; do
+              echo "ADB recovery attempt ${RECOVERY_ATTEMPT}/3"
+              adb start-server || true
+              adb reconnect offline || true
+              if timeout 30s adb wait-for-device; then
+                if timeout 10s adb shell true >/dev/null 2>&1; then
+                  echo "ADB transport is ready."
+                  return 0
+                fi
+              fi
+              echo "ADB transport not ready after bounded wait."
+              adb kill-server || true
+              sleep 3
+            done
+            return 1
+          }
+
           for CI_ATTEMPT in 1 2; do
             echo "Phase 2 runtime smoke CI attempt ${CI_ATTEMPT}/2"
-            adb start-server
-            adb wait-for-device
+            if ! wait_for_adb; then
+              echo "ADB device did not recover within the bounded retry window." >&2
+              exit 124
+            fi
+
             set +e
             timeout 180s bash android-v0/ci/runtime-smoke.sh > "android-smoke-attempt-${CI_ATTEMPT}.txt" 2>&1
             STATUS=$?
@@ -108,8 +131,8 @@ jobs:
               exit 0
             fi
             if grep -Eq 'error: closed|device offline|device not found|waiting for device' "android-smoke-attempt-${CI_ATTEMPT}.txt"; then
-              echo "Transient ADB transport failure detected; restarting ADB before one bounded retry."
-              adb kill-server || true
+              echo "Transient ADB transport failure detected; performing one bounded recovery before retry."
+              adb reconnect offline || true
               sleep 3
               continue
             fi
