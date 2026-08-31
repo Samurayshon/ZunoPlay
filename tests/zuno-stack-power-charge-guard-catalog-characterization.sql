@@ -62,8 +62,9 @@ begin
     raise exception 'stack_power_charge_guard_catalog_helper_exposed';
   end if;
 
-  -- Preserve prior canonical ownership. Cost resolution moved in #14, but it
-  -- must remain a separate authority from the #13 selected/charge guard.
+  -- Preserve prior and subsequent canonical ownership. Cost resolution moved in
+  -- #14 and energy readiness moved in #15; both remain separate authorities
+  -- from the #13 selected/charge guard.
   if regexp_count(v_power,'zuno_private\.zuno_stack_resolve_phase\(') <> 1
      or regexp_count(v_gelo,'zuno_private\.zuno_stack_resolve_phase\(') <> 1
      or regexp_count(v_desfazer,'zuno_private\.zuno_stack_resolve_phase\(') <> 1 then
@@ -83,9 +84,10 @@ begin
      or position('v_cost:=casewhenv_phase=''final''then0else1end;' in v_desfazer)<>0 then
     raise exception 'stack_power_charge_guard_catalog_inline_cost_returned';
   end if;
-  if position('stack_power_not_ready' in v_power)=0
-     or position('stack_power_not_ready' in v_gelo)=0
-     or position('stack_power_not_ready' in v_desfazer)=0 then
+  if to_regprocedure('zuno_private.zuno_stack_require_power_energy(integer,integer)') is null
+     or regexp_count(v_power,'zuno_private\.zuno_stack_require_power_energy\(v_energy,v_cost\);') <> 1
+     or regexp_count(v_gelo,'zuno_private\.zuno_stack_require_power_energy\(v_energy,v_cost\);') <> 1
+     or regexp_count(v_desfazer,'zuno_private\.zuno_stack_require_power_energy\(v_current_energy,v_cost\);') <> 1 then
     raise exception 'stack_power_charge_guard_catalog_energy_readiness_changed';
   end if;
 end;

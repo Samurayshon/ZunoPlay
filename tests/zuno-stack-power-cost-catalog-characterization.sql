@@ -1,8 +1,8 @@
 \set ON_ERROR_STOP on
 
 -- Fourteenth extraction final catalog verification: all three power authorities
--- resolve cost through one private helper while caller-owned readiness and
--- mutations remain intact.
+-- resolve cost through one private helper while later canonical extractions
+-- remain separately owned and mutations remain intact.
 do $$
 declare
   v_power text;
@@ -59,9 +59,12 @@ begin
     raise exception 'stack_power_cost_catalog_board_prior_extractions_changed';
   end if;
 
-  if position('ifv_energy<v_costthenraiseexception''stack_power_not_ready''' in v_power)=0
-     or position('ifv_energy<v_costthenraiseexception''stack_power_not_ready''' in v_gelo)=0
-     or position('ifv_current_energy<v_costthenraiseexception''stack_power_not_ready''' in v_desfazer)=0 then
+  -- Energy readiness moved in extraction #15. Keep it a separate authority
+  -- from cost resolution and require exactly one canonical guard per caller.
+  if to_regprocedure('zuno_private.zuno_stack_require_power_energy(integer,integer)') is null
+     or regexp_count(v_power,'zuno_private\.zuno_stack_require_power_energy\(v_energy,v_cost\);') <> 1
+     or regexp_count(v_gelo,'zuno_private\.zuno_stack_require_power_energy\(v_energy,v_cost\);') <> 1
+     or regexp_count(v_desfazer,'zuno_private\.zuno_stack_require_power_energy\(v_current_energy,v_cost\);') <> 1 then
     raise exception 'stack_power_cost_catalog_readiness_changed';
   end if;
 
