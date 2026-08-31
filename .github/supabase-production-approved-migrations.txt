@@ -1,0 +1,9 @@
+# Approved production migration versions after baseline 20260830154207.
+# One 14-digit migration version per line. Comments and blank lines are ignored.
+20260830190000
+20260830200000
+20260830210000
+20260830220000
+20260830230000
+20260830240000
+20260830250000
