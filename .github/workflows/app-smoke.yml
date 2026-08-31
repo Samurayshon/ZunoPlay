@@ -48,7 +48,7 @@ jobs:
           set -euo pipefail
           required=(
             index.html entrada.html login.html cadastro.html perfil.html avatar.html amigos.html conversas.html notificacoes.html comunidades.html
-            salas.html sala.html jogos.html historico.html pulso.html zuno-stack.html manifest.json sw.js nav.js
+            salas.html sala.html jogos.html historico.html pulso.html zuno-stack.html manifest.json sw.js nav.js zuno-navigation-policy-v1.js
             home-app.js realtime-global.js room-session-guard.js zuno-room-app.js zuno-room-v1-core.js zuno-room-experience-v2.js
             zuno-room-controls-v2.js zuno-room-composer-v2.js voz-sala-v2.js zuno-room-access-v1.js zuno-room-invite-entry-v1.js presenca-sala.js
             avatar-renderer.js avatar-home-sync.js zuno-notifications.js zuno-messages.js zuno-pulso-v3.js zuno-pulso-v6.js
@@ -58,6 +58,9 @@ jobs:
 
       - name: Audit active dependency graph
         run: node scripts/repo-audit.mjs
+
+      - name: Validate navigation policy
+        run: node --test tests/navigation-policy.test.mjs
 
       - name: Guard removed prototypes and dead layers
         shell: bash
