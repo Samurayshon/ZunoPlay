@@ -1,0 +1,80 @@
+name: Supabase Production CI/CD Static Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/supabase-production-approved-migrations.txt'
+      - '.github/workflows/supabase-production-dry-run.yml'
+      - '.github/workflows/supabase-production-apply.yml'
+      - '.github/workflows/supabase-production-cicd-static-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify permanent pipeline safety invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re, sys
+
+          dry_path = pathlib.Path('.github/workflows/supabase-production-dry-run.yml')
+          apply_path = pathlib.Path('.github/workflows/supabase-production-apply.yml')
+          allow_path = pathlib.Path('.github/supabase-production-approved-migrations.txt')
+          dry = dry_path.read_text()
+          apply = apply_path.read_text()
+
+          checks = {
+              'dry-run pins CLI 2.116.0': "SUPABASE_CLI_VERSION: '2.116.0'" in dry,
+              'apply pins CLI 2.116.0': "SUPABASE_CLI_VERSION: '2.116.0'" in apply,
+              'dry-run uses stable DB URL secret': 'secrets.SUPABASE_DB_URL' in dry,
+              'apply uses stable DB URL secret': 'secrets.SUPABASE_DB_URL' in apply,
+              'dry-run does not depend on access token': 'SUPABASE_ACCESS_TOKEN' not in dry,
+              'apply does not depend on access token': 'SUPABASE_ACCESS_TOKEN' not in apply,
+              'dry-run command is explicitly dry-run': 'supabase db push --dry-run --db-url' in dry,
+              'apply requires workflow dispatch': 'workflow_dispatch:' in apply,
+              'apply requires main branch': "github.ref == 'refs/heads/main'" in apply,
+              'apply requires explicit phrase': 'AUTORIZO_APLICAR_MIGRATIONS' in apply,
+              'apply uses production environment': 'environment: production' in apply,
+              'apply performs final dry-run before push': apply.find('supabase db push --dry-run --db-url') < apply.find('supabase db push --db-url'),
+          }
+
+          for label, ok in checks.items():
+              print(('OK  ' if ok else 'FAIL'), label)
+          if not all(checks.values()):
+              sys.exit(10)
+
+          versions = []
+          for raw in allow_path.read_text().splitlines():
+              line = raw.strip()
+              if line and not line.startswith('#'):
+                  if not re.fullmatch(r'\d{14}', line):
+                      print('FAIL invalid allowlist entry:', line)
+                      sys.exit(11)
+                  versions.append(line)
+          expected = [
+              '20260830190000',
+              '20260830200000',
+              '20260830210000',
+              '20260830220000',
+              '20260830230000',
+              '20260830240000',
+              '20260830250000',
+          ]
+          if versions != expected:
+              print('FAIL initial approved migration set mismatch')
+              print('Expected:', expected)
+              print('Observed:', versions)
+              sys.exit(12)
+
+          print('supabase_production_cicd_static_guard_ok')
+          PY
