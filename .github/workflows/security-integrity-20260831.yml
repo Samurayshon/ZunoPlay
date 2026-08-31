@@ -18,3 +18,5 @@ jobs:
         run: node tests/desafio-score-containment.test.mjs
       - name: Validate notification event integrity
         run: node tests/notification-event-integrity.test.mjs
+      - name: Validate room reaction grant surface
+        run: node tests/room-reaction-grants.test.mjs
