@@ -43,7 +43,7 @@ jobs:
           set -euo pipefail
           supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector
 
-      - name: Rebuild database through current stacked state
+      - name: Rebuild database through tenth extraction
         shell: bash
         run: |
           set -euo pipefail
@@ -54,6 +54,12 @@ jobs:
         run: |
           set -euo pipefail
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-phase-helper-characterization.sql
+
+      - name: Verify canonical phase helper in final catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-phase-helper-catalog-characterization.sql
 
       - name: Re-run real Stack RPC behavior
         shell: bash
