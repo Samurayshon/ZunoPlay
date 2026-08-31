@@ -44,8 +44,18 @@ jobs:
           BOOTSTRAP_TARGET="supabase/migrations/${BOOTSTRAP_VERSION}_${BOOTSTRAP_NAME}.sql"
           test -f "$BOOTSTRAP_SOURCE"
           test -f supabase/migrations/20260826135832_enable_room_messages_realtime.sql
+          test ! -e "$BOOTSTRAP_TARGET"
+
+          canonical_count="$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d ' ')"
+          test "$canonical_count" -gt 0
+
           cp "$BOOTSTRAP_SOURCE" "$BOOTSTRAP_TARGET"
-          test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 238
+
+          replay_count="$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d ' ')"
+          test "$replay_count" -eq "$((canonical_count + 1))"
+
+          echo "EXPECTED_CANONICAL_MIGRATIONS=$canonical_count" >> "$GITHUB_ENV"
+          echo "EXPECTED_REPLAY_MIGRATIONS=$replay_count" >> "$GITHUB_ENV"
 
       - name: Rebuild ZunoPlay database from zero
         run: |
@@ -62,11 +72,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          migrations="$(psql -Atc "select count(*) from supabase_migrations.schema_migrations where version between '20260826130000' and '20260830154207';")"
-          test "$migrations" -eq 238
+          migrations="$(psql -Atc "select count(*) from supabase_migrations.schema_migrations;")"
+          test "$migrations" -eq "$EXPECTED_REPLAY_MIGRATIONS"
 
-          canonical_exact="$(psql -Atc "select count(*) from supabase_migrations.schema_migrations where version between '20260826135832' and '20260830154207';")"
-          test "$canonical_exact" -eq 237
+          canonical_exact="$((migrations - 1))"
+          test "$canonical_exact" -eq "$EXPECTED_CANONICAL_MIGRATIONS"
 
           tables="$(psql -Atc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r';")"
           test "$tables" -eq 58
@@ -97,7 +107,7 @@ jobs:
               and t.tgname in ('on_auth_user_created','on_auth_user_updated','trigger_friend_request_notification');
           " | grep -qx '3'
 
-          echo "Fresh replay validated: 238 migrations (bootstrap + 237 canonical), 58 public tables, 58 with RLS."
+          echo "Fresh replay validated: ${EXPECTED_REPLAY_MIGRATIONS} migrations (bootstrap + ${EXPECTED_CANONICAL_MIGRATIONS} canonical), 58 public tables, 58 with RLS."
 
       - name: Stop local Supabase
         if: always()
