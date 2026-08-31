@@ -26,8 +26,16 @@ begin
     raise exception 'stack_phase_characterization_function_missing';
   end if;
 
-  v_raw_total := regexp_count(v_power,v_raw)+regexp_count(v_gelo,v_raw)+regexp_count(v_desfazer,v_raw);
-  v_helper_total := regexp_count(v_power,v_helper)+regexp_count(v_gelo,v_helper)+regexp_count(v_desfazer,v_helper);
+  -- Count literal occurrences. The helper text contains parentheses, so treating
+  -- it as a regular expression would incorrectly report zero matches.
+  v_raw_total :=
+    (length(v_power)-length(replace(v_power,v_raw,'')))/length(v_raw)
+    +(length(v_gelo)-length(replace(v_gelo,v_raw,'')))/length(v_raw)
+    +(length(v_desfazer)-length(replace(v_desfazer,v_raw,'')))/length(v_raw);
+  v_helper_total :=
+    (length(v_power)-length(replace(v_power,v_helper,'')))/length(v_helper)
+    +(length(v_gelo)-length(replace(v_gelo,v_helper,'')))/length(v_helper)
+    +(length(v_desfazer)-length(replace(v_desfazer,v_helper,'')))/length(v_helper);
 
   if not ((v_raw_total=3 and v_helper_total=0) or (v_raw_total=0 and v_helper_total=3)) then
     raise exception 'stack_phase_characterization_wiring_invalid:raw=%,helper=%',v_raw_total,v_helper_total;
