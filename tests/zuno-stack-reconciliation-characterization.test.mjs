@@ -13,13 +13,14 @@ function makeAuthorityHarness({ remoteRevision = 2, localScore = 10, remoteScore
   let state = { active: true, tiles: Array.from({ length: 90 }, (_, i) => ({ id: `t${i}`, removed: false })), tray: [], score: localScore, matches: 0 };
   let rpcAttempt = 0;
   const remoteEngine = { ...state, score: remoteScore };
-  const row = { room_id: '10000000-0000-0000-0000-000000000001', revision: remoteRevision, state: { engine: remoteEngine }, host_id: null, host_lease_until: null };
-  const query = { select(){ return this; }, eq(){ return this; }, async maybeSingle(){ fetches.push('fetch'); return { data: row, error: null }; } };
+  const row = { room_id: '10000000-0000-4000-8000-000000000001', revision: remoteRevision, state: { engine: remoteEngine }, host_id: null, host_lease_until: null };
+  const makeQuery = () => ({ select(){ return this; }, eq(){ return this; }, async maybeSingle(){ fetches.push('fetch'); return { data: row, error: null }; } });
   const sb = {
-    auth: { async getSession(){ return { data: { session: { user: { id: '00000000-0000-0000-0000-000000000001' } } } }; } },
-    from(){ return query; },
+    auth: { async getSession(){ return { data: { session: { user: { id: '00000000-0000-4000-8000-000000000001' } } } }; } },
+    from(){ return makeQuery(); },
     async rpc(name,args){
       rpcCalls.push({ name, args });
+      if (name === 'zuno_stack_claim_host') return { data: null, error: null };
       if (name === 'zuno_stack_apply_tile') {
         rpcAttempt++;
         if (rpcAttempt === 1) return { data: null, error: { message: 'revision_conflict' } };
