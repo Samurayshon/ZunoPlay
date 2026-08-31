@@ -5,9 +5,14 @@ APK="android-v0/app/build/outputs/apk/debug/app-debug.apk"
 PACKAGE="com.zunoplay.app"
 ACTIVITY="com.zunoplay.app/.MainActivity"
 ADB_TIMEOUT="${ADB_TIMEOUT:-20}"
+ADB_INSTALL_TIMEOUT="${ADB_INSTALL_TIMEOUT:-120}"
 
 adb_t() {
   timeout --signal=TERM --kill-after=5s "${ADB_TIMEOUT}s" adb "$@"
+}
+
+adb_install_t() {
+  timeout --signal=TERM --kill-after=5s "${ADB_INSTALL_TIMEOUT}s" adb "$@"
 }
 
 capture_diagnostics() {
@@ -23,8 +28,13 @@ if [[ ! -s "$APK" ]]; then
   exit 1
 fi
 
+echo "Waiting for Android device..."
 adb_t wait-for-device
-adb_t install -r "$APK"
+
+echo "Installing ZunoPlay APK (bounded to ${ADB_INSTALL_TIMEOUT}s)..."
+adb_install_t install -r "$APK"
+
+echo "Clearing logcat..."
 adb_t logcat -c
 
 for ATTEMPT in 1 2 3; do
