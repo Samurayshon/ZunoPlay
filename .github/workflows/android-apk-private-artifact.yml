@@ -1,0 +1,50 @@
+name: Android Private APK Artifact
+
+on:
+  push:
+    branches: [build/android-apk-1073241]
+    paths: ['.github/workflows/android-apk-private-artifact.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 1073241db323fcca9820c227def6244074a4794d
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build APK
+        run: gradle -p android-v0 assembleDebug --stacktrace
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          "${ANDROID_HOME}/build-tools/35.0.0/aapt" dump badging "$APK" | tee apk-badging.txt
+          grep -q "package: name='com.zunoplay.app'" apk-badging.txt
+          sha256sum "$APK" | tee apk-sha256.txt
+          cp "$APK" ZunoPlay-Android-1073241.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZunoPlay-Android-1073241
+          path: |
+            ZunoPlay-Android-1073241.apk
+            apk-badging.txt
+            apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
