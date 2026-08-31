@@ -76,8 +76,12 @@ begin
     end if;
   end loop;
 
-  if zuno_private.zuno_stack_cap_energy(null) is not null then
-    raise exception 'power_energy_cap_catalog_null_semantics_changed';
+  -- Preserve PostgreSQL LEAST semantics exactly. The original expression
+  -- least(5, v_energy + gain) yields 5 when the candidate is NULL, so the
+  -- helper must do the same rather than imposing stricter NULL propagation.
+  select zuno_private.zuno_stack_cap_energy(null) into v_actual;
+  if v_actual is distinct from 5 then
+    raise exception 'power_energy_cap_catalog_null_semantics_changed:expected=5,actual=%', v_actual;
   end if;
 end;
 $$;
