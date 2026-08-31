@@ -8,6 +8,8 @@ on:
       - '.github/workflows/supabase-production-dry-run-v2.yml'
       - '.github/workflows/supabase-production-apply-v2.yml'
       - '.github/workflows/supabase-production-cicd-static-guard-v2.yml'
+      - 'scripts/supabase-production-plan.mjs'
+      - 'supabase/reconciliation/**'
   workflow_dispatch:
 
 permissions:
@@ -20,6 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Verify permanent pipeline safety invariants
         shell: bash
         run: |
@@ -29,23 +35,42 @@ jobs:
 
           dry_path = pathlib.Path('.github/workflows/supabase-production-dry-run-v2.yml')
           apply_path = pathlib.Path('.github/workflows/supabase-production-apply-v2.yml')
+          plan_path = pathlib.Path('scripts/supabase-production-plan.mjs')
           allow_path = pathlib.Path('.github/supabase-production-approved-migrations.txt')
           dry = dry_path.read_text()
           apply = apply_path.read_text()
+          plan = plan_path.read_text()
+
+          dry_push = 'supabase db push --dry-run --include-all --db-url'
+          apply_dry_push = 'supabase db push --dry-run --include-all --db-url'
+          apply_live_push = 'supabase db push --include-all --db-url'
 
           checks = {
+              'planner exists': plan_path.is_file(),
+              'planner uses production reconciliation ledgers': "production-migrations-" in plan and "production-ledger" in plan,
+              'planner classifies already-applied migrations': 'alreadyApplied' in plan,
+              'planner classifies pending migrations': 'approvedPending' in plan and 'unauthorizedPending' in plan,
+              'planner tolerates stale approvals that are already applied': 'staleApprovals' in plan,
+              'planner validates remote ledger when supplied': '--remote-versions-file' in plan,
               'dry-run pins CLI 2.116.0': "SUPABASE_CLI_VERSION: '2.116.0'" in dry,
               'apply pins CLI 2.116.0': "SUPABASE_CLI_VERSION: '2.116.0'" in apply,
               'dry-run uses stable DB URL secret': 'secrets.SUPABASE_DB_URL' in dry,
               'apply uses stable DB URL secret': 'secrets.SUPABASE_DB_URL' in apply,
               'dry-run does not depend on access token': 'SUPABASE_ACCESS_TOKEN' not in dry,
               'apply does not depend on access token': 'SUPABASE_ACCESS_TOKEN' not in apply,
-              'dry-run command is explicitly dry-run': 'supabase db push --dry-run --db-url' in dry,
+              'fixed baseline removed from dry-run': 'BASELINE_VERSION' not in dry,
+              'fixed baseline removed from apply': 'BASELINE_VERSION' not in apply,
+              'dry-run invokes ledger-aware planner': 'scripts/supabase-production-plan.mjs' in dry and '--remote-versions-file' in dry,
+              'apply invokes ledger-aware planner': 'scripts/supabase-production-plan.mjs' in apply and '--remote-versions-file' in apply,
+              'dry-run command includes older genuinely-pending migrations': dry_push in dry,
               'apply requires workflow dispatch': 'workflow_dispatch:' in apply,
+              'apply is not PR-triggered': 'pull_request:' not in apply,
               'apply requires main branch': "github.ref == 'refs/heads/main'" in apply,
-              'apply requires explicit phrase': "AUTORIZO_APLICAR_MIGRATIONS" in apply,
+              'apply requires explicit phrase': 'AUTORIZO_APLICAR_MIGRATIONS' in apply,
               'apply uses production environment': 'environment: production' in apply,
-              'apply performs final dry-run before push': apply.find('supabase db push --dry-run --db-url') < apply.find('supabase db push --db-url'),
+              'apply performs final dry-run before live push': apply_dry_push in apply and apply_live_push in apply and apply.find(apply_dry_push) < apply.find(apply_live_push),
+              'apply live push includes all approved pending versions': apply_live_push in apply,
+              'workflows are read-only at GitHub permission layer': 'contents: read' in dry and 'contents: read' in apply,
           }
 
           for label, ok in checks.items():
@@ -56,25 +81,30 @@ jobs:
           versions = []
           for raw in allow_path.read_text().splitlines():
               line = raw.strip()
-              if line and not line.startswith('#'):
-                  if not re.fullmatch(r'\d{14}', line):
-                      print('FAIL invalid allowlist entry:', line)
-                      sys.exit(11)
-                  versions.append(line)
-          expected = [
-              '20260830190000',
-              '20260830200000',
-              '20260830210000',
-              '20260830220000',
-              '20260830230000',
-              '20260830240000',
-              '20260830250000',
-          ]
-          if versions != expected:
-              print('FAIL initial approved migration set mismatch')
-              print('Expected:', expected)
-              print('Observed:', versions)
-              sys.exit(12)
+              if not line or line.startswith('#'):
+                  continue
+              if not re.fullmatch(r'\d{14}', line):
+                  print('FAIL invalid allowlist entry:', line)
+                  sys.exit(11)
+              if line in versions:
+                  print('FAIL duplicate allowlist entry:', line)
+                  sys.exit(12)
+              versions.append(line)
 
+          print('Allowlist format OK; contents are intentionally not hardcoded by the guard.')
           print('supabase_production_cicd_static_guard_v2_ok')
           PY
+
+      - name: Verify planner parses current repository state
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/supabase-production-plan.mjs --json | tee supabase-production-plan-static.json
+
+      - name: Upload static evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-production-cicd-static-guard-v2
+          path: supabase-production-plan-static.json
+          if-no-files-found: ignore
