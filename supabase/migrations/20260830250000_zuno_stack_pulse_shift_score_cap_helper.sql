@@ -7,8 +7,8 @@ do $migration$
 declare
   v_def text;
   v_new text;
-  v_target constant text := '''score'', least(25000, v_score + v_gain)';
-  v_replacement constant text := '''score'', zuno_private.zuno_stack_cap_score(v_score + v_gain)';
+  v_target constant text := '''score'',least(25000,v_score+v_gain)';
+  v_replacement constant text := '''score'',zuno_private.zuno_stack_cap_score(v_score+v_gain)';
   v_target_count integer;
   v_replacement_count integer;
 begin
@@ -24,16 +24,14 @@ begin
     raise exception 'stack_pulse_shift_score_cap_function_missing';
   end if;
 
-  -- Fail closed unless the exact catalog-normalized Pulse Shift score cap occurs once.
+  -- Fail closed unless the exact historical Pulse Shift score-cap anchor occurs exactly once.
   v_target_count := (length(v_def) - length(replace(v_def, v_target, ''))) / length(v_target);
   if v_target_count <> 1 then
     raise exception 'stack_pulse_shift_score_cap_anchor_count_invalid:%', v_target_count;
   end if;
 
-  -- Preserve caller-owned gain semantics explicitly.
-  if position('v_gain := CASE' in v_def) = 0
-     or position('THEN 260' in v_def) = 0
-     or position('ELSE 160' in v_def) = 0 then
+  -- Preserve the exact caller-owned +260 critical / +160 normal gain expression.
+  if position('v_gain:=case when v_critical then 260 else 160 end;' in v_def) = 0 then
     raise exception 'stack_pulse_shift_score_cap_gain_precondition_missing';
   end if;
 
@@ -43,9 +41,7 @@ begin
   if v_new = v_def
      or v_replacement_count <> 1
      or position(v_target in v_new) <> 0
-     or position('v_gain := CASE' in v_new) = 0
-     or position('THEN 260' in v_new) = 0
-     or position('ELSE 160' in v_new) = 0 then
+     or position('v_gain:=case when v_critical then 260 else 160 end;' in v_new) = 0 then
     raise exception 'stack_pulse_shift_score_cap_extraction_verification_failed';
   end if;
 
