@@ -47,6 +47,7 @@ jobs:
 
           # Historical migration restorations are exempt from release approval only
           # when the repository matches the production ledger with zero strict drift.
+          # Genuinely pending local migrations are not structural drift.
           node scripts/supabase-migration-reconciliation.mjs --strict --json > migration-reconciliation-gate.json
 
           python3 - <<'PY'
@@ -133,11 +134,16 @@ jobs:
                   for name in historical_restorations:
                       print(f'  - {name}')
 
-              if unapproved_changed:
-                  print('FAIL-CLOSED: new/non-historical migration file(s) changed without production approval:')
+              if unapproved_changed and entries:
+                  print('FAIL-CLOSED: an approved production release cannot include additional unapproved pending migration(s):')
                   for name in unapproved_changed:
                       print(f'  - {name}')
                   sys.exit(35)
+
+              if unapproved_changed and not entries:
+                  print('Development-only pending migration(s) detected; production release remains disabled:')
+                  for name in unapproved_changed:
+                      print(f'  - {name}')
 
           release_required = bool(entries)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
