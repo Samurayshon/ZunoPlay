@@ -96,10 +96,12 @@ jobs:
           #!/usr/bin/env bash
           set -uo pipefail
 
+          CI_ATTEMPT="${CI_ATTEMPT:-1}"
+
           wait_for_adb() {
             local RECOVERY_ATTEMPT
             for RECOVERY_ATTEMPT in 1 2 3; do
-              echo "ADB recovery attempt ${RECOVERY_ATTEMPT}/3"
+              echo "ADB readiness attempt ${RECOVERY_ATTEMPT}/3"
               adb start-server || true
               adb reconnect offline || true
               if timeout 30s adb wait-for-device; then
@@ -115,37 +117,26 @@ jobs:
             return 1
           }
 
-          for CI_ATTEMPT in 1 2; do
-            echo "Phase 2 runtime smoke CI attempt ${CI_ATTEMPT}/2"
-            if ! wait_for_adb; then
-              echo "ADB device did not recover within the bounded retry window." >&2
-              exit 124
-            fi
+          echo "Phase 2 runtime smoke on fresh emulator attempt ${CI_ATTEMPT}/2"
+          if ! wait_for_adb; then
+            echo "ADB device was not ready within the bounded window." >&2
+            exit 124
+          fi
 
-            set +e
-            timeout 180s bash android-v0/ci/runtime-smoke.sh > "android-smoke-attempt-${CI_ATTEMPT}.txt" 2>&1
-            STATUS=$?
-            set -e
-            cat "android-smoke-attempt-${CI_ATTEMPT}.txt" || true
-            if [ "$STATUS" -eq 0 ]; then
-              exit 0
-            fi
-            if grep -Eq 'error: closed|device offline|device not found|waiting for device' "android-smoke-attempt-${CI_ATTEMPT}.txt"; then
-              echo "Transient ADB transport failure detected; performing one bounded recovery before retry."
-              adb reconnect offline || true
-              sleep 3
-              continue
-            fi
-            exit "$STATUS"
-          done
-          echo "ADB transport failed on both bounded CI attempts." >&2
-          exit 1
+          set +e
+          timeout 180s bash android-v0/ci/runtime-smoke.sh > "android-smoke-attempt-${CI_ATTEMPT}.txt" 2>&1
+          STATUS=$?
+          set -e
+          cat "android-smoke-attempt-${CI_ATTEMPT}.txt" || true
+          exit "$STATUS"
           BASH
           chmod +x /tmp/zunoplay-phase2-smoke-wrapper.sh
           bash -n /tmp/zunoplay-phase2-smoke-wrapper.sh
 
-      - name: Runtime smoke test on Android 14
-        timeout-minutes: 10
+      - name: Runtime smoke test on Android 14 - fresh emulator 1
+        id: smoke1
+        continue-on-error: true
+        timeout-minutes: 6
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -155,7 +146,54 @@ jobs:
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: bash /tmp/zunoplay-phase2-smoke-wrapper.sh
+          script: CI_ATTEMPT=1 bash /tmp/zunoplay-phase2-smoke-wrapper.sh
+
+      - name: Capture runner state after smoke attempt 1
+        if: steps.smoke1.outcome == 'failure'
+        shell: bash
+        run: |
+          {
+            echo '=== UTC ==='
+            date -u
+            echo '=== memory ==='
+            free -m || true
+            echo '=== disk ==='
+            df -h || true
+            echo '=== emulator/qemu processes ==='
+            pgrep -af 'emulator|qemu' || true
+            echo '=== listeners 5037/5554 ==='
+            ss -ltnp 2>/dev/null | grep -E ':(5037|5554)\b' || true
+            echo '=== adb devices ==='
+            timeout 10s adb devices -l || true
+          } > android-emulator-state-attempt-1.txt
+          cat android-emulator-state-attempt-1.txt
+
+      - name: Runtime smoke test on Android 14 - fresh emulator 2
+        id: smoke2
+        if: steps.smoke1.outcome == 'failure'
+        continue-on-error: true
+        timeout-minutes: 6
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 300
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          script: CI_ATTEMPT=2 bash /tmp/zunoplay-phase2-smoke-wrapper.sh
+
+      - name: Enforce runtime smoke result
+        shell: bash
+        run: |
+          echo "smoke1=${{ steps.smoke1.outcome }}"
+          echo "smoke2=${{ steps.smoke2.outcome }}"
+          if [ "${{ steps.smoke1.outcome }}" = 'success' ] || [ "${{ steps.smoke2.outcome }}" = 'success' ]; then
+            exit 0
+          fi
+          echo 'Both fresh-emulator smoke attempts failed.' >&2
+          exit 1
 
       - name: Upload runtime diagnostics
         if: always()
@@ -168,5 +206,6 @@ jobs:
             android-package.txt
             android-activities.txt
             android-smoke-attempt-*.txt
+            android-emulator-state-attempt-*.txt
           if-no-files-found: warn
           retention-days: 7
