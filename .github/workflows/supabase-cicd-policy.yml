@@ -1,0 +1,29 @@
+name: Supabase CI/CD Policy
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/supabase-production-dry-run.yml'
+      - '.github/workflows/supabase-production-apply.yml'
+      - '.github/workflows/supabase-cicd-policy.yml'
+      - 'supabase/approved-production-migrations.txt'
+      - 'tests/supabase-production-cicd-policy.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Supabase production CI/CD policy tests
+        run: node --test tests/supabase-production-cicd-policy.test.mjs
