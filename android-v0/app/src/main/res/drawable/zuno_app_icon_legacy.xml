@@ -6,5 +6,5 @@
             <solid android:color="@color/zuno_icon_background" />
         </shape>
     </item>
-    <item android:drawable="@drawable/zuno_app_icon_foreground" />
+    <item android:drawable="@drawable/zuno_app_icon_v2_foreground" />
 </layer-list>
