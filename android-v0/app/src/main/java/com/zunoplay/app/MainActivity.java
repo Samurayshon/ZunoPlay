@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         rootView = new FrameLayout(this);
-        rootView.setBackgroundColor(Color.rgb(7, 8, 23));
+        rootView.setBackgroundColor(Color.rgb(2, 4, 13));
         setContentView(rootView);
 
         configureEdgeToEdgeSafely();
@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
         try {
             WebView newWebView = new WebView(this);
             webView = newWebView;
-            newWebView.setBackgroundColor(Color.rgb(7, 8, 23));
+            newWebView.setBackgroundColor(Color.rgb(2, 4, 13));
             newWebView.setFitsSystemWindows(false);
             newWebView.setKeepScreenOn(false);
 
@@ -432,8 +432,8 @@ public class MainActivity extends Activity {
         try {
             Window window = getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            window.setStatusBarColor(Color.rgb(4, 5, 12));
-            window.setNavigationBarColor(Color.rgb(4, 5, 12));
+            window.setStatusBarColor(Color.rgb(2, 4, 13));
+            window.setNavigationBarColor(Color.rgb(2, 4, 13));
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.setDecorFitsSystemWindows(false);
