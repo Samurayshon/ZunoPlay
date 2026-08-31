@@ -88,7 +88,7 @@ $$;
 -- when selected and charged, and preserve the exact public error contract otherwise.
 do $$
 declare
-  v_server jsonb := '{"selected":["gelo","desfazer"],"charges":{"gelo":1,"desfazer":1,"fluxo":0}}'::jsonb;
+  v_server jsonb := '{"selected":["gelo","desfazer","fluxo"],"charges":{"gelo":1,"desfazer":1,"fluxo":0}}'::jsonb;
   v_actual jsonb;
   v_message text;
   v_state text;
