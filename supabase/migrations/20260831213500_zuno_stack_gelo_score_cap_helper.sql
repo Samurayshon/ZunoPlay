@@ -4,6 +4,8 @@
 -- charges, auth/control-plane behavior, events and persistence.
 -- Historical migrations remain immutable.
 
+begin;
+
 do $migration$
 declare
   v_def text;
@@ -53,3 +55,5 @@ begin
   execute v_new;
 end;
 $migration$;
+
+commit;
