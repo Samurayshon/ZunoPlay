@@ -9,6 +9,10 @@ declare
   v_desfazer text;
   v_raw text := 'v_phase:=casewhenv_removed<27then''opening''whenv_removed<45then''development''whenv_removed<68then''pressure''else''final''end;';
   v_helper text := 'v_phase:=zuno_private.zuno_stack_resolve_phase(v_removed);';
+  v_power_helper_count integer;
+  v_gelo_helper_count integer;
+  v_desfazer_helper_count integer;
+  v_raw_total integer;
 begin
   if to_regprocedure('zuno_private.zuno_stack_resolve_phase(integer)') is null then
     raise exception 'stack_phase_catalog_helper_missing';
@@ -24,13 +28,22 @@ begin
     'zuno_private.zuno_stack_apply_desfazer_internal(uuid,bigint,text)'::regprocedure
   ), '\s+', '', 'g') into v_desfazer;
 
-  if regexp_count(v_power,v_helper)<>1
-     or regexp_count(v_gelo,v_helper)<>1
-     or regexp_count(v_desfazer,v_helper)<>1 then
-    raise exception 'stack_phase_catalog_helper_wiring_invalid';
+  v_power_helper_count := (length(v_power)-length(replace(v_power,v_helper,'')))/length(v_helper);
+  v_gelo_helper_count := (length(v_gelo)-length(replace(v_gelo,v_helper,'')))/length(v_helper);
+  v_desfazer_helper_count := (length(v_desfazer)-length(replace(v_desfazer,v_helper,'')))/length(v_helper);
+  v_raw_total :=
+    (length(v_power)-length(replace(v_power,v_raw,'')))/length(v_raw)
+    +(length(v_gelo)-length(replace(v_gelo,v_raw,'')))/length(v_raw)
+    +(length(v_desfazer)-length(replace(v_desfazer,v_raw,'')))/length(v_raw);
+
+  if v_power_helper_count<>1
+     or v_gelo_helper_count<>1
+     or v_desfazer_helper_count<>1 then
+    raise exception 'stack_phase_catalog_helper_wiring_invalid:power=%,gelo=%,desfazer=%',
+      v_power_helper_count,v_gelo_helper_count,v_desfazer_helper_count;
   end if;
-  if regexp_count(v_power,v_raw)+regexp_count(v_gelo,v_raw)+regexp_count(v_desfazer,v_raw)<>0 then
-    raise exception 'stack_phase_catalog_raw_resolution_remains';
+  if v_raw_total<>0 then
+    raise exception 'stack_phase_catalog_raw_resolution_remains:%',v_raw_total;
   end if;
 
   if has_function_privilege('public','zuno_private.zuno_stack_resolve_phase(integer)','EXECUTE')
