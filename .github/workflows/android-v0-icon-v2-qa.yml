@@ -1,0 +1,109 @@
+name: Android Icon V2 QA
+
+on:
+  push:
+    branches:
+      - qa/android-icon-v2-a-runtime-af6
+    paths:
+      - 'android-v0/**'
+      - '.github/workflows/android-v0-icon-v2-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-launcher:
+    runs-on: macos-15-intel
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build SDK
+        run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Install bounded-command support
+        run: |
+          brew install coreutils
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build debug APK
+        run: gradle -p android-v0 assembleDebug --stacktrace
+
+      - name: Verify APK metadata
+        run: |
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
+          VERSION_CODE=$(sed -n 's/.*versionCode \([0-9][0-9]*\).*/\1/p' android-v0/app/build.gradle | head -n 1)
+          AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
+          "$AAPT" dump badging "$APK" | tee android-apk-badging.txt
+          grep -q "package: name='com.zunoplay.app' versionCode='${VERSION_CODE}' versionName='${VERSION_NAME}'" android-apk-badging.txt
+          grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
+
+      - name: Runtime smoke test on Android 14
+        timeout-minutes: 25
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-build: 15507667
+          emulator-boot-timeout: 900
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -memory 2048
+          script: bash android-v0/ci/runtime-smoke.sh
+
+      - name: Record emulator availability after smoke
+        if: always()
+        run: |
+          {
+            echo '=== adb devices -l ==='
+            timeout 10s adb devices -l || true
+            echo
+            echo '=== emulator binary ==='
+            "$ANDROID_HOME/emulator/emulator" -version 2>&1 || true
+            echo
+            echo '=== emulator processes ==='
+            ps -ef | grep -E '[e]mulator|[q]emu' || true
+            echo
+            echo '=== macOS hypervisor support ==='
+            sysctl kern.hv_support 2>&1 || true
+            echo
+            echo '=== host summary ==='
+            sw_vers 2>&1 || true
+            uname -a 2>&1 || true
+          } > android-emulator-host-diagnostics.txt
+
+      - name: Upload runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZunoPlay-icon-v2-runtime-diagnostics
+          path: |
+            android-apk-badging.txt
+            android-runtime-logcat.txt
+            android-package.txt
+            android-activities.txt
+            android-windows.txt
+            android-launcher-ui.xml
+            android-launcher-zunoplay.png
+            android-emulator-host-diagnostics.txt
+          if-no-files-found: warn
+          retention-days: 14
