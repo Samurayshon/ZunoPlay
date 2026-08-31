@@ -14,7 +14,7 @@ permissions:
 jobs:
   validate-android-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 25
 
     steps:
       - name: Checkout exact Phase 2 SHA
@@ -96,8 +96,7 @@ jobs:
           #!/usr/bin/env bash
           set -uo pipefail
 
-          CI_ATTEMPT="${CI_ATTEMPT:-1}"
-          STATE_PREFIX="android-emulator-attempt-${CI_ATTEMPT}"
+          STATE_PREFIX='android-emulator-fixed-36.5.11'
 
           capture_state() {
             local LABEL="$1"
@@ -121,6 +120,8 @@ jobs:
               dmesg --ctime 2>&1 | tail -n 80 || true
               echo '=== coredump list ==='
               coredumpctl --no-pager list 2>&1 | tail -n 80 || true
+              echo '=== qemu coredump details ==='
+              coredumpctl --no-pager info qemu-system-x86_64-headless 2>&1 | tail -n 160 || true
             } > "$OUT"
           }
 
@@ -163,7 +164,10 @@ jobs:
             return 1
           }
 
-          echo "Phase 2 runtime smoke environment attempt ${CI_ATTEMPT}/2"
+          echo 'Phase 2 runtime smoke on explicitly pinned Android Emulator 36.5.11'
+          emulator -version 2>&1 | tee android-emulator-effective-version.txt
+          grep -q 'Android emulator version 36\.5\.11\.0' android-emulator-effective-version.txt
+
           if ! wait_for_adb; then
             echo "ADB device was not ready within the bounded window." >&2
             capture_state 'adb-not-ready'
@@ -176,7 +180,7 @@ jobs:
           MONITOR_PID=$!
 
           set +e
-          timeout 180s bash android-v0/ci/runtime-smoke.sh > "android-smoke-attempt-${CI_ATTEMPT}.txt" 2>&1
+          timeout 180s bash android-v0/ci/runtime-smoke.sh > android-smoke-fixed-36.5.11.txt 2>&1
           STATUS=$?
           set -e
 
@@ -184,52 +188,36 @@ jobs:
           wait "$MONITOR_PID" 2>/dev/null || true
           capture_state 'after-smoke'
           archive_crash_data 'after-smoke'
-          cat "android-smoke-attempt-${CI_ATTEMPT}.txt" || true
+          cat android-smoke-fixed-36.5.11.txt || true
           exit "$STATUS"
           BASH
           chmod +x /tmp/zunoplay-phase2-smoke-wrapper.sh
           bash -n /tmp/zunoplay-phase2-smoke-wrapper.sh
 
-      - name: Runtime smoke Android 14 - GPU off
-        id: smoke_gpu_off
+      - name: Runtime smoke Android 14 - Emulator 36.5.11 fixed
+        id: smoke_fixed
         continue-on-error: true
-        timeout-minutes: 6
+        timeout-minutes: 7
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          emulator-boot-timeout: 300
-          disable-animations: true
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu off
-          script: CI_ATTEMPT=1 bash /tmp/zunoplay-phase2-smoke-wrapper.sh
-
-      - name: Runtime smoke Android 14 - SwiftShader baseline
-        id: smoke_swiftshader
-        if: steps.smoke_gpu_off.outcome == 'failure'
-        continue-on-error: true
-        timeout-minutes: 6
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          target: google_apis
-          arch: x86_64
-          profile: pixel_6
+          emulator-build: '15261927'
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: CI_ATTEMPT=2 bash /tmp/zunoplay-phase2-smoke-wrapper.sh
+          script: bash /tmp/zunoplay-phase2-smoke-wrapper.sh
 
       - name: Enforce runtime smoke result
         shell: bash
         run: |
-          echo "gpu_off=${{ steps.smoke_gpu_off.outcome }}"
-          echo "swiftshader=${{ steps.smoke_swiftshader.outcome }}"
-          if [ "${{ steps.smoke_gpu_off.outcome }}" = 'success' ] || [ "${{ steps.smoke_swiftshader.outcome }}" = 'success' ]; then
+          echo "fixed_36_5_11=${{ steps.smoke_fixed.outcome }}"
+          if [ "${{ steps.smoke_fixed.outcome }}" = 'success' ]; then
             exit 0
           fi
-          echo 'Both emulator environment smoke attempts failed.' >&2
+          echo 'Pinned Android Emulator 36.5.11 smoke failed.' >&2
           exit 1
 
       - name: Upload runtime diagnostics
@@ -239,11 +227,12 @@ jobs:
           name: ZunoPlay-Phase2-android-runtime-diagnostics
           path: |
             android-apk-badging.txt
+            android-emulator-effective-version.txt
             android-runtime-logcat.txt
             android-package.txt
             android-activities.txt
-            android-smoke-attempt-*.txt
-            android-emulator-attempt-*.txt
-            android-emulator-attempt-*.tgz
+            android-smoke-fixed-36.5.11.txt
+            android-emulator-fixed-36.5.11-*.txt
+            android-emulator-fixed-36.5.11-*.tgz
           if-no-files-found: warn
           retention-days: 7
