@@ -1,0 +1,178 @@
+name: Supabase Production Migration Apply V2
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorization:
+        description: 'Type AUTORIZO_APLICAR_MIGRATIONS to continue'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-apply-v2
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/main' && github.event.inputs.authorization == 'AUTORIZO_APLICAR_MIGRATIONS'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      SUPABASE_CLI_VERSION: '2.116.0'
+      BASELINE_VERSION: '20260830154207'
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+
+      - name: Verify explicit authorization and stable database secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ github.event.inputs.authorization }}" = 'AUTORIZO_APLICAR_MIGRATIONS' || { echo 'Explicit authorization phrase missing.'; exit 20; }
+          test -n "${SUPABASE_DB_URL:-}" || { echo 'Missing environment/repository secret: SUPABASE_DB_URL'; exit 21; }
+          echo 'Authorization gate and database secret are present; secret value was not printed.'
+
+      - name: Verify allowlist format and local migration coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re, sys
+          baseline = '20260830154207'
+          approved = []
+          for raw in pathlib.Path('.github/supabase-production-approved-migrations.txt').read_text().splitlines():
+              line = raw.strip()
+              if not line or line.startswith('#'):
+                  continue
+              if not re.fullmatch(r'\d{14}', line):
+                  print('Invalid allowlist entry:', line)
+                  sys.exit(30)
+              if line <= baseline:
+                  print('Allowlist entry is not after baseline:', line)
+                  sys.exit(31)
+              if line in approved:
+                  print('Duplicate allowlist entry:', line)
+                  sys.exit(32)
+              approved.append(line)
+          local = []
+          for path in pathlib.Path('supabase/migrations').glob('*.sql'):
+              m = re.match(r'^(\d{14})_', path.name)
+              if m and m.group(1) > baseline:
+                  local.append(m.group(1))
+          local = sorted(set(local))
+          approved = sorted(approved)
+          unapproved = [v for v in local if v not in approved]
+          missing_local = [v for v in approved if v not in local]
+          if unapproved:
+              print('FAIL-CLOSED: local migrations after baseline are not approved:', ', '.join(unapproved))
+              sys.exit(33)
+          if missing_local:
+              print('FAIL-CLOSED: approved migration versions have no local file:', ', '.join(missing_local))
+              sys.exit(34)
+          print('Allowlist/local coverage OK')
+          PY
+
+      - name: Capture remote ledger before apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase migration list --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-ledger-before.log
+
+      - name: Mandatory final dry-run before apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push --dry-run --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-dry-run-before-apply.log
+
+      - name: Fail closed unless final dry-run matches approved-minus-applied state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re, sys
+          baseline = '20260830154207'
+          approved = sorted({line.strip() for line in pathlib.Path('.github/supabase-production-approved-migrations.txt').read_text().splitlines() if line.strip() and not line.strip().startswith('#')})
+          ledger_text = pathlib.Path('supabase-production-ledger-before.log').read_text(errors='replace')
+          remote = []
+          for line in ledger_text.splitlines():
+              versions = re.findall(r'(?<!\d)(\d{14})(?!\d)', line)
+              if len(versions) >= 2:
+                  candidate = versions[1]
+                  if candidate > baseline and candidate not in remote:
+                      remote.append(candidate)
+          remote = sorted(remote)
+          bad_remote = [v for v in remote if v not in approved]
+          if bad_remote:
+              print('FAIL-CLOSED: production contains unapproved post-baseline migrations:', ', '.join(bad_remote))
+              sys.exit(40)
+          expected_pending = [v for v in approved if v not in remote]
+          dry = pathlib.Path('supabase-production-dry-run-before-apply.log').read_text(errors='replace')
+          seen = sorted({v for v in re.findall(r'(?<!\d)(\d{14})(?!\d)', dry) if v > baseline})
+          if seen != expected_pending:
+              print('FAIL-CLOSED: final dry-run does not match approved-minus-applied state.')
+              print('Expected:', ', '.join(expected_pending) if expected_pending else '<none>')
+              print('Observed:', ', '.join(seen) if seen else '<none>')
+              sys.exit(41)
+          pathlib.Path('expected-pending.txt').write_text('\n'.join(expected_pending) + ('\n' if expected_pending else ''))
+          print('Final dry-run approved.')
+          PY
+
+      - name: Apply approved pending migrations
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -s expected-pending.txt ]; then
+            echo 'No approved pending migrations; nothing to apply.'
+            exit 0
+          fi
+          supabase db push --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-apply.log
+
+      - name: Verify production ledger after apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase migration list --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-ledger-after.log
+          python3 - <<'PY'
+          import pathlib, re, sys
+          baseline = '20260830154207'
+          approved = sorted({line.strip() for line in pathlib.Path('.github/supabase-production-approved-migrations.txt').read_text().splitlines() if line.strip() and not line.strip().startswith('#')})
+          text = pathlib.Path('supabase-production-ledger-after.log').read_text(errors='replace')
+          remote = []
+          for line in text.splitlines():
+              versions = re.findall(r'(?<!\d)(\d{14})(?!\d)', line)
+              if len(versions) >= 2:
+                  candidate = versions[1]
+                  if candidate > baseline and candidate not in remote:
+                      remote.append(candidate)
+          remote = sorted(remote)
+          bad = [v for v in remote if v not in approved]
+          missing = [v for v in approved if v not in remote]
+          if bad or missing:
+              print('FAIL-CLOSED: post-apply ledger mismatch.')
+              print('Unapproved remote:', ', '.join(bad) if bad else '<none>')
+              print('Approved but missing:', ', '.join(missing) if missing else '<none>')
+              sys.exit(50)
+          print('supabase_production_apply_v2_verified')
+          PY
+
+      - name: Upload production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-production-apply-v2
+          path: |
+            supabase-production-ledger-before.log
+            supabase-production-dry-run-before-apply.log
+            supabase-production-apply.log
+            supabase-production-ledger-after.log
+            expected-pending.txt
+          if-no-files-found: ignore
