@@ -6,6 +6,7 @@ PACKAGE="com.zunoplay.app"
 ACTIVITY="com.zunoplay.app/.MainActivity"
 ADB_TIMEOUT="${ADB_TIMEOUT:-20}"
 ADB_INSTALL_TIMEOUT="${ADB_INSTALL_TIMEOUT:-120}"
+APP_READY_TIMEOUT="${APP_READY_TIMEOUT:-90}"
 
 adb_t() {
   timeout --signal=TERM --kill-after=5s "${ADB_TIMEOUT}s" adb "$@"
@@ -22,6 +23,31 @@ capture_diagnostics() {
   adb_t shell dumpsys window windows > android-windows.txt || true
 }
 trap capture_diagnostics EXIT
+
+wait_for_activity_ready() {
+  local deadline=$((SECONDS + APP_READY_TIMEOUT))
+  local pid=""
+  local activities=""
+  local windows=""
+
+  while (( SECONDS < deadline )); do
+    pid="$(adb_t shell pidof "$PACKAGE" | tr -d '\r' || true)"
+    activities="$(adb_t shell dumpsys activity activities | tr -d '\r' || true)"
+    windows="$(adb_t shell dumpsys window windows | tr -d '\r' || true)"
+
+    if [[ -n "$pid" ]] \
+      && grep -Eq '(topResumedActivity|ResumedActivity).*com\.zunoplay\.app/.MainActivity' <<< "$activities" \
+      && grep -Eq 'mCurrentFocus=Window\{.*com\.zunoplay\.app/com\.zunoplay\.app\.MainActivity' <<< "$windows"; then
+      echo "ZunoPlay MainActivity is resumed, focused, and alive (pid=${pid})."
+      return 0
+    fi
+
+    sleep 2
+  done
+
+  echo "ZunoPlay MainActivity did not become resumed and focused within ${APP_READY_TIMEOUT}s." >&2
+  return 1
+}
 
 if [[ ! -s "$APK" ]]; then
   echo "APK not found or empty: $APK" >&2
@@ -42,8 +68,19 @@ for ATTEMPT in 1 2 3; do
   adb_t shell am force-stop "$PACKAGE"
   START_OUTPUT="$(adb_t shell am start -W -n "$ACTIVITY" | tr -d '\r')"
   echo "$START_OUTPUT"
-  grep -q 'Status: ok' <<< "$START_OUTPUT"
+
+  if ! grep -Eq 'Status: (ok|timeout)' <<< "$START_OUTPUT"; then
+    echo "Unexpected Activity Manager launch result on attempt ${ATTEMPT}." >&2
+    exit 1
+  fi
+
+  if grep -q 'Status: timeout' <<< "$START_OUTPUT"; then
+    echo "Activity Manager wait timed out during cold startup; validating actual resumed/focused state instead."
+  fi
+
+  wait_for_activity_ready
   sleep 8
+
   PID="$(adb_t shell pidof "$PACKAGE" | tr -d '\r' || true)"
   if [[ -z "$PID" ]]; then
     echo "ZunoPlay process exited after launch attempt ${ATTEMPT}." >&2
@@ -98,6 +135,9 @@ blocks = log.split('FATAL EXCEPTION')
 fatal_for_app = any('Process: com.zunoplay.app' in block[:4000] for block in blocks[1:])
 if fatal_for_app:
     raise SystemExit('Fatal ZunoPlay process crash detected in logcat.')
+
+if re.search(r'ANR in com\.zunoplay\.app', log):
+    raise SystemExit('ZunoPlay ANR detected in logcat.')
 
 matches = re.findall(
     r'Applied system safe area: left=(\d+) top=(\d+) right=(\d+) bottom=(\d+)',
