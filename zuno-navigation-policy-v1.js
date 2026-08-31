@@ -104,4 +104,14 @@
     apply();
     if(typeof MutationObserver==='function')new MutationObserver(records=>{if(records.some(record=>record.attributeName==='data-zuno-auth-state'))apply()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-zuno-auth-state']});
   }
+  if(typeof window!=='undefined'&&typeof history!=='undefined'){
+    ['pushState','replaceState'].forEach(method=>{
+      const original=history[method];
+      if(typeof original!=='function'||original.__zunoNavigationWrapped)return;
+      const wrapped=function(...args){const result=original.apply(this,args);queueMicrotask(()=>apply());return result};
+      wrapped.__zunoNavigationWrapped=true;
+      try{history[method]=wrapped}catch(_){/* location changes will still be handled by popstate */}
+    });
+    window.addEventListener('popstate',()=>apply());
+  }
 })();
