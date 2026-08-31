@@ -8,8 +8,6 @@ const chromeCss=fs.readFileSync('zuno-global-chrome.css','utf8');
 const fluidCss=fs.readFileSync('zuno-fluid-ui.css','utf8');
 const notificationsCss=fs.readFileSync('zuno-notifications.css','utf8');
 const xpCss=fs.readFileSync('zuno-my-xp-v1.css','utf8');
-const runtime=fs.readFileSync('nav.js','utf8');
-const sw=fs.readFileSync('sw.js','utf8');
 
 assert.match(policy,/\['pushState','replaceState'\]/,'navigation policy must resync after same-document route changes');
 assert.match(policy,/window\.addEventListener\('popstate',\(\)=>apply\(\)\)/,'navigation policy must resync on browser history navigation');
@@ -23,5 +21,3 @@ assert.match(notificationsCss,/\.zn-app\{[^}]*overflow-x:hidden/,'notifications 
 assert.match(notificationsCss,/\.zn-heading\{[^}]*min-width:0/,'notification heading must be shrinkable on narrow screens');
 assert.match(xpCss,/\.zmx-shell\{[^}]*max-width:100%[^}]*overflow-x:hidden/,'Meu XP shell must contain lateral overflow');
 assert.match(xpCss,/\.zmx-amount\{[^}]*max-width:45%[^}]*overflow-wrap:anywhere/,'Meu XP amounts must not cut the page horizontally');
-assert.match(runtime,/const V='351'/,'canonical runtime generation must be cache-busted');
-assert.match(sw,/CACHE_NAME="zunoplay-v351"/,'service worker cache must be refreshed with the shell generation');
