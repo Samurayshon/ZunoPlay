@@ -1,0 +1,124 @@
+name: Supabase Production Dry Run
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/approved-production-migrations.txt'
+      - '.github/workflows/supabase-production-dry-run.yml'
+      - '.github/workflows/supabase-production-apply.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-dry-run-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_PROJECT_ID: rliymfbbhqoejgfvsbuu
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Verify credentials without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo 'Missing SUPABASE_ACCESS_TOKEN'; exit 20; }
+          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo 'Missing SUPABASE_DB_PASSWORD'; exit 21; }
+          echo 'Supabase credentials are present.'
+
+      - name: Verify approved migration manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing or empty.'; exit 30; }
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          manifest = Path('supabase/approved-production-migrations.txt')
+          entries = [line.strip() for line in manifest.read_text().splitlines() if line.strip()]
+          if len(entries) != len(set(entries)):
+              print('Duplicate entries in approved migration manifest.')
+              sys.exit(31)
+          for name in entries:
+              if not re.fullmatch(r'\d{14}_[A-Za-z0-9_-]+\.sql', name):
+                  print(f'Invalid approved migration filename: {name}')
+                  sys.exit(32)
+              path = Path('supabase/migrations') / name
+              if not path.is_file() or path.stat().st_size == 0:
+                  print(f'Approved migration is missing or empty: {name}')
+                  sys.exit(33)
+          print(f'Approved manifest verified: {len(entries)} migration(s).')
+          PY
+
+      - name: Link CLI to production project
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      - name: Official production migration dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push --dry-run 2>&1 | tee supabase-production-dry-run.log
+
+      - name: Fail closed on any unapproved pending migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          approved_names = [line.strip() for line in Path('supabase/approved-production-migrations.txt').read_text().splitlines() if line.strip()]
+          approved_versions = {name[:14]: name for name in approved_names}
+          text = Path('supabase-production-dry-run.log').read_text(errors='replace')
+          observed_versions = []
+          for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', text):
+              if version not in observed_versions:
+                  observed_versions.append(version)
+
+          unapproved = [v for v in observed_versions if v not in approved_versions]
+          pending_approved = [v for v in observed_versions if v in approved_versions]
+
+          if unapproved:
+              print('FAIL-CLOSED: dry-run contains migration version(s) not in the approved manifest:')
+              for version in unapproved:
+                  print(f'  - {version}')
+              sys.exit(40)
+
+          if not pending_approved:
+              print('No approved pending migration versions were detected in the dry-run.')
+              sys.exit(41)
+
+          print('Approved pending migration versions detected:')
+          for version in pending_approved:
+              print(f'  - {approved_versions[version]}')
+          print('supabase_production_dry_run_approved_only_ok')
+          PY
+
+      - name: Upload dry-run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-production-dry-run
+          path: supabase-production-dry-run.log
+          if-no-files-found: ignore
