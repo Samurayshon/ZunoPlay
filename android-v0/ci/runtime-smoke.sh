@@ -7,6 +7,8 @@ ACTIVITY="com.zunoplay.app/.MainActivity"
 ADB_TIMEOUT="${ADB_TIMEOUT:-20}"
 ADB_INSTALL_TIMEOUT="${ADB_INSTALL_TIMEOUT:-120}"
 APP_READY_TIMEOUT="${APP_READY_TIMEOUT:-90}"
+POST_BOOT_SETTLE_SECONDS="${POST_BOOT_SETTLE_SECONDS:-60}"
+ADB_INSTALL_RETRY_DELAY="${ADB_INSTALL_RETRY_DELAY:-30}"
 
 adb_t() {
   timeout --signal=TERM --kill-after=5s "${ADB_TIMEOUT}s" adb "$@"
@@ -49,6 +51,35 @@ wait_for_activity_ready() {
   return 1
 }
 
+install_apk_with_verification_retry() {
+  local attempt=1
+  local install_output=""
+  local install_status=0
+
+  while (( attempt <= 2 )); do
+    echo "Installing ZunoPlay APK attempt ${attempt}/2 (bounded to ${ADB_INSTALL_TIMEOUT}s)..."
+    set +e
+    install_output="$(adb_install_t install -r "$APK" 2>&1)"
+    install_status=$?
+    set -e
+    echo "$install_output"
+
+    if (( install_status == 0 )); then
+      return 0
+    fi
+
+    if (( attempt == 1 )) && grep -q 'INSTALL_FAILED_VERIFICATION_FAILURE: Integrity verification timed out' <<< "$install_output"; then
+      echo "Android integrity verification was still busy after boot; waiting ${ADB_INSTALL_RETRY_DELAY}s before one bounded retry..."
+      sleep "$ADB_INSTALL_RETRY_DELAY"
+      adb_t wait-for-device
+      attempt=$((attempt + 1))
+      continue
+    fi
+
+    return "$install_status"
+  done
+}
+
 if [[ ! -s "$APK" ]]; then
   echo "APK not found or empty: $APK" >&2
   exit 1
@@ -57,8 +88,12 @@ fi
 echo "Waiting for Android device..."
 adb_t wait-for-device
 
-echo "Installing ZunoPlay APK (bounded to ${ADB_INSTALL_TIMEOUT}s)..."
-adb_install_t install -r "$APK"
+echo "Allowing Android post-boot package/integrity services to settle for ${POST_BOOT_SETTLE_SECONDS}s..."
+sleep "$POST_BOOT_SETTLE_SECONDS"
+adb_t wait-for-device
+adb_t shell cmd package path android >/dev/null
+
+install_apk_with_verification_retry
 
 echo "Clearing logcat..."
 adb_t logcat -c
