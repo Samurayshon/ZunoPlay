@@ -1,6 +1,6 @@
 -- Twelfth canonical Zuno Stack extraction: Board Power energy cap only.
--- Centralizes the 0..5 energy cap operator while preserving caller-owned rewards,
--- thresholds, trio resolution, phase resolution and events.
+-- Centralizes the upper-bound energy cap operator while preserving exact least(5, x)
+-- semantics plus caller-owned rewards, thresholds, trio/phase resolution and events.
 -- Historical migrations remain immutable.
 
 begin;
@@ -12,7 +12,7 @@ immutable
 security invoker
 set search_path = ''
 as $function$
-  select least(5, greatest(0, coalesce(p_energy, 0)));
+  select least(5, p_energy);
 $function$;
 
 revoke all on function zuno_private.zuno_stack_cap_energy(integer) from public, anon, authenticated;
