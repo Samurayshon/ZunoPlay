@@ -32,13 +32,15 @@ begin
     raise exception 'stack_power_cost_function_missing';
   end if;
 
-  if regexp_count(v_power, regexp_replace(v_power_cost, '([\\.\\(\\)\\+\\*\\?\\[\\]\\{\\}\\|\\^\\$])', '\\\1', 'g')) <> 1 then
+  -- These are literal catalog anchors, not regexes. Count by exact replacement so
+  -- punctuation in pg_get_functiondef cannot change the meaning of the test.
+  if (length(v_power) - length(replace(v_power, v_power_cost, ''))) / length(v_power_cost) <> 1 then
     raise exception 'stack_power_cost_board_anchor_invalid';
   end if;
-  if regexp_count(v_gelo, regexp_replace(v_gelo_cost, '([\\.\\(\\)\\+\\*\\?\\[\\]\\{\\}\\|\\^\\$])', '\\\1', 'g')) <> 1 then
+  if (length(v_gelo) - length(replace(v_gelo, v_gelo_cost, ''))) / length(v_gelo_cost) <> 1 then
     raise exception 'stack_power_cost_gelo_anchor_invalid';
   end if;
-  if regexp_count(v_desfazer, regexp_replace(v_desfazer_cost, '([\\.\\(\\)\\+\\*\\?\\[\\]\\{\\}\\|\\^\\$])', '\\\1', 'g')) <> 1 then
+  if (length(v_desfazer) - length(replace(v_desfazer, v_desfazer_cost, ''))) / length(v_desfazer_cost) <> 1 then
     raise exception 'stack_power_cost_desfazer_anchor_invalid';
   end if;
 
