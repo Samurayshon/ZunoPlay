@@ -32,8 +32,9 @@ insert into pulse_cases values
   ('critical_cross','71000000-0000-0000-0000-000000000004', '72000000-0000-0000-0000-000000000004', 24800, '["a","b","c","d","e","f"]', 25000, 3),
   ('already_capped','71000000-0000-0000-0000-000000000005', '72000000-0000-0000-0000-000000000005', 25000, '["a","b","c","d"]', 25000, 2);
 
--- Minimal auth/room membership fixtures. Profiles are not required by the Pulse Shift RPC;
--- validated Stack fixtures create auth.users + rooms + room_members directly.
+-- Minimal auth/room membership fixtures. room_members enforces the same authenticated
+-- membership path used by the validated Stack fixtures, so set the JWT subject per case
+-- before inserting membership instead of weakening production rules/triggers.
 insert into auth.users(id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at)
 select user_id,'authenticated','authenticated',label||'@pulse.test','',now(),now(),now()
 from pulse_cases
@@ -43,9 +44,18 @@ insert into public.rooms(id,owner_id,name)
 select room_id,user_id,'Pulse Shift characterization '||label from pulse_cases
 on conflict (id) do nothing;
 
-insert into public.room_members(room_id,user_id)
-select room_id,user_id from pulse_cases
-on conflict do nothing;
+do $$
+declare c record;
+begin
+  for c in select * from pulse_cases order by label loop
+    perform set_config('request.jwt.claim.sub', c.user_id::text, true);
+    perform set_config('request.jwt.claim.role', 'authenticated', true);
+    insert into public.room_members(room_id,user_id)
+    values(c.room_id,c.user_id)
+    on conflict do nothing;
+  end loop;
+end;
+$$;
 
 -- Build an active 90-tile engine; Pulse Shift only mutates tray and related scalar fields.
 insert into public.zuno_stack_match_state(room_id,revision,state,updated_by)
