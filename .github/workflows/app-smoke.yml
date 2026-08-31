@@ -62,6 +62,9 @@ jobs:
       - name: Validate navigation policy
         run: node --test tests/navigation-policy.test.mjs
 
+      - name: Validate mobile scroll contract
+        run: node --test tests/mobile-scroll-root.test.mjs
+
       - name: Guard removed prototypes and dead layers
         shell: bash
         run: |
