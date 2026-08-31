@@ -2,6 +2,11 @@ name: Android Phase 2 APK Validation
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - fix/mobile-scroll-p1-phase2-v350
+    paths:
+      - '.github/workflows/android-v0-phase2-validation.yml'
 
 permissions:
   contents: read
