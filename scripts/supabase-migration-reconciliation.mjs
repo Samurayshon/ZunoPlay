@@ -4,23 +4,23 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const ledgerPath = path.join(root, 'supabase/reconciliation/production-migrations-20260830.csv');
+const reconciliationDir = path.join(root, 'supabase/reconciliation');
 const migrationsDir = path.join(root, 'supabase/migrations');
 const strict = process.argv.includes('--strict');
 const jsonOnly = process.argv.includes('--json');
 
-function parseCsv(text) {
+function parseCsv(text, source) {
   const lines = text.trim().split(/\r?\n/);
   const header = lines.shift();
   if (header !== 'version,name,statement_count,statements_md5') {
-    throw new Error(`unexpected ledger header: ${header}`);
+    throw new Error(`unexpected ledger header in ${source}: ${header}`);
   }
   return lines.filter(Boolean).map((line) => {
     const [version, name, statementCount, statementsMd5] = line.split(',');
     if (!/^\d{14}$/.test(version) || !name || !/^\d+$/.test(statementCount) || !/^[a-f0-9]{32}$/.test(statementsMd5)) {
-      throw new Error(`invalid ledger row: ${line}`);
+      throw new Error(`invalid ledger row in ${source}: ${line}`);
     }
-    return { version, name, statementCount: Number(statementCount), statementsMd5 };
+    return { version, name, statementCount: Number(statementCount), statementsMd5, source };
   });
 }
 
@@ -30,14 +30,27 @@ function parseMigrationFilename(file) {
   return { file, version: match[1], name: match[2] };
 }
 
-if (!fs.existsSync(ledgerPath)) throw new Error(`missing ledger: ${ledgerPath}`);
+if (!fs.existsSync(reconciliationDir)) throw new Error(`missing reconciliation directory: ${reconciliationDir}`);
 if (!fs.existsSync(migrationsDir)) throw new Error(`missing migrations directory: ${migrationsDir}`);
 
-const production = parseCsv(fs.readFileSync(ledgerPath, 'utf8'));
+const ledgerFiles = fs.readdirSync(reconciliationDir)
+  .filter((file) => /^production-migrations-\d{8}\.csv$/.test(file))
+  .sort();
+if (!ledgerFiles.length) throw new Error('no production migration ledgers found');
+
+const production = ledgerFiles
+  .flatMap((file) => parseCsv(fs.readFileSync(path.join(reconciliationDir, file), 'utf8'), file))
+  .sort((a,b) => a.version.localeCompare(b.version));
+
 const localFiles = fs.readdirSync(migrationsDir).filter((file) => file.endsWith('.sql')).sort();
 const local = localFiles.map(parseMigrationFilename);
 const invalidFilenames = localFiles.filter((_, index) => !local[index]);
 const parsedLocal = local.filter(Boolean);
+
+const duplicateProductionVersions = production
+  .map((row) => row.version)
+  .filter((version, index, all) => all.indexOf(version) !== index)
+  .filter((version, index, all) => all.indexOf(version) === index);
 
 const productionByVersion = new Map(production.map((row) => [row.version, row]));
 const localByVersion = new Map(parsedLocal.map((row) => [row.version, row]));
@@ -67,6 +80,8 @@ for (const row of parsedLocal) {
   } else if (sameName.length > 1) {
     retimestampedAmbiguousName.push({ local: row, production: sameName });
   } else {
+    // A repository may legitimately contain migrations prepared for the next deploy.
+    // Keep them visible as pending, but do not call them production drift.
     localOnly.push(row);
   }
 }
@@ -79,6 +94,7 @@ const duplicateLocalVersions = parsedLocal
 
 const summary = {
   productionLedger: {
+    files: ledgerFiles,
     count: production.length,
     firstVersion: production.at(0)?.version ?? null,
     lastVersion: production.at(-1)?.version ?? null,
@@ -93,6 +109,7 @@ const summary = {
     productionMissingExactFile: productionMissingExactFile.length,
     invalidFilenames: invalidFilenames.length,
     duplicateLocalVersions: duplicateLocalVersions.length,
+    duplicateProductionVersions: duplicateProductionVersions.length,
   },
   details: {
     versionNameMismatch,
@@ -102,21 +119,21 @@ const summary = {
     productionMissingExactFile,
     invalidFilenames,
     duplicateLocalVersions,
+    duplicateProductionVersions,
   },
 };
 
-if (jsonOnly) {
-  process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
-} else {
+if (jsonOnly) process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
+else {
   console.log('Supabase migration reconciliation');
   console.log(JSON.stringify(summary, null, 2));
 }
 
 if (strict) {
   const c = summary.classifications;
-  const drift = c.versionNameMismatch + c.retimestampedUniqueName + c.retimestampedAmbiguousName + c.localOnly + c.productionMissingExactFile + c.invalidFilenames + c.duplicateLocalVersions;
+  const drift = c.versionNameMismatch + c.retimestampedUniqueName + c.retimestampedAmbiguousName + c.productionMissingExactFile + c.invalidFilenames + c.duplicateLocalVersions + c.duplicateProductionVersions;
   if (drift > 0) {
-    console.error(`Migration ledger drift detected (${drift} classified discrepancies).`);
+    console.error(`Migration ledger drift detected (${drift} classified discrepancies; ${c.localOnly} local migrations pending deployment).`);
     process.exit(1);
   }
 }
