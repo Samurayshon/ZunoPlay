@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const authoritySource = fs.readFileSync(new URL('../zuno-stack-authority-official.js', import.meta.url), 'utf8');
 const bridgeSource = fs.readFileSync(new URL('../zuno-stack-tile-bridge-v2.js', import.meta.url), 'utf8');
 
-function makeAuthorityHarness({ initialRevision = 1, remoteRevision = 2, localScore = 10, remoteScore = 20 } = {}) {
+function makeAuthorityHarness({ remoteRevision = 2, localScore = 10, remoteScore = 20 } = {}) {
   const applied = [];
   const rpcCalls = [];
   const fetches = [];
@@ -35,11 +35,11 @@ function makeAuthorityHarness({ initialRevision = 1, remoteRevision = 2, localSc
     applyState(next,meta){ state = structuredClone(next); applied.push({ next: structuredClone(next), meta }); },
     isActive(){ return true; }
   };
-  const document = { hidden:false, body:{dataset:{}}, getElementById(){return null;}, querySelector(){return null;}, addEventListener(){}, dispatchEvent(){} };
-  const window = { __ZUNO_STACK_AUTHORITY_ROOM_ID__: row.room_id, ZunoSupabaseClient: sb, ZunoStackCore: core };
-  const context = { window, document, location:{search:''}, sessionStorage:{getItem(){return null;}}, URLSearchParams, setTimeout(fn){ fn(); return 1; }, clearTimeout(){}, setInterval(){return 1;}, CustomEvent: class { constructor(type,opts){this.type=type;this.detail=opts?.detail;} }, crypto:{ randomUUID(){ return `00000000-0000-4000-8000-${String(rpcCalls.length+1).padStart(12,'0')}`; } }, console };
+  const document = { hidden:false, body:{dataset:{}}, getElementById(){return null;}, querySelector(){return null;}, addEventListener(){}, removeEventListener(){}, dispatchEvent(){} };
+  const window = { __ZUNO_STACK_AUTHORITY_ROOM_ID__: row.room_id, ZunoSupabaseClient: sb, ZunoStackCore: core, addEventListener(){}, removeEventListener(){} };
+  const context = { window, document, location:{search:''}, sessionStorage:{getItem(){return null;}}, URLSearchParams, setTimeout(fn){ fn(); return 1; }, clearTimeout(){}, setInterval(){return 1;}, clearInterval(){}, CustomEvent: class { constructor(type,opts){this.type=type;this.detail=opts?.detail;} }, crypto:{ randomUUID(){ return `00000000-0000-4000-8000-${String(rpcCalls.length+1).padStart(12,'0')}`; } }, console };
   vm.runInNewContext(authoritySource, context);
-  return { window, applied, rpcCalls, fetches, getState:()=>state, setRevisionForTest:()=>initialRevision };
+  return { window, applied, rpcCalls, fetches, getState:()=>state };
 }
 
 test('authority revision_conflict fetches authoritative row and converges local state before retry', async () => {
