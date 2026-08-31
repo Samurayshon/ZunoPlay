@@ -26,11 +26,27 @@ capture_diagnostics() {
 }
 trap capture_diagnostics EXIT
 
+assert_no_zuno_runtime_failure() {
+  local log=""
+  log="$(adb_t logcat -d -v threadtime || true)"
+
+  if grep -Eq 'ANR in com\.zunoplay\.app' <<< "$log"; then
+    echo "ZunoPlay ANR detected during runtime readiness validation." >&2
+    return 1
+  fi
+
+  if grep -A80 'FATAL EXCEPTION' <<< "$log" | grep -Eq 'Process: com\.zunoplay\.app([,[:space:]]|$)'; then
+    echo "Fatal ZunoPlay process crash detected during runtime readiness validation." >&2
+    return 1
+  fi
+}
+
 wait_for_activity_ready() {
   local deadline=$((SECONDS + APP_READY_TIMEOUT))
   local pid=""
   local activities=""
   local windows=""
+  local app_block=""
   local focus=""
 
   while (( SECONDS < deadline )); do
@@ -38,14 +54,23 @@ wait_for_activity_ready() {
     activities="$(adb_t shell dumpsys activity activities | tr -d '\r' || true)"
     windows="$(adb_t shell dumpsys window windows | tr -d '\r' || true)"
 
+    app_block="$(awk '
+      /ActivityRecord\{.*com\.zunoplay\.app\/.MainActivity/ { capture=1 }
+      capture { print }
+      capture && /nowVisible=/ { exit }
+    ' <<< "$activities")"
+
     if [[ -n "$pid" ]] \
       && grep -Eq '(topResumedActivity|ResumedActivity).*com\.zunoplay\.app/.MainActivity' <<< "$activities" \
+      && grep -Eq 'mVisibleRequested=true mVisible=true mClientVisible=true reportedDrawn=true reportedVisible=true' <<< "$app_block" \
+      && grep -Eq 'nowVisible=true' <<< "$app_block" \
       && grep -Eq 'Window\{.*com\.zunoplay\.app/com\.zunoplay\.app\.MainActivity' <<< "$windows"; then
+      assert_no_zuno_runtime_failure
       focus="$(grep -m1 'mCurrentFocus=' <<< "$activities" || grep -m1 'mCurrentFocus=' <<< "$windows" || true)"
       if grep -Eq 'mCurrentFocus=Window\{.*com\.zunoplay\.app/com\.zunoplay\.app\.MainActivity' <<< "$activities$windows"; then
-        echo "ZunoPlay MainActivity is resumed, focused, windowed, and alive (pid=${pid})."
+        echo "ZunoPlay MainActivity is resumed, visible, reportedDrawn, nowVisible, focused, windowed, and alive (pid=${pid})."
       else
-        echo "ZunoPlay MainActivity is resumed, windowed, and alive (pid=${pid}); transient system focus does not invalidate app readiness: ${focus:-unknown}."
+        echo "ZunoPlay MainActivity is resumed, visible, reportedDrawn, nowVisible, windowed, and alive (pid=${pid}); transient system focus does not invalidate readiness: ${focus:-unknown}."
       fi
       return 0
     fi
@@ -53,7 +78,8 @@ wait_for_activity_ready() {
     sleep 2
   done
 
-  echo "ZunoPlay MainActivity did not become resumed with a live application window within ${APP_READY_TIMEOUT}s." >&2
+  assert_no_zuno_runtime_failure
+  echo "ZunoPlay MainActivity did not become resumed, visible, reportedDrawn, nowVisible, and windowed within ${APP_READY_TIMEOUT}s." >&2
   return 1
 }
 
@@ -126,7 +152,7 @@ for ATTEMPT in 1 2 3; do
   fi
 
   if grep -q 'Status: timeout' <<< "$START_OUTPUT"; then
-    echo "Activity Manager wait timed out during cold startup; validating actual resumed/windowed state instead."
+    echo "Activity Manager wait timed out during cold startup; validating actual resumed/drawn state instead."
   fi
 
   wait_for_activity_ready
@@ -138,6 +164,7 @@ for ATTEMPT in 1 2 3; do
     echo "ZunoPlay process exited after launch attempt ${ATTEMPT}." >&2
     exit 1
   fi
+  assert_no_zuno_runtime_failure
 done
 
 adb_t shell input keyevent 223
@@ -147,6 +174,7 @@ if [[ -z "$PID" ]]; then
   echo "ZunoPlay process died after screen-off transition." >&2
   exit 1
 fi
+assert_no_zuno_runtime_failure
 
 adb_t shell input keyevent 224
 adb_t shell wm dismiss-keyguard || true
@@ -156,6 +184,7 @@ if [[ -z "$PID" ]]; then
   echo "ZunoPlay process died after wake transition." >&2
   exit 1
 fi
+assert_no_zuno_runtime_failure
 
 # Produce deterministic visual QA evidence of the installed launcher icon.
 adb_t shell am force-stop "$PACKAGE"
