@@ -24,7 +24,9 @@ jobs:
     env:
       SUPABASE_CLI_VERSION: '2.116.0'
       BASELINE_VERSION: '20260830154207'
-      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_PROJECT_ID: 'rliymfbbhqoejgfvsbuu'
+      SUPABASE_POOLER_HOST: 'aws-0-us-west-2.pooler.supabase.com'
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,13 +34,23 @@ jobs:
         with:
           version: ${{ env.SUPABASE_CLI_VERSION }}
 
-      - name: Verify explicit authorization and stable database secret
+      - name: Verify explicit authorization and build stable database URL
         shell: bash
         run: |
           set -euo pipefail
           test "${{ github.event.inputs.authorization }}" = 'AUTORIZO_APLICAR_MIGRATIONS' || { echo 'Explicit authorization phrase missing.'; exit 20; }
-          test -n "${SUPABASE_DB_URL:-}" || { echo 'Missing environment/repository secret: SUPABASE_DB_URL'; exit 21; }
-          echo 'Authorization gate and database secret are present; secret value was not printed.'
+          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo 'Missing repository secret: SUPABASE_DB_PASSWORD'; exit 21; }
+          python3 - <<'PY'
+          import os
+          from urllib.parse import quote
+          password = quote(os.environ['SUPABASE_DB_PASSWORD'], safe='')
+          project = os.environ['SUPABASE_PROJECT_ID']
+          host = os.environ['SUPABASE_POOLER_HOST']
+          url = f'postgresql://postgres.{project}:{password}@{host}:5432/postgres?sslmode=require'
+          with open(os.environ['GITHUB_ENV'], 'a') as fh:
+              fh.write(f'SUPABASE_DB_URL={url}\n')
+          print('Authorization gate passed and database URL assembled without printing credentials.')
+          PY
 
       - name: Verify allowlist format and local migration coverage
         shell: bash
