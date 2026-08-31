@@ -8,7 +8,6 @@ declare
   v_power text;
   v_gelo text;
   v_desfazer text;
-  v_signature text;
   v_def text;
   v_not_selected_total integer := 0;
   v_no_charge_total integer := 0;
@@ -47,16 +46,18 @@ begin
   end if;
 
   -- Each caller must still consume the already-canonical shared phase authority.
-  foreach v_signature, v_def in array array[
-    array['power',v_power],
-    array['gelo',v_gelo],
-    array['desfazer',v_desfazer]
-  ] loop
-    if (length(v_def)-length(replace(v_def,'zuno_private.zuno_stack_resolve_phase(v_removed);','')))
+  if (length(v_power)-length(replace(v_power,'zuno_private.zuno_stack_resolve_phase(v_removed);','')))
        / length('zuno_private.zuno_stack_resolve_phase(v_removed);') <> 1 then
-      raise exception 'stack_power_charge_guard_phase_anchor_changed:%',v_signature;
-    end if;
-  end loop;
+    raise exception 'stack_power_charge_guard_phase_anchor_changed:power';
+  end if;
+  if (length(v_gelo)-length(replace(v_gelo,'zuno_private.zuno_stack_resolve_phase(v_removed);','')))
+       / length('zuno_private.zuno_stack_resolve_phase(v_removed);') <> 1 then
+    raise exception 'stack_power_charge_guard_phase_anchor_changed:gelo';
+  end if;
+  if (length(v_desfazer)-length(replace(v_desfazer,'zuno_private.zuno_stack_resolve_phase(v_removed);','')))
+       / length('zuno_private.zuno_stack_resolve_phase(v_removed);') <> 1 then
+    raise exception 'stack_power_charge_guard_phase_anchor_changed:desfazer';
+  end if;
 
   -- Freeze caller-owned costs and energy handling. #13 must not own these rules.
   if position('v_cost:=casep_powerwhen''explosion''then3when''elo''then2when''fase''then2when''vortice''then2when''fluxo''then1when''ima''then1when''troca''thencasewhenv_phase=''final''then0else1endelse99end;' in v_power)=0
