@@ -80,28 +80,32 @@ jobs:
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
 
-      - name: Prepare host-isolation probe
+      - name: Prepare repaired host-isolation probe
         shell: bash
         run: |
           cat > /tmp/zunoplay-host-probe.sh <<'BASH'
           #!/usr/bin/env bash
           set -uo pipefail
+
           MODE="${1:?control|host-blocked}"
           APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           PACKAGE='com.zunoplay.app'
           ACTIVITY='com.zunoplay.app/.MainActivity'
           HOST='samurayshon.github.io'
+          GENERAL_HOST='example.com'
           PREFIX="android-host-${MODE}"
           TRACE="${PREFIX}-trace.txt"
           LIVE="${PREFIX}-liveness.txt"
           LOGCAT="${PREFIX}-logcat-continuous.txt"
           WEBVIEW="${PREFIX}-webview-state.txt"
           NETWORK="${PREFIX}-network-state.txt"
+          METHOD_FILE='android-host-connectivity-method.txt'
           LOGCAT_PID=''
           BLOCKED_V4=''
           BLOCKED_V6=''
 
           trace(){ printf '%s | %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$TRACE"; }
+
           cleanup(){
             [[ -n "$LOGCAT_PID" ]] && kill "$LOGCAT_PID" >/dev/null 2>&1 || true
             for ip in $BLOCKED_V4; do sudo iptables -D OUTPUT -d "$ip" -j REJECT >/dev/null 2>&1 || true; done
@@ -117,7 +121,11 @@ jobs:
 
           probe(){
             local label="$1" q=0 p=0 g=0 d=0 s=0
-            qemu_ok && q=1 || true; port_ok && p=1 || true; getstate_ok && g=1 || true; devices_ok && d=1 || true; shell_ok && s=1 || true
+            qemu_ok && q=1 || true
+            port_ok && p=1 || true
+            getstate_ok && g=1 || true
+            devices_ok && d=1 || true
+            shell_ok && s=1 || true
             printf '%s | %s qemu=%s port5554=%s get_state=%s devices=%s shell=%s\n' "$(date -u +%FT%TZ)" "$label" "$q" "$p" "$g" "$d" "$s" | tee -a "$LIVE"
           }
 
@@ -131,74 +139,162 @@ jobs:
           }
 
           hoststate(){
-            local label="$1" out="${PREFIX}-host-${label}.txt"
+            local label="$1"
+            local out="${PREFIX}-host-${label}.txt"
             {
               echo '=== UTC ==='; date -u
               echo '=== qemu ==='; pgrep -af 'qemu-system|emulator.*-avd' || true
               echo '=== listeners ==='; ss -ltnp 2>/dev/null | grep -E ':(5037|5554)\b' || true
               echo '=== adb ==='; timeout 5s adb devices -l || true
+              echo '=== adb get-state ==='; timeout 5s adb get-state || true
+              echo '=== adb shell ==='; timeout 5s adb shell true; echo "exit=$?"
               echo '=== coredumps ==='; coredumpctl --no-pager list 2>&1 | tail -n 80 || true
               echo '=== qemu coredump ==='; coredumpctl --no-pager info qemu-system-x86_64-headless 2>&1 | tail -n 180 || true
-            } > "$out"
+            } > "$out" 2>&1
+          }
+
+          guest_has(){ timeout 5s adb shell "command -v $1" >/dev/null 2>&1; }
+
+          connectivity_probe(){
+            local method="$1" host="$2"
+            case "$method" in
+              curl_https)
+                timeout 12s adb shell curl -fsS --connect-timeout 5 --max-time 8 "https://${host}/" >/dev/null 2>&1
+                ;;
+              wget_https)
+                timeout 12s adb shell wget -q -T 8 -O /dev/null "https://${host}/" >/dev/null 2>&1
+                ;;
+              toybox_wget_https)
+                timeout 12s adb shell toybox wget -q -T 8 -O /dev/null "https://${host}/" >/dev/null 2>&1
+                ;;
+              ping)
+                timeout 10s adb shell ping -c 1 -W 5 "$host" >/dev/null 2>&1
+                ;;
+              *)
+                return 2
+                ;;
+            esac
+          }
+
+          select_connectivity_method(){
+            local method
+            for method in curl_https wget_https toybox_wget_https ping; do
+              case "$method" in
+                curl_https) guest_has curl || continue ;;
+                wget_https) guest_has wget || continue ;;
+                toybox_wget_https) timeout 5s adb shell toybox --help 2>&1 | grep -qw wget || continue ;;
+                ping) guest_has ping || continue ;;
+              esac
+              trace "connectivity candidate=$method general=${GENERAL_HOST}"
+              connectivity_probe "$method" "$GENERAL_HOST" || continue
+              trace "connectivity candidate=$method target=${HOST}"
+              connectivity_probe "$method" "$HOST" || continue
+              printf '%s\n' "$method" > "$METHOD_FILE"
+              trace "connectivity method validated=$method (general+target both reachable in CONTROL)"
+              return 0
+            done
+            trace 'INSTRUMENTATION INVALID: no guest connectivity method could prove both general internet and target reachability'
+            return 1
           }
 
           network_check(){
-            local label="$1"
+            local label="$1" method="${2:-}"
             {
               echo "=== $(date -u +%FT%TZ) $label ==="
               echo '--- guest route ---'; timeout 5s adb shell ip route 2>&1 || true
-              echo '--- guest internet example.com:443 ---'; timeout 8s adb shell toybox nc -z -w 5 example.com 443 2>&1; echo "exit=$?"
-              echo "--- guest ${HOST}:443 ---"; timeout 8s adb shell toybox nc -z -w 5 "$HOST" 443 2>&1; echo "exit=$?"
+              echo '--- connectivity capabilities ---'
+              timeout 5s adb shell 'command -v curl; command -v wget; command -v ping; toybox --help 2>&1 | head -n 5' 2>&1 || true
+              echo "--- method=${method:-none} general=${GENERAL_HOST} ---"
+              if [[ -n "$method" ]]; then connectivity_probe "$method" "$GENERAL_HOST"; echo "exit=$?"; fi
+              echo "--- method=${method:-none} target=${HOST} ---"
+              if [[ -n "$method" ]]; then connectivity_probe "$method" "$HOST"; echo "exit=$?"; fi
               echo '--- host resolved target ---'; getent ahosts "$HOST" 2>&1 || true
-            } >> "$NETWORK"
+              echo '--- iptables target rules ---'; sudo iptables -S OUTPUT 2>&1 | grep -F "$HOST" || true
+            } >> "$NETWORK" 2>&1
           }
 
           trace "BEGIN mode=$MODE exact APK SHA 214010598fdf6fabc3bffd31a35f0381cdf449da"
           grep -E 'Pkg.Revision|Pkg.Path' "${ANDROID_HOME}/emulator/source.properties" | tee "${PREFIX}-emulator-version.txt"
           grep -q 'Pkg.Revision *= *36\.5\.11' "${PREFIX}-emulator-version.txt"
-          timeout 30s adb wait-for-device; timeout 10s adb shell true
+          timeout 30s adb wait-for-device
+          timeout 10s adb shell true
           adb install -r "$APK" | tee -a "$TRACE"
           probe pre-network
 
-          if [[ "$MODE" == 'host-blocked' ]]; then
+          METHOD=''
+          if [[ "$MODE" == 'control' ]]; then
+            if ! select_connectivity_method; then
+              network_check control-instrumentation-invalid ''
+              hoststate control-instrumentation-invalid
+              exit 140
+            fi
+            METHOD="$(cat "$METHOD_FILE")"
+            network_check control-prelaunch "$METHOD"
+            connectivity_probe "$METHOD" "$GENERAL_HOST" || { trace 'INSTRUMENTATION INVALID: CONTROL general internet not reachable'; exit 141; }
+            connectivity_probe "$METHOD" "$HOST" || { trace 'INSTRUMENTATION INVALID: CONTROL target not reachable'; exit 142; }
+            trace "CONTROL PRECONDITION PASS method=$METHOD general=reachable target=reachable"
+          else
+            [[ -s "$METHOD_FILE" ]] || { trace 'INSTRUMENTATION INVALID: validated CONTROL method file missing'; hoststate method-missing; exit 143; }
+            METHOD="$(cat "$METHOD_FILE")"
+            connectivity_probe "$METHOD" "$GENERAL_HOST" || { trace 'INSTRUMENTATION INVALID: HOST-BLOCKED general internet not reachable before filtering'; network_check blocked-before-filter-invalid "$METHOD"; exit 144; }
+            connectivity_probe "$METHOD" "$HOST" || { trace 'INSTRUMENTATION INVALID: HOST-BLOCKED target not reachable before filtering'; network_check blocked-before-filter-invalid "$METHOD"; exit 145; }
+
             mapfile -t V4 < <(getent ahostsv4 "$HOST" | awk '{print $1}' | sort -u)
             mapfile -t V6 < <(getent ahostsv6 "$HOST" | awk '{print $1}' | sort -u)
-            ((${#V4[@]} > 0)) || { trace 'no IPv4 addresses resolved'; exit 130; }
+            ((${#V4[@]} > 0)) || { trace 'INSTRUMENTATION INVALID: no IPv4 addresses resolved'; exit 146; }
             for ip in "${V4[@]}"; do sudo iptables -I OUTPUT 1 -d "$ip" -j REJECT; BLOCKED_V4+=" $ip"; done
             for ip in "${V6[@]}"; do sudo ip6tables -I OUTPUT 1 -d "$ip" -j REJECT 2>/dev/null && BLOCKED_V6+=" $ip" || true; done
             trace "HOST-BLOCKED rules installed IPv4:${BLOCKED_V4} IPv6:${BLOCKED_V6}"
-            network_check blocked-prelaunch
-            INTERNET_STATUS=$(timeout 8s adb shell toybox nc -z -w 5 example.com 443 >/dev/null 2>&1; echo $?)
-            TARGET_STATUS=$(timeout 8s adb shell toybox nc -z -w 5 "$HOST" 443 >/dev/null 2>&1; echo $?)
-            trace "prelaunch proof internet_status=$INTERNET_STATUS target_status=$TARGET_STATUS"
-            [[ "$INTERNET_STATUS" -eq 0 && "$TARGET_STATUS" -ne 0 ]] || { trace 'HOST-BLOCKED precondition failed'; exit 131; }
-          else
-            network_check control-prelaunch
-            trace 'CONTROL ONLINE no filtering installed'
+            network_check blocked-prelaunch "$METHOD"
+
+            GENERAL_STATUS=0
+            TARGET_STATUS=0
+            connectivity_probe "$METHOD" "$GENERAL_HOST" || GENERAL_STATUS=$?
+            connectivity_probe "$METHOD" "$HOST" || TARGET_STATUS=$?
+            trace "HOST-BLOCKED prelaunch proof method=$METHOD general_status=$GENERAL_STATUS target_status=$TARGET_STATUS"
+            if [[ "$GENERAL_STATUS" -ne 0 || "$TARGET_STATUS" -eq 0 ]]; then
+              trace 'INSTRUMENTATION INVALID: required general=reachable and target=blocked precondition not demonstrated; APK launch skipped'
+              hoststate blocked-precondition-invalid
+              exit 147
+            fi
+            trace "HOST-BLOCKED PRECONDITION PASS method=$METHOD general=reachable target=blocked"
           fi
 
           adb logcat -c || true
           adb logcat -v threadtime > "$LOGCAT" 2>&1 & LOGCAT_PID=$!
-          webview before-launch; probe before-launch
+          webview before-launch
+          probe before-launch
           timeout 10s adb shell am force-stop "$PACKAGE"
           set +e
-          START_OUTPUT="$(timeout 30s adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"; START_STATUS=$?
+          START_OUTPUT="$(timeout 30s adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+          START_STATUS=$?
           set -e
           printf '%s\n' "$START_OUTPUT" | tee -a "$TRACE"
           trace "am-start exit=$START_STATUS"
-          probe immediately-after-launch; webview immediately-after-launch
+          probe immediately-after-launch
+          webview immediately-after-launch
 
           FREEZE=0
           for SECOND in $(seq 1 20); do
             sleep 1
             probe "post-launch-${SECOND}s"
             webview "post-launch-${SECOND}s"
-            if ! shell_ok; then FREEZE=1; trace "freeze detected at ${SECOND}s"; hoststate "freeze-${SECOND}s"; break; fi
+            if ! shell_ok; then
+              FREEZE=1
+              trace "freeze detected at iteration=${SECOND}; host/QEMU/ADB evidence captured independently"
+              hoststate "freeze-${SECOND}s"
+              break
+            fi
           done
+
           sleep 2
-          probe final; webview final; network_check final; hoststate final
+          probe final
+          webview final
+          network_check final "$METHOD"
+          hoststate final
           tar -czf "${PREFIX}-crashdata.tgz" /tmp/android-runner 2>/dev/null || true
           if shell_ok; then timeout 10s adb logcat -d -v threadtime > "${PREFIX}-logcat-snapshot.txt" || true; fi
+
           [[ "$START_STATUS" -eq 0 ]] || exit 120
           grep -q 'Status: ok' <<< "$START_OUTPUT" || exit 121
           [[ "$FREEZE" -eq 0 ]] || exit 122
@@ -207,10 +303,10 @@ jobs:
           chmod +x /tmp/zunoplay-host-probe.sh
           bash -n /tmp/zunoplay-host-probe.sh
 
-      - name: CONTROL ONLINE - host isolation probe
+      - name: CONTROL ONLINE - validate connectivity then probe
         id: control_probe
         continue-on-error: true
-        timeout-minutes: 7
+        timeout-minutes: 8
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -223,10 +319,10 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
           script: bash /tmp/zunoplay-host-probe.sh control
 
-      - name: HOST-BLOCKED - ZunoPlay host only
+      - name: HOST-BLOCKED - require valid isolation then probe
         id: blocked_probe
         continue-on-error: true
-        timeout-minutes: 7
+        timeout-minutes: 8
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -244,6 +340,11 @@ jobs:
         shell: bash
         run: |
           printf 'control=%s\nhost_blocked=%s\n' '${{ steps.control_probe.outcome }}' '${{ steps.blocked_probe.outcome }}' | tee android-host-matrix-outcomes.txt
+          if [ -s android-host-connectivity-method.txt ]; then
+            printf 'connectivity_method=%s\n' "$(cat android-host-connectivity-method.txt)" | tee -a android-host-matrix-outcomes.txt
+          else
+            echo 'connectivity_method=UNVALIDATED' | tee -a android-host-matrix-outcomes.txt
+          fi
 
       - name: Enforce probe execution
         shell: bash
@@ -251,8 +352,12 @@ jobs:
           CONTROL='${{ steps.control_probe.outcome }}'
           BLOCKED='${{ steps.blocked_probe.outcome }}'
           echo "control=$CONTROL host_blocked=$BLOCKED"
+          if grep -Rqs 'INSTRUMENTATION INVALID' android-host-*-trace.txt 2>/dev/null; then
+            echo 'Host isolation instrumentation was invalid; no product conclusion is allowed.' >&2
+            exit 2
+          fi
           if [ "$CONTROL" = success ] && [ "$BLOCKED" = success ]; then exit 0; fi
-          echo 'At least one host-isolation probe failed; inspect diagnostics.' >&2
+          echo 'At least one valid host-isolation runtime probe failed; inspect diagnostics.' >&2
           exit 1
 
       - name: Upload runtime diagnostics
@@ -262,6 +367,7 @@ jobs:
           name: ZunoPlay-Phase2-android-runtime-diagnostics
           path: |
             android-apk-badging.txt
+            android-host-connectivity-method.txt
             android-host-matrix-outcomes.txt
             android-host-*.txt
             android-host-*.tgz
