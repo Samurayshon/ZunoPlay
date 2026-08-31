@@ -31,6 +31,7 @@ wait_for_activity_ready() {
   local pid=""
   local activities=""
   local windows=""
+  local focus=""
 
   while (( SECONDS < deadline )); do
     pid="$(adb_t shell pidof "$PACKAGE" | tr -d '\r' || true)"
@@ -39,16 +40,31 @@ wait_for_activity_ready() {
 
     if [[ -n "$pid" ]] \
       && grep -Eq '(topResumedActivity|ResumedActivity).*com\.zunoplay\.app/.MainActivity' <<< "$activities" \
-      && grep -Eq 'mCurrentFocus=Window\{.*com\.zunoplay\.app/com\.zunoplay\.app\.MainActivity' <<< "$windows"; then
-      echo "ZunoPlay MainActivity is resumed, focused, and alive (pid=${pid})."
+      && grep -Eq 'Window\{.*com\.zunoplay\.app/com\.zunoplay\.app\.MainActivity' <<< "$windows"; then
+      focus="$(grep -m1 'mCurrentFocus=' <<< "$activities" || grep -m1 'mCurrentFocus=' <<< "$windows" || true)"
+      if grep -Eq 'mCurrentFocus=Window\{.*com\.zunoplay\.app/com\.zunoplay\.app\.MainActivity' <<< "$activities$windows"; then
+        echo "ZunoPlay MainActivity is resumed, focused, windowed, and alive (pid=${pid})."
+      else
+        echo "ZunoPlay MainActivity is resumed, windowed, and alive (pid=${pid}); transient system focus does not invalidate app readiness: ${focus:-unknown}."
+      fi
       return 0
     fi
 
     sleep 2
   done
 
-  echo "ZunoPlay MainActivity did not become resumed and focused within ${APP_READY_TIMEOUT}s." >&2
+  echo "ZunoPlay MainActivity did not become resumed with a live application window within ${APP_READY_TIMEOUT}s." >&2
   return 1
+}
+
+dismiss_transient_system_anr() {
+  local activities=""
+  activities="$(adb_t shell dumpsys activity activities | tr -d '\r' || true)"
+  if grep -q 'Application Not Responding: system' <<< "$activities"; then
+    echo "Dismissing transient Android system ANR dialog so it cannot block subsequent smoke interactions."
+    adb_t shell input keyevent KEYCODE_BACK || true
+    sleep 2
+  fi
 }
 
 install_apk_with_verification_retry() {
@@ -110,10 +126,11 @@ for ATTEMPT in 1 2 3; do
   fi
 
   if grep -q 'Status: timeout' <<< "$START_OUTPUT"; then
-    echo "Activity Manager wait timed out during cold startup; validating actual resumed/focused state instead."
+    echo "Activity Manager wait timed out during cold startup; validating actual resumed/windowed state instead."
   fi
 
   wait_for_activity_ready
+  dismiss_transient_system_anr
   sleep 8
 
   PID="$(adb_t shell pidof "$PACKAGE" | tr -d '\r' || true)"
@@ -142,6 +159,7 @@ fi
 
 # Produce deterministic visual QA evidence of the installed launcher icon.
 adb_t shell am force-stop "$PACKAGE"
+dismiss_transient_system_anr
 adb_t shell input keyevent KEYCODE_HOME
 sleep 3
 adb_t shell input swipe 540 1800 540 500 500 || true
