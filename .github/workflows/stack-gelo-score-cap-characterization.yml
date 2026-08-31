@@ -2,7 +2,9 @@ name: Zuno Stack Gelo Score Cap Characterization
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - codex/stack-extraction-8-power-score-cap
     paths:
       - 'supabase/migrations/**'
       - 'tests/zuno-stack-gelo-score-cap-characterization.sql'
