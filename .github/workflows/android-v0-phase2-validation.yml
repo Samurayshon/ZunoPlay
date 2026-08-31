@@ -79,3 +79,4 @@ jobs:
           path: android-v0/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
+# phase2-ci-trigger
