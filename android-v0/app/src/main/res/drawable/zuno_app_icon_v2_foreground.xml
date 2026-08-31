@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Proposal A / Close-up Premium: stronger glow behind the canonical Zuno. -->
+    <!-- Proposal A / Close-up Premium: visible glow without sacrificing mascot framing. -->
     <item
-        android:width="108dp"
-        android:height="108dp"
+        android:width="104dp"
+        android:height="104dp"
         android:gravity="center"
         android:drawable="@drawable/zuno_app_icon_v2_halo" />
 
-    <!-- Reuse the canonical Central mascot unchanged, only enlarging its presentation. -->
+    <!-- Keep the canonical Central mascot intact and inside adaptive-icon safe framing. -->
     <item
-        android:width="118dp"
-        android:height="118dp"
+        android:width="92dp"
+        android:height="92dp"
         android:gravity="center"
         android:drawable="@drawable/zuno_app_icon_foreground" />
 </layer-list>
