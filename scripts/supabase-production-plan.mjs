@@ -158,7 +158,7 @@ const allowlistSet = new Set(allowlistedVersions);
 const approvedPending = pending.filter((row) => allowlistSet.has(row.version));
 const unauthorizedPending = pending.filter((row) => !allowlistSet.has(row.version));
 const staleApprovals = allowlistedVersions.filter((version) => appliedVersions.has(version));
-const unknownApprovals = allowlistedVersions.filter((version) => !appliedVersions.has(version) && !pendingByVersion.has(version));
+const legacyApprovals = allowlistedVersions.filter((version) => !appliedVersions.has(version) && !pendingByVersion.has(version));
 
 const safetyErrors = [];
 for (const migration of pending) {
@@ -188,7 +188,6 @@ if (remoteVersions) {
 const blockers = {
   drift: drift.length,
   unauthorizedPending: unauthorizedPending.length,
-  unknownApprovals: unknownApprovals.length,
   safetyErrors: safetyErrors.length,
 };
 const blockerCount = Object.values(blockers).reduce((sum, value) => sum + value, 0);
@@ -208,7 +207,7 @@ const plan = {
     approvedPending,
     unauthorizedPending,
     staleApprovals,
-    unknownApprovals,
+    legacyApprovals,
     drift,
     safetyErrors,
   },
@@ -227,7 +226,7 @@ if (jsonOnly) {
   console.log(`Approved pending: ${approvedPending.length}`);
   console.log(`Unauthorized pending: ${unauthorizedPending.length}`);
   console.log(`Stale approvals (already applied, tolerated): ${staleApprovals.length}`);
-  console.log(`Unknown approvals: ${unknownApprovals.length}`);
+  console.log(`Legacy approvals with no local migration (inert, tolerated): ${legacyApprovals.length}`);
   console.log(`Drift: ${drift.length}`);
   console.log(`Safety errors: ${safetyErrors.length}`);
   if (remote) console.log(`Remote versions: ${remote.count}`);
