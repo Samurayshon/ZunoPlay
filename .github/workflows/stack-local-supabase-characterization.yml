@@ -16,6 +16,7 @@ on:
       - 'tests/zuno-stack-pulse-characterization.sql'
       - 'tests/zuno-stack-pulse-helper-characterization.sql'
       - 'tests/zuno-stack-tray-finish-characterization.sql'
+      - 'tests/zuno-stack-tray-finish-helper-characterization.sql'
       - 'tests/zuno-stack-rpc-concurrency.sh'
       - 'zuno-stack-authority-official.js'
       - 'zuno-stack-tile-bridge-v2.js'
@@ -81,6 +82,7 @@ jobs:
             if to_regprocedure('zuno_private.zuno_stack_resolve_basic_trio(jsonb,text,integer,integer,integer,integer,bigint,bigint)') is null then raise exception 'missing canonical basic trio helper'; end if;
             if to_regprocedure('zuno_private.zuno_stack_resolve_post_trio_scoring(integer,boolean)') is null then raise exception 'missing canonical post-trio scoring helper'; end if;
             if to_regprocedure('zuno_private.zuno_stack_resolve_pulse(integer,integer,boolean,jsonb,jsonb,jsonb)') is null then raise exception 'missing canonical pulse helper'; end if;
+            if to_regprocedure('zuno_private.zuno_stack_should_finish_tray(jsonb)') is null then raise exception 'missing canonical tray finish helper'; end if;
             if to_regclass('public.zuno_stack_game_events') is null then raise exception 'missing public.zuno_stack_game_events'; end if;
           end
           $$;
@@ -100,6 +102,11 @@ jobs:
         run: |
           set -euo pipefail
           PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-pulse-helper-characterization.sql
+      - name: Characterize canonical tray finish helper directly
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-tray-finish-helper-characterization.sql
       - name: Characterize post-trio combo and doubleNext scoring
         shell: bash
         run: |
