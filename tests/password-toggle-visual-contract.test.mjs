@@ -49,6 +49,21 @@ test('visible-password state changes only the eye color',()=>{
   assert.ok(icon.includes('stroke:currentColor'),'eye stroke must inherit the state color');
 });
 
+test('login eye is centered against the password input instead of its label',()=>{
+  const wrapper=rule('.za-password-wrap,.zo-password-wrap');
+  assert.ok(wrapper.includes('position:relative'),'the password wrapper must establish the positioning context');
+
+  const toggle=rule('.za-password-toggle,.zo-password-toggle');
+  assert.ok(toggle.includes('top:50%'),'the eye must target the vertical midpoint of its wrapper');
+  assert.ok(toggle.includes('transform:translateY(-50%)'),'the eye must offset itself by half its own height');
+
+  assert.match(
+    login,
+    /<label class="za-label" for="password">Senha<\/label><div class="za-password-wrap"><input\b[^>]*\bid="password"[^>]*><button\b[^>]*\bclass="za-password-toggle"[^>]*>.*?<\/button><\/div><\/div>/,
+    'login input and eye must share a wrapper that excludes the field label'
+  );
+});
+
 test('login and both registration fields retain accessible toggle state',()=>{
   assert.equal((login.match(/class="za-password-toggle"/g)||[]).length,1,'login must expose one password toggle');
   assert.equal((cadastro.match(/class="zo-password-toggle"/g)||[]).length,2,'registration must expose password and confirmation toggles');
