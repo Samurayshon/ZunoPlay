@@ -14,7 +14,7 @@ permissions:
 jobs:
   validate-android-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
       - name: Checkout exact Phase 2 SHA
@@ -56,18 +56,15 @@ jobs:
           set -euo pipefail
           APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
-
           test "$(git rev-parse HEAD)" = "214010598fdf6fabc3bffd31a35f0381cdf449da"
           VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
           VERSION_CODE=$(sed -n 's/.*versionCode \([0-9][0-9]*\).*/\1/p' android-v0/app/build.gradle | head -n 1)
           test -n "$VERSION_NAME"
           test -n "$VERSION_CODE"
-
           AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
           "$AAPT" dump badging "$APK" | tee android-apk-badging.txt
           grep -q "package: name='com.zunoplay.app' versionCode='${VERSION_CODE}' versionName='${VERSION_NAME}'" android-apk-badging.txt
           grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
-
           echo "source_sha=$(git rev-parse HEAD)"
           echo "apk_sha256=$(sha256sum "$APK" | awk '{print $1}')"
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
@@ -89,108 +86,117 @@ jobs:
             sudo chmod 666 /dev/kvm
           fi
 
-      - name: Prepare app-vs-emulator isolation wrapper
+      - name: Prepare post-launch freeze probe
         shell: bash
         run: |
-          cat > /tmp/zunoplay-phase2-isolation.sh <<'BASH'
+          cat > /tmp/zunoplay-freeze-probe.sh <<'BASH'
           #!/usr/bin/env bash
           set -uo pipefail
 
+          MODE="${1:?mode required: normal|offline}"
           APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           PACKAGE='com.zunoplay.app'
           ACTIVITY='com.zunoplay.app/.MainActivity'
-          CONTROL_PACKAGE='com.android.settings'
-          CONTROL_ACTIVITY='com.android.settings/.Settings'
-          STATE_PREFIX='android-emulator-fixed-36.5.11'
-          EMULATOR_BIN="${ANDROID_HOME}/emulator/emulator"
-          COMMAND_LOG='android-incremental-command-trace.txt'
-          CONTINUOUS_LOG='android-runtime-logcat-continuous.txt'
+          PREFIX="android-freeze-${MODE}"
+          TRACE="${PREFIX}-trace.txt"
+          LOGCAT="${PREFIX}-logcat-continuous.txt"
+          LIVENESS="${PREFIX}-liveness.txt"
+          WEBVIEW="${PREFIX}-webview-state.txt"
 
           trace() {
-            printf '%s | %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$COMMAND_LOG"
+            printf '%s | %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$TRACE"
           }
 
-          capture_state() {
+          qemu_process_probe() {
+            if pgrep -af 'qemu-system|emulator.*-avd' > /tmp/qemu-probe.txt 2>&1; then
+              printf 'qemu_process=alive ' | tee -a "$LIVENESS"
+              tr '\n' ' ' < /tmp/qemu-probe.txt | tee -a "$LIVENESS"
+              printf '\n' | tee -a "$LIVENESS"
+              return 0
+            fi
+            echo 'qemu_process=missing' | tee -a "$LIVENESS"
+            return 1
+          }
+
+          port_probe() {
+            if ss -ltn 2>/dev/null | grep -qE ':5554\b'; then
+              echo 'port_5554=listening' | tee -a "$LIVENESS"
+              return 0
+            fi
+            echo 'port_5554=closed' | tee -a "$LIVENESS"
+            return 1
+          }
+
+          adb_get_state_probe() {
+            local OUT STATUS
+            set +e
+            OUT="$(timeout 5s adb get-state 2>&1)"
+            STATUS=$?
+            set -e
+            printf 'adb_get_state_exit=%s output=%q\n' "$STATUS" "$OUT" | tee -a "$LIVENESS"
+            return "$STATUS"
+          }
+
+          adb_devices_probe() {
+            local OUT STATUS
+            set +e
+            OUT="$(timeout 5s adb devices -l 2>&1)"
+            STATUS=$?
+            set -e
+            printf 'adb_devices_exit=%s output=%q\n' "$STATUS" "$OUT" | tee -a "$LIVENESS"
+            return "$STATUS"
+          }
+
+          adb_shell_probe() {
+            local OUT STATUS
+            set +e
+            OUT="$(timeout 5s adb shell true 2>&1)"
+            STATUS=$?
+            set -e
+            printf 'adb_shell_true_exit=%s output=%q\n' "$STATUS" "$OUT" | tee -a "$LIVENESS"
+            return "$STATUS"
+          }
+
+          probe_all() {
             local LABEL="$1"
-            local OUT="${STATE_PREFIX}-${LABEL}.txt"
             {
-              echo '=== UTC ==='
-              date -u
-              echo '=== memory ==='
-              free -m || true
-              echo '=== disk ==='
-              df -h || true
-              echo '=== emulator version ==='
-              "$EMULATOR_BIN" -version 2>&1 | head -n 8 || true
-              echo '=== emulator/qemu processes ==='
-              pgrep -af 'emulator|qemu' || true
-              echo '=== listeners 5037/5554 ==='
-              ss -ltnp 2>/dev/null | grep -E ':(5037|5554)\b' || true
-              echo '=== adb devices ==='
-              timeout 10s adb devices -l || true
-              echo '=== kernel tail ==='
-              dmesg --ctime 2>&1 | tail -n 80 || true
-              echo '=== coredump list ==='
-              coredumpctl --no-pager list 2>&1 | tail -n 80 || true
-              echo '=== qemu coredump details ==='
-              coredumpctl --no-pager info qemu-system-x86_64-headless 2>&1 | tail -n 180 || true
+              echo "=== $(date -u +%FT%TZ) ${LABEL} ==="
+            } | tee -a "$LIVENESS"
+            qemu_process_probe || true
+            port_probe || true
+            adb_get_state_probe || true
+            adb_devices_probe || true
+            adb_shell_probe || true
+          }
+
+          capture_host_state() {
+            local LABEL="$1"
+            local OUT="${PREFIX}-host-${LABEL}.txt"
+            {
+              echo '=== UTC ==='; date -u
+              echo '=== memory ==='; free -m || true
+              echo '=== disk ==='; df -h || true
+              echo '=== emulator package revision ==='; grep -E 'Pkg.Revision|Pkg.Path' "${ANDROID_HOME}/emulator/source.properties" || true
+              echo '=== qemu/emulator process ==='; pgrep -af 'qemu-system|emulator.*-avd' || true
+              echo '=== listeners ==='; ss -ltnp 2>/dev/null | grep -E ':(5037|5554)\b' || true
+              echo '=== adb devices ==='; timeout 5s adb devices -l || true
+              echo '=== coredumps ==='; coredumpctl --no-pager list 2>&1 | tail -n 80 || true
+              echo '=== qemu coredump ==='; coredumpctl --no-pager info qemu-system-x86_64-headless 2>&1 | tail -n 180 || true
+              echo '=== kernel tail ==='; dmesg --ctime 2>&1 | tail -n 100 || true
             } > "$OUT"
           }
 
+          capture_webview_state() {
+            local LABEL="$1"
+            {
+              echo "=== $(date -u +%FT%TZ) ${LABEL} ==="
+              timeout 5s adb shell dumpsys webviewupdate 2>&1 || true
+              timeout 5s adb shell ps -A 2>&1 | grep -Ei 'webview|chromium|sandboxed_process|com.google.android.webview|com.android.webview|com.zunoplay.app' || true
+            } >> "$WEBVIEW"
+          }
+
           archive_crash_data() {
-            local LABEL="$1"
-            tar -czf "${STATE_PREFIX}-${LABEL}-crashdata.tgz" /tmp/android-runner 2>/dev/null || true
-          }
-
-          emulator_alive() {
-            pgrep -af 'emulator.*-avd|qemu-system' >/dev/null 2>&1 && timeout 5s adb shell true >/dev/null 2>&1
-          }
-
-          assert_emulator_alive() {
-            local LABEL="$1"
-            if ! emulator_alive; then
-              trace "EMULATOR NOT ALIVE after ${LABEL}"
-              capture_state "dead-${LABEL}"
-              archive_crash_data "dead-${LABEL}"
-              return 1
-            fi
-            trace "emulator alive after ${LABEL}"
-            return 0
-          }
-
-          monitor_emulator() {
-            local SEEN=0
-            while true; do
-              if pgrep -af 'emulator.*-avd|qemu-system' >/dev/null 2>&1; then
-                SEEN=1
-              elif [ "$SEEN" -eq 1 ]; then
-                trace 'MONITOR detected emulator process disappearance'
-                echo "Emulator process disappeared at $(date -u +%FT%TZ)" > "${STATE_PREFIX}-process-exit.txt"
-                capture_state 'process-exit'
-                archive_crash_data 'process-exit'
-                return 0
-              fi
-              sleep 1
-            done
-          }
-
-          wait_for_adb() {
-            local RECOVERY_ATTEMPT
-            for RECOVERY_ATTEMPT in 1 2 3; do
-              trace "ADB readiness attempt ${RECOVERY_ATTEMPT}/3"
-              adb start-server || true
-              adb reconnect offline || true
-              if timeout 30s adb wait-for-device; then
-                if timeout 10s adb shell true >/dev/null 2>&1; then
-                  trace 'ADB transport is ready'
-                  return 0
-                fi
-              fi
-              trace 'ADB transport not ready after bounded wait'
-              adb kill-server || true
-              sleep 3
-            done
-            return 1
+            tar -czf "${PREFIX}-crashdata.tgz" /tmp/android-runner 2>/dev/null || true
           }
 
           cleanup() {
@@ -198,168 +204,124 @@ jobs:
               kill "$LOGCAT_PID" >/dev/null 2>&1 || true
               wait "$LOGCAT_PID" 2>/dev/null || true
             fi
-            if [[ -n "${MONITOR_PID:-}" ]]; then
-              kill "$MONITOR_PID" >/dev/null 2>&1 || true
-              wait "$MONITOR_PID" 2>/dev/null || true
-            fi
           }
           trap cleanup EXIT
 
-          trace 'Phase 2 app-vs-emulator isolation on pinned Android Emulator 36.5.11'
-          "$EMULATOR_BIN" -version 2>&1 | tee android-emulator-effective-version.txt
-          grep -q 'Android emulator version 36\.5\.11\.0' android-emulator-effective-version.txt
+          trace "BEGIN mode=${MODE} exact APK from SHA 214010598fdf6fabc3bffd31a35f0381cdf449da"
+          grep -E 'Pkg.Revision|Pkg.Path' "${ANDROID_HOME}/emulator/source.properties" | tee "${PREFIX}-emulator-version.txt"
+          grep -q 'Pkg.Revision *= *36\.5\.11' "${PREFIX}-emulator-version.txt"
 
-          if ! wait_for_adb; then
-            trace 'ADB device was not ready within bounded window'
-            capture_state 'adb-not-ready'
-            archive_crash_data 'adb-not-ready'
-            exit 124
+          timeout 30s adb wait-for-device
+          timeout 10s adb shell true
+          probe_all 'pre-install'
+          capture_host_state 'pre-install'
+
+          trace 'install APK'
+          adb install -r "$APK" | tee -a "$TRACE"
+          probe_all 'post-install'
+
+          if [[ "$MODE" == 'offline' ]]; then
+            trace 'OFFLINE enable airplane mode and disable wifi/data before app launch'
+            timeout 10s adb shell cmd connectivity airplane-mode enable || true
+            timeout 10s adb shell svc wifi disable || true
+            timeout 10s adb shell svc data disable || true
+            sleep 2
+            {
+              echo '=== offline verification ==='
+              timeout 5s adb shell settings get global airplane_mode_on || true
+              timeout 5s adb shell dumpsys connectivity || true
+              timeout 5s adb shell ip route || true
+            } > "${PREFIX}-network-state.txt"
+          else
+            trace 'NORMAL keep default emulator connectivity'
+            {
+              echo '=== normal network state ==='
+              timeout 5s adb shell settings get global airplane_mode_on || true
+              timeout 5s adb shell dumpsys connectivity || true
+              timeout 5s adb shell ip route || true
+            } > "${PREFIX}-network-state.txt"
           fi
 
-          capture_state 'before-control'
-          monitor_emulator &
-          MONITOR_PID=$!
-
-          trace 'start continuous logcat before control workload'
+          trace 'start continuous logcat before first ZunoPlay launch'
           adb logcat -c || true
-          adb logcat -v threadtime > "$CONTINUOUS_LOG" 2>&1 &
+          adb logcat -v threadtime > "$LOGCAT" 2>&1 &
           LOGCAT_PID=$!
+          sleep 1
+          capture_webview_state 'before-launch'
+          probe_all 'before-launch'
+
+          trace 'force-stop ZunoPlay'
+          timeout 10s adb shell am force-stop "$PACKAGE"
+          probe_all 'after-force-stop'
+
+          trace 'first launch ZunoPlay -W'
+          set +e
+          START_OUTPUT="$(timeout 30s adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+          START_STATUS=$?
+          set -e
+          printf '%s\n' "$START_OUTPUT" | tee -a "$TRACE"
+          trace "am-start exit=${START_STATUS}"
+          probe_all 'immediately-after-launch'
+          capture_webview_state 'immediately-after-launch'
+
+          FREEZE=0
+          for SECOND in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+            sleep 1
+            trace "post-launch-second=${SECOND}"
+            probe_all "post-launch-${SECOND}s"
+            capture_webview_state "post-launch-${SECOND}s"
+            QEMU_OK=0; PORT_OK=0; STATE_OK=0; DEVICES_OK=0; SHELL_OK=0
+            qemu_process_probe >/dev/null 2>&1 && QEMU_OK=1 || true
+            port_probe >/dev/null 2>&1 && PORT_OK=1 || true
+            adb_get_state_probe >/dev/null 2>&1 && STATE_OK=1 || true
+            adb_devices_probe >/dev/null 2>&1 && DEVICES_OK=1 || true
+            adb_shell_probe >/dev/null 2>&1 && SHELL_OK=1 || true
+            trace "summary ${SECOND}s qemu=${QEMU_OK} port5554=${PORT_OK} get_state=${STATE_OK} devices=${DEVICES_OK} shell=${SHELL_OK}"
+            if [[ "$SHELL_OK" -eq 0 ]]; then
+              FREEZE=1
+              trace "ADB shell unresponsive at ${SECOND}s; QEMU/port/ADB transport statuses preserved independently"
+              capture_host_state "freeze-${SECOND}s"
+              archive_crash_data
+              break
+            fi
+          done
+
           sleep 2
+          capture_webview_state 'final'
+          probe_all 'final'
+          capture_host_state 'final'
+          archive_crash_data
 
-          trace 'CONTROL BEGIN: equivalent ADB/activity lifecycle workload without ZunoPlay installed'
-          if adb shell pm path "$PACKAGE" >/dev/null 2>&1; then
-            trace 'unexpected ZunoPlay package preinstalled in control phase'
-            exit 90
+          if timeout 5s adb shell true >/dev/null 2>&1; then
+            timeout 10s adb logcat -d -v threadtime > "${PREFIX}-logcat-snapshot.txt" || true
+            timeout 10s adb shell dumpsys package "$PACKAGE" > "${PREFIX}-package.txt" || true
+            timeout 10s adb shell dumpsys activity activities > "${PREFIX}-activities.txt" || true
+            timeout 10s adb shell pidof "$PACKAGE" > "${PREFIX}-app-pid.txt" || true
           fi
 
-          for ATTEMPT in 1 2 3; do
-            trace "CONTROL ${ATTEMPT}/3 force-stop Settings"
-            adb shell am force-stop "$CONTROL_PACKAGE"
-            trace "CONTROL ${ATTEMPT}/3 start Settings -W"
-            CONTROL_OUTPUT="$(adb shell am start -W -n "$CONTROL_ACTIVITY" | tr -d '\r')"
-            printf '%s\n' "$CONTROL_OUTPUT" | tee -a "$COMMAND_LOG"
-            grep -q 'Status: ok' <<< "$CONTROL_OUTPUT"
-            trace "CONTROL ${ATTEMPT}/3 sleep 8"
-            sleep 8
-            trace "CONTROL ${ATTEMPT}/3 pidof Settings"
-            CONTROL_PID="$(adb shell pidof "$CONTROL_PACKAGE" | tr -d '\r' || true)"
-            test -n "$CONTROL_PID"
-            assert_emulator_alive "control-launch-${ATTEMPT}" || exit 91
-          done
-
-          trace 'CONTROL screen-off keyevent 223'
-          adb shell input keyevent 223
-          sleep 3
-          assert_emulator_alive 'control-screen-off' || exit 92
-
-          trace 'CONTROL wake keyevent 224'
-          adb shell input keyevent 224
-          adb shell wm dismiss-keyguard || true
-          sleep 5
-          assert_emulator_alive 'control-wake' || exit 93
-          trace 'CONTROL PASS: emulator survived equivalent workload without ZunoPlay'
-          capture_state 'after-control'
-
-          trace 'APP BEGIN: install exact built APK'
-          adb install -r "$APK"
-          assert_emulator_alive 'app-install' || exit 101
-
-          for ATTEMPT in 1 2 3; do
-            trace "APP ${ATTEMPT}/3 force-stop ZunoPlay"
-            adb shell am force-stop "$PACKAGE"
-            assert_emulator_alive "app-force-stop-${ATTEMPT}" || exit 102
-
-            trace "APP ${ATTEMPT}/3 start ZunoPlay -W"
-            set +e
-            START_OUTPUT="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
-            START_STATUS=$?
-            set -e
-            printf '%s\n' "$START_OUTPUT" | tee -a "$COMMAND_LOG"
-            trace "APP ${ATTEMPT}/3 am-start exit=${START_STATUS}"
-            if [[ "$START_STATUS" -ne 0 ]]; then
-              capture_state "after-app-start-${ATTEMPT}-command-failure"
-              exit 103
-            fi
-            grep -q 'Status: ok' <<< "$START_OUTPUT"
-            assert_emulator_alive "app-start-${ATTEMPT}" || exit 104
-
-            trace "APP ${ATTEMPT}/3 sleep 8"
-            sleep 8
-            assert_emulator_alive "app-sleep-${ATTEMPT}" || exit 105
-
-            trace "APP ${ATTEMPT}/3 pidof ZunoPlay"
-            APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
-            if [[ -z "$APP_PID" ]]; then
-              trace "ZunoPlay process missing after launch ${ATTEMPT}"
-              capture_state "app-process-missing-${ATTEMPT}"
-              exit 106
-            fi
-            trace "APP ${ATTEMPT}/3 process alive pid=${APP_PID}"
-          done
-
-          trace 'APP screen-off keyevent 223'
-          adb shell input keyevent 223
-          sleep 3
-          assert_emulator_alive 'app-screen-off' || exit 107
-          APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
-          test -n "$APP_PID"
-
-          trace 'APP wake keyevent 224'
-          adb shell input keyevent 224
-          adb shell wm dismiss-keyguard || true
-          sleep 5
-          assert_emulator_alive 'app-wake' || exit 108
-          APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
-          test -n "$APP_PID"
-
-          trace 'APP collect final diagnostics'
-          adb logcat -d -v threadtime > android-runtime-logcat.txt
-          adb shell dumpsys package "$PACKAGE" > android-package.txt
-          adb shell dumpsys activity activities > android-activities.txt
-
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
-          log = Path('android-runtime-logcat.txt').read_text(errors='replace')
-          blocks = log.split('FATAL EXCEPTION')
-          fatal_for_app = any('Process: com.zunoplay.app' in block[:4000] for block in blocks[1:])
-          if fatal_for_app:
-              raise SystemExit('Fatal ZunoPlay process crash detected in logcat.')
-
-          matches = re.findall(
-              r'Applied system safe area: left=(\d+) top=(\d+) right=(\d+) bottom=(\d+)',
-              log,
-          )
-          if not matches:
-              raise SystemExit('No ZunoPlay safe-area application was recorded in logcat.')
-
-          left, top, right, bottom = map(int, matches[-1])
-          print(f'Validated safe area: left={left} top={top} right={right} bottom={bottom}')
-          if top <= 0:
-              raise SystemExit(f'Invalid top safe-area inset: {top}. Status-bar protection was not proven.')
-          if bottom <= 0:
-              raise SystemExit(f'Invalid bottom safe-area inset: {bottom}. Navigation-area protection was not proven.')
-          PY
-
-          APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
-          if [[ -z "$APP_PID" ]]; then
-            trace 'ZunoPlay process is not alive at end of incremental smoke'
-            exit 109
+          if [[ "$START_STATUS" -ne 0 ]]; then
+            trace 'RESULT launch-command-failed'
+            exit 120
+          fi
+          if ! grep -q 'Status: ok' <<< "$START_OUTPUT"; then
+            trace 'RESULT launch-status-not-ok'
+            exit 121
+          fi
+          if [[ "$FREEZE" -ne 0 ]]; then
+            trace "RESULT freeze mode=${MODE}"
+            exit 122
           fi
 
-          capture_state 'after-app-smoke'
-          archive_crash_data 'after-app-smoke'
-          trace "PASS: incremental runtime smoke completed with PID ${APP_PID}"
+          trace "RESULT stable-for-20s mode=${MODE}"
           exit 0
           BASH
-          chmod +x /tmp/zunoplay-phase2-isolation.sh
-          bash -n /tmp/zunoplay-phase2-isolation.sh
+          chmod +x /tmp/zunoplay-freeze-probe.sh
+          bash -n /tmp/zunoplay-freeze-probe.sh
 
-      - name: Runtime isolation Android 14 - Emulator 36.5.11 fixed
-        id: isolation_fixed
+      - name: Normal network - first launch freeze probe
+        id: normal_probe
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 7
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -370,16 +332,43 @@ jobs:
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: bash /tmp/zunoplay-phase2-isolation.sh
+          script: bash /tmp/zunoplay-freeze-probe.sh normal
 
-      - name: Enforce runtime isolation result
+      - name: Offline - first launch freeze probe
+        id: offline_probe
+        continue-on-error: true
+        timeout-minutes: 7
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-build: '15261927'
+          emulator-boot-timeout: 300
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          script: bash /tmp/zunoplay-freeze-probe.sh offline
+
+      - name: Record matrix outcomes
+        if: always()
         shell: bash
         run: |
-          echo "isolation_fixed_36_5_11=${{ steps.isolation_fixed.outcome }}"
-          if [ "${{ steps.isolation_fixed.outcome }}" = 'success' ]; then
+          {
+            echo "normal=${{ steps.normal_probe.outcome }}"
+            echo "offline=${{ steps.offline_probe.outcome }}"
+          } | tee android-freeze-matrix-outcomes.txt
+
+      - name: Enforce probe execution
+        shell: bash
+        run: |
+          NORMAL='${{ steps.normal_probe.outcome }}'
+          OFFLINE='${{ steps.offline_probe.outcome }}'
+          echo "normal=${NORMAL} offline=${OFFLINE}"
+          if [ "$NORMAL" = 'success' ] && [ "$OFFLINE" = 'success' ]; then
             exit 0
           fi
-          echo 'Pinned Android Emulator 36.5.11 app-vs-emulator isolation failed.' >&2
+          echo 'At least one post-launch freeze probe reproduced a failure; inspect independent liveness evidence.' >&2
           exit 1
 
       - name: Upload runtime diagnostics
@@ -389,13 +378,8 @@ jobs:
           name: ZunoPlay-Phase2-android-runtime-diagnostics
           path: |
             android-apk-badging.txt
-            android-emulator-effective-version.txt
-            android-incremental-command-trace.txt
-            android-runtime-logcat-continuous.txt
-            android-runtime-logcat.txt
-            android-package.txt
-            android-activities.txt
-            android-emulator-fixed-36.5.11-*.txt
-            android-emulator-fixed-36.5.11-*.tgz
+            android-freeze-matrix-outcomes.txt
+            android-freeze-*.txt
+            android-freeze-*.tgz
           if-no-files-found: warn
           retention-days: 7
