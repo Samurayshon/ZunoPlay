@@ -1,0 +1,28 @@
+name: ZunoPlay Shell Policy Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shell-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate shell JavaScript syntax
+        run: |
+          node --check zuno-navigation-policy-v1.js
+          node --check zuno-global-navigation-v1.js
+          node --check zuno-global-chrome.js
+          node --check zuno-shell-experience-v1.js
+      - name: Validate navigation policy matrix
+        run: node --test tests/navigation-policy.test.mjs
+      - name: Validate mobile scroll contract
+        run: node --test tests/mobile-scroll-root.test.mjs
+      - name: Validate global shell integration
+        run: node --test tests/global-shell-policy-integration.test.mjs
