@@ -8,6 +8,10 @@ on:
     paths:
       - 'android-v0/**'
       - '.github/workflows/android-v0-build.yml'
+  pull_request:
+    paths:
+      - 'android-v0/**'
+      - '.github/workflows/android-v0-build.yml'
 
 permissions:
   contents: write
@@ -76,6 +80,7 @@ jobs:
           fi
 
       - name: Runtime smoke test on Android 14
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -96,10 +101,14 @@ jobs:
             android-runtime-logcat.txt
             android-package.txt
             android-activities.txt
+            android-windows.txt
+            android-launcher-ui.xml
+            android-launcher-zunoplay.png
           if-no-files-found: warn
           retention-days: 14
 
       - name: Publish APK release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -107,5 +116,5 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK_NAME" --clobber
           else
-            gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste. Build, metadados, safe areas e smoke test de runtime em Android 14 validados pelo CI antes da publicação."
+            gh release create "$TAG" "$APK_NAME" --target "$GITHUB_SHA" --title "ZunoPlay Android ${VERSION_NAME}" --notes "APK Android de teste. Build, metadados, safe areas, smoke test Android 14 e evidência visual do launcher validados pelo CI antes da publicação."
           fi
