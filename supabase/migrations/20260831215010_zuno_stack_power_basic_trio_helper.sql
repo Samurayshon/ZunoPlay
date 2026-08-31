@@ -90,7 +90,7 @@ begin
      or regexp_count(v_new, 'zuno_private\.zuno_stack_resolve_basic_trio\(') <> 2
      or regexp_count(v_new, 'v_basic_trio_resolved') < 6
      or position('if not v_basic_trio_resolved then' in v_new) = 0
-     or position("elsif p_power='explosion' then" in v_new) = 0
+     or position($needle$elsif p_power='explosion' then$needle$ in v_new) = 0
      or position('v_match_delta:=1; v_energy:=least(5,v_energy+1); v_score:=zuno_private.zuno_stack_cap_score(v_score+450);' in v_new) = 0 then
     raise exception 'stack_power_basic_trio_extraction_verification_failed';
   end if;
