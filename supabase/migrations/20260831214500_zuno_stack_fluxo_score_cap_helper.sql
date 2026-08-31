@@ -39,9 +39,9 @@ begin
   end if;
 
   -- Preserve caller-owned Fluxo control-plane semantics around the isolated score site.
-  if position("p_power not in ('fluxo','troca','explosion','elo','fase','vortice','ima')" in v_def) = 0
-     or position("when 'fluxo' then 1" in v_def) = 0
-     or position("jsonb_build_object('power',p_power,'expected_revision',p_expected_revision,'applied_revision',v_new_revision,'cost',v_cost)" in v_def) = 0 then
+  if position('p_power not in (''fluxo'',''troca'',''explosion'',''elo'',''fase'',''vortice'',''ima'')' in v_def) = 0
+     or position('when ''fluxo'' then 1' in v_def) = 0
+     or position('jsonb_build_object(''power'',p_power,''expected_revision'',p_expected_revision,''applied_revision'',v_new_revision,''cost'',v_cost)' in v_def) = 0 then
     raise exception 'stack_fluxo_score_cap_precondition_missing';
   end if;
 
@@ -54,7 +54,7 @@ begin
      or v_helper_count <> 1
      or v_raw_count <> 1
      or position(v_target in v_new) <> 0
-     or position("when 'fluxo' then 1" in v_new) = 0 then
+     or position('when ''fluxo'' then 1' in v_new) = 0 then
     raise exception 'stack_fluxo_score_cap_extraction_verification_failed';
   end if;
 
