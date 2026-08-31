@@ -1,0 +1,112 @@
+name: Zuno Stack Production Migration Dry Run
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/stack-production-migration-dry-run.yml'
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stack-production-migration-dry-run-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_PROJECT_ID: rliymfbbhqoejgfvsbuu
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Verify credentials are available without exposing them
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo 'Missing repository secret: SUPABASE_ACCESS_TOKEN'; exit 20; }
+          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo 'Missing repository secret: SUPABASE_DB_PASSWORD'; exit 21; }
+          echo 'Required Supabase credentials are available; secret values were not printed.'
+
+      - name: Verify the seven approved migration files are unchanged in identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=(
+            '20260830190000_zuno_stack_basic_trio_helper.sql'
+            '20260830200000_zuno_stack_post_trio_scoring_helper.sql'
+            '20260830210000_zuno_stack_pulse_helper.sql'
+            '20260830220000_zuno_stack_tray_finish_helper.sql'
+            '20260830230000_zuno_stack_score_cap_helper.sql'
+            '20260830240000_zuno_stack_relay_send_score_cap_helper.sql'
+            '20260830250000_zuno_stack_pulse_shift_score_cap_helper.sql'
+          )
+          for file in "${expected[@]}"; do
+            test -s "supabase/migrations/$file" || { echo "Missing approved migration: $file"; exit 30; }
+          done
+          echo 'All seven approved migration files are present with their original version numbers.'
+
+      - name: Link CLI to production project
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      - name: Official production migration dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db push --dry-run 2>&1 | tee stack-production-dry-run.log
+
+      - name: Fail closed unless dry-run contains exactly the seven approved pending versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          expected = [
+              '20260830190000',
+              '20260830200000',
+              '20260830210000',
+              '20260830220000',
+              '20260830230000',
+              '20260830240000',
+              '20260830250000',
+          ]
+          last_known_production = '20260830154207'
+          text = pathlib.Path('stack-production-dry-run.log').read_text(errors='replace')
+          seen = []
+          for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', text):
+              if version > last_known_production and version not in seen:
+                  seen.append(version)
+
+          if seen != expected:
+              print('FAIL-CLOSED: dry-run did not show exactly the seven approved pending migrations.')
+              print('Expected:', ', '.join(expected))
+              print('Observed pending versions:', ', '.join(seen) if seen else '<none detected>')
+              sys.exit(40)
+
+          print('stack_production_migration_dry_run_exact_seven_ok')
+          PY
+
+      - name: Upload dry-run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stack-production-migration-dry-run
+          path: stack-production-dry-run.log
+          if-no-files-found: ignore
