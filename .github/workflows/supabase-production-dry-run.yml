@@ -44,8 +44,14 @@ jobs:
         run: |
           set -euo pipefail
           test -f supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing.'; exit 30; }
+
+          # Historical migration restorations are exempt from release approval only
+          # when the repository matches the production ledger with zero strict drift.
+          node scripts/supabase-migration-reconciliation.mjs --strict --json > migration-reconciliation-gate.json
+
           python3 - <<'PY'
           from pathlib import Path
+          import csv
           import os
           import re
           import subprocess
@@ -80,6 +86,26 @@ jobs:
               print('Approved migration manifest must be in ascending version order.')
               sys.exit(37)
 
+          production_migrations = set()
+          ledger_paths = sorted(Path('supabase/reconciliation').glob('production-migrations-*.csv'))
+          if not ledger_paths:
+              print('FAIL-CLOSED: production migration ledger is missing.')
+              sys.exit(38)
+
+          for ledger_path in ledger_paths:
+              with ledger_path.open(newline='') as fh:
+                  reader = csv.DictReader(fh)
+                  if reader.fieldnames != ['version', 'name', 'statement_count', 'statements_md5']:
+                      print(f'FAIL-CLOSED: invalid production ledger header: {ledger_path}')
+                      sys.exit(39)
+                  for row in reader:
+                      version = row['version']
+                      name = row['name']
+                      if not re.fullmatch(r'\d{14}', version) or not name:
+                          print(f'FAIL-CLOSED: invalid production ledger row in {ledger_path}')
+                          sys.exit(41)
+                      production_migrations.add(f'{version}_{name}.sql')
+
           if os.environ.get('EVENT_NAME') == 'pull_request':
               base = os.environ.get('BASE_SHA', '')
               head = os.environ.get('HEAD_SHA', '')
@@ -94,9 +120,21 @@ jobs:
                   Path(line).name for line in out.splitlines()
                   if line.strip().endswith('.sql')
               ]
-              unapproved_changed = [name for name in changed_migrations if name not in entries]
+              historical_restorations = [
+                  name for name in changed_migrations if name in production_migrations
+              ]
+              approval_candidates = [
+                  name for name in changed_migrations if name not in production_migrations
+              ]
+              unapproved_changed = [name for name in approval_candidates if name not in entries]
+
+              if historical_restorations:
+                  print('Historical migration restoration(s) verified by exact production ledger version+name and strict reconciliation:')
+                  for name in historical_restorations:
+                      print(f'  - {name}')
+
               if unapproved_changed:
-                  print('FAIL-CLOSED: migration file(s) changed without production approval:')
+                  print('FAIL-CLOSED: new/non-historical migration file(s) changed without production approval:')
                   for name in unapproved_changed:
                       print(f'  - {name}')
                   sys.exit(35)
