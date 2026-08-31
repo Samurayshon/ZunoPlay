@@ -1,13 +1,13 @@
-name: Supabase Production Dry Run
+name: Supabase Production Migration Dry Run
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - 'supabase/migrations/**'
-      - 'supabase/approved-production-migrations.txt'
+      - '.github/supabase-production-approved-migrations.txt'
       - '.github/workflows/supabase-production-dry-run.yml'
       - '.github/workflows/supabase-production-apply.yml'
+      - 'supabase/migrations/**'
   workflow_dispatch:
 
 permissions:
@@ -22,193 +22,130 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SUPABASE_PROJECT_ID: rliymfbbhqoejgfvsbuu
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_CLI_VERSION: '2.116.0'
+      BASELINE_VERSION: '20260830154207'
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.116.0
+          version: ${{ env.SUPABASE_CLI_VERSION }}
 
-      - name: Validate release approval manifest
-        id: gate
+      - name: Verify stable database connection secret exists
         shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          test -f supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing.'; exit 30; }
+          test -n "${SUPABASE_DB_URL:-}" || { echo 'Missing repository secret: SUPABASE_DB_URL'; exit 20; }
+          echo 'Database connection secret is available; value was not printed.'
 
-          # Historical migration restorations are exempt from release approval only
-          # when the repository matches the production ledger with zero strict drift.
-          node scripts/supabase-migration-reconciliation.mjs --strict --json > migration-reconciliation-gate.json
-
+      - name: Verify allowlist format and local migration coverage
+        shell: bash
+        run: |
+          set -euo pipefail
           python3 - <<'PY'
-          from pathlib import Path
-          import csv
-          import os
-          import re
-          import subprocess
-          import sys
-
-          entries = []
-          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+          import pathlib, re, sys
+          baseline = '20260830154207'
+          allow = pathlib.Path('.github/supabase-production-approved-migrations.txt')
+          approved = []
+          for raw in allow.read_text().splitlines():
               line = raw.strip()
               if not line or line.startswith('#'):
                   continue
-              entries.append(line)
-
-          if len(entries) != len(set(entries)):
-              print('Duplicate entries in approved migration manifest.')
-              sys.exit(31)
-
-          versions = []
-          for name in entries:
-              if not re.fullmatch(r'\d{14}_[A-Za-z0-9_-]+\.sql', name):
-                  print(f'Invalid approved migration filename: {name}')
+              if not re.fullmatch(r'\d{14}', line):
+                  print('Invalid allowlist entry:', line)
+                  sys.exit(30)
+              if line <= baseline:
+                  print('Allowlist entry is not after baseline:', line)
+                  sys.exit(31)
+              if line in approved:
+                  print('Duplicate allowlist entry:', line)
                   sys.exit(32)
-              path = Path('supabase/migrations') / name
-              if not path.is_file() or path.stat().st_size == 0:
-                  print(f'Approved migration is missing or empty: {name}')
-                  sys.exit(33)
-              versions.append(name[:14])
-
-          if len(versions) != len(set(versions)):
-              print('Duplicate migration version in approved manifest.')
-              sys.exit(36)
-          if versions != sorted(versions):
-              print('Approved migration manifest must be in ascending version order.')
-              sys.exit(37)
-
-          production_migrations = set()
-          ledger_paths = sorted(Path('supabase/reconciliation').glob('production-migrations-*.csv'))
-          if not ledger_paths:
-              print('FAIL-CLOSED: production migration ledger is missing.')
-              sys.exit(38)
-
-          for ledger_path in ledger_paths:
-              with ledger_path.open(newline='') as fh:
-                  reader = csv.DictReader(fh)
-                  if reader.fieldnames != ['version', 'name', 'statement_count', 'statements_md5']:
-                      print(f'FAIL-CLOSED: invalid production ledger header: {ledger_path}')
-                      sys.exit(39)
-                  for row in reader:
-                      version = row['version']
-                      name = row['name']
-                      if not re.fullmatch(r'\d{14}', version) or not name:
-                          print(f'FAIL-CLOSED: invalid production ledger row in {ledger_path}')
-                          sys.exit(41)
-                      production_migrations.add(f'{version}_{name}.sql')
-
-          if os.environ.get('EVENT_NAME') == 'pull_request':
-              base = os.environ.get('BASE_SHA', '')
-              head = os.environ.get('HEAD_SHA', '')
-              if not base or not head:
-                  print('Missing pull request base/head SHA.')
-                  sys.exit(34)
-              out = subprocess.check_output(
-                  ['git', 'diff', '--name-only', base, head, '--', 'supabase/migrations'],
-                  text=True,
-              )
-              changed_migrations = [
-                  Path(line).name for line in out.splitlines()
-                  if line.strip().endswith('.sql')
-              ]
-              historical_restorations = [
-                  name for name in changed_migrations if name in production_migrations
-              ]
-              approval_candidates = [
-                  name for name in changed_migrations if name not in production_migrations
-              ]
-              unapproved_changed = [name for name in approval_candidates if name not in entries]
-
-              if historical_restorations:
-                  print('Historical migration restoration(s) verified by exact production ledger version+name and strict reconciliation:')
-                  for name in historical_restorations:
-                      print(f'  - {name}')
-
-              if unapproved_changed:
-                  print('FAIL-CLOSED: new/non-historical migration file(s) changed without production approval:')
-                  for name in unapproved_changed:
-                      print(f'  - {name}')
-                  sys.exit(35)
-
-          release_required = bool(entries)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              fh.write(f'release_required={str(release_required).lower()}\n')
-
-          if release_required:
-              print(f'Production release manifest verified: {len(entries)} approved migration(s).')
-          else:
-              print('No production migration release is currently approved; production connectivity is skipped.')
+              approved.append(line)
+          local = []
+          for path in pathlib.Path('supabase/migrations').glob('*.sql'):
+              m = re.match(r'^(\d{14})_', path.name)
+              if m and m.group(1) > baseline:
+                  local.append(m.group(1))
+          local = sorted(set(local))
+          approved = sorted(approved)
+          unapproved = [v for v in local if v not in approved]
+          missing_local = [v for v in approved if v not in local]
+          if unapproved:
+              print('FAIL-CLOSED: local migrations after baseline are not approved:', ', '.join(unapproved))
+              sys.exit(33)
+          if missing_local:
+              print('FAIL-CLOSED: approved migration versions have no local file:', ', '.join(missing_local))
+              sys.exit(34)
+          print('Allowlist/local coverage OK:', ', '.join(approved) if approved else '<none>')
           PY
 
-      - name: Verify credentials without exposing values
-        if: steps.gate.outputs.release_required == 'true'
+      - name: Read remote migration ledger
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo 'Missing SUPABASE_ACCESS_TOKEN'; exit 20; }
-          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo 'Missing SUPABASE_DB_PASSWORD'; exit 21; }
-          echo 'Supabase credentials are present.'
+          supabase migration list --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-ledger.log
 
-      - name: Link CLI to production project
-        if: steps.gate.outputs.release_required == 'true'
+      - name: Run official production dry-run
         shell: bash
         run: |
           set -euo pipefail
-          supabase --version
-          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          supabase db push --dry-run --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-dry-run.log
 
-      - name: Official production migration dry-run
-        if: steps.gate.outputs.release_required == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          supabase db push --dry-run 2>&1 | tee supabase-production-dry-run.log
-
-      - name: Require exact approved pending migration set
-        if: steps.gate.outputs.release_required == 'true'
+      - name: Fail closed unless remote ledger and dry-run match approved state
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          from pathlib import Path
-          import re
-          import sys
-
-          approved_names = []
-          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+          import pathlib, re, sys
+          baseline = '20260830154207'
+          approved = []
+          for raw in pathlib.Path('.github/supabase-production-approved-migrations.txt').read_text().splitlines():
               line = raw.strip()
               if line and not line.startswith('#'):
-                  approved_names.append(line)
-          approved_versions = [name[:14] for name in approved_names]
+                  approved.append(line)
+          approved = sorted(set(approved))
 
-          text = Path('supabase-production-dry-run.log').read_text(errors='replace')
-          observed = []
-          for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', text):
-              if version not in observed:
-                  observed.append(version)
-
-          if observed != approved_versions:
-              print('FAIL-CLOSED: dry-run does not match the approved manifest exactly.')
-              print('Approved:', ', '.join(approved_versions) if approved_versions else '<none>')
-              print('Observed:', ', '.join(observed) if observed else '<none>')
+          ledger_text = pathlib.Path('supabase-production-ledger.log').read_text(errors='replace')
+          remote = []
+          for line in ledger_text.splitlines():
+              versions = re.findall(r'(?<!\d)(\d{14})(?!\d)', line)
+              if len(versions) >= 2:
+                  candidate = versions[1]
+                  if candidate > baseline and candidate not in remote:
+                      remote.append(candidate)
+          remote = sorted(remote)
+          remote_unapproved = [v for v in remote if v not in approved]
+          if remote_unapproved:
+              print('FAIL-CLOSED: production contains unapproved post-baseline migrations:', ', '.join(remote_unapproved))
               sys.exit(40)
 
-          print('supabase_production_dry_run_exact_approved_set_ok')
+          expected_pending = [v for v in approved if v not in remote]
+          dry_text = pathlib.Path('supabase-production-dry-run.log').read_text(errors='replace')
+          seen = []
+          for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', dry_text):
+              if version > baseline and version not in seen:
+                  seen.append(version)
+          seen = sorted(seen)
+
+          if seen != expected_pending:
+              print('FAIL-CLOSED: dry-run pending migrations do not match approved-minus-applied state.')
+              print('Approved:', ', '.join(approved) if approved else '<none>')
+              print('Remote applied:', ', '.join(remote) if remote else '<none>')
+              print('Expected pending:', ', '.join(expected_pending) if expected_pending else '<none>')
+              print('Observed pending:', ', '.join(seen) if seen else '<none>')
+              sys.exit(41)
+
+          print('supabase_production_dry_run_ok')
+          print('Expected pending:', ', '.join(expected_pending) if expected_pending else '<none>')
           PY
 
-      - name: Upload dry-run evidence
+      - name: Upload read-only evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: supabase-production-dry-run
-          path: supabase-production-dry-run.log
+          path: |
+            supabase-production-ledger.log
+            supabase-production-dry-run.log
           if-no-files-found: ignore
