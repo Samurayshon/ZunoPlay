@@ -1,6 +1,6 @@
 \set ON_ERROR_STOP on
 
--- Eighth extraction characterization contract for the isolated Gelo score-cap application.
+-- Ninth extraction characterization contract for the isolated Gelo score-cap application.
 -- This freezes the single score-cap site and the caller-owned energy/freeze semantics across
 -- the extraction; the final catalog test separately requires canonical helper wiring.
 do $$
