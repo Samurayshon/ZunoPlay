@@ -91,6 +91,20 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
           script: bash android-v0/ci/runtime-smoke.sh
 
+      - name: Record emulator availability after smoke
+        if: always()
+        run: |
+          {
+            echo '=== adb devices -l ==='
+            timeout 10s adb devices -l || true
+            echo
+            echo '=== emulator processes ==='
+            ps -ef | grep -E '[e]mulator|[q]emu' || true
+            echo
+            echo '=== runner kernel tail ==='
+            sudo dmesg --ctime 2>/dev/null | tail -n 250 || true
+          } > android-emulator-host-diagnostics.txt
+
       - name: Upload runtime diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -104,6 +118,7 @@ jobs:
             android-windows.txt
             android-launcher-ui.xml
             android-launcher-zunoplay.png
+            android-emulator-host-diagnostics.txt
           if-no-files-found: warn
           retention-days: 14
 
