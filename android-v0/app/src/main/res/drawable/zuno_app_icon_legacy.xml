@@ -3,7 +3,24 @@
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="24dp" />
-            <solid android:color="@color/zuno_icon_background" />
+            <gradient
+                android:angle="315"
+                android:centerColor="#090B18"
+                android:endColor="#21103B"
+                android:startColor="#111B36"
+                android:type="linear" />
+        </shape>
+    </item>
+    <item
+        android:bottom="13dp"
+        android:left="13dp"
+        android:right="13dp"
+        android:top="13dp">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/transparent" />
+            <stroke
+                android:width="1dp"
+                android:color="#665B68E8" />
         </shape>
     </item>
     <item android:drawable="@drawable/zuno_app_icon_foreground" />

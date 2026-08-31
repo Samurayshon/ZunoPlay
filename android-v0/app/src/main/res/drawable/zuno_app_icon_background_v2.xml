@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Proposal A: deep navy/violet surface. The launcher applies its own mask. -->
+    <path android:pathData="M0,0 H108 V108 H0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="12"
+                android:startY="7"
+                android:endX="94"
+                android:endY="101"
+                android:type="linear">
+                <item android:offset="0" android:color="#111B36" />
+                <item android:offset="0.46" android:color="#090B18" />
+                <item android:offset="1" android:color="#21103B" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Cyan light in the upper-left quadrant. -->
+    <path android:pathData="M0,0 H108 V108 H0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="27"
+                android:centerY="24"
+                android:gradientRadius="55">
+                <item android:offset="0" android:color="#4D22D3EE" />
+                <item android:offset="1" android:color="#0022D3EE" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Violet light in the lower-right quadrant. -->
+    <path android:pathData="M0,0 H108 V108 H0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="86"
+                android:centerY="84"
+                android:gradientRadius="65">
+                <item android:offset="0" android:color="#55A855F7" />
+                <item android:offset="1" android:color="#00A855F7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Soft brand halo behind Zuno. -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeWidth="7"
+        android:pathData="M93.2,55 A39.2,39.2 0,1 1,14.8 55 A39.2,39.2 0,1 1,93.2 55Z">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="20"
+                android:startY="18"
+                android:endX="90"
+                android:endY="94"
+                android:type="linear">
+                <item android:offset="0" android:color="#2522D3EE" />
+                <item android:offset="0.55" android:color="#254F7BFF" />
+                <item android:offset="1" android:color="#25A855F7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeWidth="0.8"
+        android:pathData="M93.2,55 A39.2,39.2 0,1 1,14.8 55 A39.2,39.2 0,1 1,93.2 55Z">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="20"
+                android:startY="18"
+                android:endX="90"
+                android:endY="94"
+                android:type="linear">
+                <item android:offset="0" android:color="#9922D3EE" />
+                <item android:offset="0.5" android:color="#994F7BFF" />
+                <item android:offset="1" android:color="#99A855F7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

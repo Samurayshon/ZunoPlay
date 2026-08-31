@@ -7,20 +7,20 @@
     android:viewportHeight="120">
 
     <!--
-      Android launcher foreground derived from the canonical ZunoBrand.headSvg()
-      used by the Central navigation button. The outer scale keeps the same
-      artwork inside Android adaptive-icon safe bounds without changing it.
+      ZunoPlay launcher V2 — approved proposal A (Close-up Premium), derived
+      from the canonical ZunoBrand.headSvg() used by the Central button.
+      The enlarged framing keeps the face inside Android's adaptive safe zone.
     -->
     <group
         android:pivotX="60"
         android:pivotY="60"
-        android:scaleX="0.78"
-        android:scaleY="0.78">
+        android:scaleX="0.86"
+        android:scaleY="0.86">
 
         <!-- Canonical purple aura; SVG blur is approximated by alpha on Android. -->
         <path
             android:fillColor="#7D4DFF"
-            android:fillAlpha="0.13"
+            android:fillAlpha="0.22"
             android:pathData="M106,61 A46,43 0,1 1,14 61 A46,43 0,1 1,106 61Z" />
 
         <!-- Lightning shadow. -->
@@ -31,7 +31,7 @@
 
         <!-- Canonical lightning. -->
         <path
-            android:strokeColor="#47FFFFFF"
+            android:strokeColor="#75FFFFFF"
             android:strokeWidth="1.1"
             android:strokeLineJoin="round"
             android:pathData="M66,2 L47,30 L57,30 L52,54 L74,23 L63,23 L66,2Z">
@@ -60,9 +60,9 @@
                     android:endX="16.8"
                     android:endY="79"
                     android:type="linear">
-                    <item android:offset="0" android:color="#4C5361" />
-                    <item android:offset="0.45" android:color="#242933" />
-                    <item android:offset="1" android:color="#0E1014" />
+                    <item android:offset="0" android:color="#687386" />
+                    <item android:offset="0.45" android:color="#343B49" />
+                    <item android:offset="1" android:color="#0B0D13" />
                 </gradient>
             </aapt:attr>
         </path>
@@ -76,52 +76,26 @@
                     android:endX="112.8"
                     android:endY="79"
                     android:type="linear">
-                    <item android:offset="0" android:color="#4C5361" />
-                    <item android:offset="0.45" android:color="#242933" />
-                    <item android:offset="1" android:color="#0E1014" />
+                    <item android:offset="0" android:color="#687386" />
+                    <item android:offset="0.45" android:color="#343B49" />
+                    <item android:offset="1" android:color="#0B0D13" />
                 </gradient>
             </aapt:attr>
         </path>
 
         <!-- Left headset accent. -->
-        <path android:pathData="M12,57 H12 C14.2,57 16,58.8 16,61 V67 C16,69.2 14.2,71 12,71 C9.8,71 8,69.2 8,67 V61 C8,58.8 9.8,57 12,57Z">
-            <aapt:attr name="android:fillColor">
-                <gradient
-                    android:startX="8"
-                    android:startY="57"
-                    android:endX="16"
-                    android:endY="71"
-                    android:type="linear">
-                    <item android:offset="0" android:color="#22D3EE" />
-                    <item android:offset="0.28" android:color="#4F7BFF" />
-                    <item android:offset="0.55" android:color="#A855F7" />
-                    <item android:offset="0.80" android:color="#F0338C" />
-                    <item android:offset="1" android:color="#FF7A3C" />
-                </gradient>
-            </aapt:attr>
-        </path>
+        <path
+            android:fillColor="#22D3EE"
+            android:pathData="M12,57 H12 C14.2,57 16,58.8 16,61 V67 C16,69.2 14.2,71 12,71 C9.8,71 8,69.2 8,67 V61 C8,58.8 9.8,57 12,57Z" />
 
         <!-- Right headset accent. -->
-        <path android:pathData="M108,57 H108 C110.2,57 112,58.8 112,61 V67 C112,69.2 110.2,71 108,71 C105.8,71 104,69.2 104,67 V61 C104,58.8 105.8,57 108,57Z">
-            <aapt:attr name="android:fillColor">
-                <gradient
-                    android:startX="104"
-                    android:startY="57"
-                    android:endX="112"
-                    android:endY="71"
-                    android:type="linear">
-                    <item android:offset="0" android:color="#22D3EE" />
-                    <item android:offset="0.28" android:color="#4F7BFF" />
-                    <item android:offset="0.55" android:color="#A855F7" />
-                    <item android:offset="0.80" android:color="#F0338C" />
-                    <item android:offset="1" android:color="#FF7A3C" />
-                </gradient>
-            </aapt:attr>
-        </path>
+        <path
+            android:fillColor="#A855F7"
+            android:pathData="M108,57 H108 C110.2,57 112,58.8 112,61 V67 C112,69.2 110.2,71 108,71 C105.8,71 104,69.2 104,67 V61 C104,58.8 105.8,57 108,57Z" />
 
         <!-- Canonical mascot shell: rect 14,27 92x80 rx=34. -->
         <path
-            android:strokeColor="#99626A7A"
+            android:strokeColor="#9FAAB4C5"
             android:strokeWidth="1"
             android:pathData="M48,27 H72 C90.8,27 106,42.2 106,61 V73 C106,91.8 90.8,107 72,107 H48 C29.2,107 14,91.8 14,73 V61 C14,42.2 29.2,27 48,27Z">
             <aapt:attr name="android:fillColor">
@@ -131,16 +105,16 @@
                     android:endX="87.6"
                     android:endY="107"
                     android:type="linear">
-                    <item android:offset="0" android:color="#4C5361" />
-                    <item android:offset="0.45" android:color="#242933" />
-                    <item android:offset="1" android:color="#0E1014" />
+                    <item android:offset="0" android:color="#687386" />
+                    <item android:offset="0.45" android:color="#343B49" />
+                    <item android:offset="1" android:color="#0B0D13" />
                 </gradient>
             </aapt:attr>
         </path>
 
         <!-- Canonical face glass: rect 25,41 70x51 rx=24. -->
         <path
-            android:strokeColor="#3C4658"
+            android:strokeColor="#56647A"
             android:strokeWidth="1"
             android:pathData="M49,41 H71 C84.3,41 95,51.7 95,65 V68 C95,81.3 84.3,92 71,92 H49 C35.7,92 25,81.3 25,68 V65 C25,51.7 35.7,41 49,41Z">
             <aapt:attr name="android:fillColor">
@@ -149,26 +123,26 @@
                     android:centerX="50.2"
                     android:centerY="52.2"
                     android:gradientRadius="63">
-                    <item android:offset="0" android:color="#1D2635" />
-                    <item android:offset="0.52" android:color="#080A0F" />
-                    <item android:offset="1" android:color="#000000" />
+                    <item android:offset="0" android:color="#24344D" />
+                    <item android:offset="0.42" android:color="#090D16" />
+                    <item android:offset="1" android:color="#020306" />
                 </gradient>
             </aapt:attr>
         </path>
 
         <path
             android:fillColor="#FFFFFF"
-            android:fillAlpha="0.13"
+            android:fillAlpha="0.17"
             android:pathData="M31,52 C38,44 49,40 61,42 C47,45 37,51 31,61 C29,58 29,55 31,52Z" />
 
         <!-- Cyan eye glow from the canonical Central mascot. -->
         <path
-            android:fillColor="#37E6E0"
-            android:fillAlpha="0.28"
+            android:fillColor="#22D3EE"
+            android:fillAlpha="0.40"
             android:pathData="M56,64 A10,12 0,1 1,36 64 A10,12 0,1 1,56 64Z" />
         <path
-            android:fillColor="#37E6E0"
-            android:fillAlpha="0.28"
+            android:fillColor="#A855F7"
+            android:fillAlpha="0.40"
             android:pathData="M84,64 A10,12 0,1 1,64 64 A10,12 0,1 1,84 64Z" />
 
         <path
@@ -178,12 +152,10 @@
             android:fillColor="#FFFFFF"
             android:pathData="M81.5,64 A7.5,9.5 0,1 1,66.5 64 A7.5,9.5 0,1 1,81.5 64Z" />
         <path
-            android:fillColor="#37E6E0"
-            android:fillAlpha="0.78"
+            android:fillColor="#22D3EE"
             android:pathData="M45.9,60.5 A2.4,2.8 0,1 1,41.1 60.5 A2.4,2.8 0,1 1,45.9 60.5Z" />
         <path
-            android:fillColor="#37E6E0"
-            android:fillAlpha="0.78"
+            android:fillColor="#A855F7"
             android:pathData="M73.9,60.5 A2.4,2.8 0,1 1,69.1 60.5 A2.4,2.8 0,1 1,73.9 60.5Z" />
 
         <!-- Canonical gradient smile. -->
