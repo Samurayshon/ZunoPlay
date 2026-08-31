@@ -1,4 +1,4 @@
--- Eighth canonical Zuno Stack extraction: Gelo score-cap application only.
+-- Ninth canonical Zuno Stack extraction: Gelo score-cap application only.
 -- Reuses the already validated zuno_private.zuno_stack_cap_score(integer) helper.
 -- Intentionally preserves Gelo +40 caller score gain, energy cost, freeze/timer extension,
 -- charges, auth/control-plane behavior, events and persistence.
