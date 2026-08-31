@@ -43,17 +43,21 @@ jobs:
           set -euo pipefail
           supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector
 
-      - name: Rebuild database through eleventh extraction
+      - name: Rebuild database through twelfth extraction
         shell: bash
         run: |
           set -euo pipefail
           supabase db reset --local --no-seed
 
-      - name: Characterize Board Power energy cap before twelfth extraction
+      # The pre-extraction characterization ran green on this PR before the
+      # implementation migration was added. At the final head the disposable
+      # catalog necessarily includes extraction #12, so validate the canonical
+      # end-state rather than pretending the pre-state still exists.
+      - name: Verify Board Power canonical energy cap in final catalog
         shell: bash
         run: |
           set -euo pipefail
-          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-power-energy-cap-characterization.sql
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-power-energy-cap-catalog-characterization.sql
 
       - name: Re-run real Stack RPC behavior
         shell: bash
