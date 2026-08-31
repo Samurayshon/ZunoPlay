@@ -15,6 +15,7 @@ jobs:
   validate-android-apk:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+
     steps:
       - name: Checkout exact Phase 2 SHA
         uses: actions/checkout@v4
@@ -29,54 +30,85 @@ jobs:
           test "$(git rev-parse HEAD)" = "214010598fdf6fabc3bffd31a35f0381cdf449da"
           git rev-parse HEAD
 
-      - name: Set up Java
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
-          cache-dependency-path: android-v0/**/*.gradle*
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build SDK
+        run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
-      - name: Compile validation APK
-        working-directory: android-v0
+      - name: Build debug APK
+        run: gradle -p android-v0 assembleDebug --stacktrace
+
+      - name: Verify APK metadata and provenance
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x ./gradlew
-          ./gradlew --no-daemon clean assembleDebug
-
-      - name: Validate APK metadata and provenance
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK="android-v0/app/build/outputs/apk/debug/app-debug.apk"
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
+
+          test "$(git rev-parse HEAD)" = "214010598fdf6fabc3bffd31a35f0381cdf449da"
+          VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
+          VERSION_CODE=$(sed -n 's/.*versionCode \([0-9][0-9]*\).*/\1/p' android-v0/app/build.gradle | head -n 1)
+          test -n "$VERSION_NAME"
+          test -n "$VERSION_CODE"
+
+          AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
+          "$AAPT" dump badging "$APK" | tee android-apk-badging.txt
+          grep -q "package: name='com.zunoplay.app' versionCode='${VERSION_CODE}' versionName='${VERSION_NAME}'" android-apk-badging.txt
+          grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
+
           echo "source_sha=$(git rev-parse HEAD)"
           echo "apk_sha256=$(sha256sum "$APK" | awk '{print $1}')"
-          ls -lh "$APK"
-
-      - name: Android 14 smoke test
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          arch: x86_64
-          profile: pixel_6
-          script: |
-            set -euo pipefail
-            adb install -r android-v0/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -W -n com.zunoplay.app/.MainActivity
-            sleep 5
-            adb shell pidof com.zunoplay.app
-            adb shell dumpsys activity activities | grep -F 'com.zunoplay.app/.MainActivity'
+          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+          echo "APK_NAME=ZunoPlay-${VERSION_NAME}-debug.apk" >> "$GITHUB_ENV"
+          cp "$APK" "ZunoPlay-${VERSION_NAME}-debug.apk"
 
       - name: Upload validation APK artifact only
         uses: actions/upload-artifact@v4
         with:
-          name: zunoplay-phase2-sha-214010598-apk
-          path: android-v0/app/build/outputs/apk/debug/app-debug.apk
+          name: ZunoPlay-${{ env.VERSION_NAME }}-Phase2-SHA-214010598-APK
+          path: ${{ env.APK_NAME }}
           if-no-files-found: error
           retention-days: 7
-# phase2-ci-trigger
+
+      - name: Enable KVM for Android emulator
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+          fi
+
+      - name: Runtime smoke test on Android 14
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          script: bash android-v0/ci/runtime-smoke.sh
+
+      - name: Upload runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZunoPlay-Phase2-android-runtime-diagnostics
+          path: |
+            android-apk-badging.txt
+            android-runtime-logcat.txt
+            android-package.txt
+            android-activities.txt
+          if-no-files-found: warn
+          retention-days: 7
