@@ -118,6 +118,10 @@ select set_config('request.jwt.claim.sub','$USER_ID',true);
 select revision from public.zuno_stack_apply_tile('$ROOM',1,'qa-undo-seed1','t85');
 commit;
 SQL
+# The seed Tile writes a server_tile event and Tile has a 60 ms actor rate limit.
+# Wait beyond that window so this case isolates revision serialization rather
+# than racing the intended Tile throttle against Undo.
+sleep 0.10
 set +e
 run_tile 2 qa-tu-tile001 t86 /tmp/stack-tu-tile.log & p1=$!
 run_undo 2 qa-tu-undo001 /tmp/stack-tu-undo.log & p2=$!
