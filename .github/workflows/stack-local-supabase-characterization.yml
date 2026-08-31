@@ -46,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           BOOTSTRAP_SOURCE='supabase/bootstrap/20260826130000_preledger_baseline.sql'
-          BOOTSTRAP_TARGET='supabase/migrations/20260826130000_preledger_baseline.sql'
+          BOOTSTRAP_TARGET="supabase/migrations/$(basename "$BOOTSTRAP_SOURCE")"
           test -f "$BOOTSTRAP_SOURCE"
           test ! -e "$BOOTSTRAP_TARGET"
           cp "$BOOTSTRAP_SOURCE" "$BOOTSTRAP_TARGET"
