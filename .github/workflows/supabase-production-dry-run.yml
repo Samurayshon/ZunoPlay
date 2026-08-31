@@ -27,34 +27,41 @@ jobs:
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: supabase/setup-cli@v1
         with:
           version: 2.116.0
 
-      - name: Verify credentials without exposing values
+      - name: Validate release approval manifest
+        id: gate
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo 'Missing SUPABASE_ACCESS_TOKEN'; exit 20; }
-          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo 'Missing SUPABASE_DB_PASSWORD'; exit 21; }
-          echo 'Supabase credentials are present.'
-
-      - name: Verify approved migration manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -s supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing or empty.'; exit 30; }
+          test -f supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing.'; exit 30; }
           python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
+          import subprocess
           import sys
 
-          manifest = Path('supabase/approved-production-migrations.txt')
-          entries = [line.strip() for line in manifest.read_text().splitlines() if line.strip()]
+          entries = []
+          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+              line = raw.strip()
+              if not line or line.startswith('#'):
+                  continue
+              entries.append(line)
+
           if len(entries) != len(set(entries)):
               print('Duplicate entries in approved migration manifest.')
               sys.exit(31)
+
           for name in entries:
               if not re.fullmatch(r'\d{14}_[A-Za-z0-9_-]+\.sql', name):
                   print(f'Invalid approved migration filename: {name}')
@@ -63,10 +70,50 @@ jobs:
               if not path.is_file() or path.stat().st_size == 0:
                   print(f'Approved migration is missing or empty: {name}')
                   sys.exit(33)
-          print(f'Approved manifest verified: {len(entries)} migration(s).')
+
+          changed_migrations = []
+          if os.environ.get('EVENT_NAME') == 'pull_request':
+              base = os.environ.get('BASE_SHA', '')
+              head = os.environ.get('HEAD_SHA', '')
+              if not base or not head:
+                  print('Missing pull request base/head SHA.')
+                  sys.exit(34)
+              out = subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, head, '--', 'supabase/migrations'],
+                  text=True,
+              )
+              changed_migrations = [
+                  Path(line).name for line in out.splitlines()
+                  if line.strip().endswith('.sql')
+              ]
+              unapproved_changed = [name for name in changed_migrations if name not in entries]
+              if unapproved_changed:
+                  print('FAIL-CLOSED: migration file(s) changed without production approval:')
+                  for name in unapproved_changed:
+                      print(f'  - {name}')
+                  sys.exit(35)
+
+          release_required = bool(entries)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              fh.write(f'release_required={str(release_required).lower()}\n')
+
+          if release_required:
+              print(f'Production release manifest verified: {len(entries)} approved migration(s).')
+          else:
+              print('No production migration release is currently approved; production connectivity is skipped.')
           PY
 
+      - name: Verify credentials without exposing values
+        if: steps.gate.outputs.release_required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo 'Missing SUPABASE_ACCESS_TOKEN'; exit 20; }
+          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo 'Missing SUPABASE_DB_PASSWORD'; exit 21; }
+          echo 'Supabase credentials are present.'
+
       - name: Link CLI to production project
+        if: steps.gate.outputs.release_required == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -74,12 +121,14 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_ID"
 
       - name: Official production migration dry-run
+        if: steps.gate.outputs.release_required == 'true'
         shell: bash
         run: |
           set -euo pipefail
           supabase db push --dry-run 2>&1 | tee supabase-production-dry-run.log
 
       - name: Fail closed on any unapproved pending migration
+        if: steps.gate.outputs.release_required == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -88,7 +137,11 @@ jobs:
           import re
           import sys
 
-          approved_names = [line.strip() for line in Path('supabase/approved-production-migrations.txt').read_text().splitlines() if line.strip()]
+          approved_names = []
+          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+              line = raw.strip()
+              if line and not line.startswith('#'):
+                  approved_names.append(line)
           approved_versions = {name[:14]: name for name in approved_names}
           text = Path('supabase-production-dry-run.log').read_text(errors='replace')
           observed_versions = []
