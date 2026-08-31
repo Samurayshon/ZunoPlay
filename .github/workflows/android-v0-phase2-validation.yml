@@ -90,12 +90,14 @@ jobs:
           fi
 
       - name: Runtime smoke test on Android 14
+        timeout-minutes: 10
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
           script: bash android-v0/ci/runtime-smoke.sh
