@@ -101,15 +101,16 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
           script: |
-            set -euo pipefail
             for CI_ATTEMPT in 1 2; do
               echo "Phase 2 runtime smoke CI attempt ${CI_ATTEMPT}/2"
               adb start-server
               adb wait-for-device
-              if timeout 180s bash android-v0/ci/runtime-smoke.sh 2>&1 | tee "android-smoke-attempt-${CI_ATTEMPT}.txt"; then
+              if timeout 180s bash android-v0/ci/runtime-smoke.sh > "android-smoke-attempt-${CI_ATTEMPT}.txt" 2>&1; then
+                cat "android-smoke-attempt-${CI_ATTEMPT}.txt"
                 exit 0
               fi
-              STATUS=${PIPESTATUS[0]}
+              STATUS=$?
+              cat "android-smoke-attempt-${CI_ATTEMPT}.txt" || true
               if grep -Eq 'error: closed|device offline|device not found|waiting for device' "android-smoke-attempt-${CI_ATTEMPT}.txt"; then
                 echo "Transient ADB transport failure detected; restarting ADB before one bounded retry."
                 adb kill-server || true
