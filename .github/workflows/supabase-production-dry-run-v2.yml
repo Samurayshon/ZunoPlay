@@ -38,20 +38,31 @@ jobs:
         with:
           version: ${{ env.SUPABASE_CLI_VERSION }}
 
-      - name: Verify stable database connection secret exists
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "${SUPABASE_DB_URL:-}" || { echo 'Missing repository secret: SUPABASE_DB_URL'; exit 20; }
-          echo 'Database connection secret is available; value was not printed.'
-
       - name: Build ledger-aware local production plan
         shell: bash
         run: |
           set -euo pipefail
           node scripts/supabase-production-plan.mjs --check --json | tee supabase-production-plan-local.json
 
+      - name: Detect production dry-run capability
+        id: remote
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${SUPABASE_DB_URL:-}" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo 'Production DB secret is available; value was not printed.'
+            exit 0
+          fi
+          if [ "$GITHUB_EVENT_NAME" = 'workflow_dispatch' ]; then
+            echo 'Manual production dry-run requires repository secret SUPABASE_DB_URL.' >&2
+            exit 20
+          fi
+          echo 'available=false' >> "$GITHUB_OUTPUT"
+          echo 'PR context has no production DB secret; remote checks are intentionally skipped. Local ledger/allowlist/planner validation still ran.'
+
       - name: Read remote migration ledger
+        if: steps.remote.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -75,6 +86,7 @@ jobs:
           PY
 
       - name: Reconcile committed ledger with production and classify pending migrations
+        if: steps.remote.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -83,12 +95,14 @@ jobs:
             --check --json | tee supabase-production-plan-remote.json
 
       - name: Run official production dry-run
+        if: steps.remote.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
           supabase db push --dry-run --include-all --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-dry-run.log
 
       - name: Verify dry-run equals approved truly-pending set
+        if: steps.remote.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
