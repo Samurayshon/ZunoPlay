@@ -1,0 +1,21 @@
+/* ZunoPlay mobile top-gap correction.
+   Native Android owns the real status-bar safe area. This stylesheet only removes
+   extra visual breathing room inside page headers; it never changes system insets. */
+@media(max-width:620px){
+  .zm-header{
+    min-height:64px!important;
+    padding-top:0!important;
+  }
+  .zm-brand-row{
+    top:0!important;
+  }
+}
+@media(max-width:420px){
+  .zm-header{
+    min-height:64px!important;
+    padding-top:0!important;
+  }
+  .zm-brand-row{
+    top:0!important;
+  }
+}
