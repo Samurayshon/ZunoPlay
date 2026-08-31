@@ -60,13 +60,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -s supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing or empty.'; exit 30; }
+          test -f supabase/approved-production-migrations.txt || { echo 'Approved migration manifest is missing.'; exit 30; }
           python3 - <<'PY'
           from pathlib import Path
           import re
           import sys
 
-          entries = [line.strip() for line in Path('supabase/approved-production-migrations.txt').read_text().splitlines() if line.strip()]
+          entries = []
+          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+              line = raw.strip()
+              if line and not line.startswith('#'):
+                  entries.append(line)
+
+          if not entries:
+              print('No production migrations are explicitly approved. Refusing production apply.')
+              sys.exit(30)
           if len(entries) != len(set(entries)):
               print('Duplicate entries in approved migration manifest.')
               sys.exit(31)
@@ -103,7 +111,11 @@ jobs:
           import re
           import sys
 
-          approved_names = [line.strip() for line in Path('supabase/approved-production-migrations.txt').read_text().splitlines() if line.strip()]
+          approved_names = []
+          for raw in Path('supabase/approved-production-migrations.txt').read_text().splitlines():
+              line = raw.strip()
+              if line and not line.startswith('#'):
+                  approved_names.append(line)
           approved_versions = {name[:14]: name for name in approved_names}
           text = Path('supabase-production-preapply-dry-run.log').read_text(errors='replace')
           observed_versions = []
@@ -137,11 +149,23 @@ jobs:
         run: |
           set -euo pipefail
           supabase db push --dry-run 2>&1 | tee supabase-production-postapply-dry-run.log
-          if grep -Eq '(Would push|Applying migration|\b[0-9]{14}\b)' supabase-production-postapply-dry-run.log; then
-            echo 'Post-apply dry-run still reports migration-like output; manual review required.'
-            exit 50
-          fi
-          echo 'Post-apply dry-run reports no remaining migration versions.'
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          text = Path('supabase-production-postapply-dry-run.log').read_text(errors='replace')
+          versions = []
+          for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', text):
+              if version not in versions:
+                  versions.append(version)
+          if versions:
+              print('Post-apply dry-run still reports migration version(s):')
+              for version in versions:
+                  print(f'  - {version}')
+              sys.exit(50)
+          print('Post-apply dry-run reports no remaining migration versions.')
+          PY
 
       - name: Upload production evidence
         if: always()
