@@ -1,7 +1,7 @@
 \set ON_ERROR_STOP on
 
 -- Eleventh-extraction characterization contract: freeze the phase boundaries and
--- caller-owned phase behavior before and after the canonical helper is wired.
+-- phase-dependent behavior before and after later canonical helpers are wired.
 do $$
 declare
   v_power text;
@@ -41,11 +41,31 @@ begin
     raise exception 'stack_phase_characterization_wiring_invalid:raw=%,helper=%',v_raw_total,v_helper_total;
   end if;
 
-  -- Preserve caller-owned behavior that consumes the phase result. These anchors
-  -- are deliberately independent from the previously extracted score/trio helpers.
-  if position('v_cost:=casep_powerwhen''explosion''then3when''elo''then2when''fase''then2when''vortice''then2when''fluxo''then1when''ima''then1when''troca''thencasewhenv_phase=''final''then0else1endelse99end;' in v_power) = 0 then
-    raise exception 'stack_phase_characterization_power_cost_anchor_changed';
+  -- Preserve behavior that consumes the phase result. Cost resolution became
+  -- canonical in #14, so accept the historical inline form only before that
+  -- helper exists and require the exact canonical mapping afterwards.
+  if to_regprocedure('zuno_private.zuno_stack_resolve_power_cost(text,text)') is null then
+    if position('v_cost:=casep_powerwhen''explosion''then3when''elo''then2when''fase''then2when''vortice''then2when''fluxo''then1when''ima''then1when''troca''thencasewhenv_phase=''final''then0else1endelse99end;' in v_power) = 0 then
+      raise exception 'stack_phase_characterization_power_cost_anchor_changed';
+    end if;
+    if position('v_cost:=casewhenv_phase=''pressure''then1else2end;' in v_gelo) = 0 then
+      raise exception 'stack_phase_characterization_gelo_cost_anchor_changed';
+    end if;
+    if position('v_cost:=casewhenv_phase=''final''then0else1end;' in v_desfazer) = 0 then
+      raise exception 'stack_phase_characterization_desfazer_cost_anchor_changed';
+    end if;
+  else
+    if regexp_count(v_power,'zuno_private\.zuno_stack_resolve_power_cost\(p_power,v_phase\);') <> 1 then
+      raise exception 'stack_phase_characterization_power_cost_helper_changed';
+    end if;
+    if regexp_count(v_gelo,'zuno_private\.zuno_stack_resolve_power_cost\(''gelo'',v_phase\);') <> 1 then
+      raise exception 'stack_phase_characterization_gelo_cost_helper_changed';
+    end if;
+    if regexp_count(v_desfazer,'zuno_private\.zuno_stack_resolve_power_cost\(''desfazer'',v_phase\);') <> 1 then
+      raise exception 'stack_phase_characterization_desfazer_cost_helper_changed';
+    end if;
   end if;
+
   if position('ifv_phase=''development''then' in v_power)=0
      or position('elsifv_phase=''pressure''then' in v_power)=0
      or position('elsifv_phase=''final''then' in v_power)=0
@@ -53,12 +73,6 @@ begin
      or position('v_score+40' in v_power)=0
      or position('v_score+60' in v_power)=0 then
     raise exception 'stack_phase_characterization_power_reward_anchor_changed';
-  end if;
-  if position('v_cost:=casewhenv_phase=''pressure''then1else2end;' in v_gelo) = 0 then
-    raise exception 'stack_phase_characterization_gelo_cost_anchor_changed';
-  end if;
-  if position('v_cost:=casewhenv_phase=''final''then0else1end;' in v_desfazer) = 0 then
-    raise exception 'stack_phase_characterization_desfazer_cost_anchor_changed';
   end if;
 end;
 $$;

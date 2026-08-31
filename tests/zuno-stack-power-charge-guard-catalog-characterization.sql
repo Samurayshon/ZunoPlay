@@ -62,7 +62,8 @@ begin
     raise exception 'stack_power_charge_guard_catalog_helper_exposed';
   end if;
 
-  -- Preserve prior canonical ownership and caller-owned cost/readiness rules.
+  -- Preserve prior canonical ownership. Cost resolution moved in #14, but it
+  -- must remain a separate authority from the #13 selected/charge guard.
   if regexp_count(v_power,'zuno_private\.zuno_stack_resolve_phase\(') <> 1
      or regexp_count(v_gelo,'zuno_private\.zuno_stack_resolve_phase\(') <> 1
      or regexp_count(v_desfazer,'zuno_private\.zuno_stack_resolve_phase\(') <> 1 then
@@ -71,10 +72,16 @@ begin
   if regexp_count(v_power,'zuno_private\.zuno_stack_cap_energy\(') <> 5 then
     raise exception 'stack_power_charge_guard_catalog_energy_cap_changed';
   end if;
-  if position('v_cost:=casep_powerwhen''explosion''then3when''elo''then2when''fase''then2when''vortice''then2when''fluxo''then1when''ima''then1when''troca''thencasewhenv_phase=''final''then0else1endelse99end;' in v_power)=0
-     or position('v_cost:=casewhenv_phase=''pressure''then1else2end;' in v_gelo)=0
-     or position('v_cost:=casewhenv_phase=''final''then0else1end;' in v_desfazer)=0 then
-    raise exception 'stack_power_charge_guard_catalog_cost_anchor_changed';
+  if to_regprocedure('zuno_private.zuno_stack_resolve_power_cost(text,text)') is null
+     or regexp_count(v_power,'zuno_private\.zuno_stack_resolve_power_cost\(p_power,v_phase\);') <> 1
+     or regexp_count(v_gelo,'zuno_private\.zuno_stack_resolve_power_cost\(''gelo'',v_phase\);') <> 1
+     or regexp_count(v_desfazer,'zuno_private\.zuno_stack_resolve_power_cost\(''desfazer'',v_phase\);') <> 1 then
+    raise exception 'stack_power_charge_guard_catalog_cost_authority_changed';
+  end if;
+  if position('v_cost:=casep_powerwhen''explosion''then3' in v_power)<>0
+     or position('v_cost:=casewhenv_phase=''pressure''then1else2end;' in v_gelo)<>0
+     or position('v_cost:=casewhenv_phase=''final''then0else1end;' in v_desfazer)<>0 then
+    raise exception 'stack_power_charge_guard_catalog_inline_cost_returned';
   end if;
   if position('stack_power_not_ready' in v_power)=0
      or position('stack_power_not_ready' in v_gelo)=0
