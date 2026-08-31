@@ -1,7 +1,3 @@
-20260830190000_zuno_stack_basic_trio_helper.sql
-20260830200000_zuno_stack_post_trio_scoring_helper.sql
-20260830210000_zuno_stack_pulse_helper.sql
-20260830220000_zuno_stack_tray_finish_helper.sql
-20260830230000_zuno_stack_score_cap_helper.sql
-20260830240000_zuno_stack_relay_send_score_cap_helper.sql
-20260830250000_zuno_stack_pulse_shift_score_cap_helper.sql
+# One approved migration filename per line.
+# Keep this file empty (comments only) when no production migration release is authorized.
+# Example: 20260101120000_example.sql
