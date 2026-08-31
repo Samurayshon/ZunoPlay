@@ -89,14 +89,26 @@ jobs:
             sudo chmod 666 /dev/kvm
           fi
 
-      - name: Prepare instrumented smoke wrapper
+      - name: Prepare app-vs-emulator isolation wrapper
         shell: bash
         run: |
-          cat > /tmp/zunoplay-phase2-smoke-wrapper.sh <<'BASH'
+          cat > /tmp/zunoplay-phase2-isolation.sh <<'BASH'
           #!/usr/bin/env bash
           set -uo pipefail
 
+          APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
+          PACKAGE='com.zunoplay.app'
+          ACTIVITY='com.zunoplay.app/.MainActivity'
+          CONTROL_PACKAGE='com.android.settings'
+          CONTROL_ACTIVITY='com.android.settings/.Settings'
           STATE_PREFIX='android-emulator-fixed-36.5.11'
+          EMULATOR_BIN="${ANDROID_HOME}/emulator/emulator"
+          COMMAND_LOG='android-incremental-command-trace.txt'
+          CONTINUOUS_LOG='android-runtime-logcat-continuous.txt'
+
+          trace() {
+            printf '%s | %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$COMMAND_LOG"
+          }
 
           capture_state() {
             local LABEL="$1"
@@ -109,7 +121,7 @@ jobs:
               echo '=== disk ==='
               df -h || true
               echo '=== emulator version ==='
-              emulator -version 2>&1 | head -n 8 || true
+              "$EMULATOR_BIN" -version 2>&1 | head -n 8 || true
               echo '=== emulator/qemu processes ==='
               pgrep -af 'emulator|qemu' || true
               echo '=== listeners 5037/5554 ==='
@@ -121,7 +133,7 @@ jobs:
               echo '=== coredump list ==='
               coredumpctl --no-pager list 2>&1 | tail -n 80 || true
               echo '=== qemu coredump details ==='
-              coredumpctl --no-pager info qemu-system-x86_64-headless 2>&1 | tail -n 160 || true
+              coredumpctl --no-pager info qemu-system-x86_64-headless 2>&1 | tail -n 180 || true
             } > "$OUT"
           }
 
@@ -130,12 +142,29 @@ jobs:
             tar -czf "${STATE_PREFIX}-${LABEL}-crashdata.tgz" /tmp/android-runner 2>/dev/null || true
           }
 
+          emulator_alive() {
+            pgrep -af 'emulator.*-avd|qemu-system' >/dev/null 2>&1 && timeout 5s adb shell true >/dev/null 2>&1
+          }
+
+          assert_emulator_alive() {
+            local LABEL="$1"
+            if ! emulator_alive; then
+              trace "EMULATOR NOT ALIVE after ${LABEL}"
+              capture_state "dead-${LABEL}"
+              archive_crash_data "dead-${LABEL}"
+              return 1
+            fi
+            trace "emulator alive after ${LABEL}"
+            return 0
+          }
+
           monitor_emulator() {
             local SEEN=0
             while true; do
               if pgrep -af 'emulator.*-avd|qemu-system' >/dev/null 2>&1; then
                 SEEN=1
               elif [ "$SEEN" -eq 1 ]; then
+                trace 'MONITOR detected emulator process disappearance'
                 echo "Emulator process disappeared at $(date -u +%FT%TZ)" > "${STATE_PREFIX}-process-exit.txt"
                 capture_state 'process-exit'
                 archive_crash_data 'process-exit'
@@ -148,56 +177,189 @@ jobs:
           wait_for_adb() {
             local RECOVERY_ATTEMPT
             for RECOVERY_ATTEMPT in 1 2 3; do
-              echo "ADB readiness attempt ${RECOVERY_ATTEMPT}/3"
+              trace "ADB readiness attempt ${RECOVERY_ATTEMPT}/3"
               adb start-server || true
               adb reconnect offline || true
               if timeout 30s adb wait-for-device; then
                 if timeout 10s adb shell true >/dev/null 2>&1; then
-                  echo "ADB transport is ready."
+                  trace 'ADB transport is ready'
                   return 0
                 fi
               fi
-              echo "ADB transport not ready after bounded wait."
+              trace 'ADB transport not ready after bounded wait'
               adb kill-server || true
               sleep 3
             done
             return 1
           }
 
-          echo 'Phase 2 runtime smoke on explicitly pinned Android Emulator 36.5.11'
-          emulator -version 2>&1 | tee android-emulator-effective-version.txt
+          cleanup() {
+            if [[ -n "${LOGCAT_PID:-}" ]]; then
+              kill "$LOGCAT_PID" >/dev/null 2>&1 || true
+              wait "$LOGCAT_PID" 2>/dev/null || true
+            fi
+            if [[ -n "${MONITOR_PID:-}" ]]; then
+              kill "$MONITOR_PID" >/dev/null 2>&1 || true
+              wait "$MONITOR_PID" 2>/dev/null || true
+            fi
+          }
+          trap cleanup EXIT
+
+          trace 'Phase 2 app-vs-emulator isolation on pinned Android Emulator 36.5.11'
+          "$EMULATOR_BIN" -version 2>&1 | tee android-emulator-effective-version.txt
           grep -q 'Android emulator version 36\.5\.11\.0' android-emulator-effective-version.txt
 
           if ! wait_for_adb; then
-            echo "ADB device was not ready within the bounded window." >&2
+            trace 'ADB device was not ready within bounded window'
             capture_state 'adb-not-ready'
             archive_crash_data 'adb-not-ready'
             exit 124
           fi
 
-          capture_state 'before-smoke'
+          capture_state 'before-control'
           monitor_emulator &
           MONITOR_PID=$!
 
-          set +e
-          timeout 180s bash android-v0/ci/runtime-smoke.sh > android-smoke-fixed-36.5.11.txt 2>&1
-          STATUS=$?
-          set -e
+          trace 'start continuous logcat before control workload'
+          adb logcat -c || true
+          adb logcat -v threadtime > "$CONTINUOUS_LOG" 2>&1 &
+          LOGCAT_PID=$!
+          sleep 2
 
-          kill "$MONITOR_PID" >/dev/null 2>&1 || true
-          wait "$MONITOR_PID" 2>/dev/null || true
-          capture_state 'after-smoke'
-          archive_crash_data 'after-smoke'
-          cat android-smoke-fixed-36.5.11.txt || true
-          exit "$STATUS"
+          trace 'CONTROL BEGIN: equivalent ADB/activity lifecycle workload without ZunoPlay installed'
+          if adb shell pm path "$PACKAGE" >/dev/null 2>&1; then
+            trace 'unexpected ZunoPlay package preinstalled in control phase'
+            exit 90
+          fi
+
+          for ATTEMPT in 1 2 3; do
+            trace "CONTROL ${ATTEMPT}/3 force-stop Settings"
+            adb shell am force-stop "$CONTROL_PACKAGE"
+            trace "CONTROL ${ATTEMPT}/3 start Settings -W"
+            CONTROL_OUTPUT="$(adb shell am start -W -n "$CONTROL_ACTIVITY" | tr -d '\r')"
+            printf '%s\n' "$CONTROL_OUTPUT" | tee -a "$COMMAND_LOG"
+            grep -q 'Status: ok' <<< "$CONTROL_OUTPUT"
+            trace "CONTROL ${ATTEMPT}/3 sleep 8"
+            sleep 8
+            trace "CONTROL ${ATTEMPT}/3 pidof Settings"
+            CONTROL_PID="$(adb shell pidof "$CONTROL_PACKAGE" | tr -d '\r' || true)"
+            test -n "$CONTROL_PID"
+            assert_emulator_alive "control-launch-${ATTEMPT}" || exit 91
+          done
+
+          trace 'CONTROL screen-off keyevent 223'
+          adb shell input keyevent 223
+          sleep 3
+          assert_emulator_alive 'control-screen-off' || exit 92
+
+          trace 'CONTROL wake keyevent 224'
+          adb shell input keyevent 224
+          adb shell wm dismiss-keyguard || true
+          sleep 5
+          assert_emulator_alive 'control-wake' || exit 93
+          trace 'CONTROL PASS: emulator survived equivalent workload without ZunoPlay'
+          capture_state 'after-control'
+
+          trace 'APP BEGIN: install exact built APK'
+          adb install -r "$APK"
+          assert_emulator_alive 'app-install' || exit 101
+
+          for ATTEMPT in 1 2 3; do
+            trace "APP ${ATTEMPT}/3 force-stop ZunoPlay"
+            adb shell am force-stop "$PACKAGE"
+            assert_emulator_alive "app-force-stop-${ATTEMPT}" || exit 102
+
+            trace "APP ${ATTEMPT}/3 start ZunoPlay -W"
+            set +e
+            START_OUTPUT="$(adb shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+            START_STATUS=$?
+            set -e
+            printf '%s\n' "$START_OUTPUT" | tee -a "$COMMAND_LOG"
+            trace "APP ${ATTEMPT}/3 am-start exit=${START_STATUS}"
+            if [[ "$START_STATUS" -ne 0 ]]; then
+              capture_state "after-app-start-${ATTEMPT}-command-failure"
+              exit 103
+            fi
+            grep -q 'Status: ok' <<< "$START_OUTPUT"
+            assert_emulator_alive "app-start-${ATTEMPT}" || exit 104
+
+            trace "APP ${ATTEMPT}/3 sleep 8"
+            sleep 8
+            assert_emulator_alive "app-sleep-${ATTEMPT}" || exit 105
+
+            trace "APP ${ATTEMPT}/3 pidof ZunoPlay"
+            APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
+            if [[ -z "$APP_PID" ]]; then
+              trace "ZunoPlay process missing after launch ${ATTEMPT}"
+              capture_state "app-process-missing-${ATTEMPT}"
+              exit 106
+            fi
+            trace "APP ${ATTEMPT}/3 process alive pid=${APP_PID}"
+          done
+
+          trace 'APP screen-off keyevent 223'
+          adb shell input keyevent 223
+          sleep 3
+          assert_emulator_alive 'app-screen-off' || exit 107
+          APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
+          test -n "$APP_PID"
+
+          trace 'APP wake keyevent 224'
+          adb shell input keyevent 224
+          adb shell wm dismiss-keyguard || true
+          sleep 5
+          assert_emulator_alive 'app-wake' || exit 108
+          APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
+          test -n "$APP_PID"
+
+          trace 'APP collect final diagnostics'
+          adb logcat -d -v threadtime > android-runtime-logcat.txt
+          adb shell dumpsys package "$PACKAGE" > android-package.txt
+          adb shell dumpsys activity activities > android-activities.txt
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          log = Path('android-runtime-logcat.txt').read_text(errors='replace')
+          blocks = log.split('FATAL EXCEPTION')
+          fatal_for_app = any('Process: com.zunoplay.app' in block[:4000] for block in blocks[1:])
+          if fatal_for_app:
+              raise SystemExit('Fatal ZunoPlay process crash detected in logcat.')
+
+          matches = re.findall(
+              r'Applied system safe area: left=(\d+) top=(\d+) right=(\d+) bottom=(\d+)',
+              log,
+          )
+          if not matches:
+              raise SystemExit('No ZunoPlay safe-area application was recorded in logcat.')
+
+          left, top, right, bottom = map(int, matches[-1])
+          print(f'Validated safe area: left={left} top={top} right={right} bottom={bottom}')
+          if top <= 0:
+              raise SystemExit(f'Invalid top safe-area inset: {top}. Status-bar protection was not proven.')
+          if bottom <= 0:
+              raise SystemExit(f'Invalid bottom safe-area inset: {bottom}. Navigation-area protection was not proven.')
+          PY
+
+          APP_PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
+          if [[ -z "$APP_PID" ]]; then
+            trace 'ZunoPlay process is not alive at end of incremental smoke'
+            exit 109
+          fi
+
+          capture_state 'after-app-smoke'
+          archive_crash_data 'after-app-smoke'
+          trace "PASS: incremental runtime smoke completed with PID ${APP_PID}"
+          exit 0
           BASH
-          chmod +x /tmp/zunoplay-phase2-smoke-wrapper.sh
-          bash -n /tmp/zunoplay-phase2-smoke-wrapper.sh
+          chmod +x /tmp/zunoplay-phase2-isolation.sh
+          bash -n /tmp/zunoplay-phase2-isolation.sh
 
-      - name: Runtime smoke Android 14 - Emulator 36.5.11 fixed
-        id: smoke_fixed
+      - name: Runtime isolation Android 14 - Emulator 36.5.11 fixed
+        id: isolation_fixed
         continue-on-error: true
-        timeout-minutes: 7
+        timeout-minutes: 8
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -208,16 +370,16 @@ jobs:
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: bash /tmp/zunoplay-phase2-smoke-wrapper.sh
+          script: bash /tmp/zunoplay-phase2-isolation.sh
 
-      - name: Enforce runtime smoke result
+      - name: Enforce runtime isolation result
         shell: bash
         run: |
-          echo "fixed_36_5_11=${{ steps.smoke_fixed.outcome }}"
-          if [ "${{ steps.smoke_fixed.outcome }}" = 'success' ]; then
+          echo "isolation_fixed_36_5_11=${{ steps.isolation_fixed.outcome }}"
+          if [ "${{ steps.isolation_fixed.outcome }}" = 'success' ]; then
             exit 0
           fi
-          echo 'Pinned Android Emulator 36.5.11 smoke failed.' >&2
+          echo 'Pinned Android Emulator 36.5.11 app-vs-emulator isolation failed.' >&2
           exit 1
 
       - name: Upload runtime diagnostics
@@ -228,10 +390,11 @@ jobs:
           path: |
             android-apk-badging.txt
             android-emulator-effective-version.txt
+            android-incremental-command-trace.txt
+            android-runtime-logcat-continuous.txt
             android-runtime-logcat.txt
             android-package.txt
             android-activities.txt
-            android-smoke-fixed-36.5.11.txt
             android-emulator-fixed-36.5.11-*.txt
             android-emulator-fixed-36.5.11-*.tgz
           if-no-files-found: warn
