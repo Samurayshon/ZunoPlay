@@ -23,10 +23,13 @@ jobs:
     environment: production
     env:
       SUPABASE_CLI_VERSION: '2.116.0'
-      BASELINE_VERSION: '20260830154207'
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - uses: supabase/setup-cli@v1
         with:
@@ -40,92 +43,70 @@ jobs:
           test -n "${SUPABASE_DB_URL:-}" || { echo 'Missing environment/repository secret: SUPABASE_DB_URL'; exit 21; }
           echo 'Authorization gate and database secret are present; secret value was not printed.'
 
-      - name: Verify allowlist format and local migration coverage
+      - name: Build ledger-aware local production plan
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import pathlib, re, sys
-          baseline = '20260830154207'
-          approved = []
-          for raw in pathlib.Path('.github/supabase-production-approved-migrations.txt').read_text().splitlines():
-              line = raw.strip()
-              if not line or line.startswith('#'):
-                  continue
-              if not re.fullmatch(r'\d{14}', line):
-                  print('Invalid allowlist entry:', line)
-                  sys.exit(30)
-              if line <= baseline:
-                  print('Allowlist entry is not after baseline:', line)
-                  sys.exit(31)
-              if line in approved:
-                  print('Duplicate allowlist entry:', line)
-                  sys.exit(32)
-              approved.append(line)
-          local = []
-          for path in pathlib.Path('supabase/migrations').glob('*.sql'):
-              m = re.match(r'^(\d{14})_', path.name)
-              if m and m.group(1) > baseline:
-                  local.append(m.group(1))
-          local = sorted(set(local))
-          approved = sorted(approved)
-          unapproved = [v for v in local if v not in approved]
-          missing_local = [v for v in approved if v not in local]
-          if unapproved:
-              print('FAIL-CLOSED: local migrations after baseline are not approved:', ', '.join(unapproved))
-              sys.exit(33)
-          if missing_local:
-              print('FAIL-CLOSED: approved migration versions have no local file:', ', '.join(missing_local))
-              sys.exit(34)
-          print('Allowlist/local coverage OK')
-          PY
+          node scripts/supabase-production-plan.mjs --check --json | tee supabase-production-plan-local.json
 
       - name: Capture remote ledger before apply
         shell: bash
         run: |
           set -euo pipefail
           supabase migration list --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-ledger-before.log
+          python3 - <<'PY'
+          import pathlib, re
+          text = pathlib.Path('supabase-production-ledger-before.log').read_text(errors='replace')
+          ansi = re.compile(r'\x1b\[[0-9;]*m')
+          remote = []
+          for raw in text.splitlines():
+              parts = ansi.sub('', raw).split('|')
+              if len(parts) < 2:
+                  continue
+              candidate = parts[1].strip()
+              if re.fullmatch(r'\d{14}', candidate) and candidate not in remote:
+                  remote.append(candidate)
+          remote.sort()
+          pathlib.Path('supabase-production-remote-before.txt').write_text('\n'.join(remote) + ('\n' if remote else ''))
+          print(f'Remote migration versions captured: {len(remote)}')
+          PY
+
+      - name: Reconcile production ledger and approved pending set
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/supabase-production-plan.mjs \
+            --remote-versions-file supabase-production-remote-before.txt \
+            --check --json | tee supabase-production-plan-before-apply.json
 
       - name: Mandatory final dry-run before apply
         shell: bash
         run: |
           set -euo pipefail
-          supabase db push --dry-run --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-dry-run-before-apply.log
+          supabase db push --dry-run --include-all --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-dry-run-before-apply.log
 
-      - name: Fail closed unless final dry-run matches approved-minus-applied state
+      - name: Fail closed unless final dry-run matches ledger-aware approved pending set
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import pathlib, re, sys
-          baseline = '20260830154207'
-          approved = sorted({line.strip() for line in pathlib.Path('.github/supabase-production-approved-migrations.txt').read_text().splitlines() if line.strip() and not line.strip().startswith('#')})
-          ledger_text = pathlib.Path('supabase-production-ledger-before.log').read_text(errors='replace')
-          remote = []
-          for line in ledger_text.splitlines():
-              versions = re.findall(r'(?<!\d)(\d{14})(?!\d)', line)
-              if len(versions) >= 2:
-                  candidate = versions[1]
-                  if candidate > baseline and candidate not in remote:
-                      remote.append(candidate)
-          remote = sorted(remote)
-          bad_remote = [v for v in remote if v not in approved]
-          if bad_remote:
-              print('FAIL-CLOSED: production contains unapproved post-baseline migrations:', ', '.join(bad_remote))
-              sys.exit(40)
-          expected_pending = [v for v in approved if v not in remote]
+          import json, pathlib, re, sys
+          plan = json.loads(pathlib.Path('supabase-production-plan-before-apply.json').read_text())
+          expected = sorted(row['version'] for row in plan['classifications']['approvedPending'])
+          pending = {row['version'] for row in plan['classifications']['pending']}
           dry = pathlib.Path('supabase-production-dry-run-before-apply.log').read_text(errors='replace')
-          seen = sorted({v for v in re.findall(r'(?<!\d)(\d{14})(?!\d)', dry) if v > baseline})
-          if seen != expected_pending:
-              print('FAIL-CLOSED: final dry-run does not match approved-minus-applied state.')
-              print('Expected:', ', '.join(expected_pending) if expected_pending else '<none>')
-              print('Observed:', ', '.join(seen) if seen else '<none>')
-              sys.exit(41)
-          pathlib.Path('expected-pending.txt').write_text('\n'.join(expected_pending) + ('\n' if expected_pending else ''))
+          observed = sorted({version for version in re.findall(r'(?<!\d)(\d{14})(?!\d)', dry) if version in pending})
+          if observed != expected:
+              print('FAIL-CLOSED: final dry-run does not match ledger-aware approved pending set.')
+              print('Expected:', ', '.join(expected) if expected else '<none>')
+              print('Observed:', ', '.join(observed) if observed else '<none>')
+              sys.exit(40)
+          pathlib.Path('expected-pending.txt').write_text('\n'.join(expected) + ('\n' if expected else ''))
           print('Final dry-run approved.')
+          print('Approved pending:', ', '.join(expected) if expected else '<none>')
           PY
 
-      - name: Apply approved pending migrations
+      - name: Apply approved truly-pending migrations
         if: success()
         shell: bash
         run: |
@@ -134,7 +115,7 @@ jobs:
             echo 'No approved pending migrations; nothing to apply.'
             exit 0
           fi
-          supabase db push --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-apply.log
+          supabase db push --include-all --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-apply.log
 
       - name: Verify production ledger after apply
         shell: bash
@@ -142,25 +123,41 @@ jobs:
           set -euo pipefail
           supabase migration list --db-url "$SUPABASE_DB_URL" 2>&1 | tee supabase-production-ledger-after.log
           python3 - <<'PY'
-          import pathlib, re, sys
-          baseline = '20260830154207'
-          approved = sorted({line.strip() for line in pathlib.Path('.github/supabase-production-approved-migrations.txt').read_text().splitlines() if line.strip() and not line.strip().startswith('#')})
+          import csv, pathlib, re, sys
+
           text = pathlib.Path('supabase-production-ledger-after.log').read_text(errors='replace')
-          remote = []
-          for line in text.splitlines():
-              versions = re.findall(r'(?<!\d)(\d{14})(?!\d)', line)
-              if len(versions) >= 2:
-                  candidate = versions[1]
-                  if candidate > baseline and candidate not in remote:
-                      remote.append(candidate)
-          remote = sorted(remote)
-          bad = [v for v in remote if v not in approved]
-          missing = [v for v in approved if v not in remote]
-          if bad or missing:
-              print('FAIL-CLOSED: post-apply ledger mismatch.')
-              print('Unapproved remote:', ', '.join(bad) if bad else '<none>')
-              print('Approved but missing:', ', '.join(missing) if missing else '<none>')
+          ansi = re.compile(r'\x1b\[[0-9;]*m')
+          remote = set()
+          for raw in text.splitlines():
+              parts = ansi.sub('', raw).split('|')
+              if len(parts) < 2:
+                  continue
+              candidate = parts[1].strip()
+              if re.fullmatch(r'\d{14}', candidate):
+                  remote.add(candidate)
+
+          ledger = set()
+          for path in sorted(pathlib.Path('supabase/reconciliation').glob('production-migrations-*.csv')):
+              with path.open(newline='') as handle:
+                  for row in csv.DictReader(handle):
+                      ledger.add(row['version'])
+
+          pending_path = pathlib.Path('expected-pending.txt')
+          applied_now = {line.strip() for line in pending_path.read_text().splitlines() if line.strip()} if pending_path.exists() else set()
+          expected = ledger | applied_now
+          missing = sorted(expected - remote)
+          unexpected = sorted(remote - expected)
+          if missing or unexpected:
+              print('FAIL-CLOSED: post-apply production ledger mismatch.')
+              print('Expected but missing:', ', '.join(missing) if missing else '<none>')
+              print('Unexpected remote:', ', '.join(unexpected) if unexpected else '<none>')
               sys.exit(50)
+
+          if applied_now:
+              pathlib.Path('production-reconciliation-required.txt').write_text(
+                  'Production advanced by these approved migrations; capture them in a new reconciliation ledger before the next release:\n'
+                  + '\n'.join(sorted(applied_now)) + '\n'
+              )
           print('supabase_production_apply_v2_verified')
           PY
 
@@ -170,9 +167,13 @@ jobs:
         with:
           name: supabase-production-apply-v2
           path: |
+            supabase-production-plan-local.json
             supabase-production-ledger-before.log
+            supabase-production-remote-before.txt
+            supabase-production-plan-before-apply.json
             supabase-production-dry-run-before-apply.log
             supabase-production-apply.log
             supabase-production-ledger-after.log
             expected-pending.txt
+            production-reconciliation-required.txt
           if-no-files-found: ignore
