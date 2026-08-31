@@ -32,14 +32,11 @@ insert into pulse_cases values
   ('critical_cross','71000000-0000-0000-0000-000000000004', '72000000-0000-0000-0000-000000000004', 24800, '["a","b","c","d","e","f"]', 25000, 3),
   ('already_capped','71000000-0000-0000-0000-000000000005', '72000000-0000-0000-0000-000000000005', 25000, '["a","b","c","d"]', 25000, 2);
 
--- Minimal auth/profile/room membership fixtures using the same tables required by the RPC.
+-- Minimal auth/room membership fixtures. Profiles are not required by the Pulse Shift RPC;
+-- validated Stack fixtures create auth.users + rooms + room_members directly.
 insert into auth.users(id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at)
 select user_id,'authenticated','authenticated',label||'@pulse.test','',now(),now(),now()
 from pulse_cases
-on conflict (id) do nothing;
-
-insert into public.profiles(id,username,display_name)
-select user_id,'pulse_'||label,'Pulse '||label from pulse_cases
 on conflict (id) do nothing;
 
 insert into public.rooms(id,owner_id,name)
