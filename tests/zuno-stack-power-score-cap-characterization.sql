@@ -124,15 +124,15 @@ declare
   s public.zuno_stack_match_state;
   e public.zuno_stack_game_events;
   eng jsonb;
-  action_id text;
+  v_action_id text;
 begin
   for c in select * from power_cap_cases order by label loop
     perform set_config('request.jwt.claim.sub',c.user_id::text,true);
     perform set_config('request.jwt.claim.role','authenticated',true);
-    action_id := 'power-cap-'||c.label;
+    v_action_id := 'power-cap-'||c.label;
 
     select * into s
-    from zuno_private.zuno_stack_apply_power_internal(c.room_id,1,action_id,'fluxo');
+    from zuno_private.zuno_stack_apply_power_internal(c.room_id,1,v_action_id,'fluxo');
     eng := s.state->'engine';
 
     perform pg_temp.assert_true(s.revision=2,c.label||':revision');
@@ -145,7 +145,7 @@ begin
     perform pg_temp.assert_true(eng->'tray'='[]'::jsonb,c.label||':tray');
     perform pg_temp.assert_true((s.state#>>'{serverPowers,charges,fluxo}')::integer=0,c.label||':charge');
 
-    select * into e from public.zuno_stack_game_events ev where ev.room_id=c.room_id and ev.action_id=action_id;
+    select * into e from public.zuno_stack_game_events ev where ev.room_id=c.room_id and ev.action_id=v_action_id;
     perform pg_temp.assert_true(found,c.label||':event_missing');
     perform pg_temp.assert_true(e.event_type='server_power',c.label||':event_type');
     perform pg_temp.assert_true(e.actor_id=c.user_id,c.label||':event_actor');
@@ -153,7 +153,7 @@ begin
     perform pg_temp.assert_true((e.payload->>'cost')::integer=1,c.label||':event_cost');
     perform pg_temp.assert_true((e.payload->>'expected_revision')::bigint=1,c.label||':event_expected_revision');
     perform pg_temp.assert_true((e.payload->>'applied_revision')::bigint=2,c.label||':event_applied_revision');
-    perform pg_temp.assert_true((select count(*) from public.zuno_stack_game_events ev where ev.room_id=c.room_id and ev.action_id=action_id)=1,c.label||':single_event');
+    perform pg_temp.assert_true((select count(*) from public.zuno_stack_game_events ev where ev.room_id=c.room_id and ev.action_id=v_action_id)=1,c.label||':single_event');
   end loop;
 end;
 $$;
