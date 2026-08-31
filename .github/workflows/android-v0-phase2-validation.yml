@@ -100,7 +100,26 @@ jobs:
           emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          script: bash android-v0/ci/runtime-smoke.sh
+          script: |
+            set -euo pipefail
+            for CI_ATTEMPT in 1 2; do
+              echo "Phase 2 runtime smoke CI attempt ${CI_ATTEMPT}/2"
+              adb start-server
+              adb wait-for-device
+              if timeout 180s bash android-v0/ci/runtime-smoke.sh 2>&1 | tee "android-smoke-attempt-${CI_ATTEMPT}.txt"; then
+                exit 0
+              fi
+              STATUS=${PIPESTATUS[0]}
+              if grep -Eq 'error: closed|device offline|device not found|waiting for device' "android-smoke-attempt-${CI_ATTEMPT}.txt"; then
+                echo "Transient ADB transport failure detected; restarting ADB before one bounded retry."
+                adb kill-server || true
+                sleep 3
+                continue
+              fi
+              exit "$STATUS"
+            done
+            echo "ADB transport failed on both bounded CI attempts." >&2
+            exit 1
 
       - name: Upload runtime diagnostics
         if: always()
@@ -112,6 +131,6 @@ jobs:
             android-runtime-logcat.txt
             android-package.txt
             android-activities.txt
+            android-smoke-attempt-*.txt
           if-no-files-found: warn
           retention-days: 7
-# phase2-ci-trigger-2
