@@ -6,6 +6,7 @@ import path from 'node:path';
 const root = process.cwd();
 const reconciliationDir = path.join(root, 'supabase/reconciliation');
 const migrationsDir = path.join(root, 'supabase/migrations');
+const equivalencePath = path.join(root, 'scripts/zuno-stack-ledger-equivalences.json');
 const strict = process.argv.includes('--strict');
 const jsonOnly = process.argv.includes('--json');
 
@@ -32,7 +33,9 @@ function parseMigrationFilename(file) {
 
 if (!fs.existsSync(reconciliationDir)) throw new Error(`missing reconciliation directory: ${reconciliationDir}`);
 if (!fs.existsSync(migrationsDir)) throw new Error(`missing migrations directory: ${migrationsDir}`);
+if (!fs.existsSync(equivalencePath)) throw new Error(`missing approved equivalence file: ${equivalencePath}`);
 
+const approvedEquivalences = new Map(Object.entries(JSON.parse(fs.readFileSync(equivalencePath, 'utf8'))));
 const ledgerPaths = fs.readdirSync(reconciliationDir)
   .filter((file) => /^production-migrations-\d{8}\.csv$/.test(file))
   .sort()
@@ -60,7 +63,16 @@ for (const row of production) {
   productionByName.set(row.name, entries);
 }
 
+const equivalenceDefinitionErrors = [];
+for (const [historicalVersion, equivalent] of approvedEquivalences) {
+  const applied = productionByVersion.get(equivalent.productionVersion);
+  if (!applied) equivalenceDefinitionErrors.push({ historicalVersion, ...equivalent, reason: 'production-version-missing' });
+  else if (applied.name !== equivalent.name) equivalenceDefinitionErrors.push({ historicalVersion, ...equivalent, observedName: applied.name, reason: 'production-name-mismatch' });
+}
+
 const exact = [];
+const approvedEquivalent = [];
+const approvedEquivalentDuplicateLocal = [];
 const versionNameMismatch = [];
 const retimestampedUniqueName = [];
 const retimestampedAmbiguousName = [];
@@ -73,17 +85,28 @@ for (const row of parsedLocal) {
     else versionNameMismatch.push({ local: row, production: applied });
     continue;
   }
-  const sameName = productionByName.get(row.name) ?? [];
-  if (sameName.length === 1) {
-    retimestampedUniqueName.push({ local: row, production: sameName[0] });
-  } else if (sameName.length > 1) {
-    retimestampedAmbiguousName.push({ local: row, production: sameName });
-  } else {
-    localOnly.push(row);
+
+  const approved = approvedEquivalences.get(row.version);
+  if (approved && approved.name === row.name) {
+    const equivalentProduction = productionByVersion.get(approved.productionVersion);
+    if (equivalentProduction?.name === approved.name) {
+      const item = { local: row, production: equivalentProduction, historicalVersion: row.version };
+      if (localByVersion.has(approved.productionVersion)) approvedEquivalentDuplicateLocal.push(item);
+      else approvedEquivalent.push(item);
+      continue;
+    }
   }
+
+  const sameName = productionByName.get(row.name) ?? [];
+  if (sameName.length === 1) retimestampedUniqueName.push({ local: row, production: sameName[0] });
+  else if (sameName.length > 1) retimestampedAmbiguousName.push({ local: row, production: sameName });
+  else localOnly.push(row);
 }
 
-const productionMissingExactFile = production.filter((row) => !localByVersion.has(row.version));
+const equivalentlyCoveredProductionVersions = new Set(approvedEquivalent.map((item) => item.production.version));
+const productionMissingExactFile = production.filter(
+  (row) => !localByVersion.has(row.version) && !equivalentlyCoveredProductionVersions.has(row.version),
+);
 const duplicateLocalVersions = parsedLocal
   .map((row) => row.version)
   .filter((version, index, all) => all.indexOf(version) !== index)
@@ -97,8 +120,11 @@ const summary = {
     files: ledgerPaths.map((ledgerPath) => path.basename(ledgerPath)),
   },
   localDirectory: { count: parsedLocal.length },
+  approvedVersionEquivalences: [...approvedEquivalences.entries()].map(([historicalVersion, value]) => ({ historicalVersion, ...value })),
   classifications: {
     exactVersionAndName: exact.length,
+    approvedEquivalent: approvedEquivalent.length,
+    approvedEquivalentDuplicateLocal: approvedEquivalentDuplicateLocal.length,
     versionNameMismatch: versionNameMismatch.length,
     retimestampedUniqueName: retimestampedUniqueName.length,
     retimestampedAmbiguousName: retimestampedAmbiguousName.length,
@@ -107,8 +133,11 @@ const summary = {
     invalidFilenames: invalidFilenames.length,
     duplicateLocalVersions: duplicateLocalVersions.length,
     duplicateProductionVersions: duplicateProductionVersions.length,
+    equivalenceDefinitionErrors: equivalenceDefinitionErrors.length,
   },
   details: {
+    approvedEquivalent,
+    approvedEquivalentDuplicateLocal,
     versionNameMismatch,
     retimestampedUniqueName,
     retimestampedAmbiguousName,
@@ -117,19 +146,19 @@ const summary = {
     invalidFilenames,
     duplicateLocalVersions,
     duplicateProductionVersions,
+    equivalenceDefinitionErrors,
   },
 };
 
-if (jsonOnly) {
-  process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
-} else {
+if (jsonOnly) process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
+else {
   console.log('Supabase migration reconciliation');
   console.log(JSON.stringify(summary, null, 2));
 }
 
 if (strict) {
   const c = summary.classifications;
-  const drift = c.versionNameMismatch + c.retimestampedUniqueName + c.retimestampedAmbiguousName + c.localOnly + c.productionMissingExactFile + c.invalidFilenames + c.duplicateLocalVersions + c.duplicateProductionVersions;
+  const drift = c.approvedEquivalentDuplicateLocal + c.versionNameMismatch + c.retimestampedUniqueName + c.retimestampedAmbiguousName + c.localOnly + c.productionMissingExactFile + c.invalidFilenames + c.duplicateLocalVersions + c.duplicateProductionVersions + c.equivalenceDefinitionErrors;
   if (drift > 0) {
     console.error(`Migration ledger drift detected (${drift} classified discrepancies).`);
     process.exit(1);
