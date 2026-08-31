@@ -1,0 +1,76 @@
+name: Zuno Stack Power Energy Cap Characterization
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'supabase/migrations/**'
+      - 'tests/zuno-stack-power-energy-cap-characterization.sql'
+      - 'tests/zuno-stack-power-energy-cap-catalog-characterization.sql'
+      - 'tests/zuno-stack-rpc-behavior-characterization.sql'
+      - 'tests/zuno-stack-rpc-concurrency.sh'
+      - '.github/workflows/stack-power-energy-cap-characterization.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  power-energy-cap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Inject proven pre-ledger baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_SOURCE='supabase/bootstrap/20260826130000_preledger_baseline.sql'
+          BOOTSTRAP_TARGET="supabase/migrations/$(basename "$BOOTSTRAP_SOURCE")"
+          test -f "$BOOTSTRAP_SOURCE"
+          test ! -e "$BOOTSTRAP_TARGET"
+          cp "$BOOTSTRAP_SOURCE" "$BOOTSTRAP_TARGET"
+
+      - name: Start disposable local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector
+
+      - name: Rebuild database through ninth extraction
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db reset --local --no-seed
+
+      - name: Characterize Board Power energy cap before tenth extraction
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-power-energy-cap-characterization.sql
+
+      - name: Re-run real Stack RPC behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -f tests/zuno-stack-rpc-behavior-characterization.sql
+
+      - name: Re-run two-session Stack concurrency
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tests/zuno-stack-rpc-concurrency.sh
+
+      - name: Show local Supabase status on failure
+        if: failure()
+        run: supabase status || true
+
+      - name: Stop disposable local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
