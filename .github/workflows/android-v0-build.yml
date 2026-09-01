@@ -106,7 +106,7 @@ jobs:
           ram-size: 2048M
           emulator-build: 15507667
           disable-animations: true
-          emulator-options: -no-window -gpu software
+          emulator-options: -no-window -gpu software -memory 2048
           script: bash android-v0/ci/runtime-smoke.sh
 
       - name: Upload runtime diagnostics
