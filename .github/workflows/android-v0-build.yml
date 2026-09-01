@@ -204,6 +204,7 @@ jobs:
           cores: 2
           ram-size: 2048M
           emulator-build: 15507667
+          disable-linux-hw-accel: true
           disable-animations: true
           emulator-options: -no-window -gpu software -memory 2048
           script: bash android-v0/ci/runtime-smoke.sh
