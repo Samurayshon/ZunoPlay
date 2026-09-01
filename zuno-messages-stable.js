@@ -15,13 +15,61 @@ function isLoading(){const r=root();return !!(r?.querySelector('.zm-loading')&&!
 function bootError(message){const r=root();if(!r||!isLoading())return;r.innerHTML=`<main class="zm-app"><div class="zm-boot-error"><strong>Não foi possível carregar suas mensagens</strong><span>${esc(message||'Falha temporária ao iniciar o Zuno Messages.')}</span><button id="zmBootRetry" type="button">Tentar novamente</button></div></main>`;document.getElementById('zmBootRetry')?.addEventListener('click',()=>{r.innerHTML='<div class="zm-app"><div class="zm-loading">Abrindo Zuno Messages...</div></div>';recoverBoot(true)})}
 async function recoverBoot(force=false){if(bootRetry||(!force&&!isLoading()))return;bootRetry=true;try{client=getClient();if(!client)throw new Error('Conexão com o ZunoPlay indisponível');const session=await timeout(client.auth.getSession(),5000);user=session?.data?.session?.user||null;if(!user){location.href='login.html';return}if(!window.ZunoMessages?.loadInbox)throw new Error('Módulo de mensagens não iniciou');await timeout(window.ZunoMessages.loadInbox(),8000);scheduleDecorate()}catch(e){console.error('[Zuno Messages stable] boot',e);bootError(e?.message)}finally{bootRetry=false}}
 async function loadDecorData(){client=getClient();if(!client)return;try{const s=await client.auth.getSession();user=s?.data?.session?.user||null;if(!user)return;const{data,error}=await client.rpc('zuno_inbox',{p_limit:100,p_offset:0});if(error)throw error;const rows=data||[];inboxMap=new Map(rows.map(r=>[r.conversation_id,r]));const ids=[...new Set(rows.map(r=>r.other_user_id).filter(Boolean))];if(ids.length){const{data:profiles}=await client.from('profiles').select('id,avatar_url,avatar_config').in('id',ids);avatarMap=new Map((profiles||[]).map(p=>[p.id,p]))}}catch(e){console.warn('[Zuno Messages stable] decorate data',e)}}
-function ensureToolbar(){const r=root();if(!r||r.dataset.zunoStableToolbar==='1')return;const top=r.querySelector('.zm-top'),search=r.querySelector('.zm-search'),tabs=r.querySelector('.zm-tabs');if(!top||!search||!tabs)return;r.dataset.zunoStableToolbar='1';const create=top.querySelector('#zmNewChat')||top.querySelector('.zm-icon-btn');const bar=document.createElement('div');bar.className='zm-inbox-toolbar';tabs.parentNode.insertBefore(bar,tabs);bar.appendChild(tabs);const actions=document.createElement('div');actions.className='zm-inbox-actions';bar.appendChild(actions);const trigger=document.createElement('button');trigger.type='button';trigger.className='zm-icon-btn zm-search-toggle';trigger.setAttribute('aria-label','Pesquisar conversas');trigger.textContent='⌕';actions.appendChild(trigger);if(create)actions.appendChild(create);top.remove();search.classList.add('zm-search-collapsed');bar.parentNode.insertBefore(search,bar.nextSibling);trigger.onclick=()=>{const open=!search.classList.contains('is-open');search.classList.toggle('is-open',open);const input=search.querySelector('input');if(open)setTimeout(()=>input?.focus(),60);else if(input){input.value='';input.dispatchEvent(new Event('input',{bubbles:true}))}}}
+function ensureToolbar(){
+  const r=root();
+  if(!r||r.dataset.zunoStableToolbar==='1')return;
+  const top=r.querySelector('.zm-top'),search=r.querySelector('.zm-search'),tabs=r.querySelector('.zm-tabs');
+  if(!top||!search||!tabs)return;
+  r.dataset.zunoStableToolbar='1';
+  top.classList.add('zm-context-top');
+  top.querySelector('.zm-kicker')?.remove();
+  const title=top.querySelector('.zm-title');
+  if(title)title.textContent='Conversas';
+  if(!top.querySelector('[data-zuno-inbox-back]')){
+    const back=document.createElement('button');
+    back.type='button';
+    back.className='zuno-context-back';
+    back.dataset.zunoInboxBack='1';
+    back.setAttribute('aria-label','Voltar');
+    back.textContent='‹';
+    back.onclick=()=>history.length>1?history.back():location.assign('index.html?central=1');
+    top.prepend(back);
+  }
+  const create=top.querySelector('#zmNewChat')||top.querySelector('.zm-icon-btn');
+  const bar=document.createElement('div');
+  bar.className='zm-inbox-toolbar';
+  tabs.parentNode.insertBefore(bar,tabs);
+  bar.appendChild(tabs);
+  const actions=document.createElement('div');
+  actions.className='zm-inbox-actions';
+  bar.appendChild(actions);
+  const trigger=document.createElement('button');
+  trigger.type='button';
+  trigger.className='zm-icon-btn zm-search-toggle';
+  trigger.setAttribute('aria-label','Pesquisar conversas');
+  trigger.textContent='⌕';
+  actions.appendChild(trigger);
+  if(create)actions.appendChild(create);
+  search.classList.add('zm-search-collapsed');
+  bar.parentNode.insertBefore(search,bar.nextSibling);
+  trigger.onclick=()=>{
+    const open=!search.classList.contains('is-open');
+    search.classList.toggle('is-open',open);
+    const input=search.querySelector('input');
+    if(open)setTimeout(()=>input?.focus(),60);
+    else if(input){input.value='';input.dispatchEvent(new Event('input',{bubbles:true}))}
+  };
+}
 function applyAvatar(el,data){const wrap=el.querySelector('.zm-avatar');if(!wrap||data?.conversation_type==='group')return;const p=avatarMap.get(data?.other_user_id);if(!p)return;if(p.avatar_url){let img=wrap.querySelector('img');if(!img){wrap.textContent='';img=document.createElement('img');img.alt='';wrap.prepend(img)}if(img.src!==p.avatar_url)img.src=p.avatar_url;return}if(p.avatar_config&&window.ZunoAvatarRenderer?.mount){let img=wrap.querySelector('img');if(!img){wrap.textContent='';img=document.createElement('img');img.alt='Avatar ZunoPlay';wrap.prepend(img)}try{window.ZunoAvatarRenderer.mount(img,p.avatar_config)}catch(e){console.warn('[Zuno Messages stable] avatar',e)}}}
 async function stateAction(id,action){if(!client)return;try{const{error}=await client.rpc('zuno_set_conversation_state',{p_conversation_id:id,p_action:action});if(error)throw error;await window.ZunoMessageEntry?.refresh?.();await window.ZunoMessages?.loadInbox?.();scheduleDecorate()}catch(e){console.warn('[Zuno Messages stable] conversation action',e)}}
 function menuFor(el,x,y){document.querySelector('.zm-social-menu')?.remove();const data=inboxMap.get(el.dataset.conversation);const m=document.createElement('div');m.className='zm-social-menu';m.style.left=Math.min(innerWidth-228,Math.max(10,x-105))+'px';m.style.top=Math.min(innerHeight-235,Math.max(70,y-35))+'px';const pinned=!!data?.pinned_at,muted=!!data?.muted_until;m.innerHTML=`<button data-a="${pinned?'unpin':'pin'}">📌 ${pinned?'Desafixar':'Fixar conversa'}</button><button data-a="unread">● Marcar como não lida</button><button data-a="${muted?'unmute':'mute'}">${muted?'🔔 Ativar notificações':'🔕 Silenciar'}</button><button data-a="archive">Arquivar</button>`;document.body.appendChild(m);m.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();m.remove();stateAction(el.dataset.conversation,b.dataset.a)});setTimeout(()=>document.addEventListener('pointerdown',()=>m.remove(),{once:true}),0)}
 function decorateRows(){document.querySelectorAll('.zm-conversation').forEach(el=>{const data=inboxMap.get(el.dataset.conversation);if(data){el.dataset.zunoPinned=data.pinned_at?'1':'0';el.dataset.lastMessageAt=data.last_message_at||'';applyAvatar(el,data)}const badge=el.querySelector('[data-zuno-conversation-badge]')||el.querySelector('.zm-unread');const avatar=el.querySelector('.zm-avatar');if(badge&&avatar&&badge.parentElement!==avatar){badge.classList.add('zm-avatar-unread');avatar.appendChild(badge)}if(el.dataset.stableGesture!=='1'){el.dataset.stableGesture='1';let timer=null,startX=0;el.addEventListener('pointerdown',e=>{startX=e.clientX;timer=setTimeout(()=>menuFor(el,e.clientX,e.clientY),520)});el.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-startX)>12)clearTimeout(timer)});el.addEventListener('pointerup',()=>clearTimeout(timer));el.addEventListener('pointercancel',()=>clearTimeout(timer))}});const list=document.getElementById('zmInboxList');if(list){[...list.querySelectorAll('.zm-conversation')].sort((a,b)=>{const ap=a.dataset.zunoPinned==='1',bp=b.dataset.zunoPinned==='1';if(ap!==bp)return bp-ap;return (Date.parse(b.dataset.lastMessageAt)||0)-(Date.parse(a.dataset.lastMessageAt)||0)}).forEach(el=>list.appendChild(el))}}
 function media(){document.querySelectorAll('.zm-attachment img').forEach(img=>{if(img.dataset.stableMedia)return;img.dataset.stableMedia='1';img.onclick=()=>{const d=document.createElement('dialog');d.className='zm-media-dialog';d.innerHTML=`<img src="${img.src}" alt="Imagem em tela cheia">`;document.body.appendChild(d);d.onclick=()=>d.close();d.onclose=()=>d.remove();d.showModal()}})}
-function composer(){const nav=document.querySelector('.zuno-canonical-nav'),top=nav?.getBoundingClientRect().top;if(Number.isFinite(top))document.documentElement.style.setProperty('--zm-nav-clearance',Math.max(88,innerHeight-top+10)+'px')}
+function composer(){
+  const nav=document.querySelector('.zuno-canonical-nav'),top=nav?.getBoundingClientRect().top;
+  if(Number.isFinite(top))document.documentElement.style.setProperty('--zm-nav-clearance',Math.max(88,innerHeight-top+10)+'px');
+  else document.documentElement.style.removeProperty('--zm-nav-clearance');
+}
 function resetVoiceUi(){const btn=document.getElementById('zmSend'),input=document.getElementById('zmInput'),form=document.getElementById('zmComposer');btn?.classList.remove('recording','voice-locked');if(btn){delete btn.dataset.voiceState;delete btn.dataset.zunoIconMode}if(input){input.readOnly=false;input.placeholder='Digite uma mensagem...'}form?.classList.remove('voice-recording','voice-locked');requestAnimationFrame(polishComposer)}
 async function uploadVoice(file,durationMs){const conversationId=cid();if(!conversationId||!client||!user||!file?.size)return false;const ctx=await getChatContext(true);const receiverId=ctx?.type==='direct'?ctx.otherId:null;const path=`${conversationId}/${user.id}/${uid()}-audio.webm`;const{error:upErr}=await client.storage.from('message-media').upload(path,file,{contentType:file.type||'audio/webm',upsert:false});if(upErr){toast('Não foi possível enviar o áudio');return false}const{data:message,error:msgErr}=await client.from('messages').insert({conversation_id:conversationId,sender_id:user.id,receiver_id:receiverId,type:'audio',content:null,client_id:uid(),metadata:{duration_ms:Math.max(0,Math.round(durationMs||0))}}).select('id').single();if(msgErr){await client.storage.from('message-media').remove([path]).catch?.(()=>{});toast('Não foi possível enviar o áudio');return false}const{error:attErr}=await client.from('message_attachments').insert({message_id:message.id,uploader_id:user.id,storage_path:path,kind:'audio',mime_type:file.type||'audio/webm',size_bytes:file.size});if(attErr){await client.from('messages').delete().eq('id',message.id).catch?.(()=>{});await client.storage.from('message-media').remove([path]).catch?.(()=>{});toast('Não foi possível enviar o áudio');return false}await window.ZunoMessages?.refresh?.();return true}
 function lockVoice(){if(!voiceState||voiceState.locked)return;voiceState.locked=true;const btn=document.getElementById('zmSend'),input=document.getElementById('zmInput'),form=document.getElementById('zmComposer');btn?.classList.add('voice-locked');if(btn)btn.dataset.voiceState='locked';if(input)input.placeholder='Gravação travada · toque para enviar';form?.classList.add('voice-locked');polishComposer()}

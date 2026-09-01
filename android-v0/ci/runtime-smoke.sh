@@ -63,11 +63,11 @@ if fatal_for_app:
     raise SystemExit('Fatal ZunoPlay process crash detected in logcat.')
 
 matches = re.findall(
-    r'Applied system safe area: left=(\d+) top=(\d+) right=(\d+) bottom=(\d+)',
+    r'Published web safe area: left=(\d+) top=(\d+) right=(\d+) bottom=(\d+)',
     log,
 )
 if not matches:
-    raise SystemExit('No ZunoPlay safe-area application was recorded in logcat.')
+    raise SystemExit('No ZunoPlay web safe-area publication was recorded in logcat.')
 
 left, top, right, bottom = map(int, matches[-1])
 print(f'Validated safe area: left={left} top={top} right={right} bottom={bottom}')

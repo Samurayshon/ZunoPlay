@@ -1,0 +1,39 @@
+/* Final immersive geometry: the background reaches the system bars; content uses safe insets. */
+html,body.zuno-page-sala{background:#02040d!important}
+body.zuno-page-sala #app.app{
+  min-width:0!important;
+  max-width:760px!important;
+  padding-left:var(--zuno-safe-left)!important;
+  padding-right:var(--zuno-safe-right)!important;
+  background:#02040d!important;
+}
+body.zuno-page-sala .header{
+  min-height:calc(104px + var(--zuno-safe-top))!important;
+  padding-top:calc(22px + var(--zuno-safe-top))!important;
+  background:#02040d!important;
+}
+body.zuno-page-sala:not(.zuno-keyboard-open) .composer-wrap{
+  padding-bottom:calc(9px + var(--zuno-safe-bottom))!important;
+  background:#02040d!important;
+}
+body.zuno-page-sala .members-sheet{
+  padding-right:max(14px,var(--zuno-safe-right))!important;
+  padding-bottom:calc(18px + var(--zuno-safe-bottom))!important;
+  padding-left:max(14px,var(--zuno-safe-left))!important;
+}
+body.zuno-page-sala .zuno-room-standard-panel{
+  padding-top:calc(18px + var(--zuno-safe-top))!important;
+  padding-right:max(16px,var(--zuno-safe-right))!important;
+  padding-bottom:calc(22px + var(--zuno-safe-bottom))!important;
+}
+body.zuno-page-sala .zuno-room-toast{bottom:calc(76px + var(--zuno-safe-bottom))!important}
+
+@media(max-width:430px){
+  body.zuno-page-sala .header{
+    min-height:calc(108px + var(--zuno-safe-top))!important;
+    padding-top:calc(20px + var(--zuno-safe-top))!important;
+  }
+}
+@media(max-height:760px){
+  body.zuno-page-sala .header{min-height:calc(94px + var(--zuno-safe-top))!important}
+}

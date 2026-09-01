@@ -1,0 +1,147 @@
+/* ZunoPlay visual modernization v1
+   The shell owns geometry; pages own content. Visual boundaries use tone and spacing by default. */
+:root{
+  --zuno-base:#02040d;
+  --zuno-surface-soft:rgba(255,255,255,.035);
+  --zuno-surface-raised:rgba(12,16,32,.82);
+  --zuno-divider:rgba(255,255,255,.065);
+  --zuno-focus:#9b67ff;
+  --zuno-content-max:760px;
+}
+
+html,body{margin:0;background:var(--zuno-base)!important;color:#f7f8ff;overflow-x:clip}
+body.zuno-secondary-shell{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html[data-zuno-route-kind] body>*{max-width:100%}
+html[data-zuno-route-kind] :where(.app,.container,.shell,main,section,article,header,footer,form,div){min-width:0}
+html[data-zuno-route-kind] :where(img,video,canvas,svg){max-width:100%}
+html[data-zuno-route-kind] :where(h1,h2,h3,p,span,strong){overflow-wrap:anywhere}
+
+/* BASE / SURFACE / EMPHASIS */
+body.zuno-secondary-shell :where(.card,.panel,.section,.community,.item,.status,.room-card,.game-card,.profile-card,.notification-card){border-color:transparent!important;outline:0!important}
+body.zuno-secondary-shell :where(.card,.panel,.section){background:var(--zuno-surface-raised)!important;box-shadow:0 12px 34px rgba(0,0,0,.12)!important}
+body.zuno-secondary-shell :where(input,textarea,select){max-width:100%;border-color:transparent!important;background:var(--zuno-surface-soft)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.055)!important}
+body.zuno-secondary-shell :where(input,textarea,select):focus{outline:0!important;box-shadow:0 0 0 3px rgba(155,103,255,.14),inset 0 0 0 1px rgba(155,103,255,.72)!important}
+body.zuno-secondary-shell :where(button,[role="button"],a){-webkit-tap-highlight-color:transparent}
+body.zuno-secondary-shell :where(button,[role="button"]):focus-visible,body.zuno-secondary-shell a:focus-visible{outline:2px solid var(--zuno-focus)!important;outline-offset:2px!important}
+
+/* Context and feature headers */
+.zuno-context-back,.avatar-back{width:44px;height:44px;min-width:44px;display:grid;place-items:center;padding:0;border:0!important;border-radius:14px;background:var(--zuno-surface-soft)!important;color:#f5f6ff;font-size:25px;line-height:1;box-shadow:none!important;cursor:pointer}
+.zuno-context-back:active,.avatar-back:active{transform:scale(.96);background:rgba(155,103,255,.12)!important}
+html[data-zuno-navigation-mode="contextual"] body>.app,html[data-zuno-navigation-mode="contextual"] body>main,html[data-zuno-navigation-mode="contextual"] body>[data-zuno-scroll-root]{padding-bottom:calc(24px + var(--zuno-safe-bottom,0px))!important}
+
+/* Canonical bottom navigation keeps its identity; the Central sheet is calmer. */
+.zuno-hub-sheet{border:0!important}
+.zuno-hub-close{border:0!important;background:var(--zuno-surface-soft)!important}
+.zuno-hub-action{border:0!important;background:rgba(255,255,255,.038)!important;box-shadow:none!important}
+.zuno-hub-action:active{background:rgba(139,61,255,.12)!important}
+
+/* ROOT screens: hierarchy comes from composition and tone, not outlines. */
+html[data-zuno-page="index"] #homeScreen :where(.menu-card,.stat-pill,.section,.zhome-v2-rail-card){border-color:transparent!important;box-shadow:none!important}
+html[data-zuno-page="index"] #homeScreen .hero{border-color:transparent!important}
+html[data-zuno-page="salas"] .room-card{border-color:transparent!important;background:rgba(10,14,30,.78)!important;box-shadow:0 12px 30px rgba(0,0,0,.12)!important}
+html[data-zuno-page="salas"] .hero{border-color:transparent!important;box-shadow:0 24px 64px rgba(0,0,0,.26)!important}
+html[data-zuno-page="perfil"] .profile-v2{width:min(100%,var(--zuno-content-max));padding-right:max(16px,var(--zuno-safe-right));padding-left:max(16px,var(--zuno-safe-left))}
+html[data-zuno-page="perfil"] .profile-shell{gap:0!important}
+html[data-zuno-page="perfil"] .zp-card{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html[data-zuno-page="perfil"] .zp-card+.zp-card{border-top:1px solid var(--zuno-divider)!important}
+html[data-zuno-page="perfil"] .zp-card:first-child{margin-bottom:14px;border-radius:24px!important;background:linear-gradient(150deg,rgba(59,34,104,.46),rgba(9,13,29,.88))!important;box-shadow:0 18px 50px rgba(0,0,0,.2)!important}
+html[data-zuno-page="perfil"] :where(.zp-progress-card,.zp-quick,.zp-security-card,.zp-status){border-color:transparent!important;background:var(--zuno-surface-soft)!important;box-shadow:none!important}
+
+/* Amigos — flat social sections instead of nested outlined cards. */
+html[data-zuno-page="amigos"] .app{width:min(100%,var(--zuno-content-max));max-width:var(--zuno-content-max);padding:calc(14px + var(--zuno-safe-top)) 16px calc(24px + var(--zuno-safe-bottom))!important}
+html[data-zuno-page="amigos"] .header{padding-top:0!important;margin:0 0 10px!important}
+html[data-zuno-page="amigos"] .logo{font-size:22px!important;letter-spacing:-.02em}
+html[data-zuno-page="amigos"] .card{margin:0!important;padding:20px 2px!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html[data-zuno-page="amigos"] .card+.card{border-top:1px solid var(--zuno-divider)!important}
+html[data-zuno-page="amigos"] .row{border-bottom-color:var(--zuno-divider)!important}
+html[data-zuno-page="amigos"] .search input{min-width:0;background:var(--zuno-surface-soft)!important}
+
+/* Comunidades — creation is the emphasis; the directory remains a clean list. */
+html[data-zuno-page="comunidades"] .app{width:min(100%,var(--zuno-content-max));max-width:var(--zuno-content-max);padding:calc(14px + var(--zuno-safe-top)) 16px calc(24px + var(--zuno-safe-bottom))!important}
+html[data-zuno-page="comunidades"] .header{padding-top:0!important;margin:0 0 10px!important}
+html[data-zuno-page="comunidades"] .logo{font-size:22px!important;letter-spacing:-.02em}
+html[data-zuno-page="comunidades"] .card{margin:0!important;padding:20px 2px!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html[data-zuno-page="comunidades"] .card+.card{border-top:1px solid var(--zuno-divider)!important}
+html[data-zuno-page="comunidades"] .community{margin-top:4px!important;padding:15px 0!important;border:0!important;border-bottom:1px solid var(--zuno-divider)!important;border-radius:0!important;background:transparent!important}
+html[data-zuno-page="comunidades"] .community:last-child{border-bottom:0!important}
+
+/* Jogos and history use a feature hero plus borderless supporting content. */
+html[data-zuno-page="jogos"] .app,html[data-zuno-page="historico"] .app{width:min(100%,var(--zuno-content-max));max-width:var(--zuno-content-max);padding:calc(14px + var(--zuno-safe-top)) 16px calc(24px + var(--zuno-safe-bottom))!important}
+html[data-zuno-page="jogos"] .topbar,html[data-zuno-page="historico"] .header{padding-top:0!important;margin-top:0!important}
+html[data-zuno-page="jogos"] .hero{border:0!important;box-shadow:0 26px 72px rgba(0,0,0,.32)!important}
+html[data-zuno-page="jogos"] :where(.game-card,.game,.mode-card){border-color:transparent!important}
+html[data-zuno-page="historico"] .card{padding:10px 2px!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html[data-zuno-page="historico"] .status{border:0!important;background:var(--zuno-surface-soft)!important}
+html[data-zuno-page="historico"] .item{border:0!important;border-bottom:1px solid var(--zuno-divider)!important;border-radius:0!important;background:transparent!important}
+
+/* Notifications become a readable activity stream. */
+html[data-zuno-page="notificacoes"] .zn-page{padding:calc(14px + var(--zuno-safe-top)) 14px calc(24px + var(--zuno-safe-bottom))!important}
+.zn-header{grid-template-columns:auto minmax(0,1fr)!important;align-items:start!important}
+.zn-header>.zuno-context-back{grid-row:1;grid-column:1}
+.zn-header>.zn-heading{grid-row:1;grid-column:2;min-height:44px}
+.zn-header>.zn-tools{grid-row:2;grid-column:1/-1}
+.zn-tool,.zn-tab{border-color:transparent!important;background:var(--zuno-surface-soft)!important}
+.zn-tab.active{box-shadow:inset 0 0 0 1px rgba(155,77,255,.48)!important}
+.zn-list{gap:0!important;border-top:1px solid var(--zuno-divider)}
+.zn-card{padding:14px 2px!important;border:0!important;border-bottom:1px solid var(--zuno-divider)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.zn-card.unread{background:linear-gradient(90deg,rgba(139,61,255,.08),transparent 78%)!important}
+.zn-notif-icon{background:var(--zuno-surface-soft)!important}
+
+/* Pulso owns a root header; its background is edge-to-edge and its controls stay below the status bar. */
+html[data-zuno-page="pulso"] .zm-app{padding-bottom:calc(132px + var(--zuno-safe-bottom))!important}
+html[data-zuno-page="pulso"] .zp-trending-overlay{padding-top:calc(12px + var(--zuno-safe-top))!important;padding-bottom:calc(24px + var(--znav-reserved-space,96px))!important}
+html[data-zuno-page="pulso"] .zp-pull-indicator{top:calc(var(--zuno-safe-top) + 10px)!important}
+html[data-zuno-page="pulso"] .zp-new-posts{top:calc(var(--zuno-safe-top) + 126px)!important}
+html[data-zuno-page="pulso"] :where(.zp-post,.zm-composer,.zm-plaza-intro,.zp-pulse-mode){border-color:transparent!important}
+html[data-zuno-page="pulso"] .zp-post{background:rgba(9,12,25,.82)!important;box-shadow:0 10px 28px rgba(0,0,0,.12)!important}
+html[data-zuno-page="pulso"] .zm-composer{background:rgba(10,13,28,.76)!important;box-shadow:none!important}
+html[data-zuno-page="pulso"] .zp-actions{border-top-color:var(--zuno-divider)!important}
+
+/* Messages are always internal. Inbox gets a context header; a thread owns the entire viewport. */
+:root{--zm-nav-clearance:calc(6px + var(--zuno-safe-bottom,env(safe-area-inset-bottom,0px)))}
+html[data-zuno-page="conversas"] body{min-height:100dvh;background:var(--zuno-base)!important}
+html[data-zuno-page="conversas"][data-zuno-navigation-view="inbox"] .zm-app{min-height:100dvh!important;padding:calc(10px + var(--zuno-safe-top)) 14px calc(24px + var(--zuno-safe-bottom))!important}
+.zm-top.zm-context-top{display:flex!important;margin:0 0 10px!important;min-height:44px}
+.zm-top.zm-context-top .zm-kicker{display:none!important}
+.zm-top.zm-context-top .zm-title{font-size:24px!important}
+.zm-top.zm-context-top .zuno-context-back{flex:0 0 44px}
+.zm-list{border-top-color:var(--zuno-divider)!important}
+.zm-conversation{border-bottom-color:var(--zuno-divider)!important}
+html[data-zuno-page="conversas"][data-zuno-navigation-view="thread"],html[data-zuno-page="conversas"][data-zuno-navigation-view="thread"] body{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important}
+html[data-zuno-page="conversas"][data-zuno-navigation-view="thread"] #zunoMessagesApp{height:100dvh!important;overflow:hidden!important}
+html[data-zuno-page="conversas"][data-zuno-navigation-view="thread"] .zm-chat-app{height:100dvh!important;min-height:0!important;max-height:100dvh!important;padding-bottom:0!important}
+html[data-zuno-page="conversas"] .zm-chat-header{padding-top:calc(5px + var(--zuno-safe-top))!important;min-height:calc(50px + var(--zuno-safe-top))!important}
+html[data-zuno-page="conversas"] .zm-composer{bottom:var(--zm-nav-clearance)!important}
+html[data-zuno-page="conversas"] .zm-reply-bar{bottom:calc(var(--zm-nav-clearance) + 58px)!important}
+html[data-zuno-page="conversas"] .zm-stable-toast{bottom:calc(var(--zm-nav-clearance) + 66px)!important}
+
+/* Meu XP — hierarchy first, cards only where they clarify progress. */
+html[data-zuno-page="meu-xp"] .zmx-shell{width:min(100%,var(--zuno-content-max));padding:calc(14px + var(--zuno-safe-top)) 14px calc(24px + var(--zuno-safe-bottom))!important}
+.zmx-card{border:0!important;box-shadow:none!important;background:transparent!important;padding:18px 2px!important;border-radius:0!important}
+.zmx-card+.zmx-card{border-top:1px solid var(--zuno-divider)!important}
+.zmx-card:first-of-type{padding:18px!important;border-radius:22px!important;background:linear-gradient(150deg,rgba(63,35,111,.48),rgba(10,14,30,.86))!important;box-shadow:0 18px 50px rgba(0,0,0,.2)!important}
+.zmx-stat{border:0!important;background:rgba(255,255,255,.045)!important}
+.zmx-row{padding:12px 0!important;border:0!important;border-bottom:1px solid var(--zuno-divider)!important;border-radius:0!important;background:transparent!important}
+.zmx-row:last-child{border-bottom:0!important}
+.zmx-milestone{border:0!important;background:rgba(139,61,255,.08)!important}
+
+/* Avatar Studio and voice/game routes are immersive. */
+html[data-zuno-page="avatar"] .avatar-simple-app{width:min(100%,980px);max-width:980px;padding:calc(12px + var(--zuno-safe-top)) max(14px,var(--zuno-safe-left)) calc(22px + var(--zuno-safe-bottom))!important}
+.avatar-simple-intro{position:relative;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:start!important}
+.avatar-simple-intro>.avatar-back{flex:0 0 44px;align-self:flex-start}
+html[data-zuno-route-kind="IMMERSIVE"] .zuno-canonical-nav,html[data-zuno-route-kind="IMMERSIVE"] [data-zuno-global-header]{display:none!important}
+
+/* Motion is short, purposeful and disabled when requested. */
+@media(prefers-reduced-motion:no-preference){
+  body.zuno-secondary-shell :where(button,[role="button"],a,.card,.community,.item,.zn-card,.zm-conversation){transition:transform .16s ease,background-color .16s ease,box-shadow .16s ease,opacity .16s ease}
+}
+@media(max-width:380px){
+  html[data-zuno-page="notificacoes"] .zn-page,html[data-zuno-page="amigos"] .app,html[data-zuno-page="comunidades"] .app,html[data-zuno-page="jogos"] .app,html[data-zuno-page="historico"] .app{padding-left:12px!important;padding-right:12px!important}
+  .zn-header{gap:9px!important}
+  .avatar-simple-intro{grid-template-columns:auto minmax(0,1fr)!important}
+  .avatar-simple-intro>.avatar-simple-badge{grid-column:2}
+}
+@media(min-width:760px){
+  .zuno-hub-backdrop{align-items:center!important;padding-bottom:24px!important}
+  .zuno-hub-sheet{border-radius:28px!important}
+}

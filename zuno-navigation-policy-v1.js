@@ -5,6 +5,7 @@
   const MODES=Object.freeze({GLOBAL:'global',CONTEXTUAL:'contextual',IMMERSIVE:'immersive',PUBLIC:'public'});
   const HEADERS=Object.freeze({GLOBAL:'global',CONTEXTUAL:'contextual',FEATURE:'feature',BRAND:'brand',LEGAL:'legal'});
   const ACTIVE=Object.freeze({HOME:'home',ROOMS:'rooms',CENTRAL:'central',PULSE:'pulse',PROFILE:'profile'});
+  const KINDS=Object.freeze({ROOT:'ROOT',SECONDARY:'SECONDARY',DETAIL:'DETAIL',IMMERSIVE:'IMMERSIVE',AUTH:'AUTH'});
   const fixed=target=>Object.freeze({strategy:'fixed',target});
   const origin=fallback=>Object.freeze({strategy:'origin-with-fallback',fallback});
   const feature=target=>Object.freeze({strategy:'feature',target});
@@ -17,12 +18,12 @@
     }),
     'salas.html':state(MODES.GLOBAL,HEADERS.GLOBAL,ACTIVE.ROOMS),
     'pulso.html':state(MODES.GLOBAL,HEADERS.GLOBAL,ACTIVE.PULSE),
-    'amigos.html':state(MODES.GLOBAL,HEADERS.GLOBAL,ACTIVE.CENTRAL),
-    'comunidades.html':state(MODES.GLOBAL,HEADERS.GLOBAL,ACTIVE.CENTRAL),
-    'notificacoes.html':state(MODES.GLOBAL,HEADERS.GLOBAL,ACTIVE.CENTRAL),
-    'jogos.html':state(MODES.GLOBAL,HEADERS.GLOBAL,ACTIVE.CENTRAL),
+    'amigos.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,origin('index.html?central=1')),
+    'comunidades.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,origin('index.html?central=1')),
+    'notificacoes.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,origin('index.html?central=1')),
+    'jogos.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,origin('index.html?central=1')),
     'conversas.html':Object.freeze({
-      inbox:state(MODES.GLOBAL,HEADERS.GLOBAL,ACTIVE.CENTRAL),
+      inbox:state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,origin('index.html?central=1')),
       thread:state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,fixed('conversas.html'))
     }),
     'perfil.html':Object.freeze({
@@ -30,7 +31,7 @@
       other:state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.PROFILE,origin('amigos.html')),
       settings:state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.PROFILE,fixed('perfil.html'))
     }),
-    'avatar.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.PROFILE,fixed('perfil.html')),
+    'avatar.html':state(MODES.IMMERSIVE,HEADERS.FEATURE,null,ACTIVE.PROFILE,feature('perfil.html')),
     'meu-xp.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.PROFILE,fixed('perfil.html')),
     'historico.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,fixed('jogos.html')),
     'sala.html':state(MODES.IMMERSIVE,HEADERS.FEATURE,null,ACTIVE.ROOMS,feature('salas.html')),
@@ -45,6 +46,14 @@
   const KNOWN_PAGES=Object.freeze(Object.keys(ROUTES).sort());
   const normalizePage=value=>String(value||'index.html').split('/').pop().toLowerCase()||'index.html';
   const paramsFrom=value=>value instanceof URLSearchParams?value:new URLSearchParams(String(value||'').replace(/^\?/,''));
+
+  function routeKind(page,view,mode){
+    if(mode===MODES.GLOBAL)return KINDS.ROOT;
+    if(mode===MODES.IMMERSIVE)return KINDS.IMMERSIVE;
+    if(mode===MODES.PUBLIC)return KINDS.AUTH;
+    if((page==='conversas.html'&&view==='thread')||(page==='perfil.html'&&view==='other')||page==='historico.html')return KINDS.DETAIL;
+    return KINDS.SECONDARY;
+  }
 
   function inferredView(page,params,authState,currentUserId){
     if(page==='index.html')return authState==='member'?'member':'guest';
@@ -80,7 +89,7 @@
       ?feature(`sala.html?room=${encodeURIComponent(roomId)}`)
       :spec.back;
     return Object.freeze({
-      version:'1',known:Boolean(selected),page,view,
+      version:'2',known:Boolean(selected),page,view,kind:routeKind(page,view,spec.mode),
       mode:spec.mode,header:spec.header,bottomNav:spec.bottomNav,
       active:spec.active,parent:spec.parent,back
     });
@@ -93,28 +102,14 @@
     root.dataset.zunoNavigationMode=current.mode;
     root.dataset.zunoNavigationHeader=current.header;
     root.dataset.zunoNavigationView=current.view;
+    root.dataset.zunoRouteKind=current.kind;
     root.dataset.zunoNavigationKnown=String(current.known);
     if(current.active)root.dataset.zunoNavigationActive=current.active;else delete root.dataset.zunoNavigationActive;
     if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')window.dispatchEvent(new CustomEvent('zuno:navigation-policy-ready',{detail:current}));
     return current;
   }
 
-  function goBack(input={}){
-    if(typeof location==='undefined')return false;
-    const current=resolve(input),back=current.back;
-    if(!back)return false;
-    if(back.strategy==='origin-with-fallback'){
-      let sameOrigin=false;
-      try{sameOrigin=Boolean(document?.referrer)&&new URL(document.referrer,location.href).origin===location.origin}catch(_){}
-      if(sameOrigin&&typeof history!=='undefined'&&history.length>1){history.back();return true}
-      location.assign(back.fallback);
-      return true;
-    }
-    if(back.target){location.assign(back.target);return true}
-    return false;
-  }
-
-  window.ZunoNavigationPolicy=Object.freeze({version:'1',modes:MODES,headers:HEADERS,active:ACTIVE,knownPages:KNOWN_PAGES,resolve,apply,goBack});
+  window.ZunoNavigationPolicy=Object.freeze({version:'2',modes:MODES,headers:HEADERS,active:ACTIVE,kinds:KINDS,knownPages:KNOWN_PAGES,resolve,apply});
   if(typeof document!=='undefined'){
     apply();
     if(typeof MutationObserver==='function')new MutationObserver(records=>{if(records.some(record=>record.attributeName==='data-zuno-auth-state'))apply()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-zuno-auth-state']});
