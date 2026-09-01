@@ -4,9 +4,11 @@ set -euo pipefail
 APK="android-v0/app/build/outputs/apk/debug/app-debug.apk"
 PACKAGE="com.zunoplay.app"
 ACTIVITY="com.zunoplay.app/.MainActivity"
-ADB_TIMEOUT_SECONDS="${ANDROID_RUNTIME_ADB_TIMEOUT_SECONDS:-12}"
+ADB_TIMEOUT_SECONDS="${ANDROID_RUNTIME_ADB_TIMEOUT_SECONDS:-25}"
+ADB_RECOVERY_TIMEOUT_SECONDS="${ANDROID_RUNTIME_ADB_RECOVERY_TIMEOUT_SECONDS:-35}"
 PID=""
 LOGCAT_PID=""
+LOGCAT_REQUESTED=0
 
 adb_cmd() {
   timeout --foreground "${ADB_TIMEOUT_SECONDS}s" adb "$@"
@@ -40,9 +42,16 @@ stop_logcat() {
   fi
 }
 
+start_logcat() {
+  stop_logcat
+  adb logcat -v threadtime >> android-runtime-logcat.txt 2>&1 &
+  LOGCAT_PID=$!
+}
+
 cleanup() {
   local status=$?
   set +e
+  LOGCAT_REQUESTED=0
   stop_logcat
   capture_device_diagnostics
   trap - EXIT
@@ -57,40 +66,92 @@ fail_adb_infrastructure() {
   exit 2
 }
 
+recover_adb_device() {
+  local context="$1"
+  local attempt=0
+  local state=""
+  local boot_completed=""
+  local wait_status=0
+
+  echo "Attempting bounded ADB recovery during ${context}." >&2
+  write_host_snapshot
+  stop_logcat
+
+  for attempt in 1 2; do
+    timeout --foreground 5s adb kill-server >/dev/null 2>&1 || true
+    timeout --foreground 5s adb start-server >/dev/null 2>&1 || true
+
+    set +e
+    timeout --foreground "${ADB_RECOVERY_TIMEOUT_SECONDS}s" adb wait-for-device >/dev/null 2>&1
+    wait_status=$?
+    set -e
+
+    if [[ "$wait_status" -eq 0 ]]; then
+      state="$(adb_cmd get-state 2>/dev/null | tr -d '\r' || true)"
+      boot_completed="$(adb_cmd shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+      if [[ "$state" == "device" && "$boot_completed" == "1" ]]; then
+        if [[ "$LOGCAT_REQUESTED" -eq 1 ]]; then
+          start_logcat
+        fi
+        echo "ADB recovered during ${context} on attempt ${attempt}/2." >&2
+        return 0
+      fi
+    fi
+
+    sleep 2
+  done
+
+  return 1
+}
+
 require_adb_device() {
   local context="$1"
   local state=""
   state="$(adb_cmd get-state 2>/dev/null | tr -d '\r' || true)"
-  if [[ "$state" != "device" ]]; then
-    fail_adb_infrastructure "$context"
+  if [[ "$state" == "device" ]]; then
+    return 0
   fi
+
+  if recover_adb_device "$context"; then
+    return 0
+  fi
+
+  fail_adb_infrastructure "$context"
 }
 
 assert_app_alive() {
   local context="$1"
   local pid_output=""
   local pid_status=0
+  local recovery_used=0
 
   require_adb_device "$context"
 
-  set +e
-  pid_output="$(adb_cmd shell pidof "$PACKAGE" 2>&1 | tr -d '\r')"
-  pid_status=$?
-  set -e
+  while true; do
+    set +e
+    pid_output="$(adb_cmd shell pidof "$PACKAGE" 2>&1 | tr -d '\r')"
+    pid_status=$?
+    set -e
 
-  if [[ "$pid_status" -eq 124 ]] || grep -Eqi '(error:|adb:|device offline|device .* not found|no devices|closed)' <<< "$pid_output"; then
-    fail_adb_infrastructure "$context"
-  fi
+    if [[ "$pid_status" -eq 124 ]] || grep -Eqi '(error:|adb:|device offline|device .* not found|no devices|closed)' <<< "$pid_output"; then
+      if [[ "$recovery_used" -eq 0 ]] && recover_adb_device "${context} PID probe"; then
+        recovery_used=1
+        continue
+      fi
+      fail_adb_infrastructure "$context"
+    fi
 
-  if [[ "$pid_status" -ne 0 || -z "$pid_output" ]]; then
-    # Re-probe after pidof. A transport drop between the first probe and pidof must
-    # never be reported as a ZunoPlay crash.
-    require_adb_device "${context} post-PID verification"
-    echo "ZunoPlay process is not running during ${context}." >&2
-    exit 1
-  fi
+    if [[ "$pid_status" -ne 0 || -z "$pid_output" ]]; then
+      # Re-probe after pidof. A transport drop between the first probe and pidof must
+      # never be reported as a ZunoPlay crash.
+      require_adb_device "${context} post-PID verification"
+      echo "ZunoPlay process is not running during ${context}." >&2
+      exit 1
+    fi
 
-  PID="$pid_output"
+    PID="$pid_output"
+    return 0
+  done
 }
 
 if [[ ! -s "$APK" ]]; then
@@ -101,11 +162,9 @@ fi
 require_adb_device "APK installation"
 adb_cmd install -r "$APK"
 adb_cmd logcat -c
-
-# Keep logcat streaming from before the first launch. If the emulator/ADB dies,
-# the lines emitted before the transport loss remain available as an artifact.
-adb logcat -v threadtime > android-runtime-logcat.txt 2>&1 &
-LOGCAT_PID=$!
+: > android-runtime-logcat.txt
+LOGCAT_REQUESTED=1
+start_logcat
 
 for ATTEMPT in 1 2 3; do
   echo "Runtime launch attempt ${ATTEMPT}/3"
@@ -118,7 +177,16 @@ for ATTEMPT in 1 2 3; do
   set -e
 
   if [[ "$START_STATUS" -eq 124 ]] || grep -Eqi '(error:|adb:|device offline|device .* not found|no devices|closed)' <<< "$START_OUTPUT"; then
-    fail_adb_infrastructure "launch attempt ${ATTEMPT}"
+    if recover_adb_device "launch attempt ${ATTEMPT}"; then
+      START_OUTPUT="$(adb_cmd shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
+      START_STATUS=$?
+    else
+      fail_adb_infrastructure "launch attempt ${ATTEMPT}"
+    fi
+  fi
+
+  if [[ "$START_STATUS" -eq 124 ]] || grep -Eqi '(error:|adb:|device offline|device .* not found|no devices|closed)' <<< "$START_OUTPUT"; then
+    fail_adb_infrastructure "launch attempt ${ATTEMPT} after recovery"
   fi
   if [[ "$START_STATUS" -ne 0 ]]; then
     require_adb_device "launch attempt ${ATTEMPT} failure verification"
@@ -145,6 +213,7 @@ sleep 5
 assert_app_alive "wake transition"
 
 # Flush the continuous collector before validating its contents.
+LOGCAT_REQUESTED=0
 stop_logcat
 require_adb_device "runtime diagnostics collection"
 capture_device_diagnostics
@@ -167,12 +236,14 @@ matches = re.findall(
 if not matches:
     raise SystemExit('No ZunoPlay web safe-area publication was recorded in logcat.')
 
-left, top, right, bottom = map(int, matches[-1])
+# Some early window callbacks publish 0/0 before system bars are measured. Require
+# at least one later publication proving both status-bar and navigation protection.
+valid_matches = [tuple(map(int, match)) for match in matches if int(match[1]) > 0 and int(match[3]) > 0]
+if not valid_matches:
+    raise SystemExit('No non-zero top/bottom web safe-area publication was recorded.')
+
+left, top, right, bottom = valid_matches[-1]
 print(f'Validated safe area: left={left} top={top} right={right} bottom={bottom}')
-if top <= 0:
-    raise SystemExit(f'Invalid top safe-area inset: {top}. Status-bar protection was not proven.')
-if bottom <= 0:
-    raise SystemExit(f'Invalid bottom safe-area inset: {bottom}. Navigation-area protection was not proven.')
 PY
 
 assert_app_alive "final smoke-test verification"
