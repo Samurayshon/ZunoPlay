@@ -133,6 +133,69 @@ jobs:
                 {
                   echo "===== QEMU DISAPPEARED $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
                   echo "last-known-pids=$known_qemu"
+                  echo "--- immediate qemu wait status ---"
+                  for p in $known_qemu; do
+                    if [ -r "/proc/$p/stat" ]; then
+                      PROC_PID="$p" python3 - <<'PY'
+import os
+import signal
+
+pid = os.environ["PROC_PID"]
+path = f"/proc/{pid}/stat"
+raw = open(path, "r", encoding="utf-8").read().strip()
+rparen = raw.rfind(")")
+if rparen < 0:
+    print(f"pid={pid} proc_stat_parse_error=no_closing_paren")
+    raise SystemExit(0)
+head = raw[:rparen + 1]
+fields = raw[rparen + 2:].split()
+state = fields[0] if len(fields) > 0 else "unknown"
+ppid = fields[1] if len(fields) > 1 else "unknown"
+exit_code = int(fields[49]) if len(fields) > 49 else None
+print(f"pid={pid}")
+print(f"proc_stat={raw}")
+print(f"proc_stat_head={head}")
+print(f"ppid={ppid}")
+print(f"state={state}")
+if exit_code is None:
+    print("wait_status_raw=unavailable")
+    print("wait_status_exited=unavailable")
+    print("wait_status_signaled=unavailable")
+    print("exit_status=unavailable")
+    print("term_signal=unavailable")
+    print("term_signal_name=unavailable")
+    print("core_dumped=unavailable")
+else:
+    print(f"wait_status_raw={exit_code}")
+    exited = os.WIFEXITED(exit_code)
+    signaled = os.WIFSIGNALED(exit_code)
+    print(f"wait_status_exited={str(exited).lower()}")
+    print(f"wait_status_signaled={str(signaled).lower()}")
+    print(f"exit_status={os.WEXITSTATUS(exit_code) if exited else 'n/a'}")
+    sig = os.WTERMSIG(exit_code) if signaled else None
+    print(f"term_signal={sig if sig is not None else 'n/a'}")
+    if sig is None:
+        print("term_signal_name=n/a")
+    else:
+        try:
+            print(f"term_signal_name={signal.Signals(sig).name}")
+        except ValueError:
+            print("term_signal_name=unknown")
+    print(f"core_dumped={str(os.WCOREDUMP(exit_code) if signaled else False).lower()}")
+PY
+                    else
+                      echo "pid=$p proc_stat=unavailable (already reaped)"
+                      echo "ppid=unavailable"
+                      echo "state=unavailable"
+                      echo "wait_status_raw=unavailable"
+                      echo "wait_status_exited=unavailable"
+                      echo "wait_status_signaled=unavailable"
+                      echo "exit_status=unavailable"
+                      echo "term_signal=unavailable"
+                      echo "term_signal_name=unavailable"
+                      echo "core_dumped=unavailable"
+                    fi
+                  done
                   echo "--- ps ---"
                   ps -eo pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd | grep -E "[e]mulator|[q]emu|[a]db" || true
                   echo "--- kernel messages ---"
