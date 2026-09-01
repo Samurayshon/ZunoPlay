@@ -22,6 +22,8 @@ jobs:
         run: |
           node --check src/zuno-stack-v2/aura/aura-contract.mjs
           node --check src/zuno-stack-v2/aura/aura-projection.mjs
+          node --check src/zuno-stack-v2/aura/aura-presets.mjs
+          node --check src/zuno-stack-v2/aura/aura-presentation-adapter.mjs
       - name: Frozen regression plus Aura
         run: >-
           node --test
