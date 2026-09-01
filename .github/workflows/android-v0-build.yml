@@ -97,7 +97,10 @@ jobs:
       - name: Start independent Android host telemetry
         run: |
           : > android-runtime-monitor.txt
+          : > android-emulator-crash-monitor.txt
+          mkdir -p android-emulator-crash-evidence
           nohup bash -c '
+            known_qemu=""
             while true; do
               {
                 echo "===== $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
@@ -109,7 +112,11 @@ jobs:
                 done
                 echo "--- emulator/qemu/adb ---"
                 ps -eo pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd | grep -E "[e]mulator|[q]emu|[a]db" || true
-                for p in $(pgrep -f "qemu-system|emulator.*-avd" || true); do
+                current_qemu=$(pgrep -f "qemu-system|emulator.*-avd" | tr "\n" " " || true)
+                if [ -n "$current_qemu" ]; then
+                  known_qemu="$current_qemu"
+                fi
+                for p in $current_qemu; do
                   echo "--- /proc/$p/status ---"
                   grep -E "^(Name|State|VmPeak|VmSize|VmRSS|VmSwap|Threads):" "/proc/$p/status" 2>/dev/null || true
                 done
@@ -117,7 +124,33 @@ jobs:
                 dmesg 2>/dev/null | tail -n 300 | grep -Ei "oom|out of memory|killed process|memory cgroup" || true
                 echo
               } >> android-runtime-monitor.txt 2>&1
-              sleep 5
+
+              current_qemu=$(pgrep -f "qemu-system|emulator.*-avd" | tr "\n" " " || true)
+              if [ -n "$known_qemu" ] && [ -z "$current_qemu" ]; then
+                {
+                  echo "===== QEMU DISAPPEARED $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
+                  echo "last-known-pids=$known_qemu"
+                  echo "--- ps ---"
+                  ps -eo pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd | grep -E "[e]mulator|[q]emu|[a]db" || true
+                  echo "--- kernel messages ---"
+                  dmesg 2>/dev/null | tail -n 1000 || true
+                  echo "--- journal kernel ---"
+                  journalctl -k --no-pager -n 1000 2>/dev/null || true
+                  echo "--- crash-related files ---"
+                  find "$HOME/.android" /tmp "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 8 -type f \
+                    \( -iname "*emu-crash*" -o -iname "*.dmp" -o -iname "*crashpad*" -o -iname "core" -o -iname "core.*" -o -iname "*qemu*.log" -o -iname "*emulator*.log" \) \
+                    -printf "%TY-%Tm-%TdT%TH:%TM:%TS %s %p\n" 2>/dev/null | sort || true
+                } >> android-emulator-crash-monitor.txt 2>&1
+
+                find "$HOME/.android" /tmp "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 8 -type f \
+                  \( -iname "*emu-crash*" -o -iname "*.dmp" -o -iname "*crashpad*" -o -iname "core" -o -iname "core.*" -o -iname "*qemu*.log" -o -iname "*emulator*.log" \) \
+                  -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                    rel=$(printf "%s" "$f" | sed "s#^/##; s#[^A-Za-z0-9._-]#_#g")
+                    cp -a "$f" "android-emulator-crash-evidence/$rel" 2>/dev/null || true
+                  done
+                known_qemu=""
+              fi
+              sleep 2
             done
           ' >/dev/null 2>&1 &
           echo $! > android-runtime-monitor.pid
@@ -143,6 +176,22 @@ jobs:
           if [ -s android-runtime-monitor.pid ]; then
             kill "$(cat android-runtime-monitor.pid)" >/dev/null 2>&1 || true
           fi
+          {
+            echo "===== FINAL CRASH EVIDENCE $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
+            find "$HOME/.android" /tmp "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 8 -type f \
+              \( -iname "*emu-crash*" -o -iname "*.dmp" -o -iname "*crashpad*" -o -iname "core" -o -iname "core.*" -o -iname "*qemu*.log" -o -iname "*emulator*.log" \) \
+              -printf "%TY-%Tm-%TdT%TH:%TM:%TS %s %p\n" 2>/dev/null | sort || true
+            echo "--- kernel messages ---"
+            dmesg 2>/dev/null | tail -n 1000 || true
+            echo "--- journal kernel ---"
+            journalctl -k --no-pager -n 1000 2>/dev/null || true
+          } >> android-emulator-crash-monitor.txt 2>&1
+          find "$HOME/.android" /tmp "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 8 -type f \
+            \( -iname "*emu-crash*" -o -iname "*.dmp" -o -iname "*crashpad*" -o -iname "core" -o -iname "core.*" -o -iname "*qemu*.log" -o -iname "*emulator*.log" \) \
+            -print0 2>/dev/null | while IFS= read -r -d '' f; do
+              rel=$(printf '%s' "$f" | sed 's#^/##; s#[^A-Za-z0-9._-]#_#g')
+              cp -a "$f" "android-emulator-crash-evidence/$rel" 2>/dev/null || true
+            done
 
       - name: Upload runtime diagnostics
         if: always()
@@ -154,6 +203,8 @@ jobs:
             android-runtime-logcat.txt
             android-runtime-host.txt
             android-runtime-monitor.txt
+            android-emulator-crash-monitor.txt
+            android-emulator-crash-evidence/
             android-package.txt
             android-activities.txt
           if-no-files-found: warn
