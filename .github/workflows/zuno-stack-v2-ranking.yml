@@ -24,5 +24,6 @@ jobs:
         run: |
           node --check src/zuno-stack-v2/ranking/ranking-contract.mjs
           node --check src/zuno-stack-v2/ranking/ranking-processor.mjs
+          node --check src/zuno-stack-v2/ranking/ranking-storage.mjs
       - name: Validate Ranking and frozen phases
         run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs tests/zuno-stack-v2-match-*.test.mjs tests/zuno-stack-v2-trio-*.test.mjs tests/zuno-stack-v2-pvp-*.test.mjs tests/zuno-stack-v2-ranking-*.test.mjs
