@@ -26,7 +26,7 @@ assert.match(workflow, /Runtime smoke test on Android 14[\s\S]*?timeout-minutes:
 assert.match(workflow, /target: google_apis/, 'safe-area runtime proof must use an image with normal Android system bars');
 assert.match(workflow, /profile: pixel_2[\s\S]*?cores: 2[\s\S]*?ram-size: 2048M/, 'runtime emulator must use a lightweight phone profile without oversubscribing CPU');
 assert.match(workflow, /emulator-build: 15507667/, 'runtime emulator must pin the stable 36.6.11 build for the current isolation attempt');
-assert.match(workflow, /emulator-options: .* -gpu software(?: |$)/, 'runtime emulator must use the supported software graphics selector');
+assert.match(workflow, /emulator-options: .* -gpu software(?:\s|$)/, 'runtime emulator must use the supported software graphics selector');
 assert.doesNotMatch(workflow, /-gpu swiftshader_indirect/, 'runtime emulator must not regress to the deprecated indirect SwiftShader selector');
 assert.match(workflow, /advancedFeatures\.ini/, 'runtime emulator must have an explicit graphics-stability configuration');
 assert.match(workflow, /Vulkan = off/, 'runtime emulator must keep Vulkan disabled for WebView smoke stability');
