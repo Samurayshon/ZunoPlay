@@ -30,47 +30,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-
       - name: Install Android build SDK
         run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
       - name: Build debug APK
         run: gradle -p android-v0 assembleDebug --stacktrace
-
       - name: Verify APK metadata and resolve version
         run: |
           APK='android-v0/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
-
           VERSION_NAME=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-v0/app/build.gradle | head -n 1)
           VERSION_CODE=$(sed -n 's/.*versionCode \([0-9][0-9]*\).*/\1/p' android-v0/app/build.gradle | head -n 1)
           test -n "$VERSION_NAME"
           test -n "$VERSION_CODE"
-
           AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
           "$AAPT" dump badging "$APK" | tee android-apk-badging.txt
           grep -q "package: name='com.zunoplay.app' versionCode='${VERSION_CODE}' versionName='${VERSION_NAME}'" android-apk-badging.txt
           grep -q "application-label:'ZunoPlay'" android-apk-badging.txt
-
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
           echo "APK_NAME=ZunoPlay-${VERSION_NAME}-debug.apk" >> "$GITHUB_ENV"
           cp "$APK" "ZunoPlay-${VERSION_NAME}-debug.apk"
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -78,13 +68,11 @@ jobs:
           path: ${{ env.APK_NAME }}
           if-no-files-found: error
           retention-days: 30
-
       - name: Enable KVM for Android emulator
         run: |
           if [ -e /dev/kvm ]; then
             sudo chmod 666 /dev/kvm
           fi
-
       - name: Stabilize Android emulator graphics
         run: |
           mkdir -p "$HOME/.android"
@@ -93,7 +81,6 @@ jobs:
           GLDirectMem = off
           EOF
           cat "$HOME/.android/advancedFeatures.ini"
-
       - name: Start independent Android host telemetry
         run: |
           : > android-runtime-monitor.txt
@@ -116,9 +103,7 @@ jobs:
                 echo "--- emulator/qemu/adb ---"
                 ps -eo pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd | grep -E "[e]mulator|[q]emu|[a]db" || true
                 current_qemu=$(find_real_qemu)
-                if [ -n "$current_qemu" ]; then
-                  known_qemu="$current_qemu"
-                fi
+                if [ -n "$current_qemu" ]; then known_qemu="$current_qemu"; fi
                 for p in $current_qemu; do
                   echo "--- /proc/$p/status ---"
                   grep -E "^(Name|State|VmPeak|VmSize|VmRSS|VmSwap|Threads):" "/proc/$p/status" 2>/dev/null || true
@@ -127,7 +112,6 @@ jobs:
                 dmesg 2>/dev/null | tail -n 300 | grep -Ei "oom|out of memory|killed process|memory cgroup" || true
                 echo
               } >> android-runtime-monitor.txt 2>&1
-
               current_qemu=$(find_real_qemu)
               if [ -n "$known_qemu" ] && [ -z "$current_qemu" ]; then
                 {
@@ -136,53 +120,43 @@ jobs:
                   echo "--- immediate qemu wait status ---"
                   for p in $known_qemu; do
                     if [ -r "/proc/$p/stat" ]; then
-                      PROC_PID="$p" python3 - <<'PY'
-import os
-import signal
-
-pid = os.environ["PROC_PID"]
-path = f"/proc/{pid}/stat"
-raw = open(path, "r", encoding="utf-8").read().strip()
-rparen = raw.rfind(")")
-if rparen < 0:
-    print(f"pid={pid} proc_stat_parse_error=no_closing_paren")
-    raise SystemExit(0)
-head = raw[:rparen + 1]
-fields = raw[rparen + 2:].split()
-state = fields[0] if len(fields) > 0 else "unknown"
-ppid = fields[1] if len(fields) > 1 else "unknown"
-exit_code = int(fields[49]) if len(fields) > 49 else None
-print(f"pid={pid}")
-print(f"proc_stat={raw}")
-print(f"proc_stat_head={head}")
-print(f"ppid={ppid}")
-print(f"state={state}")
-if exit_code is None:
-    print("wait_status_raw=unavailable")
-    print("wait_status_exited=unavailable")
-    print("wait_status_signaled=unavailable")
-    print("exit_status=unavailable")
-    print("term_signal=unavailable")
-    print("term_signal_name=unavailable")
-    print("core_dumped=unavailable")
-else:
-    print(f"wait_status_raw={exit_code}")
-    exited = os.WIFEXITED(exit_code)
-    signaled = os.WIFSIGNALED(exit_code)
-    print(f"wait_status_exited={str(exited).lower()}")
-    print(f"wait_status_signaled={str(signaled).lower()}")
-    print(f"exit_status={os.WEXITSTATUS(exit_code) if exited else 'n/a'}")
-    sig = os.WTERMSIG(exit_code) if signaled else None
-    print(f"term_signal={sig if sig is not None else 'n/a'}")
-    if sig is None:
-        print("term_signal_name=n/a")
-    else:
-        try:
-            print(f"term_signal_name={signal.Signals(sig).name}")
-        except ValueError:
-            print("term_signal_name=unknown")
-    print(f"core_dumped={str(os.WCOREDUMP(exit_code) if signaled else False).lower()}")
-PY
+                      proc_stat=$(cat "/proc/$p/stat" 2>/dev/null || true)
+                      echo "pid=$p"
+                      echo "proc_stat=$proc_stat"
+                      rest="${proc_stat##*) }"
+                      read -r -a stat_fields <<< "$rest"
+                      state="${stat_fields[0]:-unavailable}"
+                      ppid="${stat_fields[1]:-unavailable}"
+                      wait_status_raw="${stat_fields[49]:-}"
+                      echo "ppid=$ppid"
+                      echo "state=$state"
+                      if [[ "$wait_status_raw" =~ ^[0-9]+$ ]]; then
+                        echo "wait_status_raw=$wait_status_raw"
+                        term_signal=$((wait_status_raw & 127))
+                        if [ "$term_signal" -eq 0 ]; then
+                          echo "wait_status_exited=true"
+                          echo "wait_status_signaled=false"
+                          echo "exit_status=$(((wait_status_raw >> 8) & 255))"
+                          echo "term_signal=n/a"
+                          echo "term_signal_name=n/a"
+                          echo "core_dumped=false"
+                        else
+                          echo "wait_status_exited=false"
+                          echo "wait_status_signaled=true"
+                          echo "exit_status=n/a"
+                          echo "term_signal=$term_signal"
+                          echo "term_signal_name=$(kill -l "$term_signal" 2>/dev/null || echo unknown)"
+                          if [ $((wait_status_raw & 128)) -ne 0 ]; then echo "core_dumped=true"; else echo "core_dumped=false"; fi
+                        fi
+                      else
+                        echo "wait_status_raw=unavailable"
+                        echo "wait_status_exited=unavailable"
+                        echo "wait_status_signaled=unavailable"
+                        echo "exit_status=unavailable"
+                        echo "term_signal=unavailable"
+                        echo "term_signal_name=unavailable"
+                        echo "core_dumped=unavailable"
+                      fi
                     else
                       echo "pid=$p proc_stat=unavailable (already reaped)"
                       echo "ppid=unavailable"
@@ -207,7 +181,6 @@ PY
                     \( -iname "*emu-crash*" -o -iname "*.dmp" -o -iname "*crashpad*" -o -iname "core" -o -iname "core.*" -o -iname "*qemu*.log" -o -iname "*emulator*.log" \) \
                     -printf "%TY-%Tm-%TdT%TH:%TM:%TS %s %p\n" 2>/dev/null | sort || true
                 } >> android-emulator-crash-monitor.txt 2>&1
-
                 find "$HOME/.android" /tmp "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 8 -type f \
                   \( -iname "*emu-crash*" -o -iname "*.dmp" -o -iname "*crashpad*" -o -iname "core" -o -iname "core.*" -o -iname "*qemu*.log" -o -iname "*emulator*.log" \) \
                   -print0 2>/dev/null | while IFS= read -r -d "" f; do
@@ -220,7 +193,6 @@ PY
             done
           ' >/dev/null 2>&1 &
           echo $! > android-runtime-monitor.pid
-
       - name: Runtime smoke test on Android 14
         timeout-minutes: 12
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -235,13 +207,10 @@ PY
           disable-animations: true
           emulator-options: -no-window -gpu software -memory 2048
           script: bash android-v0/ci/runtime-smoke.sh
-
       - name: Stop independent Android host telemetry
         if: always()
         run: |
-          if [ -s android-runtime-monitor.pid ]; then
-            kill "$(cat android-runtime-monitor.pid)" >/dev/null 2>&1 || true
-          fi
+          if [ -s android-runtime-monitor.pid ]; then kill "$(cat android-runtime-monitor.pid)" >/dev/null 2>&1 || true; fi
           {
             echo "===== FINAL CRASH EVIDENCE $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
             find "$HOME/.android" /tmp "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 8 -type f \
@@ -258,7 +227,6 @@ PY
               rel=$(printf '%s' "$f" | sed 's#^/##; s#[^A-Za-z0-9._-]#_#g')
               cp -a "$f" "android-emulator-crash-evidence/$rel" 2>/dev/null || true
             done
-
       - name: Upload runtime diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -275,7 +243,6 @@ PY
             android-activities.txt
           if-no-files-found: warn
           retention-days: 14
-
       - name: Publish APK release
         if: github.event_name == 'workflow_dispatch' && inputs.release_authorization == 'PUBLICAR APK ZUNOPLAY'
         env:
