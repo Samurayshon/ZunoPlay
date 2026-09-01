@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {AURA_AUTHORITY_SOURCE,AURA_CONTRACT_VERSION,AURA_TIERS,assertAuraMatchesAuthorityProjection,deriveAuraTier,validateAuraAuthorityProjection} from '../src/zuno-stack-v2/aura/aura-contract.mjs';
+import {deriveAuraState,projectPublicAura} from '../src/zuno-stack-v2/aura/aura-projection.mjs';
+
+const authority=(points,tier,level)=>({playerId:'p1',authority:points,matches:10,byMode:{solo:1,trio:2,pvp:3},tier,level,progress:0,progressRequired:1,nextAuthority:null});
+
+test('Aura contract is versioned and bound to frozen Player Authority formula',()=>{assert.equal(AURA_CONTRACT_VERSION,'aura-r1');assert.equal(AURA_AUTHORITY_SOURCE,'player-authority-r1');assert.deepEqual(AURA_TIERS.map(x=>[x.tier,x.minAuthority]),[['origin',0],['signal',25],['pulse',75],['vector',175],['nexus',350]]);});
+test('Aura mapping is deterministic at frozen boundaries',()=>{for(const [points,tier,level] of [[0,'origin',1],[24,'origin',1],[25,'signal',2],[74,'signal',2],[75,'pulse',3],[174,'pulse',3],[175,'vector',4],[349,'vector',4],[350,'nexus',5]]){const derived=deriveAuraTier(points);assert.equal(derived.tier,tier);assert.equal(derived.level,level);}});
+test('safe Authority projection is accepted and mismatches fail closed',()=>{assert.equal(assertAuraMatchesAuthorityProjection(authority(75,'pulse',3)).eligible,true);assert.deepEqual(assertAuraMatchesAuthorityProjection(authority(75,'nexus',5)).reasons,['AUTHORITY_PROJECTION_MISMATCH']);});
+test('client-declared Aura and economic fields are rejected',()=>{for(const field of ['aura','auraTier','auraLevel','auraState','intensity','effects','xp','reward','rewards'])assert.equal(validateAuraAuthorityProjection({...authority(0,'origin',1),[field]:true}).eligible,false);});
+test('Aura is cosmetic and cannot mutate competitive or economic state',()=>{const aura=deriveAuraState(authority(350,'nexus',5));assert.equal(aura.competitiveEffects,false);assert.equal(aura.authorityMutation,false);assert.equal(aura.rankingMutation,false);assert.equal(aura.rewardsEnabled,false);assert.equal(aura.xpEnabled,false);});
+test('public projection contains deterministic presentation only',()=>{const a=projectPublicAura(authority(175,'vector',4));const b=projectPublicAura(authority(175,'vector',4));assert.deepEqual(a,b);assert.equal(a.tier,'vector');assert.equal(a.intensity,3);});
+test('reduced motion and low-end modes bound presentation cost',()=>{const reduced=deriveAuraState(authority(350,'nexus',5),{reducedMotion:true});assert.equal(reduced.presentation.motion,'none');const low=deriveAuraState(authority(350,'nexus',5),{lowEnd:true});assert.equal(low.presentation.motion,'none');assert.ok(low.presentation.layers<=1);assert.ok(low.intensity<=2);});
+test('invalid Authority values fail closed',()=>{for(const value of [-1,1.5,Number.MAX_SAFE_INTEGER+1])assert.throws(()=>deriveAuraTier(value));});
+test('projection benchmark remains bounded',()=>{const start=performance.now();for(let i=0;i<20000;i++)projectPublicAura(authority(i%500,deriveAuraTier(i%500).tier,deriveAuraTier(i%500).level),{lowEnd:i%2===0});const elapsed=performance.now()-start;console.log(`AURA_BENCH project20000=${elapsed.toFixed(2)}ms`);assert.ok(elapsed<1000);});
