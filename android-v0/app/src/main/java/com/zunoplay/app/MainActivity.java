@@ -7,12 +7,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
@@ -22,33 +18,27 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
-    private static final String TAG = "ZunoPlayAndroid";
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
-    private static final String BUILD_ID = "android-web-mobile-v001";
     private static final int PERMISSION_REQUEST = 7001;
-
     private WebView webView;
     private PermissionRequest pendingPermissionRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        configureSystemBars();
-        createWebView();
-    }
+        Window window = getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        window.setStatusBarColor(Color.rgb(2, 4, 13));
+        window.setNavigationBarColor(Color.rgb(2, 4, 13));
 
-    private void createWebView() {
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(2, 4, 13));
-        webView.setFitsSystemWindows(false);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        settings.setSupportMultipleWindows(false);
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
@@ -58,7 +48,7 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.1 " + BUILD_ID);
+        settings.setUserAgentString(settings.getUserAgentString() + " ZunoPlayAndroid/0.0.1");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -67,10 +57,8 @@ public class MainActivity extends Activity {
                 if (uri == null) return true;
                 if ("https".equalsIgnoreCase(uri.getScheme()) && isAllowedWebHost(uri.getHost())) return false;
                 if ("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme())) {
-                    try {
-                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                    } catch (ActivityNotFoundException | SecurityException ignored) {
-                    }
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
+                    catch (ActivityNotFoundException | SecurityException ignored) { }
                 }
                 return true;
             }
@@ -85,10 +73,10 @@ public class MainActivity extends Activity {
                 }
                 if (hasMediaPermissions()) {
                     request.grant(request.getResources());
-                    return;
+                } else {
+                    pendingPermissionRequest = request;
+                    requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA}, PERMISSION_REQUEST);
                 }
-                pendingPermissionRequest = request;
-                requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA}, PERMISSION_REQUEST);
             }
 
             @Override
@@ -97,47 +85,15 @@ public class MainActivity extends Activity {
             }
         });
 
-        setContentView(webView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        applySystemInsetsToWebView();
+        setContentView(webView);
         webView.loadUrl(START_URL);
-    }
-
-    private void configureSystemBars() {
-        Window window = getWindow();
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        window.setStatusBarColor(Color.rgb(2, 4, 13));
-        window.setNavigationBarColor(Color.rgb(2, 4, 13));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false);
-            WindowInsetsController controller = window.getInsetsController();
-            if (controller != null) {
-                controller.setSystemBarsAppearance(0,
-                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
-                                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
-            }
-        }
-    }
-
-    private void applySystemInsetsToWebView() {
-        if (webView == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return;
-        webView.setOnApplyWindowInsetsListener((view, insets) -> {
-            android.graphics.Insets safe = insets.getInsets(
-                    WindowInsets.Type.systemBars() |
-                            WindowInsets.Type.displayCutout() |
-                            WindowInsets.Type.mandatorySystemGestures());
-            view.setPadding(safe.left, safe.top, safe.right, safe.bottom);
-            android.util.Log.d(TAG, "Published web safe area: left=" + safe.left +
-                    " top=" + safe.top + " right=" + safe.right + " bottom=" + safe.bottom);
-            return insets;
-        });
-        webView.requestApplyInsets();
     }
 
     private boolean isAllowedWebHost(String host) {
         if (host == null) return false;
-        String normalized = host.toLowerCase();
-        return normalized.equals("samurayshon.github.io") || normalized.equals("cdn.jsdelivr.net") ||
-                normalized.equals("unpkg.com") || normalized.endsWith(".supabase.co");
+        String h = host.toLowerCase();
+        return h.equals("samurayshon.github.io") || h.equals("cdn.jsdelivr.net") ||
+                h.equals("unpkg.com") || h.endsWith(".supabase.co");
     }
 
     private boolean isTrustedOrigin(Uri origin) {
@@ -156,8 +112,7 @@ public class MainActivity extends Activity {
         if (requestCode != PERMISSION_REQUEST || pendingPermissionRequest == null) return;
         PermissionRequest request = pendingPermissionRequest;
         pendingPermissionRequest = null;
-        if (hasMediaPermissions()) request.grant(request.getResources());
-        else request.deny();
+        if (hasMediaPermissions()) request.grant(request.getResources()); else request.deny();
     }
 
     @Override
