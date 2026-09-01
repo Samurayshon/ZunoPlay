@@ -70,9 +70,9 @@ jobs:
           retention-days: 30
       - name: Enable KVM for Android emulator
         run: |
-          if [ -e /dev/kvm ]; then
-            sudo chmod 666 /dev/kvm
-          fi
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Stabilize Android emulator graphics
         run: |
           mkdir -p "$HOME/.android"
