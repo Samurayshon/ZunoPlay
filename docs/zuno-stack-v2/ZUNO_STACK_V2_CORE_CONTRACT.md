@@ -15,6 +15,8 @@ TransitionResult = { state, events, accepted, rejection? }
 
 O Core não renderiza UI, não acessa DOM, não acessa Supabase, não abre WebSocket, não usa localStorage/sessionStorage, não emite som/vibração e não concede recompensa externa.
 
+O mesmo Core pode ser executado no cliente para predição/feedback e no servidor para validação, mas somente a execução autorizada pelo Match Server produz estado oficial para partidas persistentes.
+
 ## 2. Determinismo
 
 Toda informação capaz de alterar gameplay deve entrar explicitamente no Core. Isso inclui:
@@ -42,7 +44,6 @@ GameState
 - rulesetVersion
 - players[]
 - shared
-- sequence
 - startedAtLogical
 - finishedAtLogical
 ```
@@ -63,6 +64,8 @@ PlayerState
 ```
 
 `shared` contém apenas estado compartilhado definido pelo modo, por exemplo Relay/Pulse cooperativo no Trio ou estado de confronto no PvP.
+
+Revisão/sequence de transporte não pertence ao `GameState` do Core. `expectedRevision`, revisão autoritativa, idempotência e ordenação de rede são responsabilidade do Match Protocol. Se uma regra futura precisar de um contador lógico de ações, ele deve existir com nome e semântica de gameplay explícitos, e não reutilizar a revisão de transporte.
 
 Nenhum campo puramente visual pertence ao estado canônico. Exemplos proibidos: posição de partículas, estado de modal, animação atual, glow, escala visual, scroll e classes CSS.
 
