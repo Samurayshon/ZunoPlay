@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'codex/zuno-stack-v2-phase-5-*'
+      - 'codex/zuno-stack-v2-phase-6-*'
   pull_request:
     paths:
       - 'src/zuno-stack-v2/**'
@@ -24,5 +25,6 @@ jobs:
           node --check src/zuno-stack-v2/trio/trio-rules.mjs
           node --check src/zuno-stack-v2/trio/trio-session.mjs
           node --check src/zuno-stack-v2/trio/trio-authority.mjs
-      - name: Validate Frozen Core Solo Match Server and Trio
+          node --check src/zuno-stack-v2/trio/trio-lifecycle.mjs
+      - name: Validate Frozen Core Solo Match Server and Trio Phase 5 + Phase 6
         run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs tests/zuno-stack-v2-match-*.test.mjs tests/zuno-stack-v2-trio-*.test.mjs
