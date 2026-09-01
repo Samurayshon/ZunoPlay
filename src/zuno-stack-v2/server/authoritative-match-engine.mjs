@@ -9,7 +9,7 @@ const rejection=(match,envelope,code,details=null)=>({
   receipt:createCommandReceipt({accepted:false,matchId:match.matchId,actionId:envelope.actionId,revision:match.revision,rejection:{code,details}})
 });
 
-export function createAuthoritativeMatch({matchId,mode,players,state,context,status=MATCH_STATUS.PLAYING,maxReceipts=MAX_RECEIPTS}={}){
+export function createAuthoritativeMatch({matchId,mode,players,state,context,status=MATCH_STATUS.PLAYING,maxReceipts=MAX_RECEIPTS,startedAt=0}={}){
   if(typeof matchId!=='string'||!matchId.trim())throw new TypeError('matchId must be a non-empty string');
   if(typeof mode!=='string'||!mode.trim())throw new TypeError('mode must be a non-empty string');
   if(!Array.isArray(players)||players.length<1)throw new TypeError('players must be a non-empty array');
@@ -18,7 +18,8 @@ export function createAuthoritativeMatch({matchId,mode,players,state,context,sta
   if(!state||typeof state!=='object'||Array.isArray(state))throw new TypeError('state must be an object');
   if(state.mode!==undefined&&state.mode!==mode)throw new TypeError('state.mode must match match mode');
   if(!Number.isSafeInteger(maxReceipts)||maxReceipts<1)throw new TypeError('maxReceipts must be >= 1');
-  return {matchId,mode,status,revision:0,players:ids,state:clone(state),context,receipts:[],maxReceipts};
+  if(!Number.isSafeInteger(startedAt)||startedAt<0)throw new TypeError('startedAt must be a safe integer >= 0');
+  return {matchId,mode,status,revision:0,players:ids,state:clone(state),context,receipts:[],maxReceipts,startedAt,finishedAt:null,result:null};
 }
 
 export function snapshotAuthoritativeMatch(match,reason=SNAPSHOT_REASON.BOOTSTRAP){
@@ -34,7 +35,7 @@ export function executeAuthoritativeCommand(match,input,{dispatch,createCommand}
   if(envelope.matchId!==match.matchId)return rejection(match,envelope,'MATCH_ID_MISMATCH');
   if(envelope.mode!==match.mode)return rejection(match,envelope,'MODE_MISMATCH');
   if(!match.players.includes(envelope.actorId))return rejection(match,envelope,'ACTOR_NOT_IN_MATCH');
-  if(terminal.has(match.status)||terminal.has(match.state?.status))return rejection(match,envelope,'MATCH_TERMINAL');
+  if(match.result||terminal.has(match.status)||terminal.has(match.state?.status))return rejection(match,envelope,'MATCH_TERMINAL');
   if(envelope.expectedRevision!==match.revision)return rejection(match,envelope,envelope.expectedRevision<match.revision?'STALE_REVISION':'FUTURE_REVISION',{expected:match.revision,received:envelope.expectedRevision});
 
   const coreCommand=createCommand({type:envelope.command.type,actorId:envelope.actorId,payload:clone(envelope.command.payload)});
