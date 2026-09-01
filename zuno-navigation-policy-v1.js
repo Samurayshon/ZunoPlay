@@ -36,6 +36,7 @@
     'historico.html':state(MODES.CONTEXTUAL,HEADERS.CONTEXTUAL,null,ACTIVE.CENTRAL,fixed('jogos.html')),
     'sala.html':state(MODES.IMMERSIVE,HEADERS.FEATURE,null,ACTIVE.ROOMS,feature('salas.html')),
     'zuno-stack.html':state(MODES.IMMERSIVE,HEADERS.FEATURE,null,ACTIVE.CENTRAL,feature('jogos.html')),
+    'zuno-stack-v2-solo.html':state(MODES.IMMERSIVE,HEADERS.FEATURE,null,ACTIVE.CENTRAL,feature('jogos.html')),
     'entrada.html':state(MODES.PUBLIC,HEADERS.BRAND),
     'login.html':state(MODES.PUBLIC,HEADERS.BRAND),
     'cadastro.html':state(MODES.PUBLIC,HEADERS.BRAND),
