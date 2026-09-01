@@ -1,5 +1,5 @@
 import { createBoardState, createTile } from './contracts.mjs';
-import { createSeededPrng } from './prng.mjs';
+import { createPrng } from './prng.mjs';
 
 const own=(object,key)=>Object.prototype.hasOwnProperty.call(object,key);
 const finiteInteger=(value)=>Number.isSafeInteger(value);
@@ -28,11 +28,7 @@ function normalizePosition(position,index,config){
 
 function defaultPositions(config){
   const positions=[];
-  for(let layer=0;layer<config.layers;layer+=1){
-    for(let y=0;y<config.height;y+=1){
-      for(let x=0;x<config.width;x+=1)positions.push({x,y,layer});
-    }
-  }
+  for(let layer=0;layer<config.layers;layer+=1)for(let y=0;y<config.height;y+=1)for(let x=0;x<config.width;x+=1)positions.push({x,y,layer});
   return positions;
 }
 
@@ -41,24 +37,12 @@ export function generateBoard({seed=0,config={},validators=[]}={}){
   if(!Array.isArray(validators)||validators.some(fn=>typeof fn!=='function'))throw new TypeError('board validators must be functions');
   const positions=(normalized.positions??defaultPositions(normalized)).map((position,index)=>normalizePosition(position,index,normalized));
   const occupied=new Set();
-  for(const position of positions){
-    const key=`${position.x}:${position.y}:${position.layer}`;
-    if(occupied.has(key))throw new TypeError(`duplicate logical board position: ${key}`);
-    occupied.add(key);
-  }
-  const rng=createSeededPrng(seed);
-  const tiles=positions.map((position,index)=>createTile({
-    id:`t${index}`,
-    family:normalized.families[rng.nextInt(normalized.families.length)],
-    position:{x:position.x,y:position.y},
-    layer:position.layer,
-    removed:false
-  }));
+  for(const position of positions){const key=`${position.x}:${position.y}:${position.layer}`;if(occupied.has(key))throw new TypeError(`duplicate logical board position: ${key}`);occupied.add(key)}
+  const rng=createPrng(seed);
+  const tiles=positions.map((position,index)=>createTile({id:`t${index}`,family:normalized.families[rng.nextInt(normalized.families.length)],position:{x:position.x,y:position.y},layer:position.layer,removed:false}));
   const board=createBoardState({tiles,meta:{width:normalized.width,height:normalized.height,layers:normalized.layers}});
   validateBoardState(board);
-  for(const validator of validators){
-    if(validator(board)!==true)throw new TypeError('generated board rejected by validator');
-  }
+  for(const validator of validators)if(validator(board)!==true)throw new TypeError('generated board rejected by validator');
   return board;
 }
 
@@ -78,32 +62,20 @@ export function validateBoardState(board){
     if(tile.position.x<0||tile.position.x>=width||tile.position.y<0||tile.position.y>=height)throw new TypeError(`tile ${tile.id} position is outside board`);
     if(!finiteInteger(tile.layer)||tile.layer<0||tile.layer>=layers)throw new TypeError(`tile ${tile.id} layer is invalid`);
     if(typeof tile.removed!=='boolean')throw new TypeError(`tile ${tile.id} removed flag is invalid`);
-    const key=`${tile.position.x}:${tile.position.y}:${tile.layer}`;
-    if(occupied.has(key))throw new TypeError(`duplicate logical board position: ${key}`);occupied.add(key);
-    if(own(tile,'blockers')){
-      if(!Array.isArray(tile.blockers))throw new TypeError(`tile ${tile.id} blockers must be an array`);
-      for(const blockerId of tile.blockers)if(!ids.has(blockerId)&&!board.tiles.some(candidate=>candidate?.id===blockerId))throw new TypeError(`tile ${tile.id} references missing blocker ${blockerId}`);
-    }
+    const key=`${tile.position.x}:${tile.position.y}:${tile.layer}`;if(occupied.has(key))throw new TypeError(`duplicate logical board position: ${key}`);occupied.add(key);
+  }
+  for(const tile of board.tiles)if(own(tile,'blockers')){
+    if(!Array.isArray(tile.blockers))throw new TypeError(`tile ${tile.id} blockers must be an array`);
+    for(const blockerId of tile.blockers)if(!ids.has(blockerId))throw new TypeError(`tile ${tile.id} references missing blocker ${blockerId}`);
   }
   return true;
 }
 
-export function getTile(board,tileId){return board.tiles.find(tile=>tile.id===tileId)??null;}
-
+export function getTile(board,tileId){return board.tiles.find(tile=>tile.id===tileId)??null}
 export function isTileBlocked(board,tileId){
-  const tile=getTile(board,tileId);
-  if(!tile||tile.removed)return true;
-  if(Array.isArray(tile.blockers)&&tile.blockers.some(id=>{const blocker=getTile(board,id);return blocker&&!blocker.removed;}))return true;
+  const tile=getTile(board,tileId);if(!tile||tile.removed)return true;
+  if(Array.isArray(tile.blockers)&&tile.blockers.some(id=>{const blocker=getTile(board,id);return blocker&&!blocker.removed}))return true;
   return board.tiles.some(candidate=>!candidate.removed&&candidate.layer>tile.layer&&candidate.position.x===tile.position.x&&candidate.position.y===tile.position.y);
 }
-
-export function canPickTile(board,tileId){
-  validateBoardState(board);
-  const tile=getTile(board,tileId);
-  return Boolean(tile&&!tile.removed&&!isTileBlocked(board,tileId));
-}
-
-export function listAvailableTileIds(board){
-  validateBoardState(board);
-  return board.tiles.filter(tile=>!tile.removed&&!isTileBlocked(board,tile.id)).map(tile=>tile.id);
-}
+export function canPickTile(board,tileId){validateBoardState(board);const tile=getTile(board,tileId);return Boolean(tile&&!tile.removed&&!isTileBlocked(board,tileId))}
+export function listAvailableTileIds(board){validateBoardState(board);return board.tiles.filter(tile=>!tile.removed&&!isTileBlocked(board,tile.id)).map(tile=>tile.id)}
