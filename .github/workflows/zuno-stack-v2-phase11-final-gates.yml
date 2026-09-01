@@ -1,0 +1,40 @@
+name: Zuno Stack V2 Phase 11 Final Gates
+
+on:
+  push:
+    branches:
+      - 'codex/zuno-stack-v2-phase-11-final-polish'
+  pull_request:
+    paths:
+      - 'src/zuno-stack-v2/**'
+      - 'tests/zuno-stack-v2-*.test.mjs'
+      - 'docs/zuno-stack-v2/ZUNO_STACK_V2_PHASE_11_*.md'
+      - '.github/workflows/zuno-stack-v2-phase11-final-gates.yml'
+
+jobs:
+  final-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Frozen regression plus Phase 11 gates
+        run: >-
+          node --test
+          tests/zuno-stack-v2-core-*.test.mjs
+          tests/zuno-stack-v2-solo-*.test.mjs
+          tests/zuno-stack-v2-match-*.test.mjs
+          tests/zuno-stack-v2-trio-*.test.mjs
+          tests/zuno-stack-v2-pvp-*.test.mjs
+          tests/zuno-stack-v2-ranking-*.test.mjs
+          tests/zuno-stack-v2-player-authority-*.test.mjs
+          tests/zuno-stack-v2-aura-*.test.mjs
+          tests/zuno-stack-v2-phase11-*.test.mjs
+      - name: Frozen source mutation guard
+        run: |
+          git diff --exit-code 245940b14ddfb4e654e52b1a1a7619651c3a36a6 -- src/zuno-stack-v2/core src/zuno-stack-v2/solo src/zuno-stack-v2/server src/zuno-stack-v2/trio src/zuno-stack-v2/pvp src/zuno-stack-v2/ranking src/zuno-stack-v2/player-authority src/zuno-stack-v2/aura
+      - name: Device validation marker
+        run: |
+          echo 'DEVICE_VALIDATION_REQUIRED: CI proxy gates do not certify physical Android FPS, touch latency, memory or frame pacing.'
