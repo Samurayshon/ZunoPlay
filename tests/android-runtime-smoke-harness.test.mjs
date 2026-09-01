@@ -25,6 +25,9 @@ assert.match(workflow, /\n  pull_request:\n/, 'Android APK workflow must run on 
 assert.match(workflow, /Runtime smoke test on Android 14[\s\S]*?timeout-minutes: 12/, 'emulator runtime smoke must have its own timeout');
 assert.match(workflow, /target: google_apis/, 'safe-area runtime proof must use an image with normal Android system bars');
 assert.match(workflow, /profile: pixel_2[\s\S]*?cores: 2[\s\S]*?ram-size: 2048M/, 'runtime emulator must use a lightweight phone profile without oversubscribing CPU');
+assert.match(workflow, /advancedFeatures\.ini/, 'runtime emulator must have an explicit graphics-stability configuration');
+assert.match(workflow, /Vulkan = off/, 'runtime emulator must keep Vulkan disabled for WebView smoke stability');
+assert.match(workflow, /GLDirectMem = on/, 'runtime emulator must keep direct GL memory enabled with the Vulkan workaround');
 assert.match(workflow, /android-runtime-host\.txt/, 'host diagnostics must be uploaded as a workflow artifact');
 assert.match(
   workflow,
