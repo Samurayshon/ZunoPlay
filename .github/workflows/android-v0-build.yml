@@ -85,6 +85,15 @@ jobs:
             sudo chmod 666 /dev/kvm
           fi
 
+      - name: Stabilize Android emulator graphics
+        run: |
+          mkdir -p "$HOME/.android"
+          cat > "$HOME/.android/advancedFeatures.ini" <<'EOF'
+          Vulkan = off
+          GLDirectMem = on
+          EOF
+          cat "$HOME/.android/advancedFeatures.ini"
+
       - name: Runtime smoke test on Android 14
         timeout-minutes: 12
         uses: reactivecircus/android-emulator-runner@v2
