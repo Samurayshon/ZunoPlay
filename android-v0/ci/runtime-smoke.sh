@@ -23,6 +23,34 @@ write_host_snapshot() {
     echo
     echo '=== emulator/adb processes ==='
     ps -ef | grep -E '[e]mulator|[q]emu|[a]db' || true
+    echo
+    echo '=== memory ==='
+    free -m || true
+    grep -E '^(MemTotal|MemFree|MemAvailable|SwapTotal|SwapFree):' /proc/meminfo || true
+    echo
+    echo '=== cgroup v2 memory ==='
+    for file in memory.current memory.max memory.high memory.events memory.events.local memory.swap.current memory.swap.max; do
+      path="/sys/fs/cgroup/${file}"
+      if [[ -r "$path" ]]; then
+        echo "--- ${file} ---"
+        cat "$path" || true
+      fi
+    done
+    echo
+    echo '=== qemu/emulator process status ==='
+    QEMU_PIDS="$(pgrep -f 'qemu-system|emulator.*-avd' || true)"
+    if [[ -n "$QEMU_PIDS" ]]; then
+      for qpid in $QEMU_PIDS; do
+        echo "--- pid ${qpid} ---"
+        ps -o pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd -p "$qpid" || true
+        grep -E '^(Name|State|VmPeak|VmSize|VmRSS|VmSwap|Threads):' "/proc/${qpid}/status" 2>/dev/null || true
+      done
+    else
+      echo 'no qemu/emulator process found'
+    fi
+    echo
+    echo '=== kernel oom evidence ==='
+    dmesg 2>/dev/null | tail -n 300 | grep -Ei 'oom|out of memory|killed process|memory cgroup' || true
   } > android-runtime-host.txt 2>&1
 }
 
@@ -142,8 +170,6 @@ assert_app_alive() {
     fi
 
     if [[ "$pid_status" -ne 0 || -z "$pid_output" ]]; then
-      # Re-probe after pidof. A transport drop between the first probe and pidof must
-      # never be reported as a ZunoPlay crash.
       require_adb_device "${context} post-PID verification"
       echo "ZunoPlay process is not running during ${context}." >&2
       exit 1
@@ -214,7 +240,6 @@ adb_cmd shell wm dismiss-keyguard || true
 sleep 5
 assert_app_alive "wake transition"
 
-# Flush the continuous collector before validating its contents.
 LOGCAT_REQUESTED=0
 stop_logcat
 require_adb_device "runtime diagnostics collection"
@@ -238,8 +263,6 @@ matches = re.findall(
 if not matches:
     raise SystemExit('No ZunoPlay web safe-area publication was recorded in logcat.')
 
-# Some early window callbacks publish 0/0 before system bars are measured. Require
-# at least one later publication proving both status-bar and navigation protection.
 valid_matches = [tuple(map(int, match)) for match in matches if int(match[1]) > 0 and int(match[3]) > 0]
 if not valid_matches:
     raise SystemExit('No non-zero top/bottom web safe-area publication was recorded.')
