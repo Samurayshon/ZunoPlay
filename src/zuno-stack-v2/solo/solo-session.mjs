@@ -1,7 +1,10 @@
 import {PICK_TILE,createCommand,createGameState,createPlayerState,dispatch,generateBoard} from '../core/index.mjs';
 import {SOLO_MODE,SOLO_RULESET_VERSION,SOLO_STATUS,createSoloRulesContext,evaluateSoloStatus} from './solo-rules.mjs';
 
-const DEFAULT_BOARD=Object.freeze({layerCounts:[9],columns:3,rows:3,families:['ember','tide','leaf']});
+// Phase 2 intentionally uses a tiny deterministic training board: three families,
+// exactly one trio each. Balance, layered production boards and rescue mechanics
+// remain Phase 3 work.
+const DEFAULT_BOARD=Object.freeze({layerCounts:[9],columns:9,rows:1,families:['ember']});
 export function createSoloSession({seed='solo-seed',boardConfig=DEFAULT_BOARD,playerId='solo-player'}={}){
   const board=generateBoard(boardConfig,seed);
   const state=createGameState({mode:SOLO_MODE,seed,rulesetVersion:SOLO_RULESET_VERSION,status:SOLO_STATUS.CREATED,players:[createPlayerState({playerId,board})]});
