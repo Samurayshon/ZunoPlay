@@ -90,11 +90,13 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
-          target: google_apis
+          target: google_atd
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_2
+          cores: 4
+          ram-size: 2048M
           disable-animations: true
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -camera-back none -camera-front none
           script: bash android-v0/ci/runtime-smoke.sh
 
       - name: Upload runtime diagnostics
