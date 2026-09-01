@@ -39,11 +39,38 @@ write_host_snapshot() {
     echo
     echo '=== qemu/emulator process status ==='
     QEMU_PIDS="$(pgrep -f 'qemu-system|emulator.*-avd' || true)"
+    ZOMBIE_QEMU_PIDS="$(ps -eo pid=,stat=,comm= | awk '$2 ~ /^Z/ && $3 ~ /^qemu-system/ {print $1}' || true)"
+    QEMU_PIDS="$(printf '%s\n%s\n' "$QEMU_PIDS" "$ZOMBIE_QEMU_PIDS" | tr ' ' '\n' | awk 'NF && !seen[$1]++' | tr '\n' ' ')"
     if [[ -n "$QEMU_PIDS" ]]; then
       for qpid in $QEMU_PIDS; do
         echo "--- pid ${qpid} ---"
         ps -o pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd -p "$qpid" || true
         grep -E '^(Name|State|VmPeak|VmSize|VmRSS|VmSwap|Threads):' "/proc/${qpid}/status" 2>/dev/null || true
+        if [[ -r "/proc/${qpid}/stat" ]]; then
+          QEMU_STAT="$(cat "/proc/${qpid}/stat" 2>/dev/null || true)"
+          echo "proc_stat=${QEMU_STAT}"
+          QEMU_EXIT_CODE="$(awk '{print $52}' "/proc/${qpid}/stat" 2>/dev/null || true)"
+          echo "wait_status_raw=${QEMU_EXIT_CODE}"
+          if [[ "$QEMU_EXIT_CODE" =~ ^[0-9]+$ ]]; then
+            python3 - "$QEMU_EXIT_CODE" <<'PY'
+import os
+import sys
+status = int(sys.argv[1])
+print(f"wait_status_exited={os.WIFEXITED(status)}")
+print(f"wait_status_signaled={os.WIFSIGNALED(status)}")
+if os.WIFEXITED(status):
+    print(f"exit_status={os.WEXITSTATUS(status)}")
+if os.WIFSIGNALED(status):
+    print(f"term_signal={os.WTERMSIG(status)}")
+    try:
+        print(f"term_signal_name={os.strsignal(os.WTERMSIG(status))}")
+    except Exception:
+        pass
+if hasattr(os, "WCOREDUMP"):
+    print(f"core_dumped={os.WCOREDUMP(status)}")
+PY
+          fi
+        fi
       done
     else
       echo 'no qemu/emulator process found'
