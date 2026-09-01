@@ -27,6 +27,7 @@ test('all canonical shell entrypoints use the current asset family',()=>{
   assert.match(nav,/zunoplay-modernization-v1-style/,'canonical shell must load the modernization layer');
   assert.match(nav,/if\(rooms\.includes\(page\)\)/,'Salas assets must be owned by the shared bootstrap');
   assert.doesNotMatch(read('salas.html'),/zuno-rooms-hub-v2\.(?:css|js)\?v=/,'Salas must not keep a second direct layout bootstrap');
+  assert.match(read('nav.js'),/js\('zunoplay-room-invite-entry-v1-script','\.\/zuno-room-invite-entry-v1\.js'\)/,'the canonical Salas runtime must retain the room invite entrypoint');
 });
 
 test('one safe-area contract bridges browser and Android insets',()=>{
