@@ -90,7 +90,7 @@ jobs:
           mkdir -p "$HOME/.android"
           cat > "$HOME/.android/advancedFeatures.ini" <<'EOF'
           Vulkan = off
-          GLDirectMem = on
+          GLDirectMem = off
           EOF
           cat "$HOME/.android/advancedFeatures.ini"
 
