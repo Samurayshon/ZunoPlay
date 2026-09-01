@@ -1,75 +1,14 @@
 import test from'node:test';
 import assert from'node:assert/strict';
 import{PICK_TILE,TRAY_CAPACITY,appendTrayTileId,createCommand,createCoreTransitions,createGameState,createModeRules,createPlayerState,createRulesContext,createTile,createValidatedBoardState,dispatch,validateTrayState}from'../src/zuno-stack-v2/core/index.mjs';
-
-function boardFrom(specs){
-  const tiles=specs.map((spec,index)=>createTile({id:spec.id,family:spec.family,position:{x:spec.x??index,y:spec.y??0},layer:spec.layer??0,removed:spec.removed??false}));
-  const layerCount=Math.max(1,...tiles.map(tile=>tile.layer+1));
-  return createValidatedBoardState({tiles,layerCount,meta:{test:true}});
-}
-function stateFrom(board,tray=[]){return createGameState({mode:'core-test',seed:'block-3',players:[createPlayerState({playerId:'p1',board,tray})]})}
-const rules=createModeRules({modeId:'core-test',playerSlots:1,transitions:createCoreTransitions()});
-const context=createRulesContext({rules});
-function pick(state,tileId){return dispatch(state,createCommand({type:PICK_TILE,actorId:'p1',payload:{tileId}}),context)}
-
-test('valid pick removes tile logically, appends tray id and emits canonical events',()=>{
-  const state=stateFrom(boardFrom([{id:'a1',family:'a'}]));const before=JSON.stringify(state);const result=pick(state,'a1');
-  assert.equal(result.accepted,true);assert.equal(state.players[0].board.tiles[0].removed,false);assert.equal(JSON.stringify(state),before);
-  assert.equal(result.state.players[0].board.tiles[0].removed,true);assert.deepEqual(result.state.players[0].tray,['a1']);
-  assert.deepEqual(result.events.map(event=>event.type),['TILE_PICKED','TRAY_CHANGED']);
-  assert.deepEqual(result.events[1].payload.tileIds,['a1']);assert.equal(result.events[1].payload.capacity,7);
-});
-
-test('blocked tile is rejected atomically',()=>{
-  const state=stateFrom(boardFrom([{id:'low',family:'a',x:0,y:0,layer:0},{id:'top',family:'b',x:0,y:0,layer:1}]));const before=JSON.stringify(state);const result=pick(state,'low');
-  assert.equal(result.accepted,false);assert.equal(result.rejection.code,'TILE_BLOCKED');assert.strictEqual(result.state,state);assert.deepEqual(result.events,[]);assert.equal(JSON.stringify(state),before);
-});
-
-test('missing and already removed tiles are rejected without mutation',()=>{
-  const state=stateFrom(boardFrom([{id:'gone',family:'a',removed:true},{id:'live',family:'b'}]));const before=JSON.stringify(state);
-  const missing=pick(state,'missing');assert.equal(missing.rejection.code,'TILE_NOT_FOUND');assert.strictEqual(missing.state,state);
-  const removed=pick(state,'gone');assert.equal(removed.rejection.code,'TILE_ALREADY_REMOVED');assert.strictEqual(removed.state,state);assert.equal(JSON.stringify(state),before);
-});
-
-test('third equal family resolves exactly one trio in logical insertion order',()=>{
-  let state=stateFrom(boardFrom([{id:'a1',family:'a'},{id:'a2',family:'a'},{id:'a3',family:'a'}]));
-  state=pick(state,'a1').state;state=pick(state,'a2').state;const third=pick(state,'a3');
-  assert.equal(third.accepted,true);assert.deepEqual(third.state.players[0].tray,[]);
-  assert.deepEqual(third.events.map(event=>event.type),['TILE_PICKED','TRIO_RESOLVED','TRAY_CHANGED']);
-  assert.deepEqual(third.events[1].payload,{actorId:'p1',family:'a',tileIds:['a1','a2','a3']});
-});
-
-test('multiple families preserve canonical tray insertion order around a resolved trio',()=>{
-  let state=stateFrom(boardFrom([{id:'a1',family:'a'},{id:'b1',family:'b'},{id:'a2',family:'a'},{id:'b2',family:'b'},{id:'a3',family:'a'}]));
-  for(const id of['a1','b1','a2','b2'])state=pick(state,id).state;const result=pick(state,'a3');
-  assert.deepEqual(result.state.players[0].tray,['b1','b2']);assert.deepEqual(result.events.at(-1).payload.tileIds,['b1','b2']);
-});
-
-test('tray capacity is exactly seven and overflow is rejected',()=>{
-  assert.equal(TRAY_CAPACITY,7);const ids=['a1','a2','b1','b2','c1','c2','d1'];
-  const specs=ids.map((id,index)=>({id,family:id[0],removed:true,x:index}));specs.push({id:'extra',family:'e',x:7});
-  const state=stateFrom(boardFrom(specs),ids);validateTrayState(state.players[0].board,state.players[0].tray);const before=JSON.stringify(state);const result=pick(state,'extra');
-  assert.equal(result.accepted,false);assert.equal(result.rejection.code,'TRAY_FULL');assert.strictEqual(result.state,state);assert.equal(JSON.stringify(state),before);
-  assert.throws(()=>appendTrayTileId(ids,'overflow'),/capacity exceeded/);
-});
-
-test('invalid pick command is atomic',()=>{
-  const state=stateFrom(boardFrom([{id:'a1',family:'a'}]));const snapshot=JSON.stringify(state);
-  const result=dispatch(state,createCommand({type:PICK_TILE,actorId:'p1',payload:{tileId:''}}),context);
-  assert.equal(result.accepted,false);assert.equal(result.rejection.code,'INVALID_TILE_ID');assert.strictEqual(result.state,state);assert.equal(JSON.stringify(state),snapshot);
-});
-
-test('same initial state and command sequence remain deterministic and serializable',()=>{
-  const specs=[{id:'a1',family:'a'},{id:'b1',family:'b'},{id:'a2',family:'a'},{id:'a3',family:'a'}];
-  function run(){let state=stateFrom(boardFrom(specs));const events=[];for(const id of['a1','b1','a2','a3']){const result=pick(state,id);assert.equal(result.accepted,true);events.push(result.events);state=result.state}return{state,events}}
-  const left=run(),right=run();assert.deepEqual(left,right);assert.doesNotThrow(()=>JSON.stringify(left));assert.deepEqual(left.state.players[0].tray,['b1']);
-});
-
-test('long PICK_TILE sequence keeps state bounded and responsive',()=>{
-  const count=300;const specs=Array.from({length:count},(_,index)=>({id:`t${index}`,family:`f${Math.floor(index/3)}`,x:index}));let state=stateFrom(boardFrom(specs));const initialSize=JSON.stringify(state).length;const started=process.hrtime.bigint();
-  for(let index=0;index<count;index+=1){const result=pick(state,`t${index}`);assert.equal(result.accepted,true);state=result.state;assert.ok(state.players[0].tray.length<=TRAY_CAPACITY)}
-  const elapsedMs=Number(process.hrtime.bigint()-started)/1e6;const finalSize=JSON.stringify(state).length;
-  assert.equal(state.players[0].board.tiles.length,count);assert.deepEqual(state.players[0].tray,[]);assert.ok(finalSize<=initialSize*1.05,`state grew unexpectedly: ${initialSize} -> ${finalSize}`);assert.ok(elapsedMs<5000,`long pick sequence exceeded generous CI ceiling: ${elapsedMs.toFixed(1)}ms`);
-});
-
+function boardFrom(specs){const tiles=specs.map((spec,index)=>createTile({id:spec.id,family:spec.family,position:{x:spec.x??index,y:spec.y??0},layer:spec.layer??0,removed:spec.removed??false}));const layerCount=Math.max(1,...tiles.map(tile=>tile.layer+1));return createValidatedBoardState({tiles,layerCount,meta:{test:true}})}function stateFrom(board,tray=[]){return createGameState({mode:'core-test',seed:'block-3',players:[createPlayerState({playerId:'p1',board,tray})]})}const rules=createModeRules({modeId:'core-test',playerSlots:1,transitions:createCoreTransitions()});const context=createRulesContext({rules});function pick(state,tileId){return dispatch(state,createCommand({type:PICK_TILE,actorId:'p1',payload:{tileId}}),context)}
+test('valid pick removes tile logically, appends tray id and emits canonical events',()=>{const state=stateFrom(boardFrom([{id:'a1',family:'a'}]));const before=JSON.stringify(state);const result=pick(state,'a1');assert.equal(result.accepted,true);assert.equal(state.players[0].board.tiles[0].removed,false);assert.equal(JSON.stringify(state),before);assert.equal(result.state.players[0].board.tiles[0].removed,true);assert.deepEqual(result.state.players[0].tray,['a1']);assert.deepEqual(result.events.map(event=>event.type),['TILE_PICKED','TRAY_CHANGED']);assert.deepEqual(result.events[1].payload.tileIds,['a1']);assert.equal(result.events[1].payload.capacity,7)});
+test('blocked tile is rejected atomically',()=>{const state=stateFrom(boardFrom([{id:'low',family:'a',x:0,y:0,layer:0},{id:'top',family:'b',x:0,y:0,layer:1}]));const before=JSON.stringify(state);const result=pick(state,'low');assert.equal(result.accepted,false);assert.equal(result.rejection.code,'TILE_BLOCKED');assert.strictEqual(result.state,state);assert.deepEqual(result.events,[]);assert.equal(JSON.stringify(state),before)});
+test('missing and already removed tiles are rejected without mutation',()=>{const state=stateFrom(boardFrom([{id:'gone',family:'a',removed:true},{id:'live',family:'b'}]));const before=JSON.stringify(state);const missing=pick(state,'missing');assert.equal(missing.rejection.code,'TILE_NOT_FOUND');assert.strictEqual(missing.state,state);const removed=pick(state,'gone');assert.equal(removed.rejection.code,'TILE_ALREADY_REMOVED');assert.strictEqual(removed.state,state);assert.equal(JSON.stringify(state),before)});
+test('third equal family resolves exactly one trio in logical insertion order',()=>{let state=stateFrom(boardFrom([{id:'a1',family:'a'},{id:'a2',family:'a'},{id:'a3',family:'a'}]));state=pick(state,'a1').state;state=pick(state,'a2').state;const third=pick(state,'a3');assert.equal(third.accepted,true);assert.deepEqual(third.state.players[0].tray,[]);assert.deepEqual(third.events.map(event=>event.type),['TILE_PICKED','TRIO_RESOLVED','SCORE_CHANGED','COMBO_CHANGED','PULSE_CHANGED','TRAY_CHANGED']);assert.deepEqual(third.events[1].payload,{actorId:'p1',family:'a',tileIds:['a1','a2','a3']})});
+test('multiple families preserve canonical tray insertion order around a resolved trio',()=>{let state=stateFrom(boardFrom([{id:'a1',family:'a'},{id:'b1',family:'b'},{id:'a2',family:'a'},{id:'b2',family:'b'},{id:'a3',family:'a'}]));for(const id of['a1','b1','a2','b2'])state=pick(state,id).state;const result=pick(state,'a3');assert.deepEqual(result.state.players[0].tray,['b1','b2']);assert.deepEqual(result.events.at(-1).payload.tileIds,['b1','b2'])});
+test('tray capacity is exactly seven and overflow is rejected',()=>{assert.equal(TRAY_CAPACITY,7);const ids=['a1','a2','b1','b2','c1','c2','d1'];const specs=ids.map((id,index)=>({id,family:id[0],removed:true,x:index}));specs.push({id:'extra',family:'e',x:7});const state=stateFrom(boardFrom(specs),ids);validateTrayState(state.players[0].board,state.players[0].tray);const before=JSON.stringify(state);const result=pick(state,'extra');assert.equal(result.accepted,false);assert.equal(result.rejection.code,'TRAY_FULL');assert.strictEqual(result.state,state);assert.equal(JSON.stringify(state),before);assert.throws(()=>appendTrayTileId(ids,'overflow'),/capacity exceeded/)});
+test('invalid pick command is atomic',()=>{const state=stateFrom(boardFrom([{id:'a1',family:'a'}]));const snapshot=JSON.stringify(state);const result=dispatch(state,createCommand({type:PICK_TILE,actorId:'p1',payload:{tileId:''}}),context);assert.equal(result.accepted,false);assert.equal(result.rejection.code,'INVALID_TILE_ID');assert.strictEqual(result.state,state);assert.equal(JSON.stringify(state),snapshot)});
+test('same initial state and command sequence remain deterministic and serializable',()=>{const specs=[{id:'a1',family:'a'},{id:'b1',family:'b'},{id:'a2',family:'a'},{id:'a3',family:'a'}];function run(){let state=stateFrom(boardFrom(specs));const events=[];for(const id of['a1','b1','a2','a3']){const result=pick(state,id);assert.equal(result.accepted,true);events.push(result.events);state=result.state}return{state,events}}const left=run(),right=run();assert.deepEqual(left,right);assert.doesNotThrow(()=>JSON.stringify(left));assert.deepEqual(left.state.players[0].tray,['b1'])});
+test('long PICK_TILE sequence keeps state bounded and responsive',()=>{const count=300;const specs=Array.from({length:count},(_,index)=>({id:`t${index}`,family:`f${Math.floor(index/3)}`,x:index}));let state=stateFrom(boardFrom(specs));const initialSize=JSON.stringify(state).length;const started=process.hrtime.bigint();for(let index=0;index<count;index+=1){const result=pick(state,`t${index}`);assert.equal(result.accepted,true);state=result.state;assert.ok(state.players[0].tray.length<=TRAY_CAPACITY)}const elapsedMs=Number(process.hrtime.bigint()-started)/1e6;const finalSize=JSON.stringify(state).length;assert.equal(state.players[0].board.tiles.length,count);assert.deepEqual(state.players[0].tray,[]);assert.ok(finalSize<=initialSize*1.05,`state grew unexpectedly: ${initialSize} -> ${finalSize}`);assert.ok(elapsedMs<5000,`long pick sequence exceeded generous CI ceiling: ${elapsedMs.toFixed(1)}ms`)});
 test('core remains browser independent',()=>{assert.equal(globalThis.document,undefined);assert.equal(globalThis.window,undefined)});
