@@ -40,6 +40,7 @@ test('Fresh Solo Round: a new round is clean, independent and restores official 
 
   const fresh=startSoloSession(createSoloSession({seed}));
   const player=fresh.state.players[0];
+  const view=projectSoloView(fresh.state,fresh.events);
   assert.equal(fresh.state.status,'PLAYING');
   assert.equal(fresh.state.mode,'solo');
   assert.equal(fresh.state.rulesetVersion,'solo-complete-r1');
@@ -48,7 +49,8 @@ test('Fresh Solo Round: a new round is clean, independent and restores official 
   assert.deepEqual(player.tray,[]);
   assert.equal(player.score,0);
   assert.equal(player.combo,0);
-  assert.equal(player.pulse.value,0);
+  assert.equal(player.pulse.value??0,0);
+  assert.equal(view.pulse??0,0);
   assert.deepEqual(player.resources,{undo:3,hint:3,rescue:1,powerShift:2});
   assert.deepEqual(fresh.history,[]);
   assert.equal(fresh.rejection,null);
@@ -58,5 +60,5 @@ test('Fresh Solo Round: a new round is clean, independent and restores official 
   assert.notStrictEqual(fresh.state,previous.state);
   assert.notDeepEqual(player.tray,previous.state.players[0].tray);
   assert.equal(player.resources.powerShift,2);
-  assert.equal(player.pulse.value,0);
+  assert.equal(player.pulse.value??0,0);
 });
