@@ -1,0 +1,8 @@
+{
+  "name": "zuno-stack-v2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:core": "node --test tests/core-block1.test.mjs"
+  }
+}
