@@ -1,5 +1,6 @@
 import {
   TRAY_CAPACITY,
+  USE_POWER,
   createCoreTransitions,
   createModeRules,
   createPowerCatalog,
@@ -7,7 +8,8 @@ import {
   createRulesContext,
   createValidatedBoardState,
   generateBoard,
-  getAvailableTileIds
+  getAvailableTileIds,
+  usePowerTransition
 } from '../core/index.mjs';
 
 export const SOLO_MODE='solo';
@@ -76,7 +78,8 @@ export function createSoloRules(){
       return {player:{...restored,resources:{...restored.resources,powerShift:restored.resources.powerShift-1}},events:[{type:'SOLO_POWER_SHIFTED',payload:{restoredTileId:player.tray[player.tray.length-1]}}]};
     }
   }]);
-  const rules=createModeRules({modeId:SOLO_MODE,playerSlots:1,transitions:createCoreTransitions(),powerCatalog});
+  const transitions={...createCoreTransitions(),[USE_POWER]:usePowerTransition};
+  const rules=createModeRules({modeId:SOLO_MODE,playerSlots:1,transitions,powerCatalog});
   rules.progression={scorePerTrio:100,comboStep:1,comboResetOnPickWithoutTrio:false,pulsePerTrio:1,pulseMax:10,pulseUseCost:1};
   return rules;
 }
