@@ -94,6 +94,34 @@ jobs:
           EOF
           cat "$HOME/.android/advancedFeatures.ini"
 
+      - name: Start independent Android host telemetry
+        run: |
+          : > android-runtime-monitor.txt
+          nohup bash -c '
+            while true; do
+              {
+                echo "===== $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
+                free -m || true
+                grep -E "^(MemTotal|MemFree|MemAvailable|SwapTotal|SwapFree):" /proc/meminfo || true
+                for f in memory.current memory.max memory.high memory.events memory.events.local memory.swap.current memory.swap.max; do
+                  p="/sys/fs/cgroup/$f"
+                  if [ -r "$p" ]; then echo "--- $f ---"; cat "$p" || true; fi
+                done
+                echo "--- emulator/qemu/adb ---"
+                ps -eo pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd | grep -E "[e]mulator|[q]emu|[a]db" || true
+                for p in $(pgrep -f "qemu-system|emulator.*-avd" || true); do
+                  echo "--- /proc/$p/status ---"
+                  grep -E "^(Name|State|VmPeak|VmSize|VmRSS|VmSwap|Threads):" "/proc/$p/status" 2>/dev/null || true
+                done
+                echo "--- kernel oom evidence ---"
+                dmesg 2>/dev/null | tail -n 300 | grep -Ei "oom|out of memory|killed process|memory cgroup" || true
+                echo
+              } >> android-runtime-monitor.txt 2>&1
+              sleep 5
+            done
+          ' >/dev/null 2>&1 &
+          echo $! > android-runtime-monitor.pid
+
       - name: Runtime smoke test on Android 14
         timeout-minutes: 12
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -109,6 +137,13 @@ jobs:
           emulator-options: -no-window -gpu software -memory 2048
           script: bash android-v0/ci/runtime-smoke.sh
 
+      - name: Stop independent Android host telemetry
+        if: always()
+        run: |
+          if [ -s android-runtime-monitor.pid ]; then
+            kill "$(cat android-runtime-monitor.pid)" >/dev/null 2>&1 || true
+          fi
+
       - name: Upload runtime diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -118,6 +153,7 @@ jobs:
             android-apk-badging.txt
             android-runtime-logcat.txt
             android-runtime-host.txt
+            android-runtime-monitor.txt
             android-package.txt
             android-activities.txt
           if-no-files-found: warn
