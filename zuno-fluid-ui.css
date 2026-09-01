@@ -1,7 +1,61 @@
-:root{--zuno-safe-top:max(10px,env(safe-area-inset-top));--zuno-safe-right:max(12px,env(safe-area-inset-right));--zuno-safe-bottom:max(14px,env(safe-area-inset-bottom));--zuno-safe-left:max(12px,env(safe-area-inset-left));--zuno-page-max:520px;--zuno-radius:18px;--zuno-surface:#0b0e1c;--zuno-border:transparent;--zuno-text:#f7f8ff;--zuno-muted:#9298ad;--zuno-viewport-height:100dvh}html{min-height:100%;background:#04040b;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}body{min-height:var(--zuno-viewport-height);overflow-x:hidden;overscroll-behavior-y:contain;-webkit-tap-highlight-color:transparent}button,a,input,textarea,select{font:inherit}button,a{touch-action:manipulation}img,svg,video,canvas{max-width:100%}.zuno-fluid-page body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}.zuno-fluid-page .app,.zuno-fluid-page .container,.zuno-fluid-page .shell{max-width:var(--zuno-page-max);margin-inline:auto}.zuno-fluid-page .header{padding-top:var(--zuno-safe-top)}.zuno-fluid-page input,.zuno-fluid-page textarea,.zuno-fluid-page select{font-size:16px}.zuno-fluid-page button,.zuno-fluid-page [role=button],.zuno-fluid-page a{min-height:44px}.zuno-fluid-page .card{max-width:100%}.zuno-fluid-page *{min-width:0}.zuno-fluid-page .header,.zuno-fluid-page .topbar,.zuno-fluid-page .page-header{flex-shrink:0}.zuno-fluid-page .footer,.zuno-fluid-page footer{padding-bottom:var(--zuno-safe-bottom)}
-/* ZunoPlay Design System: containers use surface/spacing, not decorative outlines. */
+:root{
+  --zuno-native-safe-top:0px;
+  --zuno-native-safe-right:0px;
+  --zuno-native-safe-bottom:0px;
+  --zuno-native-safe-left:0px;
+  --zuno-safe-top:max(env(safe-area-inset-top,0px),var(--zuno-native-safe-top));
+  --zuno-safe-right:max(env(safe-area-inset-right,0px),var(--zuno-native-safe-right));
+  --zuno-safe-bottom:max(env(safe-area-inset-bottom,0px),var(--zuno-native-safe-bottom));
+  --zuno-safe-left:max(env(safe-area-inset-left,0px),var(--zuno-native-safe-left));
+  --zuno-page-max:760px;
+  --zuno-radius:18px;
+  --zuno-surface:#0b0e1c;
+  --zuno-border:transparent;
+  --zuno-text:#f7f8ff;
+  --zuno-muted:#9298ad;
+  --zuno-viewport-height:100dvh;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{min-height:100%;background:#02040d;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}
+body{min-height:var(--zuno-viewport-height);overflow-x:hidden;overscroll-behavior-y:contain;-webkit-tap-highlight-color:transparent}
+button,a,input,textarea,select{font:inherit}
+button,a{touch-action:manipulation}
+img,svg,video,canvas{max-width:100%}
+.zuno-fluid-page body{width:100%;max-width:100%;padding-left:var(--zuno-safe-left);padding-right:var(--zuno-safe-right)}
+.zuno-fluid-page .app,.zuno-fluid-page .container,.zuno-fluid-page .shell{max-width:var(--zuno-page-max);margin-inline:auto}
+.zuno-fluid-page .header{padding-top:var(--zuno-safe-top)}
+.zuno-fluid-page input,.zuno-fluid-page textarea,.zuno-fluid-page select{font-size:16px}
+.zuno-fluid-page button,.zuno-fluid-page [role=button],.zuno-fluid-page a{min-height:44px}
+.zuno-fluid-page .card{max-width:100%}
+.zuno-fluid-page *{min-width:0}
+.zuno-fluid-page .header,.zuno-fluid-page .topbar,.zuno-fluid-page .page-header{flex-shrink:0}
+.zuno-fluid-page .footer,.zuno-fluid-page footer{padding-bottom:var(--zuno-safe-bottom)}
+
+/* Containers are separated with spacing and tone. Outlines remain for controls, focus, errors and selection only. */
 .zuno-fluid-page :where(.card,.panel,.section,.surface,.sheet,.modal,.dialog,.hero,.menu-card,.stat-pill,.zo-card,.entry-card,.auth-card,.profile-card,.room-card,.game-card,.message-card,.notification-card,.community-card){border-color:transparent!important;outline:0!important}
-/* Functional boundaries remain: form controls, focus/error/selection and explicit dividers are not removed. */
-@media(max-width:620px){html.zuno-fluid-page,html.zuno-fluid-page body{width:100%;max-width:100%;min-height:var(--zuno-viewport-height)}.zuno-fluid-page body{margin:0}.zuno-fluid-page .app,.zuno-fluid-page .container,.zuno-fluid-page .shell{width:100%;max-width:var(--zuno-page-max);padding-left:14px;padding-right:14px}.zuno-fluid-page .card{border-radius:18px}.zuno-fluid-page h1{font-size:clamp(22px,6vw,27px);line-height:1.08}.zuno-fluid-page h2{font-size:clamp(17px,5vw,22px)}.zuno-fluid-page p{line-height:1.42}.zuno-fluid-page .header{gap:10px}.zuno-fluid-page .zuno-brand-lockup .zuno-brand-head{width:30px!important;height:30px!important}.zuno-fluid-page .zuno-brand-lockup .zuno-brand-word{font-size:18px}.zuno-fluid-page .zuno-global-topbar,.zuno-fluid-page .zuno-canonical-nav{transform:translateZ(0);will-change:transform}html[data-zuno-page="pulso"] .zm-header{min-height:64px!important;padding-top:0!important}html[data-zuno-page="pulso"] .zm-brand-row{top:0!important}}
-@media(max-height:740px) and (max-width:520px){.zuno-fluid-page .app,.zuno-fluid-page .container,.zuno-fluid-page .shell{padding-top:10px}.zuno-fluid-page .card{padding-top:14px;padding-bottom:14px}.zuno-fluid-page .header{margin-top:0;margin-bottom:10px}.zuno-fluid-page .footer,.zuno-fluid-page footer{margin-top:10px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.zuno-fluid-page *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+
+@media(max-width:620px){
+  html.zuno-fluid-page,html.zuno-fluid-page body{width:100%;max-width:100%;min-height:var(--zuno-viewport-height)}
+  .zuno-fluid-page body{margin:0}
+  .zuno-fluid-page .app,.zuno-fluid-page .container,.zuno-fluid-page .shell{width:100%;max-width:var(--zuno-page-max);padding-left:14px;padding-right:14px}
+  .zuno-fluid-page .card{border-radius:18px}
+  .zuno-fluid-page h1{font-size:clamp(22px,6vw,27px);line-height:1.08}
+  .zuno-fluid-page h2{font-size:clamp(17px,5vw,22px)}
+  .zuno-fluid-page p{line-height:1.42}
+  .zuno-fluid-page .header{gap:10px}
+  .zuno-fluid-page .zuno-brand-lockup .zuno-brand-head{width:30px!important;height:30px!important}
+  .zuno-fluid-page .zuno-brand-lockup .zuno-brand-word{font-size:18px}
+  .zuno-fluid-page .zuno-global-topbar,.zuno-fluid-page .zuno-canonical-nav{transform:translateZ(0);will-change:transform}
+  html[data-zuno-page="pulso"] .zm-header{min-height:calc(64px + var(--zuno-safe-top))!important;padding-top:var(--zuno-safe-top)!important}
+  html[data-zuno-page="pulso"] .zm-brand-row{top:0!important}
+}
+@media(max-height:740px) and (max-width:520px){
+  .zuno-fluid-page .app,.zuno-fluid-page .container,.zuno-fluid-page .shell{padding-top:10px}
+  .zuno-fluid-page .card{padding-top:14px;padding-bottom:14px}
+  .zuno-fluid-page .header{margin-top:0;margin-bottom:10px}
+  .zuno-fluid-page .footer,.zuno-fluid-page footer{margin-top:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .zuno-fluid-page *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}

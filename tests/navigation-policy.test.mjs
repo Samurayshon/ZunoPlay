@@ -13,35 +13,36 @@ assert.ok(policy,'navigation policy must be exposed');
 assert.deepEqual([...policy.knownPages].sort(),fs.readdirSync('.').filter(file=>path.extname(file)==='.html').sort(),'every root HTML page must have an explicit navigation classification');
 
 const cases=[
-  ['index.html','',undefined,'member','global','global',true,'home'],
-  ['index.html','',undefined,'guest','public','brand',false,null],
-  ['salas.html','',undefined,'member','global','global',true,'rooms'],
-  ['pulso.html','',undefined,'member','global','global',true,'pulse'],
-  ['amigos.html','',undefined,'member','global','global',true,'central'],
-  ['comunidades.html','',undefined,'member','global','global',true,'central'],
-  ['notificacoes.html','',undefined,'member','global','global',true,'central'],
-  ['jogos.html','',undefined,'member','global','global',true,'central'],
-  ['conversas.html','',undefined,'member','global','global',true,'central'],
-  ['conversas.html','?conversation=abc',undefined,'member','contextual','contextual',false,null],
-  ['conversas.html','?user=abc',undefined,'member','contextual','contextual',false,null],
-  ['perfil.html','',undefined,'member','global','global',true,'profile'],
-  ['perfil.html','?user=abc',undefined,'member','contextual','contextual',false,null],
-  ['perfil.html','', 'settings','member','contextual','contextual',false,null],
-  ['avatar.html','',undefined,'member','contextual','contextual',false,null],
-  ['meu-xp.html','',undefined,'member','contextual','contextual',false,null],
-  ['historico.html','',undefined,'member','contextual','contextual',false,null],
-  ['sala.html','?room=abc',undefined,'member','immersive','feature',false,null],
-  ['zuno-stack.html','',undefined,'member','immersive','feature',false,null],
-  ['entrada.html','',undefined,'guest','public','brand',false,null],
-  ['login.html','',undefined,'guest','public','brand',false,null],
-  ['cadastro.html','',undefined,'guest','public','brand',false,null],
-  ['termos.html','',undefined,'guest','public','legal',false,null],
-  ['privacidade.html','',undefined,'guest','public','legal',false,null]
+  ['index.html','',undefined,'member','ROOT','global','global',true,'home'],
+  ['index.html','',undefined,'guest','AUTH','public','brand',false,null],
+  ['salas.html','',undefined,'member','ROOT','global','global',true,'rooms'],
+  ['pulso.html','',undefined,'member','ROOT','global','global',true,'pulse'],
+  ['amigos.html','',undefined,'member','SECONDARY','contextual','contextual',false,null],
+  ['comunidades.html','',undefined,'member','SECONDARY','contextual','contextual',false,null],
+  ['notificacoes.html','',undefined,'member','SECONDARY','contextual','contextual',false,null],
+  ['jogos.html','',undefined,'member','SECONDARY','contextual','contextual',false,null],
+  ['conversas.html','',undefined,'member','SECONDARY','contextual','contextual',false,null],
+  ['conversas.html','?conversation=abc',undefined,'member','DETAIL','contextual','contextual',false,null],
+  ['conversas.html','?user=abc',undefined,'member','DETAIL','contextual','contextual',false,null],
+  ['perfil.html','',undefined,'member','ROOT','global','global',true,'profile'],
+  ['perfil.html','?user=abc',undefined,'member','DETAIL','contextual','contextual',false,null],
+  ['perfil.html','', 'settings','member','SECONDARY','contextual','contextual',false,null],
+  ['avatar.html','',undefined,'member','IMMERSIVE','immersive','feature',false,null],
+  ['meu-xp.html','',undefined,'member','SECONDARY','contextual','contextual',false,null],
+  ['historico.html','',undefined,'member','DETAIL','contextual','contextual',false,null],
+  ['sala.html','?room=abc',undefined,'member','IMMERSIVE','immersive','feature',false,null],
+  ['zuno-stack.html','',undefined,'member','IMMERSIVE','immersive','feature',false,null],
+  ['entrada.html','',undefined,'guest','AUTH','public','brand',false,null],
+  ['login.html','',undefined,'guest','AUTH','public','brand',false,null],
+  ['cadastro.html','',undefined,'guest','AUTH','public','brand',false,null],
+  ['termos.html','',undefined,'guest','AUTH','public','legal',false,null],
+  ['privacidade.html','',undefined,'guest','AUTH','public','legal',false,null]
 ];
 
-for(const [page,search,view,authState,mode,header,bottomNav,active] of cases){
+for(const [page,search,view,authState,kind,mode,header,bottomNav,active] of cases){
   const actual=policy.resolve({page,search,view,authState});
   assert.equal(actual.known,true,`${page} (${view||search||'default'}) must be known`);
+  assert.equal(actual.kind,kind,`${page} route kind`);
   assert.equal(actual.mode,mode,`${page} mode`);
   assert.equal(actual.header,header,`${page} header`);
   assert.equal(actual.bottomNav,bottomNav,`${page} bottom navigation`);
@@ -67,4 +68,5 @@ vm.runInNewContext(source,browserContext,{filename:'zuno-navigation-policy-v1.js
 assert.equal(root.dataset.zunoNavigationMode,'contextual','the browser annotation must expose the resolved mode');
 assert.equal(root.dataset.zunoNavigationHeader,'contextual','the browser annotation must expose the resolved header');
 assert.equal(root.dataset.zunoNavigationView,'thread','the browser annotation must expose the resolved view');
+assert.equal(root.dataset.zunoRouteKind,'DETAIL','the browser annotation must expose the route class');
 assert.equal('zunoNavigationActive' in root.dataset,false,'contextual screens must not expose a global active destination');

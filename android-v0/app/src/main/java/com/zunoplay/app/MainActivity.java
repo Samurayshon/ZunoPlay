@@ -43,8 +43,8 @@ import java.util.Map;
 public class MainActivity extends Activity {
     private static final String TAG = "ZunoPlayAndroid";
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
-    private static final String BUILD_ID = "android-v0-stability-v4";
-    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_stability_v4";
+    private static final String BUILD_ID = "android-v0-edge-to-edge-v5";
+    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_edge_to_edge_v5";
     private static final int PERMISSION_REQUEST = 7001;
     private static final long BOOT_TIMEOUT_MS = 12000L;
     private static final int MAX_RENDERER_RECOVERIES = 2;
@@ -55,6 +55,10 @@ public class MainActivity extends Activity {
     private final Handler bootHandler = new Handler(Looper.getMainLooper());
     private int bootRecoveryAttempts = 0;
     private int rendererRecoveryAttempts = 0;
+    private int safeInsetLeft = 0;
+    private int safeInsetTop = 0;
+    private int safeInsetRight = 0;
+    private int safeInsetBottom = 0;
     private boolean screenOff = false;
     private boolean activityResumed = false;
     private boolean screenStateReceiverRegistered = false;
@@ -96,7 +100,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         rootView = new FrameLayout(this);
-        rootView.setBackgroundColor(Color.rgb(7, 8, 23));
+        rootView.setBackgroundColor(Color.rgb(2, 4, 13));
         setContentView(rootView);
 
         configureEdgeToEdgeSafely();
@@ -111,7 +115,7 @@ public class MainActivity extends Activity {
         try {
             WebView newWebView = new WebView(this);
             webView = newWebView;
-            newWebView.setBackgroundColor(Color.rgb(7, 8, 23));
+            newWebView.setBackgroundColor(Color.rgb(2, 4, 13));
             newWebView.setFitsSystemWindows(false);
             newWebView.setKeepScreenOn(false);
 
@@ -215,6 +219,7 @@ public class MainActivity extends Activity {
             super.onPageFinished(view, url);
             if (url == null || !url.startsWith(START_URL)) return;
             bootHandler.removeCallbacks(bootWatchdog);
+            publishSafeAreaToWeb();
             purgeLegacyServiceWorkerOnce(view);
         }
 
@@ -383,8 +388,12 @@ public class MainActivity extends Activity {
         LinearLayout panel = new LinearLayout(this);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setGravity(Gravity.CENTER);
-        panel.setPadding(dp(28), dp(28), dp(28), dp(28));
-        panel.setBackgroundColor(Color.rgb(4, 4, 11));
+        panel.setPadding(
+                dp(28) + safeInsetLeft,
+                dp(28) + safeInsetTop,
+                dp(28) + safeInsetRight,
+                dp(28) + safeInsetBottom);
+        panel.setBackgroundColor(Color.rgb(2, 4, 13));
 
         TextView title = new TextView(this);
         title.setText("Não conseguimos iniciar agora");
@@ -432,8 +441,15 @@ public class MainActivity extends Activity {
         try {
             Window window = getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            window.setStatusBarColor(Color.rgb(4, 5, 12));
-            window.setNavigationBarColor(Color.rgb(4, 5, 12));
+            window.setStatusBarColor(Color.rgb(2, 4, 13));
+            window.setNavigationBarColor(Color.rgb(2, 4, 13));
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                WindowManager.LayoutParams attributes = window.getAttributes();
+                attributes.layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                window.setAttributes(attributes);
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.setDecorFitsSystemWindows(false);
@@ -451,13 +467,13 @@ public class MainActivity extends Activity {
                                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
             }
 
-            applySafeAreaInsets();
+            publishSafeAreaInsets();
         } catch (RuntimeException error) {
             Log.w(TAG, "Safe-area configuration failed; continuing with system defaults", error);
         }
     }
 
-    private void applySafeAreaInsets() {
+    private void publishSafeAreaInsets() {
         if (rootView == null) return;
 
         rootView.setOnApplyWindowInsetsListener((view, insets) -> {
@@ -489,14 +505,36 @@ public class MainActivity extends Activity {
                 }
             }
 
-            view.setPadding(left, top, right, bottom);
-            Log.d(TAG, "Applied system safe area: left=" + left
+            safeInsetLeft = left;
+            safeInsetTop = top;
+            safeInsetRight = right;
+            safeInsetBottom = bottom;
+            view.setPadding(0, 0, 0, 0);
+            publishSafeAreaToWeb();
+            Log.d(TAG, "Published web safe area: left=" + left
                     + " top=" + top
                     + " right=" + right
                     + " bottom=" + bottom);
             return insets;
         });
         rootView.requestApplyInsets();
+    }
+
+    private void publishSafeAreaToWeb() {
+        WebView view = webView;
+        if (view == null) return;
+
+        String js = "(function(){var r=document.documentElement;if(!r)return;"
+                + "r.style.setProperty('--zuno-native-safe-left','" + safeInsetLeft + "px');"
+                + "r.style.setProperty('--zuno-native-safe-top','" + safeInsetTop + "px');"
+                + "r.style.setProperty('--zuno-native-safe-right','" + safeInsetRight + "px');"
+                + "r.style.setProperty('--zuno-native-safe-bottom','" + safeInsetBottom + "px');"
+                + "r.dataset.zunoNativeShell='android';})()";
+        try {
+            view.evaluateJavascript(js, null);
+        } catch (RuntimeException error) {
+            Log.w(TAG, "Could not publish safe area to web content", error);
+        }
     }
 
     private boolean hasMediaPermissions() {

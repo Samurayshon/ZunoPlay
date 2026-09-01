@@ -1,8 +1,8 @@
 (()=>{
-if(window.__ZUNOPLAY_GLOBAL_BOOT_V350__)return;window.__ZUNOPLAY_GLOBAL_BOOT_V350__=true;
-const V='350',page=(location.pathname.split('/').pop()||'index.html').toLowerCase(),home=page==='index.html',moments=page==='pulso.html',pub=new Set(['login.html','cadastro.html','entrada.html']),social=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'],profile=['perfil.html','avatar.html'],rooms=['salas.html'],games=['jogos.html','historico.html','zuno-stack.html'];
+if(window.__ZUNOPLAY_GLOBAL_BOOT_V351__)return;window.__ZUNOPLAY_GLOBAL_BOOT_V351__=true;
+const V='351',page=(location.pathname.split('/').pop()||'index.html').toLowerCase(),home=page==='index.html',moments=page==='pulso.html',pub=new Set(['login.html','cadastro.html','entrada.html']),social=['amigos.html','conversas.html','comunidades.html','perfil.html','notificacoes.html'],profile=['perfil.html','avatar.html'],rooms=['salas.html'],games=['jogos.html','historico.html','zuno-stack.html'];
 document.documentElement.classList.add('zuno-fluid-page');document.documentElement.dataset.zunoPage=page.replace('.html','');
-if('serviceWorker'in navigator&&page==='perfil.html'){const key='zuno-profile-sw-v350-reloaded';navigator.serviceWorker.addEventListener('controllerchange',()=>{if(sessionStorage.getItem(key)==='1')return;sessionStorage.setItem(key,'1');location.reload()});window.addEventListener('load',()=>navigator.serviceWorker.getRegistration().then(reg=>reg?.update()).catch(()=>{}),{once:true})}
+if('serviceWorker'in navigator&&page==='perfil.html'){const key='zuno-profile-sw-v351-reloaded';navigator.serviceWorker.addEventListener('controllerchange',()=>{if(sessionStorage.getItem(key)==='1')return;sessionStorage.setItem(key,'1');location.reload()});window.addEventListener('load',()=>navigator.serviceWorker.getRegistration().then(reg=>reg?.update()).catch(()=>{}),{once:true})}
 const ver=f=>f+(f.includes('?')?'&':'?')+'v='+V;
 function css(id,f){if(document.getElementById(id))return;const l=document.createElement('link');l.id=id;l.rel='stylesheet';l.href=new URL(ver(f),location.href).href;document.head.appendChild(l)}
 function js(id,f,done){const old=document.getElementById(id);if(old){if(old.dataset.loaded==='1')done?.();else if(done)old.addEventListener('load',done,{once:true});return}const s=document.createElement('script');s.id=id;s.src=new URL(ver(f),location.href).href;s.defer=true;s.onload=()=>{s.dataset.loaded='1';done?.()};s.onerror=()=>console.error('ZunoPlay: falha ao carregar '+f);document.head.appendChild(s)}
@@ -20,9 +20,11 @@ if(home){syncHomeShell();new MutationObserver(records=>{if(records.some(r=>r.typ
 if(social.includes(page)){css('zunoplay-social-style','./zuno-social.css');js('zunoplay-social-script','./zuno-social.js')}
 if(page==='amigos.html'){loadFriendsExperience();loadFriendRequests()}
 if(page==='perfil.html')loadFriendRequests();
+if(rooms.includes(page)){css('zunoplay-rooms-hub-v2-style','./zuno-rooms-hub-v2.css');css('zunoplay-rooms-standard-v1-style','./zuno-rooms-standard-v1.css');js('zunoplay-rooms-hub-v2-script','./zuno-rooms-hub-v2.js');js('zunoplay-room-invite-entry-v1-script','./zuno-room-invite-entry-v1.js')}
 if(games.includes(page)){css('zunoplay-game-progression-style','./zuno-game-progression.css');js('zunoplay-game-progression','./zuno-game-progression.js');css('zunoplay-games-stage7-style','./zuno-games-stage7.css');js('zunoplay-games-stage7-script','./zuno-games-stage7.js')}
 if(page==='zuno-stack.html'){js('zunoplay-room-game-return','./zuno-room-game-return.js');js('zunoplay-stack-lobby-v2','./zuno-stack-lobby-v2.js')}
 if(!home&&!pub.has(page)&&!moments)css('zunoplay-ui-components','./zuno-ui-components.css');
 if(profile.includes(page)){css('zunoplay-profile-avatar-stage5-style','./zuno-profile-avatar-stage5.css');js('zunoplay-profile-avatar-stage5-script','./zuno-profile-avatar-stage5.js')}
 if(!home)js('zunoplay-realtime-global','./realtime-global.js');else{const loadHomeRealtime=()=>{if(document.documentElement.dataset.zunoAuthState==='member')js('zunoplay-realtime-global','./realtime-global.js')};loadHomeRealtime();new MutationObserver(loadHomeRealtime).observe(document.documentElement,{attributes:true,attributeFilter:['data-zuno-auth-state']})}
+css('zunoplay-modernization-v1-style','./zuno-modernization-v1.css');
 })();

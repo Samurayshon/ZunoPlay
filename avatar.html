@@ -9,13 +9,13 @@
 <link rel="stylesheet" href="zuno-avatar-simple.css?v=5">
 <link rel="stylesheet" href="zuno-avatar-simple-v4.css?v=5">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="nav.js?v=350"></script>
+<script defer src="nav.js?v=351"></script>
 <script id="zunoplay-avatar-renderer" defer src="avatar-renderer.js?v=347"></script>
 <script defer src="zuno-avatar-simple.js?v=2"></script>
 </head>
 <body class="zuno-avatar-simple">
 <main class="avatar-simple-app" aria-label="Avatar Studio ZunoPlay">
-  <section class="avatar-simple-intro"><div><h1>Escolha seu avatar</h1><p>Seu avatar representa você dentro do ZunoPlay. O Zuno é o mascote e guia oficial da plataforma.</p></div><div class="avatar-simple-badge">2 AVATARES OFICIAIS</div></section>
+  <section class="avatar-simple-intro"><button class="avatar-back" type="button" onclick="history.length>1?history.back():location.href='perfil.html'" aria-label="Voltar">‹</button><div><h1>Escolha seu avatar</h1><p>Seu avatar representa você dentro do ZunoPlay. O Zuno é o mascote e guia oficial da plataforma.</p></div><div class="avatar-simple-badge">2 AVATARES OFICIAIS</div></section>
   <section class="avatar-choice-grid" aria-label="Escolha do avatar oficial">
     <button class="avatar-choice is-active" type="button" data-model="masculino" aria-label="Selecionar avatar masculino"><img id="simpleMaleThumb" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Avatar masculino oficial ZunoPlay"><span class="avatar-choice-copy"><strong>Masculino</strong><span>Street Z oficial</span></span><span class="avatar-choice-check">✓</span></button>
     <button class="avatar-choice" type="button" data-model="feminino" aria-label="Selecionar avatar feminino"><img id="simpleFemaleThumb" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Avatar feminino oficial ZunoPlay"><span class="avatar-choice-copy"><strong>Feminino</strong><span>Street Z oficial</span></span><span class="avatar-choice-check">✓</span></button>

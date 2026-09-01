@@ -28,7 +28,7 @@ jobs:
           set -euo pipefail
           grep -q 'voz-sala-v2.js?v=260' sala.html
           grep -q 'zuno-room-access-v1.js?v=260' sala.html
-          grep -q 'zuno-room-invite-entry-v1.js?v=260' salas.html
+          grep -q "js('zunoplay-room-invite-entry-v1-script','./zuno-room-invite-entry-v1.js')" nav.js
           grep -q "canPublish:seatIndex!==null" voz-sala-v2.js
           grep -q "if(!permission.canPublish)throw new Error('speaker_required')" voz-sala-v2.js
           grep -q 'requestMic' zuno-room-access-v1.js
