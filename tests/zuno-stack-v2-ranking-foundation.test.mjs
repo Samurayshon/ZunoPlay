@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {createRankingSeason,deriveRankingFacts,rankingProcessingKey,validateVerifiedResultForRanking} from '../src/zuno-stack-v2/ranking/ranking-contract.mjs';
+const season=createRankingSeason({seasonId:'s1',startsAt:0});
+const base=(mode,players)=>({type:'MATCH_RESULT',matchId:`m-${mode}`,mode,players,startedAt:10,finishedAt:20,result:'finished',score:300,performance:players.map((playerId,i)=>({playerId,score:100+i*10,remainingTiles:i})),valid:true,antiFarmFlags:[]});
+test('season and processing key are server versioned',()=>{const r=base('solo',['p1']);assert.equal(rankingProcessingKey({season,result:r}),'s1:solo:m-solo:ranking-r1')});
+test('invalid or client-shaped result fails closed',()=>{assert.equal(validateVerifiedResultForRanking({mode:'solo',valid:true},{season}).eligible,false);assert.equal(validateVerifiedResultForRanking({...base('solo',['p1']),type:'CLIENT_RESULT'},{season}).eligible,false)});
+test('solo uses verified player score',()=>{assert.deepEqual(deriveRankingFacts(base('solo',['p1'])).deltas,{p1:100})});
+test('trio applies verified team score equally',()=>{assert.deepEqual(deriveRankingFacts(base('trio',['a','b','c'])).deltas,{a:300,b:300,c:300})});
+test('pvp requires server winner and scores win deterministically',()=>{const r={...base('pvp',['a','b']),winnerId:'b'};assert.deepEqual(deriveRankingFacts(r).deltas,{a:0,b:3});assert.throws(()=>deriveRankingFacts({...r,winnerId:undefined}),/PVP_SERVER_WINNER_REQUIRED/)});
+test('duplicate participants and blocking antifarm flag are ineligible',()=>{assert.equal(validateVerifiedResultForRanking(base('pvp',['a','a']),{season}).eligible,false);assert.equal(validateVerifiedResultForRanking({...base('solo',['p1']),antiFarmFlags:['farm']},{season,blockingAntiFarmFlags:['farm']}).eligible,false)});
+test('result outside season is rejected',()=>{const closed=createRankingSeason({seasonId:'closed',startsAt:0,endsAt:15});assert.equal(validateVerifiedResultForRanking(base('solo',['p1']),{season:closed}).eligible,false)});
