@@ -5,6 +5,7 @@ on:
     branches:
       - 'codex/zuno-stack-v2-phase-11-final-polish'
       - 'codex/zuno-stack-v2-phase-11-p0-solo-fixes'
+      - 'codex/zuno-stack-v2-phase-11-final-expansion'
   pull_request:
     paths:
       - 'src/zuno-stack-v2/**'
@@ -47,19 +48,17 @@ jobs:
           node --test --test-name-pattern='Shell Policy Guard' tests/zuno-stack-v2-phase11-p0-shell-fresh-round.test.mjs
       - name: Fresh Solo Round
         run: node --test --test-name-pattern='Fresh Solo Round' tests/zuno-stack-v2-phase11-p0-shell-fresh-round.test.mjs
-      - name: Frozen source mutation guard with controlled Shift exception
+      - name: Frozen source mutation guard with final Solo expansion exception
         run: |
           BASE=245940b14ddfb4e654e52b1a1a7619651c3a36a6
           git diff --exit-code "$BASE" -- src/zuno-stack-v2/core src/zuno-stack-v2/server src/zuno-stack-v2/trio src/zuno-stack-v2/pvp src/zuno-stack-v2/ranking src/zuno-stack-v2/player-authority src/zuno-stack-v2/aura
-          changed="$(git diff --name-only "$BASE" -- src/zuno-stack-v2/solo)"
-          test "$changed" = "src/zuno-stack-v2/solo/solo-rules.mjs"
-          git diff --unified=0 "$BASE" -- src/zuno-stack-v2/solo/solo-rules.mjs > /tmp/solo-shift.patch
-          grep -q '^+  USE_POWER,$' /tmp/solo-shift.patch
-          grep -q '^+  usePowerTransition$' /tmp/solo-shift.patch
-          grep -q '^+  const transitions={...createCoreTransitions(),\[USE_POWER\]:usePowerTransition};$' /tmp/solo-shift.patch
-          grep -q '^+  const rules=createModeRules({modeId:SOLO_MODE,playerSlots:1,transitions,powerCatalog});$' /tmp/solo-shift.patch
-          test "$(grep -c '^+[^+]' /tmp/solo-shift.patch)" -eq 5
-          test "$(grep -c '^-[^-]' /tmp/solo-shift.patch)" -eq 2
+          changed="$(git diff --name-only "$BASE" -- src/zuno-stack-v2/solo | sort)"
+          allowed="$(printf '%s\n' src/zuno-stack-v2/solo/solo-expansion.mjs src/zuno-stack-v2/solo/solo-rules.mjs src/zuno-stack-v2/solo/solo-session.mjs src/zuno-stack-v2/solo/solo-view.mjs | sort)"
+          test "$changed" = "$allowed"
+          node --test tests/zuno-stack-v2-phase11-final-expansion.test.mjs
+          grep -q "SOLO_RULESET_VERSION='solo-complete-r1'" src/zuno-stack-v2/solo/solo-rules.mjs
+          grep -q "DEFAULT_SOLO_RESOURCES=Object.freeze({undo:3,hint:3,rescue:1,powerShift:2})" src/zuno-stack-v2/solo/solo-rules.mjs
+          grep -q "finalExpansion:true" zuno-stack-v2-solo-ui.mjs
       - name: Device validation marker
         run: |
           echo 'DEVICE_VALIDATION_REQUIRED: CI proxy gates do not certify physical Android FPS, touch latency, memory or frame pacing.'
