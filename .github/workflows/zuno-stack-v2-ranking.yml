@@ -1,0 +1,29 @@
+name: Zuno Stack V2 Ranking
+
+on:
+  push:
+    branches:
+      - 'codex/zuno-stack-v2-phase-8-*'
+  pull_request:
+    paths:
+      - 'src/zuno-stack-v2/**'
+      - 'tests/zuno-stack-v2-*.test.mjs'
+      - 'docs/zuno-stack-v2/**'
+      - '.github/workflows/zuno-stack-v2-ranking.yml'
+
+jobs:
+  ranking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate ranking syntax
+        run: |
+          node --check src/zuno-stack-v2/ranking/ranking-contract.mjs
+          node --check src/zuno-stack-v2/ranking/ranking-processor.mjs
+          node --check src/zuno-stack-v2/ranking/ranking-storage.mjs
+      - name: Validate Ranking and frozen phases
+        run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs tests/zuno-stack-v2-match-*.test.mjs tests/zuno-stack-v2-trio-*.test.mjs tests/zuno-stack-v2-pvp-*.test.mjs tests/zuno-stack-v2-ranking-*.test.mjs
