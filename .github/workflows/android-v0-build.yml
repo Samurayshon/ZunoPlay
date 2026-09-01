@@ -104,7 +104,7 @@ jobs:
           profile: pixel_2
           cores: 2
           ram-size: 2048M
-          emulator-build: 14472402
+          emulator-build: 14214601
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -camera-back none -camera-front none
           script: bash android-v0/ci/runtime-smoke.sh
