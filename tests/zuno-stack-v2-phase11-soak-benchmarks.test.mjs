@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {performance} from 'node:perf_hooks';
 import {createSoloSession,startSoloSession} from '../src/zuno-stack-v2/solo/solo-session.mjs';
 import {projectSoloView,diffSoloView} from '../src/zuno-stack-v2/solo/solo-view.mjs';
-import {createTrioSession,projectTrioState} from '../src/zuno-stack-v2/trio/trio-session.mjs';
-import {createPvpSession,projectPvpState} from '../src/zuno-stack-v2/pvp/pvp-session.mjs';
+import {createTrioSession,projectTrioSession} from '../src/zuno-stack-v2/trio/trio-session.mjs';
+import {createPvpSession,projectPvpSession} from '../src/zuno-stack-v2/pvp/pvp-session.mjs';
 import {createAuthoritativeMatch,reconnectAuthoritativeMatch,reconcileAuthoritativeMatch,snapshotAuthoritativeMatch} from '../src/zuno-stack-v2/server/authoritative-match-engine.mjs';
 import {createRankingStore,processVerifiedRankingResult} from '../src/zuno-stack-v2/ranking/ranking-processor.mjs';
 import {createPlayerAuthorityStore,processVerifiedPlayerAuthorityResult} from '../src/zuno-stack-v2/player-authority/player-authority-processor.mjs';
@@ -16,7 +16,7 @@ const verified=i=>({type:'MATCH_RESULT',matchId:`bench-${i}`,mode:'solo',players
 test('global serialization benchmark remains bounded for representative frozen states',()=>{
  const solo=startSoloSession(createSoloSession({seed:'bench-solo',playerId:'p1'})); const match=createAuthoritativeMatch({matchId:'bench',mode:'solo',players:['p1'],state:solo.state,context:solo.context});
  const trio=createTrioSession({playerIds:['p1','p2','p3'],seed:'bench-trio'}); const pvp=createPvpSession({playerIds:['p1','p2'],seed:'bench-pvp'});
- const samples=[measure('snapshot',1000,()=>JSON.stringify(snapshotAuthoritativeMatch(match))),measure('reconnect',1000,()=>JSON.stringify(reconnectAuthoritativeMatch(match))),measure('desync',1000,()=>JSON.stringify(reconcileAuthoritativeMatch(match,{revision:-1}))),measure('trio-projection',1000,()=>JSON.stringify(projectTrioState(trio,'p1'))),measure('pvp-projection',1000,()=>JSON.stringify(projectPvpState(pvp,'p1')))];
+ const samples=[measure('snapshot',1000,()=>JSON.stringify(snapshotAuthoritativeMatch(match))),measure('reconnect',1000,()=>JSON.stringify(reconnectAuthoritativeMatch(match))),measure('desync',1000,()=>JSON.stringify(reconcileAuthoritativeMatch(match,{revision:-1}))),measure('trio-projection',1000,()=>JSON.stringify(projectTrioSession(trio,'p1'))),measure('pvp-projection',1000,()=>JSON.stringify(projectPvpSession(pvp,'p1')))];
  for(const sample of samples){assert.ok(sample.perOpMs<50,`${sample.label} ${sample.perOpMs.toFixed(3)}ms/op`);assert.ok(sample.totalMs<20000,`${sample.label} benchmark runaway`);}
 });
 
