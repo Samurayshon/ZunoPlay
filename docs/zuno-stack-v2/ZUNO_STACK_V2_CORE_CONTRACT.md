@@ -122,7 +122,7 @@ O Core deve suportar quantidade configurável de camadas. A meta de 12 camadas d
 
 ## 7. Tray e trio
 
-A capacidade padrão contratada é 7. O Core não deve permitir overflow silencioso.
+A capacidade contratada para os modos oficiais do Zuno Stack V2 é 7. Qualquer variação futura exige alteração explícita de ruleset/contrato; o Core nunca deve permitir overflow silencioso.
 
 Ao aceitar uma peça, a resolução de trio deve ocorrer dentro da mesma transição conforme ruleset. O algoritmo precisa ser determinístico e independente da ordem visual dos elementos DOM.
 
