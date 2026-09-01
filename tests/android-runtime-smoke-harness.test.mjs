@@ -10,7 +10,7 @@ assert.match(smoke, /recover_adb_device\(\)/, 'runtime smoke must attempt bounde
 assert.match(smoke, /adb wait-for-device/, 'ADB recovery must wait for the emulator transport to reconnect');
 assert.match(smoke, /adb kill-server/, 'ADB recovery must be able to reset a wedged host transport');
 assert.match(smoke, /start_logcat/, 'runtime smoke must restart continuous logcat after a successful transport recovery');
-assert.match(smoke, /not classifying this as a ZunoPlay app crash/, 'ADB loss must not be mislabeled as an app crash');
+assert.match(smoke, /not classifying this as a ZunoPlay app crash/, 'ADB loss must not be mislabeled as a ZunoPlay app crash');
 assert.match(smoke, /exit 2/, 'ADB infrastructure failures must use a distinct exit code');
 assert.match(smoke, /timeout --foreground "\$\{ADB_TIMEOUT_SECONDS\}s" adb/, 'ADB commands must be time-bounded');
 assert.match(smoke, /adb logcat -v threadtime >> android-runtime-logcat\.txt/, 'logcat must stream before launch and preserve evidence across reconnects');
@@ -22,8 +22,11 @@ assert.match(smoke, /assert_app_alive "final smoke-test verification"/, 'final p
 assert.match(smoke, /valid_matches = .*top\/bottom web safe-area/s, 'safe-area proof must tolerate early zero callbacks but require a later non-zero publication');
 
 assert.match(workflow, /\n  pull_request:\n/, 'Android APK workflow must run on pull requests that change Android runtime code');
-assert.match(workflow, /Runtime smoke test on Android 14[\s\S]*?timeout-minutes: 12/, 'emulator runtime smoke must have its own timeout');
+assert.match(workflow, /runs-on: macos-15-intel/, 'runtime emulator must use the Intel macOS runner for HVF acceleration');
+assert.match(workflow, /Runtime smoke test on Android 14[\s\S]*?timeout-minutes: 22/, 'emulator runtime smoke must retain a bounded timeout with enough room for the HVF cold boot');
+assert.match(workflow, /emulator-boot-timeout: 900/, 'Android 14 HVF cold boot must have an explicit bounded boot timeout');
 assert.match(workflow, /target: google_apis/, 'safe-area runtime proof must use an image with normal Android system bars');
+assert.match(workflow, /arch: x86_64/, 'Intel macOS HVF runtime proof must keep the x86_64 Android image');
 assert.match(workflow, /profile: pixel_2[\s\S]*?cores: 2[\s\S]*?ram-size: 2048M/, 'runtime emulator must use a lightweight phone profile without oversubscribing CPU');
 assert.match(workflow, /emulator-build: 15507667/, 'runtime emulator must pin the stable 36.6.11 build for the current isolation attempt');
 assert.match(workflow, /emulator-options: .* -gpu software(?:\s|$)/, 'runtime emulator must use the supported software graphics selector');
