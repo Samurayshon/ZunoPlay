@@ -1,0 +1,28 @@
+name: Zuno Stack V2 Trio
+
+on:
+  push:
+    branches:
+      - 'codex/zuno-stack-v2-phase-5-*'
+  pull_request:
+    paths:
+      - 'src/zuno-stack-v2/**'
+      - 'tests/zuno-stack-v2-*.test.mjs'
+      - '.github/workflows/zuno-stack-v2-trio.yml'
+
+jobs:
+  trio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate V2 Trio syntax
+        run: |
+          node --check src/zuno-stack-v2/trio/trio-rules.mjs
+          node --check src/zuno-stack-v2/trio/trio-session.mjs
+          node --check src/zuno-stack-v2/trio/trio-authority.mjs
+      - name: Validate Frozen Core Solo Match Server and Trio
+        run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs tests/zuno-stack-v2-match-*.test.mjs tests/zuno-stack-v2-trio-*.test.mjs
