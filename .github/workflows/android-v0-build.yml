@@ -101,6 +101,9 @@ jobs:
           mkdir -p android-emulator-crash-evidence
           nohup bash -c '
             known_qemu=""
+            find_real_qemu() {
+              pgrep -f "^[^ ]*/qemu-system-x86_64-headless( |$)" | tr "\n" " " || true
+            }
             while true; do
               {
                 echo "===== $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
@@ -112,7 +115,7 @@ jobs:
                 done
                 echo "--- emulator/qemu/adb ---"
                 ps -eo pid,ppid,state,%cpu,%mem,rss,vsz,etime,cmd | grep -E "[e]mulator|[q]emu|[a]db" || true
-                current_qemu=$(pgrep -f "qemu-system|emulator.*-avd" | tr "\n" " " || true)
+                current_qemu=$(find_real_qemu)
                 if [ -n "$current_qemu" ]; then
                   known_qemu="$current_qemu"
                 fi
@@ -125,7 +128,7 @@ jobs:
                 echo
               } >> android-runtime-monitor.txt 2>&1
 
-              current_qemu=$(pgrep -f "qemu-system|emulator.*-avd" | tr "\n" " " || true)
+              current_qemu=$(find_real_qemu)
               if [ -n "$known_qemu" ] && [ -z "$current_qemu" ]; then
                 {
                   echo "===== QEMU DISAPPEARED $(date -u +%Y-%m-%dT%H:%M:%SZ) ====="
