@@ -1,0 +1,6 @@
+import test from'node:test';import assert from'node:assert/strict';import{readFile}from'node:fs/promises';
+const read=p=>readFile(new URL(`../${p}`,import.meta.url),'utf8');
+test('games catalog exposes V2 without replacing legacy Stack',async()=>{const html=await read('jogos.html');assert.match(html,/zuno-stack-v2-solo\.html/);assert.match(html,/zuno-stack\.html/);assert.match(html,/VERSÃO ATUAL/);assert.match(html,/RELEASE CANDIDATE/)});
+test('V2 Solo UI imports frozen session and projection instead of duplicating rules',async()=>{const ui=await read('zuno-stack-v2-solo-ui.mjs');assert.match(ui,/solo-session\.mjs/);assert.match(ui,/solo-view\.mjs/);assert.doesNotMatch(ui,/trayCapacity\s*=|SOLO_RULESET_VERSION\s*=/)});
+test('V2 validation surface carries semantic and accessibility affordances',async()=>{const html=await read('zuno-stack-v2-solo.html'),css=await read('zuno-stack-v2-solo.css');assert.match(html,/aria-live="polite"/);assert.match(html,/aria-label="Ações"/);assert.match(css,/min-height:48px/);assert.match(css,/prefers-reduced-motion:reduce/)});
+test('V2 validation surface states XP and rewards are disabled',async()=>{const html=await read('zuno-stack-v2-solo.html');assert.match(html,/XP\/recompensas desativados/)})
