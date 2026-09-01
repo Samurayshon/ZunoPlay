@@ -43,8 +43,8 @@ import java.util.Map;
 public class MainActivity extends Activity {
     private static final String TAG = "ZunoPlayAndroid";
     private static final String START_URL = "https://samurayshon.github.io/ZunoPlay/";
-    private static final String BUILD_ID = "android-v0-edge-to-edge-v5";
-    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_edge_to_edge_v5";
+    private static final String BUILD_ID = "android-v0-safe-frame-v6";
+    private static final String SW_RESET_KEY = "zuno_native_sw_reset_android_v0_safe_frame_v6";
     private static final int PERMISSION_REQUEST = 7001;
     private static final long BOOT_TIMEOUT_MS = 12000L;
     private static final int MAX_RENDERER_RECOVERIES = 2;
@@ -180,9 +180,7 @@ public class MainActivity extends Activity {
     }
 
     private WebViewClient createStableWebViewClient() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return new Api26StableWebViewClient();
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return new Api26StableWebViewClient();
         return new StableWebViewClient();
     }
 
@@ -191,13 +189,9 @@ public class MainActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri uri = request != null ? request.getUrl() : null;
             if (uri == null) return true;
-
             String host = uri.getHost();
             String scheme = uri.getScheme();
-            if ("https".equalsIgnoreCase(scheme) && isAllowedWebHost(host)) {
-                return false;
-            }
-
+            if ("https".equalsIgnoreCase(scheme) && isAllowedWebHost(host)) return false;
             if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, uri));
@@ -226,9 +220,7 @@ public class MainActivity extends Activity {
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
-            if (request != null && request.isForMainFrame()) {
-                showNativeRecovery("Não foi possível carregar o ZunoPlay.");
-            }
+            if (request != null && request.isForMainFrame()) showNativeRecovery("Não foi possível carregar o ZunoPlay.");
         }
     }
 
@@ -249,33 +241,24 @@ public class MainActivity extends Activity {
             destroySpecificWebView(deadView);
             return;
         }
-
         destroyCurrentWebView(false);
         rendererRecoveryAttempts++;
-
         if (rendererRecoveryAttempts <= MAX_RENDERER_RECOVERIES) {
-            bootHandler.postDelayed(
-                    () -> createWebViewAndLoad(didCrash ? "renderer_crash" : "renderer_reclaimed"),
-                    350L
-            );
+            bootHandler.postDelayed(() -> createWebViewAndLoad(didCrash ? "renderer_crash" : "renderer_reclaimed"), 350L);
             return;
         }
-
         showNativeRecovery("O mecanismo de exibição do Android encerrou repetidamente. Atualize o Android System WebView/Chrome e tente novamente.");
     }
 
     private boolean isAllowedWebHost(String host) {
         if (host == null) return false;
         String normalized = host.toLowerCase();
-        return normalized.equals("samurayshon.github.io")
-                || normalized.equals("cdn.jsdelivr.net")
-                || normalized.equals("unpkg.com")
-                || normalized.endsWith(".supabase.co");
+        return normalized.equals("samurayshon.github.io") || normalized.equals("cdn.jsdelivr.net")
+                || normalized.equals("unpkg.com") || normalized.endsWith(".supabase.co");
     }
 
     private boolean isTrustedOrigin(Uri origin) {
-        return origin != null
-                && "https".equalsIgnoreCase(origin.getScheme())
+        return origin != null && "https".equalsIgnoreCase(origin.getScheme())
                 && "samurayshon.github.io".equalsIgnoreCase(origin.getHost());
     }
 
@@ -284,11 +267,8 @@ public class MainActivity extends Activity {
             IntentFilter filter = new IntentFilter();
             filter.addAction(Intent.ACTION_SCREEN_OFF);
             filter.addAction(Intent.ACTION_SCREEN_ON);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(screenStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-            } else {
-                registerReceiver(screenStateReceiver, filter);
-            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) registerReceiver(screenStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            else registerReceiver(screenStateReceiver, filter);
             screenStateReceiverRegistered = true;
         } catch (RuntimeException error) {
             screenStateReceiverRegistered = false;
@@ -299,8 +279,7 @@ public class MainActivity extends Activity {
     private boolean isScreenActuallyOff() {
         if (screenOff) return true;
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (powerManager == null) return false;
-        return !powerManager.isInteractive();
+        return powerManager != null && !powerManager.isInteractive();
     }
 
     private void keepWebViewRunningForScreenOff() {
@@ -335,7 +314,6 @@ public class MainActivity extends Activity {
                 "location.replace('" + START_URL + "?android_build=" + BUILD_ID + "&sw_reset=1&t='+Date.now());" +
                 "});return 'resetting';" +
                 "}catch(e){return 'error';}})()";
-
         try {
             view.evaluateJavascript(js, value -> {
                 if (webView == null || view != webView) return;
@@ -382,35 +360,24 @@ public class MainActivity extends Activity {
     private void showNativeRecovery(String message) {
         bootHandler.removeCallbacks(bootWatchdog);
         if (rootView == null) return;
-
         rootView.removeAllViews();
-
         LinearLayout panel = new LinearLayout(this);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setGravity(Gravity.CENTER);
-        panel.setPadding(
-                dp(28) + safeInsetLeft,
-                dp(28) + safeInsetTop,
-                dp(28) + safeInsetRight,
-                dp(28) + safeInsetBottom);
+        panel.setPadding(dp(28), dp(28), dp(28), dp(28));
         panel.setBackgroundColor(Color.rgb(2, 4, 13));
-
         TextView title = new TextView(this);
         title.setText("Não conseguimos iniciar agora");
         title.setTextColor(Color.WHITE);
         title.setTextSize(22f);
         title.setGravity(Gravity.CENTER);
-
         TextView body = new TextView(this);
         body.setText(message);
         body.setTextColor(Color.rgb(176, 180, 198));
         body.setTextSize(15f);
         body.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         bodyParams.topMargin = dp(12);
-
         Button retry = new Button(this);
         retry.setText("Tentar novamente");
         retry.setAllCaps(false);
@@ -419,18 +386,12 @@ public class MainActivity extends Activity {
             bootRecoveryAttempts = 0;
             createWebViewAndLoad("native_retry");
         });
-        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         buttonParams.topMargin = dp(20);
-
         panel.addView(title);
         panel.addView(body, bodyParams);
         panel.addView(retry, buttonParams);
-
-        rootView.addView(panel, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        rootView.addView(panel, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     private int dp(int value) {
@@ -443,30 +404,23 @@ public class MainActivity extends Activity {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             window.setStatusBarColor(Color.rgb(2, 4, 13));
             window.setNavigationBarColor(Color.rgb(2, 4, 13));
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 WindowManager.LayoutParams attributes = window.getAttributes();
-                attributes.layoutInDisplayCutoutMode =
-                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
                 window.setAttributes(attributes);
             }
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.setDecorFitsSystemWindows(false);
                 WindowInsetsController controller = window.getInsetsController();
                 if (controller != null) {
-                    controller.setSystemBarsAppearance(0,
-                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
-                                    WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+                    controller.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+                            WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
                 }
             } else {
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                window.getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+                window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
             }
-
             publishSafeAreaInsets();
         } catch (RuntimeException error) {
             Log.w(TAG, "Safe-area configuration failed; continuing with system defaults", error);
@@ -475,18 +429,14 @@ public class MainActivity extends Activity {
 
     private void publishSafeAreaInsets() {
         if (rootView == null) return;
-
         rootView.setOnApplyWindowInsetsListener((view, insets) -> {
             int left;
             int top;
             int right;
             int bottom;
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                android.graphics.Insets safeInsets = insets.getInsets(
-                        WindowInsets.Type.systemBars()
-                                | WindowInsets.Type.displayCutout()
-                                | WindowInsets.Type.mandatorySystemGestures());
+                android.graphics.Insets safeInsets = insets.getInsets(WindowInsets.Type.systemBars() |
+                        WindowInsets.Type.displayCutout() | WindowInsets.Type.mandatorySystemGestures());
                 left = safeInsets.left;
                 top = safeInsets.top;
                 right = safeInsets.right;
@@ -496,7 +446,6 @@ public class MainActivity extends Activity {
                 top = insets.getSystemWindowInsetTop();
                 right = insets.getSystemWindowInsetRight();
                 bottom = insets.getSystemWindowInsetBottom();
-
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && insets.getDisplayCutout() != null) {
                     left = Math.max(left, insets.getDisplayCutout().getSafeInsetLeft());
                     top = Math.max(top, insets.getDisplayCutout().getSafeInsetTop());
@@ -504,17 +453,13 @@ public class MainActivity extends Activity {
                     bottom = Math.max(bottom, insets.getDisplayCutout().getSafeInsetBottom());
                 }
             }
-
             safeInsetLeft = left;
             safeInsetTop = top;
             safeInsetRight = right;
             safeInsetBottom = bottom;
-            view.setPadding(0, 0, 0, 0);
+            view.setPadding(left, top, right, bottom);
             publishSafeAreaToWeb();
-            Log.d(TAG, "Published web safe area: left=" + left
-                    + " top=" + top
-                    + " right=" + right
-                    + " bottom=" + bottom);
+            Log.d(TAG, "Published web safe area: left=" + left + " top=" + top + " right=" + right + " bottom=" + bottom);
             return insets;
         });
         rootView.requestApplyInsets();
@@ -523,13 +468,12 @@ public class MainActivity extends Activity {
     private void publishSafeAreaToWeb() {
         WebView view = webView;
         if (view == null) return;
-
         String js = "(function(){var r=document.documentElement;if(!r)return;"
-                + "r.style.setProperty('--zuno-native-safe-left','" + safeInsetLeft + "px');"
-                + "r.style.setProperty('--zuno-native-safe-top','" + safeInsetTop + "px');"
-                + "r.style.setProperty('--zuno-native-safe-right','" + safeInsetRight + "px');"
-                + "r.style.setProperty('--zuno-native-safe-bottom','" + safeInsetBottom + "px');"
-                + "r.dataset.zunoNativeShell='android';})()";
+                + "r.style.setProperty('--zuno-native-safe-left','0px');"
+                + "r.style.setProperty('--zuno-native-safe-top','0px');"
+                + "r.style.setProperty('--zuno-native-safe-right','0px');"
+                + "r.style.setProperty('--zuno-native-safe-bottom','0px');"
+                + "r.dataset.zunoNativeShell='android-safe-frame';})()";
         try {
             view.evaluateJavascript(js, null);
         } catch (RuntimeException error) {
@@ -556,27 +500,19 @@ public class MainActivity extends Activity {
         PermissionRequest request = pendingPermissionRequest;
         pendingPermissionRequest = null;
         if (request == null) return;
-        try {
-            request.deny();
-        } catch (RuntimeException ignored) {
-        }
+        try { request.deny(); } catch (RuntimeException ignored) {}
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode != PERMISSION_REQUEST) return;
-
         PermissionRequest request = pendingPermissionRequest;
         pendingPermissionRequest = null;
         if (request == null) return;
-
         try {
-            if (hasMediaPermissions() && isTrustedOrigin(request.getOrigin())) {
-                request.grant(request.getResources());
-            } else {
-                request.deny();
-            }
+            if (hasMediaPermissions() && isTrustedOrigin(request.getOrigin())) request.grant(request.getResources());
+            else request.deny();
         } catch (RuntimeException error) {
             Log.w(TAG, "Could not finish WebView permission flow", error);
         }
@@ -585,9 +521,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         activityResumed = false;
-        if (!isScreenActuallyOff()) {
-            pauseWebViewForBackground();
-        }
+        if (!isScreenActuallyOff()) pauseWebViewForBackground();
         super.onPause();
     }
 
@@ -608,19 +542,14 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
     }
 
     private void destroySpecificWebView(WebView view) {
         if (view == null) return;
         try {
-            if (view.getParent() instanceof ViewGroup) {
-                ((ViewGroup) view.getParent()).removeView(view);
-            }
+            if (view.getParent() instanceof ViewGroup) ((ViewGroup) view.getParent()).removeView(view);
             view.stopLoading();
             view.removeAllViews();
             view.destroy();
@@ -633,11 +562,8 @@ public class MainActivity extends Activity {
         WebView current = webView;
         webView = null;
         if (current == null) return;
-
         try {
-            if (current.getParent() instanceof ViewGroup) {
-                ((ViewGroup) current.getParent()).removeView(current);
-            }
+            if (current.getParent() instanceof ViewGroup) ((ViewGroup) current.getParent()).removeView(current);
             if (loadBlankFirst) current.loadUrl("about:blank");
             current.stopLoading();
             current.clearHistory();
@@ -652,15 +578,10 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         bootHandler.removeCallbacksAndMessages(null);
         denyPendingWebPermission();
-
         if (screenStateReceiverRegistered) {
-            try {
-                unregisterReceiver(screenStateReceiver);
-            } catch (IllegalArgumentException ignored) {
-            }
+            try { unregisterReceiver(screenStateReceiver); } catch (IllegalArgumentException ignored) {}
             screenStateReceiverRegistered = false;
         }
-
         destroyCurrentWebView(true);
         rootView = null;
         super.onDestroy();
