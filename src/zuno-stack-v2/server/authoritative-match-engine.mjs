@@ -1,10 +1,11 @@
 import {createMatchCommandEnvelope,createMatchSnapshot,createCommandReceipt,MATCH_STATUS,SNAPSHOT_REASON,SERVER_MESSAGE} from './match-protocol.mjs';
 
 const clone=value=>JSON.parse(JSON.stringify(value));
+const stable=value=>JSON.stringify(value);
 const terminal=new Set([MATCH_STATUS.WON,MATCH_STATUS.LOST,MATCH_STATUS.FINISHED,MATCH_STATUS.ABORTED]);
 const MAX_RECEIPTS=128;
 const terminalResult=status=>status===MATCH_STATUS.WON?'won':status===MATCH_STATUS.LOST?'lost':status===MATCH_STATUS.ABORTED?'aborted':null;
-
+const signature=envelope=>stable({matchId:envelope.matchId,mode:envelope.mode,actorId:envelope.actorId,actionId:envelope.actionId,command:envelope.command});
 const rejection=(match,envelope,code,details=null)=>({match,receipt:createCommandReceipt({accepted:false,matchId:match.matchId,actionId:envelope.actionId,revision:match.revision,rejection:{code,details}})});
 
 export function createAuthoritativeMatch({matchId,mode,players,state,context,status=MATCH_STATUS.PLAYING,maxReceipts=MAX_RECEIPTS,startedAt=0}={}){
@@ -27,8 +28,12 @@ export function executeAuthoritativeCommand(match,input,{dispatch,createCommand}
   if(typeof dispatch!=='function'||typeof createCommand!=='function')throw new TypeError('Frozen Core dispatch/createCommand are required');
   let envelope;
   try{envelope=createMatchCommandEnvelope(input)}catch(error){return {match,receipt:{type:SERVER_MESSAGE.REJECTED,accepted:false,matchId:match.matchId,actionId:input?.actionId??'invalid',revision:match.revision,events:[],rejection:{code:'INVALID_ENVELOPE',details:error.message},replayed:false}}}
+  const requestSignature=signature(envelope);
   const prior=match.receipts.find(item=>item.actionId===envelope.actionId);
-  if(prior)return {match,receipt:{...clone(prior.receipt),replayed:true}};
+  if(prior){
+    if(prior.signature!==requestSignature)return rejection(match,envelope,'ACTION_ID_COLLISION');
+    return {match,receipt:{...clone(prior.receipt),replayed:true}};
+  }
   if(envelope.matchId!==match.matchId)return rejection(match,envelope,'MATCH_ID_MISMATCH');
   if(envelope.mode!==match.mode)return rejection(match,envelope,'MODE_MISMATCH');
   if(!match.players.includes(envelope.actorId))return rejection(match,envelope,'ACTOR_NOT_IN_MATCH');
@@ -39,7 +44,7 @@ export function executeAuthoritativeCommand(match,input,{dispatch,createCommand}
   if(!result?.accepted)return rejection(match,envelope,result?.rejection?.code??'CORE_REJECTED',result?.rejection?.details??null);
   const nextRevision=match.revision+1;
   const receipt=createCommandReceipt({accepted:true,matchId:match.matchId,actionId:envelope.actionId,revision:nextRevision,events:result.events??[]});
-  const receipts=[...match.receipts,{actionId:envelope.actionId,receipt:clone(receipt)}].slice(-match.maxReceipts);
+  const receipts=[...match.receipts,{actionId:envelope.actionId,signature:requestSignature,receipt:clone(receipt)}].slice(-match.maxReceipts);
   return {match:{...match,state:clone(result.state),status:result.state?.status??match.status,revision:nextRevision,receipts},receipt};
 }
 
