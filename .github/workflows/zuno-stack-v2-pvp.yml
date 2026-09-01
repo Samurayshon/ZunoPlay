@@ -1,0 +1,28 @@
+name: Zuno Stack V2 PvP
+
+on:
+  push:
+    branches:
+      - 'codex/zuno-stack-v2-phase-7-*'
+  pull_request:
+    paths:
+      - 'src/zuno-stack-v2/**'
+      - 'tests/zuno-stack-v2-*.test.mjs'
+      - '.github/workflows/zuno-stack-v2-pvp.yml'
+
+jobs:
+  pvp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate V2 PvP syntax
+        run: |
+          node --check src/zuno-stack-v2/pvp/pvp-rules.mjs
+          node --check src/zuno-stack-v2/pvp/pvp-session.mjs
+          node --check src/zuno-stack-v2/pvp/pvp-authority.mjs
+      - name: Validate Frozen Core Solo Match Server Trio and PvP
+        run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs tests/zuno-stack-v2-match-*.test.mjs tests/zuno-stack-v2-trio-*.test.mjs tests/zuno-stack-v2-pvp-*.test.mjs
