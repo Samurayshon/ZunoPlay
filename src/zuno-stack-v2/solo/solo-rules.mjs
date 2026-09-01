@@ -31,11 +31,24 @@ export function createSoloBoard(config=DEFAULT_SOLO_BOARD,seed='solo-seed'){
   if(base.tiles.length%families.length!==0)throw new RangeError('Solo board tile count must be divisible by family count');
   const perFamily=base.tiles.length/families.length;
   if(perFamily%3!==0)throw new RangeError('Solo board must provide complete trios per family');
-  const bag=[];
-  for(const family of families)for(let i=0;i<perFamily;i++)bag.push(family);
-  const shuffled=createPrng(`${seed}|solo-families`).shuffle(bag);
-  const tiles=base.tiles.map((tile,index)=>({...tile,family:shuffled[index]}));
-  return createValidatedBoardState({tiles,layerCount:base.layerCount,meta:{...base.meta,mode:'solo',balancedFamilies:true}});
+
+  const working={...base,tiles:base.tiles.map(tile=>({...tile}))};
+  const removalOrder=[];
+  while(removalOrder.length<working.tiles.length){
+    const nextId=getAvailableTileIds(working)[0];
+    if(!nextId)throw new Error('Solo board has no deterministic removal path');
+    removalOrder.push(nextId);
+    working.tiles=working.tiles.map(tile=>tile.id===nextId?{...tile,removed:true}:tile);
+  }
+
+  const familyCycle=createPrng(`${seed}|solo-families`).shuffle(families);
+  const familyById=new Map();
+  for(let index=0;index<removalOrder.length;index++){
+    const trioIndex=Math.floor(index/3);
+    familyById.set(removalOrder[index],familyCycle[trioIndex%familyCycle.length]);
+  }
+  const tiles=base.tiles.map(tile=>({...tile,family:familyById.get(tile.id)}));
+  return createValidatedBoardState({tiles,layerCount:base.layerCount,meta:{...base.meta,mode:'solo',balancedFamilies:true,guaranteedTrioPath:true}});
 }
 
 function restoreNewestTrayTile(player){
