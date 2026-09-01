@@ -16,6 +16,8 @@ jobs:
           node-version: '22'
       - name: Validate Android WebView framing contract
         run: node tests/android-webview-framing.test.mjs
+      - name: Validate Android runtime smoke harness
+        run: node tests/android-runtime-smoke-harness.test.mjs
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
