@@ -72,14 +72,6 @@ jobs:
         run: |
           "${ANDROID_HOME}/emulator/emulator" -accel-check | tee android-emulator-accel.txt
           grep -Eq 'Hypervisor\.Framework|HVF|accel' android-emulator-accel.txt
-      - name: Stabilize Android emulator graphics
-        run: |
-          mkdir -p "$HOME/.android"
-          cat > "$HOME/.android/advancedFeatures.ini" <<'EOF'
-          Vulkan = off
-          GLDirectMem = off
-          EOF
-          cat "$HOME/.android/advancedFeatures.ini"
       - name: Runtime smoke test on Android 14
         timeout-minutes: 22
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -89,11 +81,10 @@ jobs:
           arch: x86_64
           profile: pixel_2
           cores: 2
-          ram-size: 2048M
-          emulator-build: 15507667
+          ram-size: 3072M
           emulator-boot-timeout: 900
           disable-animations: true
-          emulator-options: -no-window -gpu software
+          emulator-options: -no-window -gpu host -no-snapshot-save
           script: bash android-v0/ci/runtime-smoke.sh
       - name: Upload runtime diagnostics
         if: always()
