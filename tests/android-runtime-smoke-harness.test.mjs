@@ -30,7 +30,7 @@ assert.match(workflow, /emulator-options: .* -gpu software(?: |$)/, 'runtime emu
 assert.doesNotMatch(workflow, /-gpu swiftshader_indirect/, 'runtime emulator must not regress to the deprecated indirect SwiftShader selector');
 assert.match(workflow, /advancedFeatures\.ini/, 'runtime emulator must have an explicit graphics-stability configuration');
 assert.match(workflow, /Vulkan = off/, 'runtime emulator must keep Vulkan disabled for WebView smoke stability');
-assert.match(workflow, /GLDirectMem = on/, 'runtime emulator must keep direct GL memory enabled with the Vulkan workaround');
+assert.match(workflow, /GLDirectMem = off/, 'current isolation attempt must disable direct GL memory while preserving software graphics');
 assert.match(workflow, /android-runtime-host\.txt/, 'host diagnostics must be uploaded as a workflow artifact');
 assert.match(
   workflow,
