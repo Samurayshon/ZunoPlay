@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createSoloSession,startSoloSession} from '../src/zuno-stack-v2/solo/solo-session.mjs';
+import {createAuthoritativeMatch,createRewardsBridgePayload,createVerifiedMatchResult,finalizeAuthoritativeMatch,reconnectAuthoritativeMatch} from '../src/zuno-stack-v2/server/authoritative-match-engine.mjs';
+
+const make=(status='WON')=>{const solo=startSoloSession(createSoloSession({seed:'result'}));return createAuthoritativeMatch({matchId:'result-1',mode:'solo',players:['solo-player'],state:{...solo.state,status},context:solo.context,status,startedAt:100})};
+
+test('verified result is derived from authoritative terminal state',()=>{const m=make();const r=createVerifiedMatchResult(m,{finishedAt:200});assert.deepEqual(Object.keys(r).sort(),['antiFarmFlags','disconnects','finishedAt','matchId','mode','performance','players','result','score','startedAt','type','valid'].sort());assert.equal(r.result,'won');assert.equal(r.score,m.state.players[0].score);assert.equal(r.valid,true)});
+test('non terminal match cannot be finalized',()=>{const solo=startSoloSession(createSoloSession({seed:'open'}));const m=createAuthoritativeMatch({matchId:'open',mode:'solo',players:['solo-player'],state:solo.state,context:solo.context,startedAt:1});assert.throws(()=>finalizeAuthoritativeMatch(m,{finishedAt:2}),/MATCH_NOT_TERMINAL/)});
+test('authoritative closure is idempotent and cannot duplicate result',()=>{const first=finalizeAuthoritativeMatch(make(),{finishedAt:200});const second=finalizeAuthoritativeMatch(first.match,{finishedAt:999});assert.equal(first.replayed,false);assert.equal(second.replayed,true);assert.deepEqual(second.result,first.result);assert.deepEqual(second.match,first.match)});
+test('result cannot be changed by mutating returned copy',()=>{const m=make();const r=createVerifiedMatchResult(m,{finishedAt:200});r.score=999999;assert.notEqual(createVerifiedMatchResult(m,{finishedAt:200}).score,999999)});
+test('reward bridge is fail closed and grants nothing',()=>{assert.throws(()=>createRewardsBridgePayload(make()),/VERIFIED_RESULT_REQUIRED/);const closed=finalizeAuthoritativeMatch(make(),{finishedAt:200}).match;assert.deepEqual(createRewardsBridgePayload(closed),{verifiedMatchResult:closed.result,rewardsEnabled:false,xpEnabled:false})});
+test('reconnect snapshot carries authoritative state only when requested',()=>{const m=make();const s=reconnectAuthoritativeMatch(m);assert.equal(s.reason,'reconnect');assert.equal(s.revision,m.revision);assert.deepEqual(s.state,m.state)});
+test('verified result remains serializable and deterministic',()=>{const a=createVerifiedMatchResult(make(),{finishedAt:200});const b=createVerifiedMatchResult(make(),{finishedAt:200});assert.equal(JSON.stringify(a),JSON.stringify(b));assert.doesNotThrow(()=>JSON.stringify(a))});
+test('result generation and snapshot benchmark stay bounded',()=>{const m=make();const start=performance.now();for(let i=0;i<1000;i++){createVerifiedMatchResult(m,{finishedAt:200});reconnectAuthoritativeMatch(m)}assert.ok(performance.now()-start<1500)});
