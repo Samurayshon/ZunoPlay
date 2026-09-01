@@ -178,8 +178,10 @@ for ATTEMPT in 1 2 3; do
 
   if [[ "$START_STATUS" -eq 124 ]] || grep -Eqi '(error:|adb:|device offline|device .* not found|no devices|closed)' <<< "$START_OUTPUT"; then
     if recover_adb_device "launch attempt ${ATTEMPT}"; then
+      set +e
       START_OUTPUT="$(adb_cmd shell am start -W -n "$ACTIVITY" 2>&1 | tr -d '\r')"
       START_STATUS=$?
+      set -e
     else
       fail_adb_infrastructure "launch attempt ${ATTEMPT}"
     fi
