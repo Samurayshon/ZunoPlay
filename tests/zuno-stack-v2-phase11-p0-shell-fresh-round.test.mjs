@@ -48,7 +48,7 @@ test('Fresh Solo Round: a new round is clean, independent and restores official 
   assert.equal(fresh.state.startedAtLogical,0);
   assert.deepEqual(player.tray,[]);
   assert.equal(player.score,0);
-  assert.equal(player.combo,0);
+  assert.equal(player.combo.count??0,0);
   assert.equal(player.pulse.value??0,0);
   assert.equal(view.pulse??0,0);
   assert.deepEqual(player.resources,{undo:3,hint:3,rescue:1,powerShift:2});
