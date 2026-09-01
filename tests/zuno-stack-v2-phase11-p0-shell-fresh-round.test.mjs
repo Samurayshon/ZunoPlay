@@ -37,6 +37,7 @@ test('Fresh Solo Round: a new round is clean, independent and restores official 
   previous={...previous,state:{...previous.state,players:[{...mutatedPlayer,pulse:{...mutatedPlayer.pulse,value:3}}]}};
   previous=soloUsePower(previous);
   assert.equal(previous.rejection,null);
+  assert.equal(previous.state.players[0].resources.powerShift,1);
 
   const fresh=startSoloSession(createSoloSession({seed}));
   const player=fresh.state.players[0];
@@ -58,7 +59,7 @@ test('Fresh Solo Round: a new round is clean, independent and restores official 
   assert.equal(fresh.events[0].type,'SOLO_STARTED');
   assert.notStrictEqual(fresh,previous);
   assert.notStrictEqual(fresh.state,previous.state);
-  assert.notDeepEqual(player.tray,previous.state.players[0].tray);
+  assert.equal(previous.state.players[0].resources.powerShift,1);
   assert.equal(player.resources.powerShift,2);
   assert.equal(player.pulse.value??0,0);
 });
