@@ -1,0 +1,9 @@
+import {createCommand,dispatch} from '../core/index.mjs';
+import {createAuthoritativeMatch,executeAuthoritativeCommand,finalizeAuthoritativeMatch} from '../server/authoritative-match-engine.mjs';
+import {createPvpSession,startPvpSession} from './pvp-session.mjs';
+import {PVP_MODE,PVP_STATUS,evaluatePvpStatus} from './pvp-rules.mjs';
+const clone=value=>JSON.parse(JSON.stringify(value));
+const rejected=(match,input,code)=>({match,receipt:{type:'MATCH_COMMAND_REJECTED',accepted:false,matchId:match.matchId,actionId:input?.actionId??'invalid',revision:match.revision,events:[],rejection:{code,details:null},replayed:false}});
+export function createAuthoritativePvpMatch({matchId,playerIds,seed='pvp-seed',boardConfig,startedAt=0}={}){const session=startPvpSession(createPvpSession({seed,playerIds,boardConfig}));return{...createAuthoritativeMatch({matchId,mode:PVP_MODE,players:playerIds,state:session.state,context:session.context,status:PVP_STATUS.PLAYING,startedAt}),slots:clone(session.slots)}}
+export function executeAuthoritativePvpCommand(match,input,{authenticatedActorId}={}){if(typeof authenticatedActorId!=='string'||authenticatedActorId!==input?.actorId)return rejected(match,input,'AUTHENTICATED_ACTOR_MISMATCH');if(!match.slots?.some(s=>s.playerId===authenticatedActorId))return rejected(match,input,'PVP_SLOT_NOT_FOUND');const executed=executeAuthoritativeCommand(match,input,{dispatch,createCommand});if(!executed.receipt.accepted)return executed;const status=evaluatePvpStatus(executed.match.state);return{match:{...executed.match,status,state:{...executed.match.state,status}},receipt:executed.receipt}}
+export function finalizeAuthoritativePvpMatch(match,{finishedAt}={}){const status=evaluatePvpStatus(match.state);if(status!==PVP_STATUS.FINISHED)throw new Error('PVP_NOT_TERMINAL');return finalizeAuthoritativeMatch({...match,status,state:{...match.state,status}},{finishedAt})}
