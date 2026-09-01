@@ -93,7 +93,7 @@ jobs:
           emulator-build: 15507667
           emulator-boot-timeout: 900
           disable-animations: true
-          emulator-options: -no-window -gpu software -memory 2048
+          emulator-options: -no-window -gpu software
           script: bash android-v0/ci/runtime-smoke.sh
       - name: Upload runtime diagnostics
         if: always()
