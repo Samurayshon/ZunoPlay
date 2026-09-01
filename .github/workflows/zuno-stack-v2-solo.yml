@@ -1,0 +1,26 @@
+name: Zuno Stack V2 Solo
+on:
+  pull_request:
+    paths:
+      - 'src/zuno-stack-v2/**'
+      - 'tests/zuno-stack-v2-*.test.mjs'
+      - '.github/workflows/zuno-stack-v2-solo.yml'
+  push:
+    paths:
+      - 'src/zuno-stack-v2/**'
+      - 'tests/zuno-stack-v2-*.test.mjs'
+      - '.github/workflows/zuno-stack-v2-solo.yml'
+jobs:
+  solo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate V2 syntax
+        run: |
+          set -euo pipefail
+          for file in src/zuno-stack-v2/core/*.mjs src/zuno-stack-v2/solo/*.mjs tests/zuno-stack-v2-*.test.mjs; do node --check "$file"; done
+      - name: Validate frozen Core and Solo basic
+        run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs
