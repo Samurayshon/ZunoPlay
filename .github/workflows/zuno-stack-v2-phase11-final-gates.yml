@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'codex/zuno-stack-v2-phase-11-final-polish'
+      - 'codex/zuno-stack-v2-phase-11-p0-solo-fixes'
   pull_request:
     paths:
       - 'src/zuno-stack-v2/**'
