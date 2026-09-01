@@ -46,8 +46,8 @@ jobs:
           grep -q '^+  usePowerTransition$' /tmp/solo-shift.patch
           grep -q '^+  const transitions={...createCoreTransitions(),\[USE_POWER\]:usePowerTransition};$' /tmp/solo-shift.patch
           grep -q '^+  const rules=createModeRules({modeId:SOLO_MODE,playerSlots:1,transitions,powerCatalog});$' /tmp/solo-shift.patch
-          test "$(grep -c '^+[^+]' /tmp/solo-shift.patch)" -eq 4
-          test "$(grep -c '^-[^-]' /tmp/solo-shift.patch)" -eq 1
+          test "$(grep -c '^+[^+]' /tmp/solo-shift.patch)" -eq 5
+          test "$(grep -c '^-[^-]' /tmp/solo-shift.patch)" -eq 2
       - name: Device validation marker
         run: |
           echo 'DEVICE_VALIDATION_REQUIRED: CI proxy gates do not certify physical Android FPS, touch latency, memory or frame pacing.'
