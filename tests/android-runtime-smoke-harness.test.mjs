@@ -27,13 +27,12 @@ assert.match(workflow, /Runtime smoke test on Android 14[\s\S]*?timeout-minutes:
 assert.match(workflow, /emulator-boot-timeout: 900/, 'Android 14 HVF cold boot must have an explicit bounded boot timeout');
 assert.match(workflow, /target: google_apis/, 'safe-area runtime proof must use an image with normal Android system bars');
 assert.match(workflow, /arch: x86_64/, 'Intel macOS HVF runtime proof must keep the x86_64 Android image');
-assert.match(workflow, /profile: pixel_2[\s\S]*?cores: 2[\s\S]*?ram-size: 2048M/, 'runtime emulator must use a lightweight phone profile without oversubscribing CPU');
-assert.match(workflow, /emulator-build: 15507667/, 'runtime emulator must pin the stable 36.6.11 build for the current isolation attempt');
-assert.match(workflow, /emulator-options: .* -gpu software(?:\s|$)/, 'runtime emulator must use the supported software graphics selector');
+assert.match(workflow, /profile: pixel_2[\s\S]*?cores: 2[\s\S]*?ram-size: 3072M/, 'runtime emulator must provide Android 14 enough RAM while keeping the lightweight phone profile');
+assert.doesNotMatch(workflow, /emulator-build:/, 'runtime must use the runner-supported emulator instead of a stale pinned emulator build');
+assert.match(workflow, /emulator-options: .* -gpu host(?:\s|$)/, 'HVF runtime must use host graphics instead of the pathologically slow software renderer');
+assert.match(workflow, /-no-snapshot-save/, 'runtime must avoid persisting CI-only emulator state');
+assert.doesNotMatch(workflow, /-gpu software/, 'runtime must not regress to the software graphics configuration that failed to boot Android 14');
 assert.doesNotMatch(workflow, /-gpu swiftshader_indirect/, 'runtime emulator must not regress to the deprecated indirect SwiftShader selector');
-assert.match(workflow, /advancedFeatures\.ini/, 'runtime emulator must have an explicit graphics-stability configuration');
-assert.match(workflow, /Vulkan = off/, 'runtime emulator must keep Vulkan disabled for WebView smoke stability');
-assert.match(workflow, /GLDirectMem = off/, 'current isolation attempt must disable direct GL memory while preserving software graphics');
 assert.match(workflow, /android-runtime-host\.txt/, 'host diagnostics must be uploaded as a workflow artifact');
 assert.match(
   workflow,
