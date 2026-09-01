@@ -31,6 +31,6 @@ jobs:
           set -euo pipefail
           for file in src/zuno-stack-v2/core/*.mjs tests/zuno-stack-v2-core-*.test.mjs; do node --check "$file"; done
       - name: Validate Core behavior
-        run: node tests/zuno-stack-v2-core-block1.test.mjs
+        run: node --test tests/zuno-stack-v2-core-block1.test.mjs tests/zuno-stack-v2-core-board.test.mjs
       - name: Validate Core boundaries
         run: node tests/zuno-stack-v2-core-boundaries.test.mjs

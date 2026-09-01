@@ -2,10 +2,12 @@ const plainObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(v
 
 function assertString(value,name){if(typeof value!=='string'||!value.trim())throw new TypeError(`${name} must be a non-empty string`);return value}
 function assertInteger(value,name,{min=Number.MIN_SAFE_INTEGER}={}){if(!Number.isSafeInteger(value)||value<min)throw new TypeError(`${name} must be a safe integer >= ${min}`);return value}
+function assertPositiveFinite(value,name){if(!Number.isFinite(value)||value<=0)throw new TypeError(`${name} must be a positive finite number`);return value}
 
 /** @typedef {{x:number,y:number}} TilePosition */
-/** @typedef {{id:string,family:string,position:TilePosition,layer:number,removed:boolean,meta:Record<string,unknown>}} Tile */
-/** @typedef {{tiles:Tile[],meta:Record<string,unknown>}} BoardState */
+/** @typedef {{width:number,height:number}} TileFootprint */
+/** @typedef {{id:string,family:string,position:TilePosition,layer:number,removed:boolean,footprint:TileFootprint,meta:Record<string,unknown>}} Tile */
+/** @typedef {{tiles:Tile[],layerCount:number,blockersByTile:Record<string,string[]>,meta:Record<string,unknown>}} BoardState */
 /** @typedef {{playerId:string,board:BoardState,tray:string[],score:number,combo:Record<string,unknown>,pulse:Record<string,unknown>,powers:Record<string,unknown>,resources:Record<string,unknown>,status:string}} PlayerState */
 /** @typedef {{schemaVersion:number,matchId:string|null,mode:string,seed:number|string,status:string,rulesetVersion:string,players:PlayerState[],shared:Record<string,unknown>,startedAtLogical:number|null,finishedAtLogical:number|null}} GameState */
 /** @typedef {{type:string,actorId:string,payload:Record<string,unknown>}} Command */
@@ -14,17 +16,30 @@ function assertInteger(value,name,{min=Number.MIN_SAFE_INTEGER}={}){if(!Number.i
 /** @typedef {{modeId:string,playerSlots:number,transitions:Record<string,(state:GameState,command:Command,context:RulesContext)=>TransitionResult>}} ModeRules */
 /** @typedef {{rules:ModeRules,logicalNow:number|null,config:Record<string,unknown>}} RulesContext */
 
-export function createTile({id,family,position={x:0,y:0},layer=0,removed=false,meta={}}={}){
+export function createTile({id,family,position={x:0,y:0},layer=0,removed=false,footprint={width:1,height:1},meta={}}={}){
   assertString(id,'tile.id');assertString(family,'tile.family');assertInteger(layer,'tile.layer',{min:0});
   if(!plainObject(position)||!Number.isFinite(position.x)||!Number.isFinite(position.y))throw new TypeError('tile.position must contain finite x/y coordinates');
+  if(!plainObject(footprint))throw new TypeError('tile.footprint must be a plain object');
+  assertPositiveFinite(footprint.width,'tile.footprint.width');assertPositiveFinite(footprint.height,'tile.footprint.height');
   if(!plainObject(meta))throw new TypeError('tile.meta must be a plain object');
-  return{id,family,position:{x:position.x,y:position.y},layer,removed:Boolean(removed),meta:{...meta}};
+  return{id,family,position:{x:position.x,y:position.y},layer,removed:Boolean(removed),footprint:{width:footprint.width,height:footprint.height},meta:{...meta}};
 }
 
-export function createBoardState({tiles=[],meta={}}={}){
+export function createBoardState({tiles=[],layerCount=null,blockersByTile={},meta={}}={}){
   if(!Array.isArray(tiles))throw new TypeError('board.tiles must be an array');
+  const inferred=tiles.length===0?0:Math.max(...tiles.map(tile=>Number.isSafeInteger(tile?.layer)?tile.layer:-1))+1;
+  const resolvedLayerCount=layerCount===null?inferred:layerCount;
+  assertInteger(resolvedLayerCount,'board.layerCount',{min:0});
+  if(!plainObject(blockersByTile))throw new TypeError('board.blockersByTile must be a plain object');
+  const blockers={};
+  for(const [tileId,refs] of Object.entries(blockersByTile)){
+    assertString(tileId,'board.blockersByTile key');
+    if(!Array.isArray(refs))throw new TypeError(`board.blockersByTile.${tileId} must be an array`);
+    blockers[tileId]=refs.map((ref,index)=>assertString(ref,`board.blockersByTile.${tileId}[${index}]`));
+  }
   if(!plainObject(meta))throw new TypeError('board.meta must be a plain object');
-  return{tiles:[...tiles],meta:{...meta}};
+  const board={tiles:[...tiles],layerCount:resolvedLayerCount,blockersByTile:blockers,meta:{...meta}};
+  assertSerializableValue(board,'BoardState');return board;
 }
 
 export function createPlayerState({playerId,board=createBoardState(),tray=[],score=0,combo={},pulse={},powers={},resources={},status='ready'}={}){
