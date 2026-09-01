@@ -1,4 +1,4 @@
-import {TRAY_CAPACITY,acceptedTransition,createCoreTransitions,createDomainEvent,createModeRules,createRulesContext,createValidatedBoardState,createPrng,generateBoard,getAvailableTileIds,rejectedTransition} from '../core/index.mjs';
+import {PICK_TILE,TRAY_CAPACITY,acceptedTransition,createCoreTransitions,createDomainEvent,createModeRules,createRulesContext,createValidatedBoardState,createPrng,generateBoard,getAvailableTileIds,rejectedTransition} from '../core/index.mjs';
 
 export const TRIO_MODE='trio';
 export const TRIO_RULESET_VERSION='trio-basic-r1';
@@ -48,6 +48,8 @@ function useSharedPulse(state,command){
   return acceptedTransition({...state,shared:{...state.shared,pulse:{...state.shared.pulse,value:current-cost}}},[createDomainEvent('TRIO_SHARED_PULSE_USED',{actorId:command.actorId,cost,previous:current,current:current-cost})]);
 }
 
-export function createTrioRules(){const transitions={...createCoreTransitions(),[TRIO_COMMAND.RELAY_PUT]:relayPut,[TRIO_COMMAND.RELAY_TAKE]:relayTake,[TRIO_COMMAND.USE_SHARED_PULSE]:useSharedPulse};const rules=createModeRules({modeId:TRIO_MODE,playerSlots:3,transitions});rules.progression={scorePerTrio:100,comboStep:1,comboResetOnPickWithoutTrio:false,pulsePerTrio:1,pulseMax:10,pulseUseCost:1};return rules}
+function createTrioPickTransition(){const base=createCoreTransitions()[PICK_TILE];return (state,command,context)=>{const result=base(state,command,context);if(!result.accepted)return result;const gains=result.events.filter(event=>event.type==='PULSE_CHANGED'&&event.payload?.current>event.payload?.previous).reduce((sum,event)=>sum+(event.payload.current-event.payload.previous),0);if(!gains)return result;const current=state.shared?.pulse?.value??0;const max=state.shared?.pulse?.max??30;return {...result,state:{...result.state,shared:{...result.state.shared,pulse:{value:Math.min(max,current+gains),max}}}}}}
+
+export function createTrioRules(){const transitions={...createCoreTransitions(),[PICK_TILE]:createTrioPickTransition(),[TRIO_COMMAND.RELAY_PUT]:relayPut,[TRIO_COMMAND.RELAY_TAKE]:relayTake,[TRIO_COMMAND.USE_SHARED_PULSE]:useSharedPulse};const rules=createModeRules({modeId:TRIO_MODE,playerSlots:3,transitions});rules.progression={scorePerTrio:100,comboStep:1,comboResetOnPickWithoutTrio:false,pulsePerTrio:1,pulseMax:10,pulseUseCost:1};return rules}
 export function createTrioRulesContext(){return createRulesContext({rules:createTrioRules(),config:{trayCapacity:TRAY_CAPACITY,relayCapacity:RELAY_CAPACITY}})}
 export function evaluateTrioStatus(state){if(state.players.length!==3)return TRIO_STATUS.LOST;const allWon=state.players.every(player=>player.board.tiles.every(tile=>tile.removed)&&player.tray.length===0);if(allWon)return TRIO_STATUS.WON;const anyLost=state.players.some(player=>player.tray.length>=TRAY_CAPACITY||(player.board.tiles.some(tile=>!tile.removed)&&getAvailableTileIds(player.board).length===0));return anyLost?TRIO_STATUS.LOST:TRIO_STATUS.PLAYING}
