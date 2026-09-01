@@ -109,7 +109,22 @@
     return current;
   }
 
-  window.ZunoNavigationPolicy=Object.freeze({version:'2',modes:MODES,headers:HEADERS,active:ACTIVE,kinds:KINDS,knownPages:KNOWN_PAGES,resolve,apply});
+  function goBack(input={}){
+    if(typeof location==='undefined')return false;
+    const current=resolve(input),back=current.back;
+    if(!back)return false;
+    if(back.strategy==='origin-with-fallback'){
+      let sameOrigin=false;
+      try{sameOrigin=Boolean(document?.referrer)&&new URL(document.referrer,location.href).origin===location.origin}catch(_){}
+      if(sameOrigin&&typeof history!=='undefined'&&history.length>1){history.back();return true}
+      location.assign(back.fallback);
+      return true;
+    }
+    if(back.target){location.assign(back.target);return true}
+    return false;
+  }
+
+  window.ZunoNavigationPolicy=Object.freeze({version:'2',modes:MODES,headers:HEADERS,active:ACTIVE,kinds:KINDS,knownPages:KNOWN_PAGES,resolve,apply,goBack});
   if(typeof document!=='undefined'){
     apply();
     if(typeof MutationObserver==='function')new MutationObserver(records=>{if(records.some(record=>record.attributeName==='data-zuno-auth-state'))apply()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-zuno-auth-state']});

@@ -10,9 +10,14 @@ const notificationsCss=fs.readFileSync('zuno-notifications.css','utf8');
 const xpCss=fs.readFileSync('zuno-my-xp-v1.css','utf8');
 const modernCss=fs.readFileSync('zuno-modernization-v1.css','utf8');
 const messages=fs.readFileSync('zuno-messages-stable.js','utf8');
+const shellJs=fs.readFileSync('zuno-shell-experience-v1.js','utf8');
+const shellCss=fs.readFileSync('zuno-shell-experience-v1.css','utf8');
+const runtime=fs.readFileSync('nav.js','utf8');
 
 assert.match(policy,/\['pushState','replaceState'\]/,'navigation policy must resync after same-document route changes');
 assert.match(policy,/window\.addEventListener\('popstate',\(\)=>apply\(\)\)/,'navigation policy must resync on browser history navigation');
+assert.match(policy,/function goBack\(/,'navigation policy must own contextual back behavior');
+assert.match(policy,/origin-with-fallback/,'navigation policy must preserve safe origin-aware fallback behavior');
 assert.match(nav,/if\(!current\.bottomNav\)\{teardown\(\);return\}/,'bottom navigation must fail closed outside global routes');
 assert.match(nav,/active==='central'/,'Central must expose its active state');
 assert.match(nav,/maybeOpenCentral\(\)/,'a Central deep link must wait until the authenticated root shell exists');
@@ -27,3 +32,9 @@ assert.match(notificationsCss,/\.zn-app\{[^}]*overflow-x:hidden/,'notifications 
 assert.match(notificationsCss,/\.zn-heading\{[^}]*min-width:0/,'notification heading must be shrinkable on narrow screens');
 assert.match(xpCss,/\.zmx-shell\{[^}]*max-width:100%[^}]*overflow-x:hidden/,'Meu XP shell must contain lateral overflow');
 assert.match(xpCss,/\.zmx-amount\{[^}]*max-width:45%[^}]*overflow-wrap:anywhere/,'Meu XP amounts must not cut the page horizontally');
+assert.match(shellJs,/Sem conexão\. Alguns recursos/,'global shell must expose an offline state');
+assert.match(shellJs,/data-zuno-generated-context-back/,'contextual screens without a local control must receive a canonical back control');
+assert.match(shellCss,/:focus-visible/,'keyboard focus must remain visible');
+assert.match(shellCss,/min-width:44px!important;min-height:44px!important/,'canonical contextual back target must meet the 44px touch contract');
+assert.match(runtime,/zuno-shell-experience-v1\.css/,'shell accessibility layer must be loaded by the canonical runtime');
+assert.match(runtime,/zuno-shell-experience-v1\.js/,'shell state layer must be loaded by the canonical runtime');
