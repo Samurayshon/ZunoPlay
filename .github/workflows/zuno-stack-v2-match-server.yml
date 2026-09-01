@@ -24,4 +24,4 @@ jobs:
           node --check src/zuno-stack-v2/server/match-protocol.mjs
           node --check src/zuno-stack-v2/server/authoritative-match-engine.mjs
       - name: Validate frozen Core Solo and Match Server
-        run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs tests/zuno-stack-v2-match-server.test.mjs
+        run: node --test tests/zuno-stack-v2-core-*.test.mjs tests/zuno-stack-v2-solo-*.test.mjs tests/zuno-stack-v2-match-*.test.mjs
