@@ -14,6 +14,10 @@ on:
     paths:
       - 'android-v0/**'
       - '.github/workflows/android-v0-build.yml'
+  pull_request:
+    paths:
+      - 'android-v0/**'
+      - '.github/workflows/android-v0-build.yml'
 
 permissions:
   contents: write
@@ -82,6 +86,7 @@ jobs:
           fi
 
       - name: Runtime smoke test on Android 14
+        timeout-minutes: 12
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -100,6 +105,7 @@ jobs:
           path: |
             android-apk-badging.txt
             android-runtime-logcat.txt
+            android-runtime-host.txt
             android-package.txt
             android-activities.txt
           if-no-files-found: warn
